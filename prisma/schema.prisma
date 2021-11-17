@@ -1,0 +1,368 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model difficulties {
+  id                                                        Int                    @id @default(autoincrement()) @db.UnsignedSmallInt
+  name                                                      String                 @db.VarChar(50)
+  description                                               String?                @db.VarChar(100)
+  difficultyOrder                                           Int                    @db.UnsignedTinyInt
+  parentDifficultyID                                        Int?                   @db.UnsignedSmallInt
+  defaultDifficultyBool                                     Boolean
+  maps_difficultiesTomaps_assignedDifficultyID              maps[]                 @relation("difficultiesTomaps_assignedDifficultyID")
+  maps_difficultiesTomaps_modDifficultyID                   maps[]                 @relation("difficultiesTomaps_modDifficultyID")
+  mods_to_difficulties                                      mods_to_difficulties[]
+  ratings_difficultiesToratings_gameplayDefaultDifficultyID ratings[]              @relation("difficultiesToratings_gameplayDefaultDifficultyID")
+  ratings_difficultiesToratings_techDefaultDifficultyID     ratings[]              @relation("difficultiesToratings_techDefaultDifficultyID")
+  tech_list                                                 tech_list[]
+
+  @@index([defaultDifficultyBool, difficultyOrder], map: "defaultDifficulties")
+}
+
+model general_feedback_submissions {
+  id                     Int                                 @id @default(autoincrement()) @db.UnsignedMediumInt
+  feedback               String                              @db.VarChar(3000)
+  status                 general_feedback_submissions_status
+  hiddenVotesBool        Boolean
+  timeSubmitted          Int
+  submittedBy            Int                                 @db.UnsignedSmallInt
+  users                  users                               @relation(fields: [submittedBy], references: [id], onUpdate: Restrict, map: "general_feedback_submissions_ibfk_1")
+  general_feedback_votes general_feedback_votes[]
+
+  @@index([submittedBy], map: "submittedBy")
+}
+
+model general_feedback_votes {
+  generalFeedbackID            Int                          @db.UnsignedMediumInt
+  userID                       Int                          @db.UnsignedSmallInt
+  inFavorBoolean               Boolean
+  general_feedback_submissions general_feedback_submissions @relation(fields: [generalFeedbackID], references: [id], onUpdate: Restrict, map: "general_feedback_votes_ibfk_1")
+  users                        users                        @relation(fields: [userID], references: [id], onUpdate: Restrict, map: "general_feedback_votes_ibfk_2")
+
+  @@id([generalFeedbackID, userID])
+  @@index([userID], map: "userID")
+}
+
+model golden_players {
+  id          Int           @id @default(autoincrement()) @db.UnsignedSmallInt
+  name        String        @db.VarChar(100)
+  userID      Int           @unique(map: "userID") @db.UnsignedSmallInt
+  users       users         @relation(fields: [userID], references: [id], onUpdate: Restrict, map: "golden_players_ibfk_1")
+  golden_runs golden_runs[]
+}
+
+model golden_runs {
+  id                                Int                                 @id @db.UnsignedSmallInt
+  goldenID                          Int                                 @db.UnsignedSmallInt
+  goldenPlayerID                    Int                                 @db.UnsignedSmallInt
+  proofURL                          String?                             @db.VarChar(500)
+  timeCompleted                     Int
+  goldens                           goldens                             @relation(fields: [goldenID], references: [id], onUpdate: Restrict, map: "golden_runs_ibfk_1")
+  golden_players                    golden_players                      @relation(fields: [goldenPlayerID], references: [id], onUpdate: Restrict, map: "golden_runs_ibfk_2")
+  golden_runs_to_golden_submissions golden_runs_to_golden_submissions[]
+
+  @@index([goldenID], map: "goldenID")
+  @@index([goldenPlayerID], map: "goldenPlayerID")
+}
+
+model golden_runs_to_golden_submissions {
+  goldenRunID        Int                @db.UnsignedSmallInt
+  goldenSubmissionID Int                @db.UnsignedMediumInt
+  golden_runs        golden_runs        @relation(fields: [goldenRunID], references: [id], onUpdate: Restrict, map: "golden_runs_to_golden_submissions_ibfk_1")
+  golden_submissions golden_submissions @relation(fields: [goldenSubmissionID], references: [id], onUpdate: Restrict, map: "golden_runs_to_golden_submissions_ibfk_2")
+
+  @@id([goldenRunID, goldenSubmissionID])
+  @@index([goldenSubmissionID], map: "goldenSubmissionID")
+}
+
+model golden_submissions {
+  id                                          Int                                 @id @default(autoincrement()) @db.UnsignedMediumInt
+  timeSubmitted                               Int
+  submittedBy                                 Int                                 @db.UnsignedSmallInt
+  timeApproved                                Int?
+  approvedBy                                  Int?                                @db.UnsignedSmallInt
+  users_golden_submissions_approvedByTousers  users?                              @relation("golden_submissions_approvedByTousers", fields: [approvedBy], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "golden_submissions_ibfk_2")
+  users_golden_submissions_submittedByTousers users                               @relation("golden_submissions_submittedByTousers", fields: [submittedBy], references: [id], onUpdate: Restrict, map: "golden_submissions_ibfk_1")
+  golden_runs_to_golden_submissions           golden_runs_to_golden_submissions[]
+  goldens_to_golden_submissions               goldens_to_golden_submissions[]
+
+  @@index([approvedBy], map: "approvedBy")
+  @@index([submittedBy], map: "submittedBy")
+}
+
+model goldens {
+  id                            Int                             @id @default(autoincrement()) @db.UnsignedSmallInt
+  mapID                         Int                             @db.UnsignedMediumInt
+  fullClearBool                 Boolean
+  goldenList                    goldens_goldenList
+  otherList                     String?                         @db.VarChar(30)
+  topGoldenListRank             Int?                            @db.UnsignedSmallInt
+  maps                          maps                            @relation(fields: [mapID], references: [id], onUpdate: Restrict, map: "goldens_ibfk_1")
+  golden_runs                   golden_runs[]
+  goldens_to_golden_submissions goldens_to_golden_submissions[]
+
+  @@unique([mapID, fullClearBool], map: "mapPlusFullClear")
+}
+
+model goldens_to_golden_submissions {
+  goldenID           Int                @db.UnsignedSmallInt
+  goldenSubmissionID Int                @db.UnsignedMediumInt
+  goldens            goldens            @relation(fields: [goldenID], references: [id], onUpdate: Restrict, map: "goldens_to_golden_submissions_ibfk_1")
+  golden_submissions golden_submissions @relation(fields: [goldenSubmissionID], references: [id], onUpdate: Restrict, map: "goldens_to_golden_submissions_ibfk_2")
+
+  @@id([goldenID, goldenSubmissionID])
+  @@index([goldenSubmissionID], map: "goldenSubmissionID")
+}
+
+model map_and_mod_submissions {
+  id                  Int                   @id @default(autoincrement()) @db.UnsignedMediumInt
+  timeSubmitted       Int
+  submittedBy         Int                   @db.UnsignedSmallInt
+  timeApproved        Int?
+  approvedBy          Int?                  @db.UnsignedSmallInt
+  users               users?                @relation(fields: [approvedBy], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "map_and_mod_submissions_ibfk_1")
+  maps_to_submissions maps_to_submissions[]
+  mods_to_submissions mods_to_submissions[]
+
+  @@index([approvedBy], map: "approvedBy")
+  @@index([submittedBy], map: "submittedBy")
+}
+
+model map_lengths {
+  id           Int            @id @default(autoincrement()) @db.UnsignedTinyInt
+  name         String         @db.VarChar(20)
+  description  String         @db.VarChar(100)
+  lengthOrder  Int            @db.UnsignedTinyInt
+  maps         maps[]
+  reviews_maps reviews_maps[]
+}
+
+model maps {
+  id                                                   Int                   @id @default(autoincrement()) @db.UnsignedMediumInt
+  modID                                                Int                   @db.UnsignedSmallInt
+  minimumModVersion                                    String                @db.VarChar(15)
+  maximumModVersion                                    String?               @db.VarChar(15)
+  replacementMapID                                     Int?                  @db.UnsignedMediumInt
+  mapperUserID                                         Int?                  @db.UnsignedSmallInt
+  mapperNameString                                     String?               @db.VarChar(50)
+  name                                                 String                @db.VarChar(200)
+  assignedDifficultyID                                 Int                   @db.UnsignedSmallInt
+  lengthID                                             Int                   @db.UnsignedTinyInt
+  description                                          String?               @db.VarChar(500)
+  notes                                                String?               @db.VarChar(500)
+  chapter                                              Int?                  @db.UnsignedTinyInt
+  side                                                 maps_side?
+  modDifficultyID                                      Int?                  @db.UnsignedSmallInt
+  overallRank                                          Int?                  @db.UnsignedTinyInt
+  difficulties_difficultiesTomaps_assignedDifficultyID difficulties          @relation("difficultiesTomaps_assignedDifficultyID", fields: [assignedDifficultyID], references: [id], onUpdate: Restrict, map: "maps_ibfk_2")
+  map_lengths                                          map_lengths           @relation(fields: [lengthID], references: [id], onUpdate: Restrict, map: "maps_ibfk_5")
+  users                                                users?                @relation(fields: [mapperUserID], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "maps_ibfk_4")
+  difficulties_difficultiesTomaps_modDifficultyID      difficulties?         @relation("difficultiesTomaps_modDifficultyID", fields: [modDifficultyID], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "maps_ibfk_3")
+  mods                                                 mods                  @relation(fields: [modID], references: [id], onUpdate: Restrict, map: "maps_ibfk_1")
+  goldens                                              goldens[]
+  maps_to_submissions                                  maps_to_submissions[]
+  maps_to_tech                                         maps_to_tech[]
+  ratings                                              ratings[]
+
+  @@index([assignedDifficultyID], map: "assignedDifficultyID")
+  @@index([modDifficultyID], map: "difficultyID")
+  @@index([lengthID], map: "lengthID")
+  @@index([mapperUserID], map: "mapperUserID")
+  @@index([modID], map: "modID")
+}
+
+model maps_to_submissions {
+  mapID                   Int                     @db.UnsignedMediumInt
+  submissionID            Int                     @db.UnsignedMediumInt
+  maps                    maps                    @relation(fields: [mapID], references: [id], onUpdate: Restrict, map: "maps_to_submissions_ibfk_2")
+  map_and_mod_submissions map_and_mod_submissions @relation(fields: [submissionID], references: [id], onUpdate: Restrict, map: "maps_to_submissions_ibfk_1")
+
+  @@id([mapID, submissionID])
+  @@index([submissionID], map: "submissionID")
+}
+
+model maps_to_tech {
+  mapID     Int       @db.UnsignedMediumInt
+  techID    Int       @db.UnsignedSmallInt
+  maps      maps      @relation(fields: [mapID], references: [id], onUpdate: Restrict, map: "maps_to_tech_ibfk_1")
+  tech_list tech_list @relation(fields: [techID], references: [id], onUpdate: Restrict, map: "maps_to_tech_ibfk_2")
+
+  @@id([mapID, techID])
+  @@index([techID], map: "techID")
+}
+
+model mods {
+  id                   Int                    @id @default(autoincrement()) @db.UnsignedSmallInt
+  type                 mods_type              @default(Normal)
+  name                 String                 @db.VarChar(200)
+  publisherID          Int                    @db.UnsignedSmallInt
+  contentWarning       Boolean                @default(false)
+  notes                String?                @db.VarChar(500)
+  shortDescription     String?                @db.VarChar(500)
+  longDescription      String?                @db.VarChar(1500)
+  gamebananaModID      Int                    @db.UnsignedMediumInt
+  publishers           publishers             @relation(fields: [publisherID], references: [id], onUpdate: Restrict, map: "mods_ibfk_1")
+  maps                 maps[]
+  mods_to_difficulties mods_to_difficulties[]
+  mods_to_submissions  mods_to_submissions[]
+
+  @@index([contentWarning], map: "contentWarning")
+  @@index([publisherID], map: "publisherID")
+}
+
+model mods_to_difficulties {
+  modID        Int          @db.UnsignedSmallInt
+  difficultyID Int          @db.UnsignedSmallInt
+  difficulties difficulties @relation(fields: [difficultyID], references: [id], onUpdate: Restrict, map: "mods_to_difficulties_ibfk_1")
+  mods         mods         @relation(fields: [modID], references: [id], onUpdate: Restrict, map: "mods_to_difficulties_ibfk_2")
+
+  @@id([modID, difficultyID])
+  @@index([difficultyID], map: "difficultyID")
+}
+
+model mods_to_submissions {
+  modID                   Int                     @db.UnsignedSmallInt
+  submissionID            Int                     @db.UnsignedMediumInt
+  mods                    mods                    @relation(fields: [modID], references: [id], onUpdate: Restrict, map: "mods_to_submissions_ibfk_1")
+  map_and_mod_submissions map_and_mod_submissions @relation(fields: [submissionID], references: [id], onUpdate: Restrict, map: "mods_to_submissions_ibfk_2")
+
+  @@id([modID, submissionID])
+  @@index([submissionID], map: "submissionID")
+}
+
+model publishers {
+  id           Int    @id @default(autoincrement()) @db.UnsignedSmallInt
+  gamebananaID Int?   @unique(map: "gamebananaID") @db.UnsignedMediumInt
+  name         String @db.VarChar(100)
+  userID       Int?   @db.UnsignedSmallInt
+  users        users? @relation(fields: [userID], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "publishers_ibfk_1")
+  mods         mods[]
+
+  @@index([userID], map: "userID")
+}
+
+model ratings {
+  id                                                             Int              @id @default(autoincrement()) @db.UnsignedInt
+  submittedBy                                                    Int              @db.UnsignedSmallInt
+  mapID                                                          Int              @db.UnsignedMediumInt
+  timeSubmitted                                                  Int
+  quality                                                        ratings_quality?
+  techDefaultDifficultyID                                        Int?             @db.UnsignedSmallInt
+  gameplayDefaultDifficultyID                                    Int?             @db.UnsignedSmallInt
+  difficulties_difficultiesToratings_gameplayDefaultDifficultyID difficulties?    @relation("difficultiesToratings_gameplayDefaultDifficultyID", fields: [gameplayDefaultDifficultyID], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "ratings_ibfk_3")
+  maps                                                           maps             @relation(fields: [mapID], references: [id], onUpdate: Restrict, map: "ratings_ibfk_2")
+  users                                                          users            @relation(fields: [submittedBy], references: [id], onUpdate: Restrict, map: "ratings_ibfk_1")
+  difficulties_difficultiesToratings_techDefaultDifficultyID     difficulties?    @relation("difficultiesToratings_techDefaultDifficultyID", fields: [techDefaultDifficultyID], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "ratings_ibfk_4")
+  reviews_maps                                                   reviews_maps?
+
+  @@index([gameplayDefaultDifficultyID], map: "gameplayDefaultDifficultyID")
+  @@index([mapID], map: "mapID")
+  @@index([submittedBy], map: "submittedBy")
+  @@index([techDefaultDifficultyID], map: "techDefaultDifficultyID")
+}
+
+model reviews {
+  id            Int            @id @default(autoincrement()) @db.UnsignedMediumInt
+  likes         String?        @db.VarChar(1000)
+  dislikes      String?        @db.VarChar(1000)
+  otherComments String?        @db.VarChar(1500)
+  reviews_maps  reviews_maps[]
+}
+
+model reviews_maps {
+  id                Int         @id @default(autoincrement()) @db.UnsignedInt
+  reviewID          Int         @db.UnsignedMediumInt
+  ratingID          Int         @unique(map: "ratingID") @db.UnsignedInt
+  displayRatingBool Boolean
+  lengthID          Int         @db.UnsignedTinyInt
+  likes             String      @db.VarChar(500)
+  dislikes          String      @db.VarChar(500)
+  otherComments     String      @db.VarChar(500)
+  map_lengths       map_lengths @relation(fields: [lengthID], references: [id], onUpdate: Restrict, map: "reviews_maps_ibfk_2")
+  ratings           ratings     @relation(fields: [ratingID], references: [id], onUpdate: Restrict, map: "reviews_maps_ibfk_3")
+  reviews           reviews     @relation(fields: [reviewID], references: [id], onUpdate: Restrict, map: "reviews_maps_ibfk_1")
+
+  @@index([lengthID], map: "lengthID")
+  @@index([reviewID], map: "reviewID")
+}
+
+model tech_list {
+  id                  Int            @id @default(autoincrement()) @db.UnsignedSmallInt
+  name                String         @db.VarChar(50)
+  description         String?        @db.VarChar(150)
+  defaultDifficultyID Int            @db.UnsignedSmallInt
+  difficulties        difficulties   @relation(fields: [defaultDifficultyID], references: [id], onUpdate: Restrict, map: "tech_list_ibfk_1")
+  maps_to_tech        maps_to_tech[]
+
+  @@index([defaultDifficultyID], map: "defaultDifficultyID")
+}
+
+model users {
+  id                                                       Int                            @id @default(autoincrement()) @db.UnsignedSmallInt
+  displayName                                              String                         @db.VarChar(50)
+  discordID                                                String                         @unique(map: "discordID") @db.VarChar(50)
+  timeCreated                                              Int
+  permissions                                              String
+  accountStatus                                            users_accountStatus            @default(Active)
+  timeDeletedOrBanned                                      Int?
+  general_feedback_submissions                             general_feedback_submissions[]
+  general_feedback_votes                                   general_feedback_votes[]
+  golden_players                                           golden_players?
+  golden_submissions_golden_submissions_approvedByTousers  golden_submissions[]           @relation("golden_submissions_approvedByTousers")
+  golden_submissions_golden_submissions_submittedByTousers golden_submissions[]           @relation("golden_submissions_submittedByTousers")
+  map_and_mod_submissions                                  map_and_mod_submissions[]
+  maps                                                     maps[]
+  publishers                                               publishers[]
+  ratings                                                  ratings[]
+}
+
+enum general_feedback_submissions_status {
+  Active
+  Closed
+  Accepted
+  Rejected
+  Hidden
+}
+
+enum goldens_goldenList {
+  Hard
+  Standard
+  Full_Game_Runs_And_Challenges
+  Other
+  Archived
+  Rejected
+}
+
+enum maps_side {
+  A
+  B
+  C
+  D
+  E
+}
+
+enum mods_type {
+  Normal
+  Collab
+  Contest
+  Lobby
+}
+
+enum ratings_quality {
+  Amazing
+  Very_Well_Made @map("Very Well Made")
+  Recommended
+  Neutral
+  Not_Recommended @map("Not Recommended")
+}
+
+enum users_accountStatus {
+  Active
+  Deleted
+  Banned
+}
