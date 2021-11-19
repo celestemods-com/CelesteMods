@@ -1,11 +1,11 @@
-import { PrismaClient, map_lengths } from "@prisma/client";
+import { map_lengths } from "@prisma/client";
 import express from "express";
 import { expressRouteTypes } from "../types/express";
 import ajvModule from "ajv";
+import {prisma} from "../prismaClient";
 
 
 const router = express.Router();
-const prisma = new PrismaClient()
 const ajv = new ajvModule();
 
 
@@ -95,6 +95,7 @@ router.route("/")
         const length: length = await prisma.map_lengths.create({
             data: newLength,
         });
+        
         res.status(201).json(length);
     });
 
