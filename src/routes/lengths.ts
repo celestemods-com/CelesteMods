@@ -1,6 +1,6 @@
 import { map_lengths } from "@prisma/client";
 import express from "express";
-import { expressRouteTypes } from "../types/express";
+import { expressRouteTypes, expressErrorHandler } from "../types/express";
 import ajvModule from "ajv";
 import {prisma} from "../prismaClient";
 
@@ -36,7 +36,7 @@ const validatePost = ajv.compile(postSchema);
 
 
 
-router.use(<expressRouteTypes> function (req, _res, next) {
+router.use(function (req, _res, next) {
     const name: string = req.body.name;
     const description: string = req.body.description;
     const order: number = req.body.order;
@@ -56,11 +56,16 @@ router.use(<expressRouteTypes> function (req, _res, next) {
 
 
 router.route("/")
-    .get(<expressRouteTypes> async function (_req, res) {
-        const lengths: length[] = await prisma.map_lengths.findMany();
-        res.json(lengths);
+    .get(async function (_req, res, next) {
+        try{
+            const lengths: length[] = await prisma.map_lengths.findMany();
+            res.json(lengths);
+        }
+        catch(e) {
+            next(e);
+        }
     })
-    .post(<expressRouteTypes> async function (req, res) {
+    .post(async function (req, res, next) {
         const newLength = req.length as map_lengths;
         const valid = validatePost(newLength);
 
@@ -69,40 +74,43 @@ router.route("/")
             return;
         }
 
-        const matchingLength = await prisma.map_lengths.findFirst({
-            where: {
-                OR: [
-                    {
-                        name: newLength.name,
-                    },
-                    {
-                        description: newLength.description,
-                    },
-                    {
-                        order: newLength.order,
-                    },
-                ]
-            },
-        });
+        try{
+            const matchingLength = await prisma.map_lengths.findFirst({
+                where: {
+                    OR: [
+                        {
+                            name: newLength.name,
+                        },
+                        {
+                            description: newLength.description,
+                        },
+                        {
+                            order: newLength.order,
+                        },
+                    ]
+                },
+            });
 
-        console.log(matchingLength)
+            if(matchingLength) {
+                res.status(200).json(matchingLength);
+                return;
+            }
 
-        if(matchingLength) {
-            res.status(200).json(matchingLength);
-            return;
+            const length: length = await prisma.map_lengths.create({
+                data: newLength,
+            });
+            
+            res.status(201).json(length);
         }
-
-        const length: length = await prisma.map_lengths.create({
-            data: newLength,
-        });
-        
-        res.status(201).json(length);
+        catch(e) {
+            next(e);
+        }
     });
 
 
 
 
-router.param("id", <expressRouteTypes> function(req, res, next){
+router.param("id", function(req, res, next){
     const idRaw: unknown = req.params.id;
 
     if(idRaw === "search") {
@@ -119,16 +127,20 @@ router.param("id", <expressRouteTypes> function(req, res, next){
 });
 
 router.route("/:id")
-    .get(<expressRouteTypes> async function (req, res) {
-        const length: length = await prisma.map_lengths.findUnique({
-            where: {
-                id: req.id,
-            },
-        });
-
-        res.json(length);
+    .get(async function (req, res, next) {
+        try{
+            const length: length = await prisma.map_lengths.findUnique({
+                where: {
+                    id: req.id,
+                },
+            });
+            res.json(length);
+        }
+        catch(e) {
+            next(e);
+        }
     })
-    .patch(<expressRouteTypes> async function (req, res) {
+    .patch(async function (req, res, next) {
         const reqLength = req.length;
         const valid = validatePatch(reqLength);
 
@@ -137,32 +149,41 @@ router.route("/:id")
             return;
         }
 
-        const length = await prisma.map_lengths.update({
-            where: {
-                id: req.id,
-            },
-            data: {
-                name: reqLength?.name,
-                description: reqLength?.description,
-                order: reqLength?.order
-            },
-        });
-        res.status(200).json(length);
+        try{
+            const length = await prisma.map_lengths.update({
+                where: {
+                    id: req.id,
+                },
+                data: {
+                    name: reqLength?.name,
+                    description: reqLength?.description,
+                    order: reqLength?.order
+                },
+            });
+            res.status(200).json(length);
+        }
+        catch(e) {
+            next(e);
+        }
     })
-    .delete(<expressRouteTypes> async function (req, res) {
-        await prisma.map_lengths.delete({
-            where: {
-                id: req.id,
-            },
-        });
-
-        res.sendStatus(204);
+    .delete(async function (req, res, next) {
+        try{
+            await prisma.map_lengths.delete({
+                where: {
+                    id: req.id,
+                },
+            });
+            res.sendStatus(204);
+        }
+        catch(e) {
+            next(e);
+        }
     });
 
 
 
 
-const searchFunction = <expressRouteTypes> async function(req, res) {
+const searchFunction = <expressRouteTypes> async function(req, res, next) {
     const query: string = <string> req.query.name;
 
     if(typeof(query) != "string"){
@@ -170,15 +191,38 @@ const searchFunction = <expressRouteTypes> async function(req, res) {
         return;
     }
 
-    const length: length[] = await prisma.map_lengths.findMany({
-        where: {
-            name: {
-                startsWith: query,
+    try{
+        const length: length[] = await prisma.map_lengths.findMany({
+            where: {
+                name: {
+                    startsWith: query,
+                },
             },
+        });
+        res.json(length);
+    }
+    catch(e) {
+        next(e);
+    }
+}
+
+
+
+
+router.use(function (_req, _res, next) {
+    const error = new Error("Not Found");
+    error.status = 404;
+    next(error);
+});
+
+router.use(<expressErrorHandler>function (error, _req, res, next) {
+    console.log(error.message);
+    res.status(error.status || 500).send({
+        error: {
+            status: error.status || 500,
+            message: "Something went wrong",
         },
     });
-
-    res.json(length);
-}
+});
 
 export {router as lengthsRouter};

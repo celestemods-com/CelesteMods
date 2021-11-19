@@ -1,6 +1,5 @@
 import cors from "cors";
-
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 const app = express();
 app.use(express.json());
 const port = process.env.PORT || "3001";
@@ -33,3 +32,9 @@ app.use("/reviews", reviewsRouter);
 app.use("/ratings", ratingsRouter);
 app.use("/techs", techsRouter);
 app.use("/users", usersRouter);
+
+app.use(function (_req: Request, _res: Response, next: NextFunction) {
+  const error = new Error("Not Found");//@ts-ignore
+  error.status = 404;
+  next(error);
+});

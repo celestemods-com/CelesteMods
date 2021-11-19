@@ -142,37 +142,36 @@ declare global {
 
 
   namespace Express {
-      interface Request {
-        id: number;
-        valid?: boolean;
-        difficulty?: reqDifficulty;
-        gfSubmission?: reqGFSubmission;
-        gfVote?: reqGFVote;
-        golden?: reqGolden;
-        goldenPlayer?: reqGoldenPlayer;
-        goldenRun?: reqGoldenRun;
-        goldenSubmission?: reqGoldenSubmission;
-        length?: reqLength;
-        mod?: reqMod;
-        map?: reqMap;
-        publisher?: reqPublisher;
-        mSubmission?: reqMSubmission;
-        review?: reqReview;
-        mapReviews?: reqMapReview[];
-        rating?: reqRating;
-        tech?: reqTech;
-        user?: reqUser;
-      }
+    interface Request {
+      id: number;
+      valid?: boolean;
+      difficulty?: reqDifficulty;
+      gfSubmission?: reqGFSubmission;
+      gfVote?: reqGFVote;
+      golden?: reqGolden;
+      goldenPlayer?: reqGoldenPlayer;
+      goldenRun?: reqGoldenRun;
+      goldenSubmission?: reqGoldenSubmission;
+      length?: reqLength;
+      mod?: reqMod;
+      map?: reqMap;
+      publisher?: reqPublisher;
+      mSubmission?: reqMSubmission;
+      review?: reqReview;
+      mapReviews?: reqMapReview[];
+      rating?: reqRating;
+      tech?: reqTech;
+      user?: reqUser;
+    }
+  }
+
+  interface Error {
+    status?: number;
   }
 }
 
 
 
-// interface routeParamTypes {
-//     req?: Request,
-//     res?: Response,
-//     next?: NextFunction
-// }
-
 type expressRouteTypes = (req: Request, res: Response, next: NextFunction) => Promise<void>;
-export {expressRouteTypes};
+type expressErrorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => void;
+export {expressRouteTypes, expressErrorHandler};
