@@ -137,7 +137,7 @@ model map_lengths {
   id           Int            @id @default(autoincrement()) @db.UnsignedTinyInt
   name         String         @db.VarChar(20)
   description  String         @db.VarChar(100)
-  lengthOrder  Int            @db.UnsignedTinyInt
+  order        Int            @unique(map: "order") @db.UnsignedTinyInt
   maps         maps[]
   reviews_maps reviews_maps[]
 }

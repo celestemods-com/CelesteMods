@@ -1,3 +1,5 @@
+import cors from "cors";
+
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient()
 
@@ -9,14 +11,14 @@ app.listen(port, () => {
     console.log(`Server Running at ${port}`);
 });
 
-import {difficultiesRouter} from "./routes/difficulties";
-import {gfSubmissionsRouter, gfVotesRouter} from "./routes/generalfeedback";
-import {goldensRouter, goldenPlayersRouter, goldenRunsRouter, goldenSubmissionsRouter} from "./routes/goldens";
-import {lengthsRouter} from "./routes/lengths";
-import {modsRouter, mapsRouter, publishersRouter, mSubmissionsRouter} from "./routes/maps-mods-publishers";
-import {reviewsRouter, ratingsRouter} from "./routes/reviews-ratings";
-import {techsRouter} from "./routes/techs";
-import {usersRouter} from "./routes/users";
+import { difficultiesRouter } from "./routes/difficulties";
+import { gfSubmissionsRouter, gfVotesRouter } from "./routes/generalfeedback";
+import { goldensRouter, goldenPlayersRouter, goldenRunsRouter, goldenSubmissionsRouter } from "./routes/goldens";
+import { lengthsRouter } from "./routes/lengths";
+import { modsRouter, mapsRouter, publishersRouter, mSubmissionsRouter } from "./routes/maps-mods-publishers";
+import { reviewsRouter, ratingsRouter } from "./routes/reviews-ratings";
+import { techsRouter } from "./routes/techs";
+import { usersRouter } from "./routes/users";
 
 app.use("/difficulties", difficultiesRouter);
 app.use("/gfsubmissions", gfSubmissionsRouter);
