@@ -18,8 +18,8 @@ const ajv = new ajvModule();
 const postSchema = {
     type: "object",
     properties: {
-        //discordToken: { type: "string" },
-        //discordTokenType: { type: "string" },
+        discordToken: { type: "string" },
+        discordTokenType: { type: "string" },
         displayName: {
             type: "string",
             maxLength: 50,
@@ -32,8 +32,8 @@ const postSchema = {
         goldenPlayerID: { type: "integer" },
     },
     additionalProperties: false,
-    //required: ["discordToken", "discordTokenType", "displayName", "displayDiscord",],
-    required: ["displayName", "displayDiscord"],
+    required: ["discordToken", "discordTokenType", "displayName", "displayDiscord",],   //for production
+    //required: ["displayName", "displayDiscord"],      //for testing
 };
 const patchSchema = {
     type: "object",
@@ -91,8 +91,8 @@ router.route("/")
             const goldenPlayerID: number | null = req.body.goldenPlayerID;
 
             const valid = validatePost({
-                //discordToken: discordToken,
-                //discordTokenType: discordTokenType,
+                discordToken: discordToken, //comment out for testing
+                discordTokenType: discordTokenType, //comment out for testing
                 displayName: displayName,
                 displayDiscord: displayDiscord,
                 gamebananaIDs: gamebananaIDsArray,
@@ -105,18 +105,21 @@ router.route("/")
             }
 
 
-            // const discordUser = await getDiscordUser(discordTokenType, discordToken);
+            //for production
+            const discordUser = await getDiscordUser(discordTokenType, discordToken);
 
-            // if (isErrorWithMessage(discordUser)) {
-            //     throw discordUser;
-            // }
+            if (isErrorWithMessage(discordUser)) {
+                throw discordUser;
+            }
 
-            // const discordID = discordUser.id;
-            // const discordUsername = discordUser.username;
-            // const discordDiscrim = discordUser.discriminator;
-            const discordID = <string>req.body.testID;
-            const discordUsername = <string>req.body.discordUsername;
-            const discordDiscrim = <string>req.body.discordDiscrim;
+            const discordID = discordUser.id;
+            const discordUsername = discordUser.username;
+            const discordDiscrim = discordUser.discriminator;
+
+            //for testing
+            // const discordID = <string>req.body.testID;
+            // const discordUsername = <string>req.body.discordUsername;
+            // const discordDiscrim = <string>req.body.discordDiscrim;
 
 
             let arrayForOR: {}[] = [];
@@ -326,30 +329,33 @@ router.route("/:userID")
     })
     .put(async function (req, res, next) {
         try {
-            // const discordToken: string = req.body.discordToken;
-            // const discordTokenType: string = req.body.discordTokenType;
+            //for production
+            const discordToken: string = req.body.discordToken;
+            const discordTokenType: string = req.body.discordTokenType;
 
-            // const valid = validatePut({
-            //     discordToken: discordToken,
-            //     discordTokenType: discordTokenType,
-            // });
+            const valid = validatePut({
+                discordToken: discordToken,
+                discordTokenType: discordTokenType,
+            });
 
-            // if (!valid) {
-            //     res.status(400).json("Malformed request body");
-            //     return;
-            // }
+            if (!valid) {
+                res.status(400).json("Malformed request body");
+                return;
+            }
 
 
-            // const discordUser = await getDiscordUser(discordTokenType, discordToken);
+            const discordUser = await getDiscordUser(discordTokenType, discordToken);
 
-            // if (isErrorWithMessage(discordUser)) {
-            //     throw discordUser;
-            // }
-            const discordUser = {
-                id: req.body.testID,
-                username: req.body.username,
-                discriminator: req.body.discrim,
-            };
+            if (isErrorWithMessage(discordUser)) {
+                throw discordUser;
+            }
+
+            //for testing
+            // const discordUser = {
+            //     id: req.body.testID,
+            //     username: req.body.username,
+            //     discriminator: req.body.discrim,
+            // };
 
             const discordID = discordUser.id;
             const discordUsername = discordUser.username;
