@@ -51,8 +51,8 @@ model general_feedback_votes {
 model golden_players {
   id          Int           @id @default(autoincrement()) @db.UnsignedSmallInt
   name        String        @db.VarChar(100)
-  userID      Int           @unique(map: "userID") @db.UnsignedSmallInt
-  users       users         @relation(fields: [userID], references: [id], onUpdate: Restrict, map: "golden_players_ibfk_1")
+  userID      Int?          @unique(map: "userID") @db.UnsignedSmallInt
+  users       users?        @relation(fields: [userID], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "golden_players_ibfk_1")
   golden_runs golden_runs[]
 }
 
@@ -237,8 +237,7 @@ model mods_to_submissions {
 
 model publishers {
   id           Int    @id @default(autoincrement()) @db.UnsignedSmallInt
-  gamebananaID Int?   @unique(map: "gamebananaID") @db.UnsignedMediumInt
-  name         String @db.VarChar(100)
+  gamebananaID Int    @unique(map: "gamebananaID") @db.UnsignedMediumInt
   userID       Int?   @db.UnsignedSmallInt
   users        users? @relation(fields: [userID], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "publishers_ibfk_1")
   mods         mods[]
@@ -306,6 +305,9 @@ model users {
   id                                                       Int                            @id @default(autoincrement()) @db.UnsignedSmallInt
   displayName                                              String                         @db.VarChar(50)
   discordID                                                String                         @unique(map: "discordID") @db.VarChar(50)
+  discordUsername                                          String                         @db.VarChar(32)
+  discordDiscrim                                           String                         @db.VarChar(4)
+  displayDiscord                                           Boolean
   timeCreated                                              Int
   permissions                                              String
   accountStatus                                            users_accountStatus            @default(Active)

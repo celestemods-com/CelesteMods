@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import { general_feedback_submissions_status, goldens_goldenList, maps_side, users_accountStatus, mods_type, ratings_quality } from '.prisma/client';
+import { general_feedback_submissions_status, goldens_goldenList, maps_side, mods_type, ratings_quality } from '.prisma/client';
 
 
 declare global {
-  type reqDifficulty = { 
+  type reqDifficulty = {
     id?: number;
     name?: string;
     description?: string | null;
@@ -131,19 +131,17 @@ declare global {
     defaultDifficultyID?: number;
   };
   type reqUser = {
-    id?: number;
     displayName?: string;
-    discordID?: string;
-    timeCreated?: number;
-    permissions?: string;
-    accountStatus?: users_accountStatus;
-    timeDeletedOrBanned?: number | null;
+    displayDiscord?: boolean;
+    gamebananaIDs?: number[];
+    goldenPlayerID?: number;
   };
-
 
   namespace Express {
     interface Request {
       id: number;
+      id2?: number;
+      idsMatch?: boolean;
       valid?: boolean;
       difficulty?: reqDifficulty;
       gfSubmission?: reqGFSubmission;
@@ -161,7 +159,6 @@ declare global {
       mapReviews?: reqMapReview[];
       rating?: reqRating;
       tech?: reqTech;
-      user?: reqUser;
     }
   }
 
@@ -174,4 +171,4 @@ declare global {
 
 type expressRouteTypes = (req: Request, res: Response, next: NextFunction) => Promise<void>;
 type expressErrorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => void;
-export {expressRouteTypes, expressErrorHandler};
+export { expressRouteTypes, expressErrorHandler };
