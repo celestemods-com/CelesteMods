@@ -1,14 +1,13 @@
 import express from "express";
 import axios from "axios";
 import ajvModule from "ajv";
-import { isNumberArray } from "../utils";
-import { users, users_accountStatus } from ".prisma/client";
-import { errorWithMessage, isErrorWithMessage, toErrorWithMessage } from "../errorHandling";
-import { expressRouteTypes, expressErrorHandler } from "../types/express";
-import { formattedUser } from "../types/frontend";
 import { prisma } from "../prismaClient";
-import { discordUser } from "../types/discord";
+import { errorWithMessage, isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler } from "../errorHandling";
+import { users } from ".prisma/client";
+import { formattedUser } from "../types/frontend";
 import { createUserData, updateUserData, rawUser } from "../types/internal";
+import { discordUser } from "../types/discord";
+import { isNumberArray } from "../utils";
 
 
 const router = express.Router();
@@ -22,6 +21,7 @@ const postSchema = {
         discordTokenType: { type: "string" },
         displayName: {
             type: "string",
+            minLength: 1,
             maxLength: 50,
         },
         displayDiscord: { type: "boolean" },
@@ -40,6 +40,7 @@ const patchSchema = {
     properties: {
         displayName: {
             type: "string",
+            minLength: 1,
             maxLength: 50,
         },
         displayDiscord: { type: "boolean" },
@@ -66,10 +67,98 @@ const validatePut = ajv.compile(putSchema);
 
 
 
+router.param("userID", async function (req, res, next) {
+    const idRaw: unknown = req.params.userID;
+
+    const id = Number(idRaw);
+
+    if (isNaN(id)) {
+        res.status(400).json("userID is not a number");
+        return;
+    }
+
+    const userFromId = await prisma.users.findUnique({ where: { id: id } });
+    if (!userFromId) {
+        res.status(404).json("userID does not exist");
+        return;
+    }
+
+    if (userFromId.accountStatus === "Active") {
+        req.valid = true;
+    }
+    else {
+        req.valid = false;
+    }
+
+    req.id = id;
+    next();
+});
+
+
+
+
+router.param("gamebananaID", async function (req, res, next) {
+    try {
+        const idRaw: unknown = req.params.gamebananaID;
+
+        const id = Number(idRaw);
+
+        if (isNaN(id)) {
+            res.status(400).json("gamebananaID is not a number");
+            return;
+        }
+
+        const publisherFromId = await prisma.publishers.findUnique({ where: { gamebananaID: id } });
+        if (!publisherFromId) {
+            res.status(404).json("gamebananaID does not exist");
+            return;
+        }
+
+        const matchingUsers = await prisma.users.findMany({
+            where: {
+                OR: [
+                    { id: req.id },
+                    { publishers: { some: { gamebananaID: id } } },
+                ]
+            },
+            include: { publishers: true },
+        });
+
+        if (matchingUsers.length > 1) { //length cannot be 0. the userID has already been checked as valid, so at least 1 user will be returned
+            if (matchingUsers.length > 2) {
+                console.log(`gamebananaID ${id} is associated with multiple publishers`);
+            }
+
+            req.valid, req.idsMatch = false;
+        }
+        else {
+            req.valid = true;
+
+            req.idsMatch = false;
+
+            for (const publisher of matchingUsers[0].publishers) {
+                if (publisher.gamebananaID === id) {
+                    req.idsMatch = true;
+                    break;
+                }
+            }
+        }
+
+        req.id2 = id;
+        next();
+    }
+    catch (error) {
+        next(error);
+    }
+});
+
+
+
+
 router.route("/")
     .get(async function (_req, res, next) {
         try {
-            const users: users[] = await prisma.users.findMany({
+            const users = await prisma.users.findMany({
                 include: {
                     publishers: { select: { gamebananaID: true } },
                     golden_players: { select: { id: true } },
@@ -203,29 +292,151 @@ router.route("/")
 
 
 
-router.param("userID", async function (req, res, next) {
-    const idRaw: unknown = req.params.userID;
+router.route("/search")
+    .get(async function (req, res, next) {
+        try {
+            const query = req.query.name;
+    
+            if (typeof (query) != "string") {
+                res.sendStatus(400);
+                return;
+            }
+    
 
-    if (idRaw === "search") {
-        return searchFunction(req, res, next);
-    }
+            const rawUsers = await prisma.users.findMany({
+                where: { displayName: { startsWith: query } },
+                include: {
+                    publishers: true,
+                    golden_players: true,
+                },
+            });
+    
 
-    const id = Number(idRaw);
+            const formattedUsers: formattedUser[] = [];
+    
+            for (const rawUser of rawUsers) {
+                const formattedUser = formatUser(rawUser);
+    
+                if (isErrorWithMessage(formattedUser)) throw formattedUser;
+    
+                formattedUsers.push(formattedUser);
+            }
+    
+            
+            res.json(formattedUsers);
+        }
+        catch (error) {
+            next(error);
+        }
+    })
+    .all(function (_req, res, next) {
+        try{
+            res.sendStatus(405);
+        }
+        catch (error) {
+            next(error);
+        }
+    });
 
-    if (isNaN(id)) {
-        res.status(400).json("userID is not a number");
-        return;
-    }
 
-    const exists = await prisma.users.findUnique({ where: { id: id } });
-    if (!exists) {
-        res.status(404).json("userID does not exist");
-        return;
-    }
 
-    req.id = id;
-    next();
-});
+
+router.route("/gamebanana/:gamebananaID")
+    .get(async function (req, res, next) {
+        try{
+            const rawUser = await prisma.users.findFirst({
+                where: { publishers: { some: { gamebananaID: req.id2 } } },
+                include: {
+                    publishers: true,
+                    golden_players: true,
+                }
+            });
+
+
+            if (!rawUser) {
+                res.sendStatus(204);
+                return;
+            }
+
+
+            const formattedUser = formatUser(rawUser);
+
+            if (isErrorWithMessage(formattedUser)) throw formattedUser;
+
+            
+            res.status(200).json(formattedUser);
+        }
+        catch (error) {
+            next(error);
+        }
+    })
+    .all(function (_req, res, next) {
+        try{
+            res.sendStatus(405);
+        }
+        catch (error) {
+            next(error);
+        }
+    });
+
+
+
+
+router.route("/:userID/gamebanana/:gamebananaID")
+    .post(async function (req, res, next) {
+        try {
+            if (!req.valid) {
+                res.status(400).json("gamebananaID already linked to another user");
+                return;
+            }
+
+            if (!req.idsMatch) {
+                const gamebananaID = <number>req.id2; //can cast as "number" because the router.param already checked that the id is valid
+
+                await prisma.users.update({
+                    where: { id: req.id },
+                    data: {
+                        publishers: {
+                            connectOrCreate: {
+                                where: { gamebananaID: gamebananaID },
+                                create: { gamebananaID: gamebananaID },
+                            }
+                        },
+                    },
+                });
+            }
+
+            res.sendStatus(204);
+        }
+        catch (error) {
+            next(error);
+        }
+    })
+    .delete(async function (req, res, next) {
+        try {
+            if (!req.valid) {
+                res.status(400).json("gamebananaID linked to a different user");
+                return;
+            }
+
+            if (!req.idsMatch) {
+                res.status(400).json("gamebananaID not linked to specified user");
+                return;
+            }
+
+            await prisma.users.update({
+                where: { id: req.id },
+                data: { publishers: { disconnect: { gamebananaID: req.id2 } } },
+            });
+
+            res.sendStatus(204);
+        }
+        catch (error) {
+            next(error);
+        }
+    });
+
+
 
 
 router.route("/:userID")
@@ -242,7 +453,7 @@ router.route("/:userID")
 
             const formattedUser = formatUser(rawUser);
 
-            if (isErrorWithMessage(formattedUser)) throw formatUser;
+            if (isErrorWithMessage(formattedUser)) throw formattedUser;
 
             res.status(200).json(formattedUser);
         }
@@ -252,10 +463,10 @@ router.route("/:userID")
     })
     .patch(async function (req, res, next) {
         try {
-            let displayName: string | undefined = req.body.displayName;
-            let displayDiscord: boolean | undefined = req.body.displayDiscord;
-            let gamebananaIDsArray: number[] | undefined = req.body.gamebananaIDs;
-            let goldenPlayerID: number | undefined = req.body.goldenPlayerID;
+            const displayName: string | undefined = req.body.displayName;
+            const displayDiscord: boolean | undefined = req.body.displayDiscord;
+            const gamebananaIDsArray: number[] | undefined = req.body.gamebananaIDs;
+            const goldenPlayerID: number | undefined = req.body.goldenPlayerID;
 
             const valid = validatePatch({
                 displayName: displayName,
@@ -269,10 +480,8 @@ router.route("/:userID")
                 return;
             }
 
-
-            const userFromId = <users>await prisma.users.findUnique({ where: { id: req.id } }); //can cast as "users" because the router.param already checked that the id is valid
             
-            if (userFromId.accountStatus != "Active") {
+            if (!req.valid) {
                 res.status(403).json("Deleted or banned accounts cannot be updated");
                 return;
             }
@@ -397,7 +606,7 @@ router.route("/:userID")
         catch (error) {
             next(error);
         }
-    })
+    });
 
 
 
@@ -514,118 +723,6 @@ router.route("/:userID/ban")
 
 
 
-router.param("gamebananaID", async function (req, res, next) {
-    try {
-        const idRaw: unknown = req.params.gamebananaID;
-
-        const id = Number(idRaw);
-
-        if (isNaN(id)) {
-            res.status(400).json("gamebananaID is not a number");
-            return;
-        }
-
-        const publisherFromId = await prisma.publishers.findUnique({ where: { gamebananaID: id } });
-        if (!publisherFromId) {
-            res.status(404).json("gamebananaID does not exist");
-            return;
-        }
-
-        const matchingUsers = await prisma.users.findMany({
-            where: {
-                OR: [
-                    { id: req.id },
-                    { publishers: { some: { gamebananaID: id } } },
-                ]
-            },
-            include: { publishers: true },
-        });
-
-        if (matchingUsers.length > 1) { //length cannot be 0. the userID has already been checked as valid, so at least 1 user will be returned
-            if (matchingUsers.length > 2) {
-                console.log(`gamebananaID ${id} is associated with multiple publishers`);
-            }
-
-            req.valid, req.idsMatch = false;
-        }
-        else {
-            req.valid = true;
-
-            req.idsMatch = false;
-
-            for (const publisher of matchingUsers[0].publishers) {
-                if (publisher.gamebananaID === id) {
-                    req.idsMatch = true;
-                    break;
-                }
-            }
-        }
-
-        req.id2 = id;
-        next();
-    }
-    catch (error) {
-        next(error);
-    }
-})
-
-router.route("/:userID/gamebanana/:gamebananaID")
-    .post(async function (req, res, next) {
-        try {
-            if (!req.valid) {
-                res.status(400).json("gamebananaID already linked to another user");
-                return;
-            }
-
-            if (!req.idsMatch) {
-                const gamebananaID = <number>req.id2; //can cast as "number" because the router.param already checked that the id is valid
-
-                await prisma.users.update({
-                    where: { id: req.id },
-                    data: {
-                        publishers: {
-                            connectOrCreate: {
-                                where: { gamebananaID: gamebananaID },
-                                create: { gamebananaID: gamebananaID },
-                            }
-                        },
-                    },
-                });
-            }
-
-            res.sendStatus(204);
-        }
-        catch (error) {
-            next(error);
-        }
-    })
-    .delete(async function (req, res, next) {
-        try {
-            if (!req.valid) {
-                res.status(400).json("gamebananaID linked to a different user");
-                return;
-            }
-
-            if (!req.idsMatch) {
-                res.status(400).json("gamebananaID not linked to specified user");
-                return;
-            }
-
-            await prisma.users.update({
-                where: { id: req.id },
-                data: { publishers: { disconnect: { gamebananaID: req.id2 } } },
-            });
-
-            res.sendStatus(204);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
-
-
-
-
 router.route("/:userID/permissions")
     .get(async function (req, res, next) {
         try{
@@ -698,64 +795,14 @@ router.route("/:userID/submissions/feedback")
         catch (error) {
             next(error);
         }
-    })
-
-
-
-
-router.use(function (_req, _res, next) {
-    const error = new Error("Not Found");
-    error.status = 404;
-    next(error);
-});
-
-
-router.use(<expressErrorHandler>function (error, _req, res, _next) {
-    console.log(error.message);
-    res.status(error.status || 500).send({
-        error: {
-            status: error.status || 500,
-            message: "Something went wrong",
-        },
     });
-});
 
 
 
 
-const searchFunction = <expressRouteTypes>async function (req, res, next) {
-    try {
-        const query: string = <string>req.query.name;
+router.use(noRouteError);
 
-        if (typeof (query) != "string") {
-            res.sendStatus(400);
-            return;
-        }
-
-        const rawUsers = await prisma.users.findMany({
-            where: { displayName: { startsWith: query } },
-            include: {
-                publishers: true,
-                golden_players: true,
-            },
-        });
-
-        const formattedUsers: formattedUser[] = [];
-
-        for (const rawUser of rawUsers) {
-            const formattedUser = formatUser(rawUser);
-
-            if (isErrorWithMessage(formattedUser)) throw formattedUser;
-
-            formattedUsers.push(formattedUser);
-        }
-
-        res.json(formattedUsers);
-    }
-    catch (error) {
-        next(error);
-    }
-}
+router.use(errorHandler);
 
 
 

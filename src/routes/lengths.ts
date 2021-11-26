@@ -1,8 +1,9 @@
 import express from "express";
-import { expressRouteTypes, expressErrorHandler } from "../types/express";
 import ajvModule from "ajv";
-import { map_lengths } from "@prisma/client";
 import { prisma } from "../prismaClient";
+import { noRouteError, errorHandler } from "../errorHandling";
+import { expressRouteTypes } from "../types/express"    //leaving this here keeps ts-node happy for some reason. tsc doesnt care
+import { map_lengths } from "@prisma/client";
 
 
 const router = express.Router();
@@ -15,10 +16,12 @@ const postSchema = {
     properties: {
         name: {
             type: "string",
+            minLength: 1,
             maxLength: 20,
         },
         description: {
             type: "string",
+            minLength: 1,
             maxLength: 100,
         },
         order: { type: "integer" },
@@ -31,10 +34,12 @@ const patchSchema = {
     properties: {
         name: {
             type: "string",
+            minLength: 1,
             maxLength: 20,
         },
         description: {
             type: "string",
+            minLength: 1,
             maxLength: 100,
         },
         order: { type: "integer" },
@@ -114,12 +119,39 @@ router.route("/")
 
 
 
+router.route("/search")
+    .get(async function (req, res, next) {
+        const query: string = <string> req.query.name;
+    
+        if (typeof (query) != "string") {
+            res.sendStatus(400);
+            return;
+        }
+    
+        try {
+            const length = await prisma.map_lengths.findMany({
+                where: { name: { startsWith: query } }
+            });
+            res.json(length);
+        }
+        catch (error) {
+            next(error);
+        }
+    })
+    .all(function (_req, res, next) {
+        try{
+            res.sendStatus(405);
+        }
+        catch (error) {
+            next(error);
+        }
+    });
+
+
+
+
 router.param("id", function (req, res, next) {
     const idRaw: unknown = req.params.id;
-
-    if (idRaw === "search") {
-        return searchFunction(req, res, next);
-    }
 
     const id: number = Number(idRaw);
     if (isNaN(id)) {
@@ -179,43 +211,8 @@ router.route("/:id")
 
 
 
-const searchFunction = <expressRouteTypes>async function (req, res, next) {
-    const query: string = <string> req.query.name;
+router.use(noRouteError);
 
-    if (typeof (query) != "string") {
-        res.sendStatus(400);
-        return;
-    }
-
-    try {
-        const length = await prisma.map_lengths.findMany({
-            where: { name: { startsWith: query } }
-        });
-        res.json(length);
-    }
-    catch (error) {
-        next(error);
-    }
-}
-
-
-
-
-router.use(function (_req, _res, next) {
-    const error = new Error("Not Found");
-    error.status = 404;
-    next(error);
-});
-
-
-router.use(<expressErrorHandler>function (error, _req, res, _next) {
-    console.log(error.message);
-    res.status(error.status || 500).send({
-        error: {
-            status: error.status || 500,
-            message: "Something went wrong",
-        },
-    });
-});
+router.use(errorHandler);
 
 export { router as lengthsRouter };

@@ -8,27 +8,27 @@ datasource db {
 }
 
 model difficulties {
-  id                                                        Int                    @id @default(autoincrement()) @db.UnsignedSmallInt
-  name                                                      String                 @db.VarChar(50)
-  description                                               String?                @db.VarChar(100)
-  difficultyOrder                                           Int                    @db.UnsignedTinyInt
-  parentDifficultyID                                        Int?                   @db.UnsignedSmallInt
-  defaultDifficultyBool                                     Boolean
-  maps_difficultiesTomaps_assignedDifficultyID              maps[]                 @relation("difficultiesTomaps_assignedDifficultyID")
-  maps_difficultiesTomaps_modDifficultyID                   maps[]                 @relation("difficultiesTomaps_modDifficultyID")
-  mods_to_difficulties                                      mods_to_difficulties[]
-  ratings_difficultiesToratings_gameplayDefaultDifficultyID ratings[]              @relation("difficultiesToratings_gameplayDefaultDifficultyID")
-  ratings_difficultiesToratings_techDefaultDifficultyID     ratings[]              @relation("difficultiesToratings_techDefaultDifficultyID")
+  id                                                        Int         @id @default(autoincrement()) @db.UnsignedSmallInt
+  name                                                      String      @db.VarChar(50)
+  description                                               String?     @db.VarChar(100)
+  parentModID                                               Int?        @db.UnsignedSmallInt
+  parentDifficultyID                                        Int?        @db.UnsignedSmallInt
+  order                                                     Int         @db.UnsignedTinyInt
+  mods                                                      mods?       @relation(fields: [parentModID], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "difficulties_ibfk_1")
+  maps_difficultiesTomaps_assignedDifficultyID              maps[]      @relation("difficultiesTomaps_assignedDifficultyID")
+  maps_difficultiesTomaps_modDifficultyID                   maps[]      @relation("difficultiesTomaps_modDifficultyID")
+  ratings_difficultiesToratings_gameplayDefaultDifficultyID ratings[]   @relation("difficultiesToratings_gameplayDefaultDifficultyID")
+  ratings_difficultiesToratings_techDefaultDifficultyID     ratings[]   @relation("difficultiesToratings_techDefaultDifficultyID")
   tech_list                                                 tech_list[]
 
-  @@index([defaultDifficultyBool, difficultyOrder], map: "defaultDifficulties")
+  @@unique([parentModID, parentDifficultyID, order], map: "difficultiesByMod")
 }
 
 model general_feedback_submissions {
   id                     Int                                 @id @default(autoincrement()) @db.UnsignedMediumInt
   feedback               String                              @db.VarChar(3000)
-  status                 general_feedback_submissions_status
-  hiddenVotesBool        Boolean
+  status                 general_feedback_submissions_status @default(Active)
+  hiddenVotesBool        Boolean                             @default(false)
   timeSubmitted          Int
   submittedBy            Int                                 @db.UnsignedSmallInt
   users                  users                               @relation(fields: [submittedBy], references: [id], onUpdate: Restrict, map: "general_feedback_submissions_ibfk_1")
@@ -52,7 +52,7 @@ model golden_players {
   id          Int           @id @default(autoincrement()) @db.UnsignedSmallInt
   name        String        @db.VarChar(100)
   userID      Int?          @unique(map: "userID") @db.UnsignedSmallInt
-  users       users?        @relation(fields: [userID], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "golden_players_ibfk_1")
+  users       users?        @relation(fields: [userID], references: [id], onUpdate: Restrict, map: "golden_players_ibfk_1")
   golden_runs golden_runs[]
 }
 
@@ -197,32 +197,22 @@ model maps_to_tech {
 }
 
 model mods {
-  id                   Int                    @id @default(autoincrement()) @db.UnsignedSmallInt
-  type                 mods_type              @default(Normal)
-  name                 String                 @db.VarChar(200)
-  publisherID          Int                    @db.UnsignedSmallInt
-  contentWarning       Boolean                @default(false)
-  notes                String?                @db.VarChar(500)
-  shortDescription     String?                @db.VarChar(500)
-  longDescription      String?                @db.VarChar(1500)
-  gamebananaModID      Int                    @db.UnsignedMediumInt
-  publishers           publishers             @relation(fields: [publisherID], references: [id], onUpdate: Restrict, map: "mods_ibfk_1")
-  maps                 maps[]
-  mods_to_difficulties mods_to_difficulties[]
-  mods_to_submissions  mods_to_submissions[]
+  id                  Int                   @id @default(autoincrement()) @db.UnsignedSmallInt
+  type                mods_type             @default(Normal)
+  name                String                @db.VarChar(200)
+  publisherID         Int                   @db.UnsignedSmallInt
+  contentWarning      Boolean               @default(false)
+  notes               String?               @db.VarChar(500)
+  shortDescription    String?               @db.VarChar(500)
+  longDescription     String?               @db.VarChar(1500)
+  gamebananaModID     Int                   @db.UnsignedMediumInt
+  publishers          publishers            @relation(fields: [publisherID], references: [id], onUpdate: Restrict, map: "mods_ibfk_1")
+  difficulties        difficulties[]
+  maps                maps[]
+  mods_to_submissions mods_to_submissions[]
 
   @@index([contentWarning], map: "contentWarning")
   @@index([publisherID], map: "publisherID")
-}
-
-model mods_to_difficulties {
-  modID        Int          @db.UnsignedSmallInt
-  difficultyID Int          @db.UnsignedSmallInt
-  difficulties difficulties @relation(fields: [difficultyID], references: [id], onUpdate: Restrict, map: "mods_to_difficulties_ibfk_1")
-  mods         mods         @relation(fields: [modID], references: [id], onUpdate: Restrict, map: "mods_to_difficulties_ibfk_2")
-
-  @@id([modID, difficultyID])
-  @@index([difficultyID], map: "difficultyID")
 }
 
 model mods_to_submissions {
@@ -239,7 +229,7 @@ model publishers {
   id           Int    @id @default(autoincrement()) @db.UnsignedSmallInt
   gamebananaID Int    @unique(map: "gamebananaID") @db.UnsignedMediumInt
   userID       Int?   @db.UnsignedSmallInt
-  users        users? @relation(fields: [userID], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "publishers_ibfk_1")
+  users        users? @relation(fields: [userID], references: [id], onUpdate: Restrict, map: "publishers_ibfk_1")
   mods         mods[]
 
   @@index([userID], map: "userID")

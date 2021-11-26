@@ -1,3 +1,27 @@
+import { Request, Response, NextFunction } from "express";
+
+declare global {
+    interface Error {
+        status?: number;
+    }
+}
+
+const noRouteError = function (_req: Request, _res: Response, next: NextFunction) {
+    const error = new Error("Not Found");
+    error.status = 404;
+    next(error);
+}
+
+const errorHandler = function (error: Error, _req: Request, res: Response, _next: NextFunction) {
+    console.log(error.message);
+    res.status(error.status || 500).send({
+        message: "Something went wrong"
+    });
+}
+
+
+
+
 interface errorWithMessage {
     message: string;
 }
@@ -22,4 +46,4 @@ const toErrorWithMessage = function (maybeError: unknown): errorWithMessage {
     }
 }
 
-export { errorWithMessage, isErrorWithMessage, toErrorWithMessage };
+export { errorWithMessage, isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler };

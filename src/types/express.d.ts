@@ -1,15 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
-import { general_feedback_submissions_status, goldens_goldenList, maps_side, mods_type, ratings_quality } from '.prisma/client';
+import { difficulties, general_feedback_submissions_status, goldens_goldenList, maps_side, mods_type, ratings_quality } from '.prisma/client';
 
 
 declare global {
   type reqDifficulty = {
     id?: number;
     name?: string;
-    description?: string | null;
-    difficultyOrder?: number;
+    description?: string;
+    parentModID?: number | null;
     parentDifficultyID?: number | null;
-    defaultDifficultyBool?: boolean;
+    order?: number | null;
   };
   type reqGFSubmission = {
     id?: number;
@@ -139,11 +139,11 @@ declare global {
 
   namespace Express {
     interface Request {
-      id: number;
+      id?: number;
       id2?: number;
       idsMatch?: boolean;
       valid?: boolean;
-      difficulty?: reqDifficulty;
+      difficulty?: difficulties;
       gfSubmission?: reqGFSubmission;
       gfVote?: reqGFVote;
       golden?: reqGolden;
@@ -161,14 +161,9 @@ declare global {
       tech?: reqTech;
     }
   }
-
-  interface Error {
-    status?: number;
-  }
 }
 
 
 
 type expressRouteTypes = (req: Request, res: Response, next: NextFunction) => Promise<void>;
-type expressErrorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => void;
-export { expressRouteTypes, expressErrorHandler };
+export { expressRouteTypes };
