@@ -810,11 +810,13 @@ router.use(errorHandler);
 const formatUser = function (rawUser: rawUser): formattedUser | errorWithMessage {
     try {
         if (rawUser.accountStatus === "Deleted" || rawUser.accountStatus === "Banned") {
+            const timeDeletedOrBanned = rawUser.timeDeletedOrBanned === null ? undefined : rawUser.timeDeletedOrBanned;
+
             const trimmedUser: formattedUser = {
                 id: rawUser.id,
                 displayName: rawUser.displayName,
                 accountStatus: rawUser.accountStatus,
-                timeDeletedOrBanned: rawUser.timeDeletedOrBanned,
+                timeDeletedOrBanned: timeDeletedOrBanned,
             }
             return trimmedUser;
         }

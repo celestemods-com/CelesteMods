@@ -7,7 +7,7 @@ interface formattedUser {
   timeCreated?: number;
   permissions?: string;
   accountStatus: string;
-  timeDeletedOrBanned?: number | null;
+  timeDeletedOrBanned?: number;
   gamebananaIDs?: number[];
   goldenPlayerID?: number;
 }
