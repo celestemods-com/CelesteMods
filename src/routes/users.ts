@@ -296,12 +296,12 @@ router.route("/search")
     .get(async function (req, res, next) {
         try {
             const query = req.query.name;
-    
+
             if (typeof (query) != "string") {
                 res.sendStatus(400);
                 return;
             }
-    
+
 
             const rawUsers = await prisma.users.findMany({
                 where: { displayName: { startsWith: query } },
@@ -310,19 +310,19 @@ router.route("/search")
                     golden_players: true,
                 },
             });
-    
+
 
             const formattedUsers: formattedUser[] = [];
-    
+
             for (const rawUser of rawUsers) {
                 const formattedUser = formatUser(rawUser);
-    
+
                 if (isErrorWithMessage(formattedUser)) throw formattedUser;
-    
+
                 formattedUsers.push(formattedUser);
             }
-    
-            
+
+
             res.json(formattedUsers);
         }
         catch (error) {
@@ -330,7 +330,7 @@ router.route("/search")
         }
     })
     .all(function (_req, res, next) {
-        try{
+        try {
             res.sendStatus(405);
         }
         catch (error) {
@@ -343,7 +343,7 @@ router.route("/search")
 
 router.route("/gamebanana/:gamebananaID")
     .get(async function (req, res, next) {
-        try{
+        try {
             const rawUser = await prisma.users.findFirst({
                 where: { publishers: { some: { gamebananaID: req.id2 } } },
                 include: {
@@ -363,7 +363,7 @@ router.route("/gamebanana/:gamebananaID")
 
             if (isErrorWithMessage(formattedUser)) throw formattedUser;
 
-            
+
             res.status(200).json(formattedUser);
         }
         catch (error) {
@@ -371,7 +371,7 @@ router.route("/gamebanana/:gamebananaID")
         }
     })
     .all(function (_req, res, next) {
-        try{
+        try {
             res.sendStatus(405);
         }
         catch (error) {
@@ -480,7 +480,7 @@ router.route("/:userID")
                 return;
             }
 
-            
+
             if (!req.valid) {
                 res.status(403).json("Deleted or banned accounts cannot be updated");
                 return;
@@ -725,9 +725,9 @@ router.route("/:userID/ban")
 
 router.route("/:userID/permissions")
     .get(async function (req, res, next) {
-        try{
+        try {
             const userFromId = <users>await prisma.users.findUnique({ where: { id: req.id } });    //can cast as "users" because the router.param already checked that the id is valid
-            
+
             res.status(200).json(userFromId.permissions);
         }
         catch (error) {

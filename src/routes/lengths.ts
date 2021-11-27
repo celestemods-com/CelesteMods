@@ -118,12 +118,12 @@ router.route("/")
 router.route("/search")
     .get(async function (req, res, next) {
         const query = req.query.name;
-    
+
         if (typeof (query) != "string") {
             res.sendStatus(400);
             return;
         }
-    
+
         try {
             const length = await prisma.map_lengths.findMany({
                 where: { name: { startsWith: query } }
@@ -135,7 +135,7 @@ router.route("/search")
         }
     })
     .all(function (_req, res, next) {
-        try{
+        try {
             res.sendStatus(405);
         }
         catch (error) {

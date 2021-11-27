@@ -94,7 +94,7 @@ router.route("/")
                 res.status(404).json(matchingDifficulty);
                 return;
             }
-            
+
             if (matchingDifficulty) {
                 res.status(200).json(["difficulty already exists", matchingDifficulty]);
                 return;
@@ -135,7 +135,7 @@ router.route("/default")
         }
     })
     .all(function (_req, res, next) {
-        try{
+        try {
             res.sendStatus(405);
         }
         catch (error) {
@@ -161,7 +161,7 @@ router.route("/default/parent")
         }
     })
     .all(function (_req, res, next) {
-        try{
+        try {
             res.sendStatus(405);
         }
         catch (error) {
@@ -187,7 +187,7 @@ router.route("/default/sub")
         }
     })
     .all(function (_req, res, next) {
-        try{
+        try {
             res.sendStatus(405);
         }
         catch (error) {
@@ -202,15 +202,15 @@ router.route("/search")
     .get(async function (req, res, next) {
         try {
             const query = req.query.name;
-    
+
             if (typeof (query) != "string") {
                 res.sendStatus(400);
                 return;
             }
-    
+
 
             const difficulty = await prisma.difficulties.findMany({ where: { name: { startsWith: query } } });
-    
+
 
             res.json(difficulty);
         }
@@ -219,7 +219,7 @@ router.route("/search")
         }
     })
     .all(function (_req, res, next) {
-        try{
+        try {
             res.sendStatus(405);
         }
         catch (error) {
@@ -232,15 +232,15 @@ router.route("/search/mod")
     .get(async function (req, res, next) {
         try {
             const query = req.query.name;
-    
+
             if (typeof (query) != "string") {
                 res.sendStatus(400);
                 return;
             }
-    
+
 
             const difficulty = await prisma.difficulties.findMany({ where: { mods: { name: { startsWith: query } } } });
-    
+
 
             res.json(difficulty);
         }
@@ -249,7 +249,7 @@ router.route("/search/mod")
         }
     })
     .all(function (_req, res, next) {
-        try{
+        try {
             res.sendStatus(405);
         }
         catch (error) {
@@ -263,20 +263,20 @@ router.route("/search/mod")
 router.param("modID", async function (req, res, next) {
     try {
         const idRaw: unknown = req.params.modID;
-    
+
         const id = Number(idRaw);
-    
+
         if (isNaN(id)) {
             res.status(400).json("modID is not a number");
             return;
         }
-    
+
         const exists = await prisma.mods.findUnique({ where: { id: id } });
         if (!exists) {
             res.status(404).json("modID does not exist");
             return;
         }
-    
+
         req.id2 = id;
         next();
     }
@@ -290,7 +290,7 @@ router.route("/mod/:modID")
     .get(async function (req, res, next) {
         try {
             const difficulty = await prisma.difficulties.findMany({ where: { parentModID: req.id2 } });
-    
+
 
             res.json(difficulty);
         }
@@ -305,14 +305,14 @@ router.route("/mod/:modID")
 router.param("diffID", async function (req, res, next) {
     try {
         const idRaw: unknown = req.params.diffID;
-    
+
         const id = Number(idRaw);
-    
+
         if (isNaN(id)) {
             res.status(400).json("difficultyID is not a number");
             return;
         }
-    
+
 
         const difficultyFromId = await prisma.difficulties.findUnique({ where: { id: id } });
 
@@ -320,7 +320,7 @@ router.param("diffID", async function (req, res, next) {
             res.status(404).json("difficultyID does not exist");
             return;
         }
-    
+
 
         req.difficulty = difficultyFromId;
         req.id = id;
@@ -374,7 +374,7 @@ router.route("/:diffID")
                 res.status(404).json(matchingDifficulty);
                 return;
             }
-            
+
             if (matchingDifficulty) {
                 res.status(200).json(["difficulty already exists", matchingDifficulty]);
                 return;
@@ -442,7 +442,7 @@ router.route("/:diffID/sub")
         catch (error) {
             next(error)
         }
-    })
+    });
 
 
 
@@ -477,7 +477,7 @@ const validateDifficulty = async function (id: number, parentModId: number | nul
         parentDifficultyID: parentDifficultyId,
         order: order,
     }
-    
+
     const matchingDifficulty = await prisma.difficulties.findFirst({ where: whereObject });
 
     return matchingDifficulty;
