@@ -6,10 +6,8 @@ declare global {
     }
 }
 
-const noRouteError = function (_req: Request, _res: Response, next: NextFunction) {
-    const error = new Error("Not Found");
-    error.status = 404;
-    next(error);
+const noRouteError = function (_req: Request, res: Response, _next: NextFunction) {
+    res.status(404).json("Route not found");
 }
 
 const errorHandler = function (error: Error, _req: Request, res: Response, _next: NextFunction) {
