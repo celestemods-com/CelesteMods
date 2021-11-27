@@ -1,10 +1,9 @@
-import express, { Request } from "express";
+import express from "express";
 import ajvModule from "ajv";
 import { prisma } from "../prismaClient";
-import { errorWithMessage, isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler } from "../errorHandling";
-import { expressRouteTypes } from "../types/express";
+import { noRouteError, errorHandler } from "../errorHandling";
 import { difficulties } from ".prisma/client";
-import { createDifficultyData, updateDifficultyData } from "../types/internal";
+import { createDifficultyData } from "../types/internal";
 
 
 const router = express.Router();
@@ -71,8 +70,8 @@ router.route("/")
         try {
             const name: string = req.body.name;         //can't be null after validatePost call
             const description: string | null = req.body.description;
-            const parentModID: number | null = req.body.parentModID != 0 ? req.body.parentModID : null;
-            const parentDifficultyID: number | null = req.body.parentDifficultyID != 0 ? req.body.parentDifficultyID : null;
+            const parentModID: number | null = req.body.parentModID === 0 ? null : req.body.parentModID;
+            const parentDifficultyID: number | null = req.body.parentDifficultyID === 0 ? null : req.body.parentDifficultyID;
             const order: number = req.body.order;       //can't be null after validatePost call
 
             const valid = validatePost({
@@ -349,10 +348,10 @@ router.route("/:diffID")
             const difficultyFromId = <difficulties>req.difficulty;   //can cast as 'difficulties' because the router.param already checked that the id is valid
 
             const id: number = difficultyFromId.id;
-            const name: string | undefined = req.body.name != null ? req.body.name : undefined;
-            const description: string | undefined = req.body.description != null ? req.body.description : undefined;
-            const parentModID: number | null = req.body.parentModID == undefined ? difficultyFromId.parentModID : (req.body.parentModID != 0 ? req.body.parentModID : null);
-            const parentDifficultyID: number | null = req.body.parentDifficultyID == undefined ? difficultyFromId.parentDifficultyID : (req.body.parentDifficultyID != 0 ? req.body.parentDifficultyID : null);
+            const name: string | undefined = req.body.name;
+            const description: string | undefined = req.body.description;
+            const parentModID: number | null = req.body.parentModID === undefined ? difficultyFromId.parentModID : (req.body.parentModID === 0 ? null : req.body.parentModID);
+            const parentDifficultyID: number | null = req.body.parentDifficultyID === undefined ? difficultyFromId.parentDifficultyID : (req.body.parentDifficultyID === 0 ? null : req.body.parentDifficultyID);
             const order: number = req.body.order != null ? req.body.order : difficultyFromId.order;
 
             const valid = validatePatch({

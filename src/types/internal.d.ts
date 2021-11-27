@@ -36,13 +36,5 @@ interface createUserData {
     order: number;
   }
 
-  interface updateDifficultyData {
-    name?: string;
-    description?: string | null;
-    parentModID?: number | null;
-    parentDifficultyID?: number | null;
-    order?: number;
-  }
 
-
-  export { createUserData, updateUserData, rawUser, createDifficultyData, updateDifficultyData };
+  export { createUserData, updateUserData, rawUser, createDifficultyData };

@@ -176,8 +176,8 @@ router.route("/")
             const discordTokenType: string = req.body.discordTokenType; //can't be null after validatePost call
             const displayName: string = req.body.displayName;           //can't be null after validatePost call
             const displayDiscord: boolean = req.body.displayDiscord;    //can't be null after validatePost call
-            const gamebananaIDsArray: number[] | null = req.body.gamebananaIDs;
-            const goldenPlayerID: number | null = req.body.goldenPlayerID;
+            const gamebananaIDsArray: number[] | undefined = req.body.gamebananaIDs;
+            const goldenPlayerID: number | undefined = req.body.goldenPlayerID;
 
             const valid = validatePost({
                 discordToken: discordToken, //comment out for testing
@@ -539,8 +539,8 @@ router.route("/:userID")
     .put(async function (req, res, next) {
         try {
             //for production
-            const discordToken: string = req.body.discordToken;
-            const discordTokenType: string = req.body.discordTokenType;
+            const discordToken: string = req.body.discordToken;         //can't be undefined after validatePut
+            const discordTokenType: string = req.body.discordTokenType; //can't be undefined after validatePut
 
             const valid = validatePut({
                 discordToken: discordToken,
@@ -736,7 +736,7 @@ router.route("/:userID/permissions")
     })
     .patch(async function (req, res, next) {
         try {
-            const permissionsArray: string[] | null = req.body.permissions;
+            const permissionsArray: string[] | undefined = req.body.permissions;
 
             if (!permissionsArray) {
                 res.status(400).json("Must include 'permissions'");

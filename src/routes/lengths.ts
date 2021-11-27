@@ -54,14 +54,10 @@ const validatePatch = ajv.compile(patchSchema);
 
 
 router.use(function (req, _res, next) {
-    const name: string = req.body.name;
-    const description: string = req.body.description;
-    const order: number = req.body.order;
-
     const length: reqLength = {
-        name: name != null ? name : undefined,
-        description: description != null ? description : undefined,
-        order: order != null ? order : undefined,
+        name: req.body.name,
+        description: req.body.description,
+        order: req.body.order,
     };
 
     req.length = length;
@@ -83,7 +79,7 @@ router.route("/")
         }
     })
     .post(async function (req, res, next) {
-        const newLength = req.length as map_lengths;
+        const newLength = <map_lengths>req.length;  //none of the parameters can be undefined or null after validatePost
         const valid = validatePost(newLength);
 
         if (!valid) {
@@ -121,7 +117,7 @@ router.route("/")
 
 router.route("/search")
     .get(async function (req, res, next) {
-        const query: string = <string> req.query.name;
+        const query = req.query.name;
     
         if (typeof (query) != "string") {
             res.sendStatus(400);
