@@ -187,10 +187,11 @@ model maps_to_submissions {
 }
 
 model maps_to_tech {
-  mapID     Int       @db.UnsignedMediumInt
-  techID    Int       @db.UnsignedSmallInt
-  maps      maps      @relation(fields: [mapID], references: [id], onUpdate: Restrict, map: "maps_to_tech_ibfk_1")
-  tech_list tech_list @relation(fields: [techID], references: [id], onUpdate: Restrict, map: "maps_to_tech_ibfk_2")
+  mapID             Int       @db.UnsignedMediumInt
+  techID            Int       @db.UnsignedSmallInt
+  fullClearOnlyBool Boolean   @default(false)
+  maps              maps      @relation(fields: [mapID], references: [id], onUpdate: Restrict, map: "maps_to_tech_ibfk_1")
+  tech_list         tech_list @relation(fields: [techID], references: [id], onUpdate: Restrict, map: "maps_to_tech_ibfk_2")
 
   @@id([mapID, techID])
   @@index([techID], map: "techID")

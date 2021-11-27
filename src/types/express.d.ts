@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { difficulties, general_feedback_submissions_status, goldens_goldenList, maps_side, mods_type, ratings_quality } from '.prisma/client';
+import { rawTech } from './internal';
 
 
 declare global {
@@ -124,12 +125,6 @@ declare global {
     techDefaultDifficultyID?: number | null;
     gameplayDefaultDifficultyID?: number | null;
   };
-  type reqTech = {
-    id?: number;
-    name?: string;
-    description?: string | null;
-    defaultDifficultyID?: number;
-  };
   type reqUser = {
     displayName?: string;
     displayDiscord?: boolean;
@@ -158,7 +153,7 @@ declare global {
       review?: reqReview;
       mapReviews?: reqMapReview[];
       rating?: reqRating;
-      tech?: reqTech;
+      tech?: rawTech;
     }
   }
 }

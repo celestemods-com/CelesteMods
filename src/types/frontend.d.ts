@@ -1,3 +1,5 @@
+import { difficulties } from ".prisma/client";
+
 interface formattedUser {
   id: number;
   displayName: string;
@@ -12,4 +14,11 @@ interface formattedUser {
   goldenPlayerID?: number;
 }
 
-export { formattedUser };
+interface formattedTech {
+  id: number;
+  name: string;
+  description?: string;
+  difficulty: difficulties;
+}
+
+export { formattedUser, formattedTech };

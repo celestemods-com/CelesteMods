@@ -1,4 +1,4 @@
-import { users, publishers, golden_players, difficulties } from ".prisma/client";
+import { users, publishers, golden_players, tech_list, difficulties } from ".prisma/client";
 
 
 interface createUserData {
@@ -37,4 +37,23 @@ interface createUserData {
   }
 
 
-  export { createUserData, updateUserData, rawUser, createDifficultyData };
+
+
+  interface createTechData {
+    name: string;
+    description?: string | null;
+    difficulties: Object;
+  }
+
+  interface updateTechData {
+    name?: string;
+    description?: string | null;
+    difficulties?: Object;
+  }
+
+  interface rawTech extends tech_list {
+    difficulties: difficulties;
+  }
+
+
+  export { createUserData, updateUserData, rawUser, createDifficultyData, createTechData, updateTechData, rawTech };
