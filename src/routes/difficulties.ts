@@ -58,7 +58,7 @@ const validatePatch = ajv.compile(patchSchema);
 router.route("/")
     .get(async function (_req, res, next) {
         try {
-            const difficulties = await prisma.difficulties.findMany({});
+            const difficulties = await prisma.difficulties.findMany();
 
             res.json(difficulties);
         }
