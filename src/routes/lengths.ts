@@ -110,6 +110,14 @@ router.route("/")
         catch (error) {
             next(error);
         }
+    })
+    .all(function (_req, res, next) {
+        try {
+            res.sendStatus(405);
+        }
+        catch (error) {
+            next(error);
+        }
     });
 
 
@@ -158,6 +166,7 @@ router.param("id", function (req, res, next) {
     next();
 });
 
+
 router.route("/:id")
     .get(async function (req, res, next) {
         try {
@@ -198,6 +207,14 @@ router.route("/:id")
                 where: { id: req.id }
             });
             res.sendStatus(204);
+        }
+        catch (error) {
+            next(error);
+        }
+    })
+    .all(function (_req, res, next) {
+        try {
+            res.sendStatus(405);
         }
         catch (error) {
             next(error);

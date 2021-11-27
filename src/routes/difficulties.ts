@@ -118,6 +118,14 @@ router.route("/")
         catch (error) {
             next(error)
         }
+    })
+    .all(function (_req, res, next) {
+        try {
+            res.sendStatus(405);
+        }
+        catch (error) {
+            next(error);
+        }
     });
 
 
@@ -283,7 +291,7 @@ router.param("modID", async function (req, res, next) {
     catch (error) {
         next(error)
     }
-})
+});
 
 
 router.route("/mod/:modID")
@@ -296,6 +304,14 @@ router.route("/mod/:modID")
         }
         catch (error) {
             next(error)
+        }
+    })
+    .all(function (_req, res, next) {
+        try {
+            res.sendStatus(405);
+        }
+        catch (error) {
+            next(error);
         }
     });
 
@@ -420,6 +436,14 @@ router.route("/:diffID")
             next(error)
         }
     })
+    .all(function (_req, res, next) {
+        try {
+            res.sendStatus(405);
+        }
+        catch (error) {
+            next(error);
+        }
+    });
 
 
 
@@ -441,6 +465,14 @@ router.route("/:diffID/sub")
         }
         catch (error) {
             next(error)
+        }
+    })
+    .all(function (_req, res, next) {
+        try {
+            res.sendStatus(405);
+        }
+        catch (error) {
+            next(error);
         }
     });
 

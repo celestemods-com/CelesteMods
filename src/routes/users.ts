@@ -287,6 +287,14 @@ router.route("/")
         catch (error) {
             next(error);
         }
+    })
+    .all(function (_req, res, next) {
+        try {
+            res.sendStatus(405);
+        }
+        catch (error) {
+            next(error);
+        }
     });
 
 
@@ -430,6 +438,14 @@ router.route("/:userID/gamebanana/:gamebananaID")
             });
 
             res.sendStatus(204);
+        }
+        catch (error) {
+            next(error);
+        }
+    })
+    .all(function (_req, res, next) {
+        try {
+            res.sendStatus(405);
         }
         catch (error) {
             next(error);
@@ -606,6 +622,14 @@ router.route("/:userID")
         catch (error) {
             next(error);
         }
+    })
+    .all(function (_req, res, next) {
+        try {
+            res.sendStatus(405);
+        }
+        catch (error) {
+            next(error);
+        }
     });
 
 
@@ -667,6 +691,14 @@ router.route("/:userID/delete")
         catch (error) {
             next(error);
         }
+    })
+    .all(function (_req, res, next) {
+        try {
+            res.sendStatus(405);
+        }
+        catch (error) {
+            next(error);
+        }
     });
 
 
@@ -714,6 +746,14 @@ router.route("/:userID/ban")
             });
 
             res.sendStatus(204);
+        }
+        catch (error) {
+            next(error);
+        }
+    })
+    .all(function (_req, res, next) {
+        try {
+            res.sendStatus(405);
         }
         catch (error) {
             next(error);
@@ -778,6 +818,14 @@ router.route("/:userID/permissions")
         catch (error) {
             next(error);
         }
+    })
+    .all(function (_req, res, next) {
+        try {
+            res.sendStatus(405);
+        }
+        catch (error) {
+            next(error);
+        }
     });
 
 
@@ -791,6 +839,14 @@ router.route("/:userID/submissions/feedback")
             });
 
             res.json(feedbackObjects);
+        }
+        catch (error) {
+            next(error);
+        }
+    })
+    .all(function (_req, res, next) {
+        try {
+            res.sendStatus(405);
         }
         catch (error) {
             next(error);
