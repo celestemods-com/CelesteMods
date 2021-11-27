@@ -96,7 +96,7 @@ router.route("/")
             }
 
             if (matchingDifficulty) {
-                res.status(200).json(["difficulty already exists", matchingDifficulty]);
+                res.status(200).json(matchingDifficulty);
                 return;
             }
 
@@ -392,7 +392,7 @@ router.route("/:diffID")
             }
 
             if (matchingDifficulty) {
-                res.status(200).json(["difficulty already exists", matchingDifficulty]);
+                res.status(200).json(matchingDifficulty);
                 return;
             }
 
