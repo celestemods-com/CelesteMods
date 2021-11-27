@@ -1,5 +1,6 @@
 import cors from "cors";
 import express, { NextFunction, Request, Response } from "express";
+import { noRouteError, errorHandler } from "./errorHandling";
 const app = express();
 app.use(express.json());
 const port = process.env.PORT || "3001";
@@ -33,8 +34,7 @@ app.use("/ratings", ratingsRouter);
 app.use("/techs", techsRouter);
 app.use("/users", usersRouter);
 
-app.use(function (_req: Request, _res: Response, next: NextFunction) {
-  const error = new Error("Not Found");//@ts-ignore
-  error.status = 404;
-  next(error);
-});
+
+app.use(noRouteError);
+
+app.use(errorHandler);
