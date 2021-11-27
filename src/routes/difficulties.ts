@@ -392,7 +392,7 @@ router.route("/:diffID")
             }
 
             if (matchingDifficulty) {
-                res.status(200).json(matchingDifficulty);
+                res.status(400).json(["difficulty already exists", matchingDifficulty]);
                 return;
             }
 

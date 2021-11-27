@@ -178,15 +178,44 @@ router.route("/:id")
         }
     })
     .patch(async function (req, res, next) {
-        const reqLength = req.length;
-        const valid = validatePatch(reqLength);
-
-        if (!valid) {
-            res.status(400).json("Malformed request body");
-            return;
-        }
-
         try {
+            const reqLength = req.length;
+            const valid = validatePatch(reqLength);
+
+            if (!reqLength) throw "reqLength is undefined or null";
+
+            if (!valid) {
+                res.status(400).json("Malformed request body");
+                return;
+            }
+
+
+            let matchingLength;
+
+            if (reqLength.name) {
+                matchingLength = await prisma.map_lengths.findFirst({
+                    where: {
+                        NOT: { id: req.id },
+                        name: reqLength.name,
+                    },
+                });
+            }
+
+            if (reqLength.order && !matchingLength) {
+                matchingLength = await prisma.map_lengths.findFirst({
+                    where: {
+                        NOT: { id: req.id },
+                        order: reqLength.order,
+                    },
+                });
+            }
+
+            if (matchingLength) {
+                res.status(400).json(["Length already exists", matchingLength]);
+                return;
+            }
+
+            
             const length = await prisma.map_lengths.update({
                 where: { id: req.id },
                 data: {
@@ -195,6 +224,8 @@ router.route("/:id")
                     order: reqLength?.order
                 },
             });
+
+
             res.status(200).json(length);
         }
         catch (error) {
