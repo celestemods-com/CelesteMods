@@ -1,5 +1,5 @@
 //import cors from "cors";
-import express, { NextFunction, Request, Response } from "express";
+import express from "express";
 import { noRouteError, errorHandler } from "./errorHandling";
 const app = express();
 app.use(express.json());
@@ -7,7 +7,7 @@ const port = process.env.PORT || "3001";
 app.listen(port, () => {
     console.log(`Server Running at ${port}`);
 });
-const cors = require('cors');
+import cors from 'cors';
 app.use(cors({
     origin: '*'
 }));
