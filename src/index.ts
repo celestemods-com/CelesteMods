@@ -1,4 +1,4 @@
-import cors from "cors";
+//import cors from "cors";
 import express, { NextFunction, Request, Response } from "express";
 import { noRouteError, errorHandler } from "./errorHandling";
 const app = express();
@@ -7,6 +7,10 @@ const port = process.env.PORT || "3001";
 app.listen(port, () => {
     console.log(`Server Running at ${port}`);
 });
+const cors = require('cors');
+app.use(cors({
+    origin: '*'
+}));
 
 import { difficultiesRouter } from "./routes/difficulties";
 import { gfSubmissionsRouter, gfVotesRouter } from "./routes/generalfeedback";
