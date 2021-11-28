@@ -35,7 +35,7 @@ const postSchema = {
     required: ["discordToken", "discordTokenType", "displayName", "displayDiscord",],   //for production
     //required: ["displayName", "displayDiscord"],      //for testing
 };
-const patchSchema = {
+const patch1Schema = {
     type: "object",
     properties: {
         displayName: {
@@ -52,7 +52,7 @@ const patchSchema = {
     },
     additionalProperties: false,
 };
-const putSchema = {
+const patch2Schema = {
     type: "object",
     properties: {
         discordToken: { type: "string" },
@@ -61,8 +61,8 @@ const putSchema = {
 }
 
 const validatePost = ajv.compile(postSchema);
-const validatePatch = ajv.compile(patchSchema);
-const validatePut = ajv.compile(putSchema);
+const validatePatch1 = ajv.compile(patch1Schema);
+const validatePatch2 = ajv.compile(patch2Schema);
 
 
 
@@ -484,7 +484,7 @@ router.route("/:userID")
             const gamebananaIDsArray: number[] | undefined = req.body.gamebananaIDs;
             const goldenPlayerID: number | undefined = req.body.goldenPlayerID;
 
-            const valid = validatePatch({
+            const valid = validatePatch1({
                 displayName: displayName,
                 displayDiscord: displayDiscord,
                 gamebananaIDs: gamebananaIDsArray,
@@ -552,13 +552,26 @@ router.route("/:userID")
             next(error);
         }
     })
-    .put(async function (req, res, next) {
+    .all(function (_req, res, next) {
+        try {
+            res.sendStatus(405);
+        }
+        catch (error) {
+            next(error);
+        }
+    });
+
+
+
+
+router.route("/:userID/discord")
+    .patch(async function (req, res, next) {
         try {
             //for production
-            const discordToken: string = req.body.discordToken;         //can't be undefined after validatePut
-            const discordTokenType: string = req.body.discordTokenType; //can't be undefined after validatePut
+            const discordToken: string = req.body.discordToken;         //can't be undefined after validatePatch2
+            const discordTokenType: string = req.body.discordTokenType; //can't be undefined after validatePatch2
 
-            const valid = validatePut({
+            const valid = validatePatch2({
                 discordToken: discordToken,
                 discordTokenType: discordTokenType,
             });
