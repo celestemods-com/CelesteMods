@@ -1,16 +1,60 @@
-//import cors from "cors";
 import express from "express";
 import { noRouteError, errorHandler } from "./errorHandling";
+
+
 const app = express();
 app.use(express.json());
+
 const port = process.env.PORT || "3001";
 app.listen(port, () => {
     console.log(`Server Running at ${port}`);
 });
-import cors from 'cors';
-app.use(cors({
-    origin: '*'
-}));
+
+
+app.use( function (req, res, next) {
+    try {
+        let oneof = false;
+        if (req.headers.origin) {
+            res.header("Access-Control-Allow-Origin", req.headers.origin);
+
+            oneof = true;
+
+
+            const safeOrigin =  "https://celestemods.com";
+
+            if(process.env.NODE_ENV === "dev" || req.headers.origin === safeOrigin) {
+                res.header("Access-Control-Allow-Credentials", "true");
+            }
+        }
+        if (req.headers["access-control-request-method"]) {
+            res.header("Access-Control-Allow-Methods", req.headers["access-control-request-method"]);
+
+            oneof = true;
+        }
+        if (req.headers["access-control-request-headers"]) {
+            res.header("Access-Control-Allow-Headers", req.headers["access-control-request-headers"]);
+
+            oneof = true;
+        }
+
+        if (oneof) {
+            res.header("Access-Control-Max-Age", "600" );
+        }
+
+        // intercept OPTIONS method
+        if (oneof && req.method == "OPTIONS") {
+            res.sendStatus(200);
+        }
+        else {
+            //req.openCors = true;
+            next();
+        }
+    }
+    catch (error) {
+        next(error);
+    }
+});
+
 
 import { difficultiesRouter } from "./routes/difficulties";
 import { gfSubmissionsRouter, gfVotesRouter } from "./routes/generalfeedback";
