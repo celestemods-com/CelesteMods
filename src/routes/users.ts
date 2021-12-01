@@ -1,7 +1,7 @@
 import express from "express";
 import axios from "axios";
-import ajvModule from "ajv";
 import { prisma } from "../prismaClient";
+import { validatePost, validatePatch1, validatePatch2 } from "../jsonSchemas/users";
 import { errorWithMessage, isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { users } from ".prisma/client";
 import { formattedUser } from "../types/frontend";
@@ -11,74 +11,6 @@ import { isNumberArray } from "../utils";
 
 
 const router = express.Router();
-const ajv = new ajvModule();
-
-
-const postSchema = {
-    type: "object",
-    properties: {
-        discordToken: { type: "string" },
-        discordTokenType: { type: "string" },
-        displayName: {
-            type: "string",
-            minLength: 1,
-            maxLength: 50,
-        },
-        displayDiscord: { type: "boolean" },
-        gamebananaIDs: {
-            type: "array",
-            items: {
-                anyOf: [{
-                    type: "integer",
-                    minimim: 0,
-                }]
-            },
-        },
-        goldenPlayerID: {
-            type: "integer",
-            minimim: 0,
-        },
-    },
-    additionalProperties: false,
-    required: ["discordToken", "discordTokenType", "displayName", "displayDiscord",],   //for production
-    //required: ["displayName", "displayDiscord"],      //for testing
-};
-const patch1Schema = {
-    type: "object",
-    properties: {
-        displayName: {
-            type: "string",
-            minLength: 1,
-            maxLength: 50,
-        },
-        displayDiscord: { type: "boolean" },
-        gamebananaIDs: {
-            type: "array",
-            items: {
-                anyOf: [{
-                    type: "integer",
-                    minimim: 0,
-                }]
-            },
-        },
-        goldenPlayerID: {
-            type: "integer",
-            minimim: 0,
-        },
-    },
-    additionalProperties: false,
-};
-const patch2Schema = {
-    type: "object",
-    properties: {
-        discordToken: { type: "string" },
-        discordTokenType: { type: "string" },
-    }
-}
-
-const validatePost = ajv.compile(postSchema);
-const validatePatch1 = ajv.compile(patch1Schema);
-const validatePatch2 = ajv.compile(patch2Schema);
 
 
 

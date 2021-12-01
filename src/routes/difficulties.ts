@@ -1,76 +1,14 @@
 import express from "express";
-import ajvModule from "ajv";
 import { prisma } from "../prismaClient";
+import { validatePost, validatePatch } from "../jsonSchemas/difficulties";
 import { noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { difficulties } from ".prisma/client";
 import { createDifficultyData } from "../types/internal";
 
 
 const router = express.Router();
-const ajv = new ajvModule();
 
 
-const postSchema = {
-    type: "object",
-    properties: {
-        name: {
-            type: "string",
-            minLength: 1,
-            maxLength: 50,
-        },
-        description: {
-            type: "string",
-            minLength: 0,
-            maxLength: 100,
-        },
-        parentModID: {
-            type: ["integer", "null"],
-            minimum: 0,
-        },
-        parentDifficultyID: {
-            type: ["integer", "null"],
-            minimum: 0,
-        },
-        order: {
-            type: "integer",
-            minimum: 1,
-        },
-    },
-    additionalProperties: false,
-    required: ["name", "order"],
-};
-const patchSchema = {
-    type: "object",
-    properties: {
-        name: {
-            type: "string",
-            minLength: 1,
-            maxLength: 50,
-        },
-        description: {
-            type: "string",
-            minLength: 0,
-            maxLength: 100,
-        },
-        parentModID: {
-            type: ["integer", "null"],
-            minimum: 0,
-        },
-        parentDifficultyID: {
-            type: ["integer", "null"],
-            minimum: 0,
-        },
-        order: {
-            type: "integer",
-            minimum: 1,
-        },
-    },
-    additionalProperties: false,
-};
-
-
-const validatePost = ajv.compile(postSchema);
-const validatePatch = ajv.compile(patchSchema);
 
 
 router.route("/")
