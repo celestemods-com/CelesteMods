@@ -14,9 +14,9 @@ const router = express.Router();
 router.route("/")
     .get(async function (_req, res, next) {
         try {
-            const rawTechs = <rawTech[]>await prisma.tech_list.findMany({ include: { difficulties: true } });
+            const rawTechs = await prisma.tech_list.findMany({ include: { difficulties: true } });
 
-            const formattedTechs: formattedTech[] = rawTechs.map((rawTech) => {
+            const formattedTechs = rawTechs.map((rawTech) => {
                 const formattedTech = formatTech(rawTech);
                 if (isErrorWithMessage(formattedTech)) throw formattedTech;
                 return formattedTech;
@@ -489,7 +489,7 @@ router.route("/:techID")
 
 
 
-const formatTech = function (rawTech: rawTech): formattedTech | errorWithMessage {
+const formatTech = function (rawTech: rawTech) {
     try {
         const id = rawTech.id;
         const name = rawTech.name;
