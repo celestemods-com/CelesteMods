@@ -1,7 +1,7 @@
 import express from "express";
 import ajvModule from "ajv";
 import { prisma } from "../prismaClient";
-import { noRouteError, errorHandler } from "../errorHandling";
+import { noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { difficulties } from ".prisma/client";
 import { createDifficultyData } from "../types/internal";
 
@@ -119,14 +119,7 @@ router.route("/")
             next(error)
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 
@@ -142,14 +135,7 @@ router.route("/default")
             next(error)
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 router.route("/default/parent")
@@ -168,14 +154,7 @@ router.route("/default/parent")
             next(error)
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 router.route("/default/sub")
@@ -194,14 +173,7 @@ router.route("/default/sub")
             next(error)
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 
@@ -226,14 +198,7 @@ router.route("/search")
             next(error)
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 router.route("/search/mod")
@@ -256,14 +221,7 @@ router.route("/search/mod")
             next(error)
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 
@@ -306,14 +264,7 @@ router.route("/mod/:modID")
             next(error)
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 
@@ -436,14 +387,7 @@ router.route("/:diffID")
             next(error)
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 
@@ -467,14 +411,7 @@ router.route("/:diffID/sub")
             next(error)
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 

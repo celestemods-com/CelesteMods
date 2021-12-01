@@ -2,7 +2,7 @@ import express from "express";
 import axios from "axios";
 import ajvModule from "ajv";
 import { prisma } from "../prismaClient";
-import { errorWithMessage, isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler } from "../errorHandling";
+import { errorWithMessage, isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { users } from ".prisma/client";
 import { formattedUser } from "../types/frontend";
 import { createUserData, updateUserData, rawUser } from "../types/internal";
@@ -288,14 +288,7 @@ router.route("/")
             next(error);
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 
@@ -337,14 +330,7 @@ router.route("/search")
             next(error);
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 
@@ -378,14 +364,7 @@ router.route("/gamebanana/:gamebananaID")
             next(error);
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 
@@ -443,14 +422,7 @@ router.route("/:userID/gamebanana/:gamebananaID")
             next(error);
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 
@@ -552,14 +524,7 @@ router.route("/:userID")
             next(error);
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 
@@ -636,14 +601,7 @@ router.route("/:userID/discord")
             next(error);
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 
@@ -705,14 +663,7 @@ router.route("/:userID/delete")
             next(error);
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 
@@ -764,14 +715,7 @@ router.route("/:userID/ban")
             next(error);
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 
@@ -832,14 +776,7 @@ router.route("/:userID/permissions")
             next(error);
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 
@@ -857,14 +794,7 @@ router.route("/:userID/submissions/feedback")
             next(error);
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 

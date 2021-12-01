@@ -6,8 +6,13 @@ declare global {
     }
 }
 
-const noRouteError = function (_req: Request, res: Response, _next: NextFunction) {
-    res.status(404).json("Route not found");
+const noRouteError = function (_req: Request, res: Response, next: NextFunction) {
+    try {
+        res.status(404).json("Route not found");
+    }
+    catch (error) {
+        next(error);
+    }
 }
 
 const errorHandler = function (error: Error, _req: Request, res: Response, _next: NextFunction) {
@@ -44,4 +49,16 @@ const toErrorWithMessage = function (maybeError: unknown): errorWithMessage {
     }
 }
 
-export { errorWithMessage, isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler };
+
+
+
+const methodNotAllowed = function (_req: Request, res: Response, next: NextFunction) {
+    try {
+        res.sendStatus(405);
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+export { errorWithMessage, isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed };

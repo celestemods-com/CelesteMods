@@ -1,8 +1,7 @@
 import express from "express";
 import ajvModule from "ajv";
 import { prisma } from "../prismaClient";
-import { noRouteError, errorHandler } from "../errorHandling";
-import { expressRouteTypes } from "../types/express"    //leaving this here keeps ts-node happy for some reason. tsc doesnt care
+import { noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { map_lengths } from "@prisma/client";
 
 
@@ -111,14 +110,7 @@ router.route("/")
             next(error);
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 
@@ -142,14 +134,7 @@ router.route("/search")
             next(error);
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 
@@ -243,14 +228,7 @@ router.route("/:id")
             next(error);
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 

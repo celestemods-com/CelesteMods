@@ -1,9 +1,7 @@
 import express from "express";
 import ajvModule from "ajv";
 import { prisma } from "../prismaClient";
-import { errorWithMessage, isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler } from "../errorHandling";
-import { expressRouteTypes } from "../types/express";
-import { tech_list } from ".prisma/client";
+import { errorWithMessage, isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { createTechData, rawTech, updateTechData } from "../types/internal";
 import { formattedTech } from "../types/frontend";
 
@@ -56,10 +54,10 @@ const validatePatch = ajv.compile(patchSchema);
 router.route("/")
     .get(async function (_req, res, next) {
         try {
-            const rawTechs = <rawTech[]> await prisma.tech_list.findMany({ include: { difficulties: true } });
+            const rawTechs = <rawTech[]>await prisma.tech_list.findMany({ include: { difficulties: true } });
 
             const formattedTechs: formattedTech[] = rawTechs.map((rawTech) => {
-                const formattedTech =  formatTech(rawTech);
+                const formattedTech = formatTech(rawTech);
                 if (isErrorWithMessage(formattedTech)) throw formattedTech;
                 return formattedTech;
             });
@@ -108,7 +106,7 @@ router.route("/")
                 difficulties: {},
             };
 
-            
+
             if (typeof (difficulty) === "string") {
                 const matchingDifficulty = await prisma.difficulties.findFirst({
                     where: {
@@ -159,14 +157,7 @@ router.route("/")
             next(error);
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 
@@ -189,7 +180,7 @@ router.route("/search")
 
 
             const formattedTechs: formattedTech[] = rawTechs.map((rawTech) => {
-                const formattedTech =  formatTech(rawTech);
+                const formattedTech = formatTech(rawTech);
                 if (isErrorWithMessage(formattedTech)) throw formattedTech;
                 return formattedTech;
             });
@@ -201,14 +192,7 @@ router.route("/search")
             next(error);
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 
@@ -247,9 +231,9 @@ router.route("/mod/:modID")
                 include: { difficulties: true },
             });
 
-            
+
             const formattedTechs: formattedTech[] = rawTechs.map((rawTech) => {
-                const formattedTech =  formatTech(rawTech);
+                const formattedTech = formatTech(rawTech);
                 if (isErrorWithMessage(formattedTech)) throw formattedTech;
                 return formattedTech;
             });
@@ -261,14 +245,7 @@ router.route("/mod/:modID")
             next(error);
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 
@@ -307,9 +284,9 @@ router.route("/map/:mapID")
                 include: { difficulties: true },
             });
 
-            
+
             const formattedTechs: formattedTech[] = rawTechs.map((rawTech) => {
-                const formattedTech =  formatTech(rawTech);
+                const formattedTech = formatTech(rawTech);
                 if (isErrorWithMessage(formattedTech)) throw formattedTech;
                 return formattedTech;
             });
@@ -321,14 +298,7 @@ router.route("/map/:mapID")
             next(error);
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 
@@ -376,9 +346,9 @@ router.route("/difficulty/:difficultyID")
                 include: { difficulties: true },
             });
 
-            
+
             const formattedTechs: formattedTech[] = rawTechs.map((rawTech) => {
-                const formattedTech =  formatTech(rawTech);
+                const formattedTech = formatTech(rawTech);
                 if (isErrorWithMessage(formattedTech)) throw formattedTech;
                 return formattedTech;
             });
@@ -390,14 +360,7 @@ router.route("/difficulty/:difficultyID")
             next(error);
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 
@@ -460,7 +423,7 @@ router.route("/:techID")
             const name: string | undefined = req.body.name;
             const description: string | null | undefined = req.body.description === "" ? null : req.body.description;
             const difficulty: string | number | undefined = req.body.difficulty;
-            
+
             const valid = validatePatch({
                 name: name,
                 description: description,
@@ -497,7 +460,7 @@ router.route("/:techID")
                 description: description,
             };
 
-            
+
             if (difficulty !== undefined) {
                 if (typeof (difficulty) === "string") {
                     const matchingDifficulty = await prisma.difficulties.findFirst({
@@ -561,14 +524,7 @@ router.route("/:techID")
             next(error);
         }
     })
-    .all(function (_req, res, next) {
-        try {
-            res.sendStatus(405);
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    .all(methodNotAllowed);
 
 
 
