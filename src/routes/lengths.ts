@@ -23,7 +23,10 @@ const postSchema = {
             minLength: 1,
             maxLength: 100,
         },
-        order: { type: "integer" },
+        order: {
+            type: "integer",
+            minimum: 1,
+        },
     },
     additionalProperties: false,
     required: ["name", "description", "order"],
@@ -41,7 +44,10 @@ const patchSchema = {
             minLength: 1,
             maxLength: 100,
         },
-        order: { type: "integer" },
+        order: {
+            type: "integer",
+            minimum: 1,
+        },
     },
     additionalProperties: false,
 };
@@ -200,7 +206,7 @@ router.route("/:id")
                 return;
             }
 
-            
+
             const length = await prisma.map_lengths.update({
                 where: { id: req.id },
                 data: {

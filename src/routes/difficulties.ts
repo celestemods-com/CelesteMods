@@ -23,9 +23,18 @@ const postSchema = {
             minLength: 0,
             maxLength: 100,
         },
-        parentModID: { type: ["integer", "null"] },
-        parentDifficultyID: { type: ["integer", "null"] },
-        order: { type: "integer" },
+        parentModID: {
+            type: ["integer", "null"],
+            minimum: 0,
+        },
+        parentDifficultyID: {
+            type: ["integer", "null"],
+            minimum: 0,
+        },
+        order: {
+            type: "integer",
+            minimum: 1,
+        },
     },
     additionalProperties: false,
     required: ["name", "order"],
@@ -43,9 +52,18 @@ const patchSchema = {
             minLength: 0,
             maxLength: 100,
         },
-        parentModID: { type: ["integer", "null"] },
-        parentDifficultyID: { type: ["integer", "null"] },
-        order: { type: "integer" },
+        parentModID: {
+            type: ["integer", "null"],
+            minimum: 0,
+        },
+        parentDifficultyID: {
+            type: ["integer", "null"],
+            minimum: 0,
+        },
+        order: {
+            type: "integer",
+            minimum: 1,
+        },
     },
     additionalProperties: false,
 };

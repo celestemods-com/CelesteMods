@@ -23,7 +23,10 @@ const postSchema = {
             minLength: 0,
             maxLength: 150,
         },
-        difficulty: { type: ["string", "integer"] },
+        difficulty: {
+            type: ["string", "integer"],
+            minimum: 0,
+        },
     },
     additionalProperties: false,
     required: ["name", "difficulty"],
@@ -41,7 +44,10 @@ const patchSchema = {
             minLength: 0,
             maxLength: 150,
         },
-        difficulty: { type: ["string", "integer"] },
+        difficulty: {
+            type: ["string", "integer"],
+            minimum: 0,
+        },
     },
     additionalProperties: false,
 };

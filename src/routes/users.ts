@@ -27,9 +27,17 @@ const postSchema = {
         displayDiscord: { type: "boolean" },
         gamebananaIDs: {
             type: "array",
-            items: { anyOf: [{ type: "integer" }] },
+            items: {
+                anyOf: [{
+                    type: "integer",
+                    minimim: 0,
+                }]
+            },
         },
-        goldenPlayerID: { type: "integer" },
+        goldenPlayerID: {
+            type: "integer",
+            minimim: 0,
+        },
     },
     additionalProperties: false,
     required: ["discordToken", "discordTokenType", "displayName", "displayDiscord",],   //for production
@@ -46,9 +54,17 @@ const patch1Schema = {
         displayDiscord: { type: "boolean" },
         gamebananaIDs: {
             type: "array",
-            items: { anyOf: [{ type: "integer" }] },
+            items: {
+                anyOf: [{
+                    type: "integer",
+                    minimim: 0,
+                }]
+            },
         },
-        goldenPlayerID: { type: "integer" },
+        goldenPlayerID: {
+            type: "integer",
+            minimim: 0,
+        },
     },
     additionalProperties: false,
 };
