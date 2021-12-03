@@ -136,6 +136,8 @@ declare global {
     interface Request {
       id?: number;
       id2?: number;
+      id3?: number;
+      name?: string;
       idsMatch?: boolean;
       valid?: boolean;
       difficulty?: difficulties;

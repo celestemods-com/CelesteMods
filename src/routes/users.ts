@@ -39,6 +39,7 @@ router.param("userID", async function (req, res, next) {
     }
 
     req.id = id;
+    req.name = userFromId.displayName;
     next();
 });
 
@@ -72,7 +73,10 @@ router.param("gamebananaID", async function (req, res, next) {
             include: { publishers: true },
         });
 
-        if (matchingUsers.length > 1) { //length cannot be 0. the userID has already been checked as valid, so at least 1 user will be returned
+        if (matchingUsers.length < 1) {
+            req.valid, req.idsMatch = false;
+        }
+        else if (matchingUsers.length > 1) {
             if (matchingUsers.length > 2) {
                 console.log(`gamebananaID ${id} is associated with multiple publishers`);
             }
@@ -334,7 +338,10 @@ router.route("/:userID/gamebanana/:gamebananaID")
                         publishers: {
                             connectOrCreate: {
                                 where: { gamebananaID: gamebananaID },
-                                create: { gamebananaID: gamebananaID },
+                                create: {
+                                    gamebananaID: gamebananaID,
+                                    name: <string>req.name,     //if we make it here from the router.param for userID, then this will always be a string
+                                },
                             }
                         },
                     },
