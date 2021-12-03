@@ -69,6 +69,20 @@ export interface rawMod extends mods {
 
 
 
+
+export interface createChildDifficultyForMod {
+  name: string;
+  description?: string;
+  order: number;
+}
+
+export interface createParentDifficultyForMod extends createChildDifficultyForMod {
+  other_difficulties?: {create: createChildDifficultyForMod[]};
+}
+
+
+
+
 export interface rawMap extends maps {
 
 }

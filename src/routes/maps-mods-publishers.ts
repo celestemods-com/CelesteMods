@@ -6,7 +6,7 @@ import { validateMapPost, validateMapPatch, validateModPost, validateModPatch, v
 import { errorWithMessage, isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { expressRoute } from "../types/express";
 import { mods, maps, publishers, difficulties, mods_type, users } from ".prisma/client";
-import { rawMod, rawMap, rawPublisher, createMSubmissionData } from "../types/internal";
+import { rawMod, rawMap, rawPublisher, createMSubmissionData, createParentDifficultyForMod, createChildDifficultyForMod } from "../types/internal";
 import { formattedMod, formattedMap, formattedPublisher } from "../types/frontend";
 
 
@@ -71,7 +71,7 @@ modsRouter.route("/")
             const shortDescription: string = req.body.shortDescription;
             const longDescription: string | undefined = req.body.longDescription;
             const gamebananaModID: number = req.body.gamebananaModID;
-            const difficulties: (string | string[])[] | undefined = req.body.difficulties;
+            const difficultyNames: (string | string[])[] | undefined = req.body.difficulties;
             const maps: maps[] = req.body.maps;
 
             const valid = validateModPost({
@@ -86,7 +86,7 @@ modsRouter.route("/")
                 shortDescription: shortDescription,
                 longDescription: longDescription,
                 gamebananaModID: gamebananaModID,
-                difficulties: difficulties,
+                difficultyNames: difficultyNames,
                 maps: maps,
             });
 
@@ -237,6 +237,41 @@ modsRouter.route("/")
                 creationMSubmissionObject.timeApproved = time;
                 creationMSubmissionObject.users_map_and_mod_submissions_approvedByTousers = { connect: { id: submitterID } };
             }
+            
+
+            let diffiucultiesCreationArray: createParentDifficultyForMod[] = [];
+            await prisma.difficulties.create({data: {name: "steve", order: 5, other_difficulties: {create: [{name: "steve", order: 5}]}}})
+
+            if (difficultyNames) {
+                for (let parentDifficultyIndex = 0; parentDifficultyIndex < difficultyNames.length; parentDifficultyIndex++) {
+                    const parentDifficultyStringOrArray = difficultyNames[parentDifficultyIndex];
+
+                    if (typeof parentDifficultyStringOrArray === "string") {
+                        diffiucultiesCreationArray.push({
+                            name: parentDifficultyStringOrArray,
+                            order: parentDifficultyIndex + 1,
+                        });
+                        continue;
+                    }
+
+                    const childDifficultyArray: createChildDifficultyForMod[] = [];
+
+                    for (let childDifficultyIndex = 1; childDifficultyIndex < parentDifficultyStringOrArray.length; childDifficultyIndex++) {
+                        const childDifficultyName = parentDifficultyStringOrArray[childDifficultyIndex];
+
+                        childDifficultyArray.push({
+                            name: childDifficultyName,
+                            order: childDifficultyIndex,
+                        });
+                    }
+
+                    diffiucultiesCreationArray.push({
+                        name: parentDifficultyStringOrArray[0],
+                        order: parentDifficultyIndex + 1,
+                        other_difficulties: { create: childDifficultyArray },
+                    });
+                }
+            }
 
 
             const rawMod = await prisma.mods.create({
@@ -249,6 +284,7 @@ modsRouter.route("/")
                     shortDescription: shortDescription,
                     longDescription: longDescription,
                     gamebananaModID: gamebananaModID,
+                    difficulties: { create: diffiucultiesCreationArray },
                     map_and_mod_submissions_map_and_mod_submissionsTomods_creationMSubmissionID: { create: creationMSubmissionObject },
                 },
                 include: {
@@ -499,7 +535,6 @@ const formatMod = function (rawMod: rawMod) {
             replaced: replaced,
         };
 
-        console.log(rawMod.difficulties)
         if (rawMod.difficulties) {
             const parentDifficultyArray: difficulties[] = [];
             const subDifficultiesArray: difficulties[][] = [];

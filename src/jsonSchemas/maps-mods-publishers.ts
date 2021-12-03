@@ -62,7 +62,7 @@ const modPostSchema = {
             type: "integer",
             minimum: 0,
         },
-        difficulties: {
+        difficultyNames: {
             type: "array",
             uniqueItems: true,
             items: {
@@ -94,7 +94,7 @@ const modPostSchema = {
         },
     },
     additionalProperties: false,
-    required: ["type", "name", "contentWarning", "shortDescription", "gamebananaModID", "map"],
+    required: ["type", "name", "contentWarning", "shortDescription", "gamebananaModID"],
 };
 
 
