@@ -94,7 +94,7 @@ const modPostSchema = {
         },
     },
     additionalProperties: false,
-    required: ["type", "name", "contentWarning", "shortDescription", "gamebananaModID"],
+    required: ["type", "name", "contentWarning", "shortDescription", "gamebananaModID", "map"],
 };
 
 

@@ -5,7 +5,7 @@ import { prisma } from "../prismaClient";
 import { validateMapPost, validateMapPatch, validateModPost, validateModPatch, validatePublisherPatch } from "../jsonSchemas/maps-mods-publishers";
 import { errorWithMessage, isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { expressRoute } from "../types/express";
-import { mods, maps, publishers, map_and_mod_submissions, difficulties, mods_type, users } from ".prisma/client";
+import { mods, maps, publishers, difficulties, mods_type, users } from ".prisma/client";
 import { rawMod, rawMap, rawPublisher, createMSubmissionData } from "../types/internal";
 import { formattedMod, formattedMap, formattedPublisher } from "../types/frontend";
 
