@@ -1,14 +1,281 @@
 import ajvModule from "ajv";
 
-const ajv = new ajvModule({ allowUnionTypes: true });
+
+
+
+const mapPostWithModSchema = {
+    $id: "mapPostWithModSchema",
+    type: "object",
+    properties: {
+        name: {
+            type: "string",
+            minLength: 1,
+            maxLength: 200,
+        },
+        minimumModVersion: {
+            type: "string",
+            minLength: 1,
+            maxLength: 15,
+        },
+        assignedDifficulty: {
+            type: "string",
+            minLength: 1,
+            maxLength: 50,
+        },
+        length: {
+            type: "string",
+            minLength: 1,
+            maxLength: 20,
+        },
+        description: {
+            type: "string",
+            minLength: 1,
+            maxLength: 500,
+        },
+        notes: {
+            type: "string",
+            minLength: 1,
+            maxLength: 500,
+        },
+        mapperUserName: {
+            type: "string",
+            minLength: 1,
+            maxLength: 50,
+        },
+        mapperNameString: {
+            type: "string",
+            minLength: 1,
+            maxLength: 50,
+        },
+        techAny: {
+            type: "array",
+            uniqueItems: true,
+            items: {
+                type: "string",
+                minLength: 1,
+                maxLength: 50,
+            },
+        },
+        techFC: {
+            type: "array",
+            uniqueItems: true,
+            items: {
+                type: "string",
+                minLength: 1,
+                maxLength: 50,
+            },
+        },
+    },
+    allOf: [
+        {
+            anyOf: [
+                {
+                    properties: {
+                        mapperUserID: {
+                            type: "integer",
+                            minimum: 1,
+                        },
+                    },
+                    required: ["mapperUserID",]
+                },
+                {
+                    properties: {
+                        mapperUserName: {
+                            type: "string",
+                            minLength: 1,
+                            maxLength: 50,
+                        },
+                    },
+                    required: ["mapperUserName"],
+                },
+                {
+                    properties: {
+                        mapperNameString: {
+                            type: "string",
+                            minLength: 1,
+                            maxLength: 50,
+                        },
+                    },
+                    required: ["mapperNameString"],
+                },
+            ],
+        },
+        {
+            oneOf: [
+                {
+                    properties: {
+                        chapter: {
+                            type: "integer",
+                            minimum: 1,
+                        },
+                        side: {
+                            type: "string",
+                            enum: ["A", "B", "C", "D", "E"],
+                        },
+                    },
+                    required: ["chapter", "side"],
+                },
+                {
+                    properties: {
+                        modDifficulty: {
+                            type: ["string", "array"],
+                            minLength: 1,
+            
+                            uniqueItems: false,
+                            minItems: 2,
+                            maxItems: 2,
+                            items: {
+                                type: "string",
+                                minLength: 1,
+                            },
+                        },
+                        overallRank: {
+                            type: "integer",
+                            minimum: 1,
+                        },
+                    },
+                    required: ["modDifficulty"],
+                },
+            ],
+        },
+    ],
+    additionalProperties: false,
+    required: ["name", "minimumModVersion", "assignedDifficulty", "length"],
+};
+
+
+const mapPostToModSchema = {
+    type: "object",
+    allOf: [
+        { $ref: "mapPostWithModSchema" },
+        {
+            properties: { updateCurrentModVersion: { type: "boolean" } },
+            required: ["updateCurrentModVersion"],
+        },
+    ],
+    additionalProperties: false,
+};
+
+
+const mapPatchSchema = {
+    type: "object",
+    properties: {
+        name: {
+            type: "string",
+            minLength: 1,
+            maxLength: 200,
+        },
+        minimumModVersion: {
+            type: "string",
+            minLength: 1,
+            maxLength: 15,
+        },
+        assignedDifficulty: {
+            type: "string",
+            minLength: 1,
+            maxLength: 50,
+        },
+        length: {
+            type: "string",
+            minLength: 1,
+            maxLength: 20,
+        },
+        description: {
+            type: "string",
+            minLength: 1,
+            maxLength: 500,
+        },
+        notes: {
+            type: "string",
+            minLength: 1,
+            maxLength: 500,
+        },
+        techAny: {
+            type: "array",
+            uniqueItems: true,
+            items: {
+                type: "string",
+                minLength: 1,
+                maxLength: 50,
+            },
+        },
+        techFC: {
+            type: "array",
+            uniqueItems: true,
+            items: {
+                type: "string",
+                minLength: 1,
+                maxLength: 50,
+            },
+        },
+        mapperUserID: {
+            type: "integer",
+            minimum: 1,
+        },
+        mapperUserName: {
+            type: "string",
+            minLength: 1,
+            maxLength: 50,
+        },
+        mapperNameString: {
+            type: "string",
+            minLength: 1,
+            maxLength: 50,
+        },
+    },
+    oneOf: [
+        {
+            properties: {
+                chapter: {
+                    type: "integer",
+                    minimum: 1,
+                },
+                side: {
+                    type: "string",
+                    enum: ["A", "B", "C", "D", "E"],
+                },
+            },
+        },
+        {
+            properties: {
+                modDifficulty: {
+                    type: ["string", "array"],
+                    minLength: 1,
+    
+                    uniqueItems: false,
+                    minItems: 2,
+                    maxItems: 2,
+                    items: {
+                        type: "string",
+                        minLength: 1,
+                    },
+                },
+                overallRank: {
+                    type: "integer",
+                    minimum: 1,
+                },
+            },
+        },
+    ],
+    additionalProperties: false,
+};
+
+
+const mapPutSchema = {
+    type: "object",
+    properties: {
+        maximumModVersion: {
+            type: "string",
+            minLength: 1,
+            maxLength: 15,
+        },
+    },
+};
 
 
 
 
-const mapPostSchema = {};
-
-
-const mapPatchSchema = {};
+const ajv = new ajvModule({ allowUnionTypes: true, schemas: {mapPostWithModSchema} });
 
 
 
@@ -90,11 +357,11 @@ const modPostSchema = {
             type: "array",
             uniqueItems: true,
             minItems: 1,
-            items: { anyOf: [mapPostSchema] },
+            items: { $ref: "mapPostWithModSchema" },
         },
     },
     additionalProperties: false,
-    required: ["type", "name", "contentWarning", "shortDescription", "gamebananaModID"],
+    required: ["type", "name", "contentWarning", "shortDescription", "gamebananaModID", "maps"],
 };
 
 
@@ -184,14 +451,9 @@ const publisherPatchSchema = {
 
 
 
-
-const validateMapPost = ajv.compile(mapPostSchema);
-const validateMapPatch = ajv.compile(mapPatchSchema);
-const validateModPost = ajv.compile(modPostSchema);
-const validateModPatch = ajv.compile(modPatchSchema);
-const validatePublisherPatch = ajv.compile(publisherPatchSchema);
-
-
-
-
-export { validateMapPost, validateMapPatch, validateModPost, validateModPatch, validatePublisherPatch };
+export const validateMapPostToMod = ajv.compile(mapPostToModSchema);
+export const validateMapPatch = ajv.compile(mapPatchSchema);
+export const validateMapPut = ajv.compile(mapPutSchema);
+export const validateModPost = ajv.compile(modPostSchema);
+export const validateModPatch = ajv.compile(modPatchSchema);
+export const validatePublisherPatch = ajv.compile(publisherPatchSchema);

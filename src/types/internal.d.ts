@@ -66,10 +66,6 @@ export interface rawMod extends mods {
   map_and_mod_submissions_map_and_mod_submissionsTomods_replacementMSubmissionID: map_and_mod_submissions | null;
 }
 
-
-
-
-
 export interface createChildDifficultyForMod {
   name: string;
   description?: string;

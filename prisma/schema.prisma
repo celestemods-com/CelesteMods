@@ -203,7 +203,7 @@ model mods {
   notes                                                                          String?                  @db.VarChar(500)
   shortDescription                                                               String                   @db.VarChar(500)
   longDescription                                                                String?                  @db.VarChar(1500)
-  gamebananaModID                                                                Int                      @db.UnsignedMediumInt
+  gamebananaModID                                                                Int                      @unique(map: "gamebananaModID") @db.UnsignedMediumInt
   creationMSubmissionID                                                          Int                      @db.UnsignedMediumInt
   replacementMSubmissionID                                                       Int?                     @db.UnsignedMediumInt
   replacementModID                                                               Int?                     @unique(map: "replacementModID") @db.UnsignedSmallInt

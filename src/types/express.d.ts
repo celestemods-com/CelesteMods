@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { difficulties, general_feedback_submissions_status, goldens_goldenList, maps_side, mods_type, ratings_quality } from '.prisma/client';
-import { rawTech } from './internal';
+import { difficulties, general_feedback_submissions_status, goldens_goldenList, ratings_quality } from '.prisma/client';
+import { rawTech, rawMod } from './internal';
 
 
 declare global {
@@ -58,48 +58,6 @@ declare global {
     description?: string;
     order?: number;
   };
-  type reqMod = {
-    id?: number;
-    type?: mods_type;
-    name?: string;
-    publisherID?: number;
-    contentWarning?: boolean;
-    notes?: string | null;
-    shortDescription?: string | null;
-    longDescription?: string | null;
-    gamebananaModID?: number;
-  };
-  type reqMap = {
-    id?: number;
-    modID?: number;
-    minimumModVersion?: string;
-    maximumModVersion?: string | null;
-    replacementMapID?: number | null;
-    mapperUserID?: number | null;
-    mapperNameString?: string | null;
-    name?: string;
-    assignedDifficultyID?: number;
-    lengthID?: number;
-    description?: string | null;
-    notes?: string | null;
-    chapter?: number | null;
-    side?: maps_side | null;
-    modDifficultyID?: number | null;
-    overallRank?: number | null;
-  };
-  type reqPublisher = {
-    id?: number;
-    gamebananaID?: number | null;
-    name?: string;
-    userID?: number | null;
-  };
-  type reqMSubmission = {
-    id?: number;
-    timeSubmitted?: number;
-    submittedBy?: number;
-    timeApproved?: number | null;
-    approvedBy?: number | null;
-  };
   type reqReview = {
     id?: number;
     likes?: string | null;
@@ -148,10 +106,11 @@ declare global {
       goldenRun?: reqGoldenRun;
       goldenSubmission?: reqGoldenSubmission;
       length?: reqLength;
-      mod?: reqMod;
-      map?: reqMap;
-      publisher?: reqPublisher;
-      mSubmission?: reqMSubmission;
+      mod?: rawMod;
+      mods?: rawMod[];
+      //map?: reqMap;
+      //publisher?: reqPublisher;
+      //mSubmission?: reqMSubmission;
       review?: reqReview;
       mapReviews?: reqMapReview[];
       rating?: reqRating;
