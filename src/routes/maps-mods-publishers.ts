@@ -2,11 +2,11 @@ import express, { NextFunction, Response } from "express";
 import axios from "axios";
 import prismaNamespace from "@prisma/client";
 import { prisma } from "../prismaClient";
-import { validateMapPostToMod, validateMapPatch, validateMapPut, validateModPost, validateModPatch, validatePublisherPatch } from "../jsonSchemas/maps-mods-publishers";
+import { validateMapPost, validateMapPatch, validateMapPut, validateModPost, validateModPatch, validatePublisherPatch } from "../jsonSchemas/maps-mods-publishers";
 import { errorWithMessage, isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { expressRoute } from "../types/express";
-import { mods, maps, publishers, difficulties, mods_type, users } from ".prisma/client";
-import { rawMod, rawMap, rawPublisher, createMSubmissionData, createParentDifficultyForMod, createChildDifficultyForMod } from "../types/internal";
+import { mods_details, mods_details_type, publishers, difficulties, users } from ".prisma/client";
+import { rawMod, rawMap, rawPublisher, createParentDifficultyForMod, createChildDifficultyForMod, createMapWithMod } from "../types/internal";
 import { formattedMod, formattedMap, formattedPublisher } from "../types/frontend";
 
 
@@ -18,16 +18,53 @@ const submissionsRouter = express.Router();
 
 
 
+
+//comment out for production
+const submitterUser: users = {
+    id: 5,
+    displayName: "steve",
+    discordID: "5",
+    discordUsername: "steve",
+    discordDiscrim: "5555",
+    displayDiscord: false,
+    timeCreated: 1,
+    permissions: "",
+    accountStatus: "Active",
+    timeDeletedOrBanned: null,
+};
+
+
+
+
 modsRouter.route("/")
     .get(async function (_req, res, next) {
         try {
-            const rawMods = await prisma.mods.findMany({
+            const rawMods = await prisma.mods_ids.findMany({
+                where: { mods_details: { some: { NOT: { timeApproved: null } } } },
                 include: {
-                    publishers: true,
                     difficulties: true,
-                    maps: true,
-                    map_and_mod_submissions_map_and_mod_submissionsTomods_creationMSubmissionID: true,
-                    map_and_mod_submissions_map_and_mod_submissionsTomods_replacementMSubmissionID: true,
+                    mods_details: {
+                        where: { NOT: { timeApproved: null } },
+                        orderBy: { revision: "desc" },
+                        take: 1,
+                        include: { publishers: true },
+                    },
+                    maps_ids: {
+                        where: { maps_details: { some: { NOT: { timeApproved: null } } } },
+                        include: {
+                            maps_details: {
+                                where: { NOT: { timeApproved: null } },
+                                orderBy: { revision: "desc" },
+                                take: 1,
+                                include: {
+                                    map_lengths: true,
+                                    difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
+                                    difficulties_difficultiesTomaps_details_modDifficultyID: true,
+                                    users_maps_details_mapperUserIDTousers: true,
+                                },
+                            },
+                        },
+                    },
                 },
             });
 
@@ -47,20 +84,7 @@ modsRouter.route("/")
     })
     .post(async function (req, res, next) {
         try {
-            const submitterUser: users = {        //comment out for production
-                id: 5,
-                displayName: "steve",
-                discordID: "5",
-                discordUsername: "steve",
-                discordDiscrim: "5555",
-                displayDiscord: false,
-                timeCreated: 1,
-                permissions: "",
-                accountStatus: "Active",
-                timeDeletedOrBanned: null,
-            };
-
-            const type: mods_type = req.body.type;
+            const type: mods_details_type = req.body.type;
             const name: string = req.body.name;
             const publisherName: string | undefined = req.body.publisherName;
             const publisherID: number | undefined = req.body.publisherID;
@@ -72,7 +96,9 @@ modsRouter.route("/")
             const longDescription: string | undefined = req.body.longDescription;
             const gamebananaModID: number = req.body.gamebananaModID;
             const difficultyNames: (string | string[])[] | undefined = req.body.difficulties;
-            const maps: maps[] = req.body.maps;
+            const maps = req.body.maps;
+            const currentTime = Math.floor(new Date().getTime() / 1000);
+
 
             const valid = validateModPost({
                 type: type,
@@ -96,26 +122,6 @@ modsRouter.route("/")
             }
 
 
-            const rawMatchingMod = await prisma.mods.findFirst({
-                where: { gamebananaModID: gamebananaModID },
-                include: {
-                    publishers: true,
-                    difficulties: true,
-                    maps: true,
-                    map_and_mod_submissions_map_and_mod_submissionsTomods_creationMSubmissionID: true,
-                    map_and_mod_submissions_map_and_mod_submissionsTomods_replacementMSubmissionID: true,
-                },
-            });
-
-            if (rawMatchingMod) {
-                const formattedMatchingMod = formatMod(rawMatchingMod);
-
-                if (isErrorWithMessage(formattedMatchingMod)) throw formattedMatchingMod;
-
-                res.status(200).json(formattedMatchingMod);
-            }
-
-
             const publisherConnectionObject = await getPublisherConnectionObject(res, userID, publisherGamebananaID, publisherID, publisherName);
 
             if (!publisherConnectionObject || isErrorWithMessage(publisherConnectionObject)) {
@@ -123,48 +129,143 @@ modsRouter.route("/")
             }
 
 
-            const creationMSubmissionObject = await getCreationMSubmissionObject(submitterUser);
-
-            if (isErrorWithMessage(creationMSubmissionObject)) throw creationMSubmissionObject;
-            
-
-            let diffiucultiesCreationArray: createParentDifficultyForMod[] | errorWithMessage = [];
+            let difficultiesCreationArray: createParentDifficultyForMod[] = [];
 
             if (difficultyNames) {
-                diffiucultiesCreationArray = await getDifficultiesCreationArray(difficultyNames);
+                const diffiucultyArrays = await getDifficultyArrays(difficultyNames);
 
-                if (isErrorWithMessage(diffiucultiesCreationArray)) throw diffiucultiesCreationArray;
+                if (isErrorWithMessage(diffiucultyArrays)) throw diffiucultyArrays;
+
+                difficultiesCreationArray = <createParentDifficultyForMod[]>diffiucultyArrays[0];
             }
 
 
-            const rawMod = await prisma.mods.create({
-                data: {
-                    type: type,
-                    name: name,
-                    publishers: publisherConnectionObject,
-                    contentWarning: contentWarning,
-                    notes: notes,
-                    shortDescription: shortDescription,
-                    longDescription: longDescription,
-                    gamebananaModID: gamebananaModID,
-                    difficulties: { create: diffiucultiesCreationArray },
-                    map_and_mod_submissions_map_and_mod_submissionsTomods_creationMSubmissionID: { create: creationMSubmissionObject },
-                },
-                include: {
-                    publishers: true,
-                    maps: true,
-                    difficulties: true,
-                    map_and_mod_submissions_map_and_mod_submissionsTomods_creationMSubmissionID: true,
-                    map_and_mod_submissions_map_and_mod_submissionsTomods_replacementMSubmissionID: true,
-                },
+            const mapsCreationObject = maps.map((mapObject: createMapWithMod) => {
+
             });
 
+            const test = await prisma.mods_ids.create({
+                data: { //@ts-ignore
+                    mods_details: {create: [{}]},
+                    maps_ids: {
+                        create: [{
+                            maps_details: {
+                                create: [{
+                                    name: "test",
+                                    //.......
+                                }]
+                            }
+                        }]
+                    }
+                }
+            })
+
+            // const test2 = await prisma.maps_ids.create({
+            //     data: {
+            //         mods_ids: { connect: { id: 1 } },
+            //         maps_details: {
+            //             create: [{
+            //                 name: "test",
+                            
+            //             }]
+            //         }
+            //     }
+            // })
+
+
+            const rawModAndStatus = await prisma.$transaction(async () => {
+                const rawMatchingMod = await prisma.mods_ids.findFirst({
+                    where: { mods_details: { some: { gamebananaModID: gamebananaModID } } },
+                    include: {
+                        difficulties: true,
+                        mods_details: {
+                            where: { NOT: { timeApproved: null } },
+                            orderBy: { revision: "desc" },
+                            take: 1,
+                            include: { publishers: true },
+                        },
+                        maps_ids: {
+                            where: { maps_details: { some: { NOT: { timeApproved: null } } } },
+                            include: {
+                                maps_details: {
+                                    where: { NOT: { timeApproved: null } },
+                                    orderBy: { revision: "desc" },
+                                    take: 1,
+                                    include: {
+                                        map_lengths: true,
+                                        difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
+                                        difficulties_difficultiesTomaps_details_modDifficultyID: true,
+                                        users_maps_details_mapperUserIDTousers: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                });
+
+                if (rawMatchingMod) {
+                    return [rawMatchingMod, 200];
+                }
+
+
+                const rawMod = await prisma.mods_ids.create({
+                    data: {
+                        difficulties: { create: difficultiesCreationArray },
+                        mods_details: {
+                            create: [{
+                                type: type,
+                                name: name,
+                                publishers: publisherConnectionObject,
+                                contentWarning: contentWarning,
+                                notes: notes,
+                                shortDescription: shortDescription,
+                                longDescription: longDescription,
+                                gamebananaModID: gamebananaModID,
+                                timeSubmitted: currentTime,
+                                users_mods_details_submittedByTousers: { connect: { id: submitterUser.id } },
+                            }],
+                        },
+                        maps_ids: mapsCreationObject,
+                    },
+                    include: {
+                        difficulties: true,
+                        mods_details: {
+                            where: { NOT: { timeApproved: null } },
+                            orderBy: { revision: "desc" },
+                            take: 1,
+                            include: { publishers: true },
+                        },
+                        maps_ids: {
+                            where: { maps_details: { some: { NOT: { timeApproved: null } } } },
+                            include: {
+                                maps_details: {
+                                    where: { NOT: { timeApproved: null } },
+                                    orderBy: { revision: "desc" },
+                                    take: 1,
+                                    include: {
+                                        map_lengths: true,
+                                        difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
+                                        difficulties_difficultiesTomaps_details_modDifficultyID: true,
+                                        users_maps_details_mapperUserIDTousers: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                });
+
+                return [rawMod, 201];
+            });
+
+
+            const rawMod = <rawMod>rawModAndStatus[0];
+            const status = <number>rawModAndStatus[1];
 
             const formattedMod = formatMod(rawMod);
 
             if (isErrorWithMessage(formattedMod)) throw formattedMod;
 
-            res.status(201).json(formattedMod);
+            res.status(status).json(formattedMod);
         }
         catch (error) {
             next(error);
@@ -186,14 +287,39 @@ modsRouter.param("gbModID", async function (req, res, next) {
             return;
         }
 
-        const modFromID = await prisma.mods.findUnique({
-            where: { gamebananaModID: id },
+        const modFromID = await prisma.mods_ids.findFirst({
+            where: {
+                mods_details: {
+                    some: {
+                        NOT: { timeApproved: null },
+                        gamebananaModID: id,
+                    },
+                },
+            },
             include: {
-                publishers: true,
-                maps: true,
                 difficulties: true,
-                map_and_mod_submissions_map_and_mod_submissionsTomods_creationMSubmissionID: true,
-                map_and_mod_submissions_map_and_mod_submissionsTomods_replacementMSubmissionID: true,
+                mods_details: {
+                    where: { NOT: { timeApproved: null } },
+                    orderBy: { revision: "desc" },
+                    take: 1,
+                    include: { publishers: true },
+                },
+                maps_ids: {
+                    where: { maps_details: { some: { NOT: { timeApproved: null } } } },
+                    include: {
+                        maps_details: {
+                            where: { NOT: { timeApproved: null } },
+                            orderBy: { revision: "desc" },
+                            take: 1,
+                            include: {
+                                map_lengths: true,
+                                difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
+                                difficulties_difficultiesTomaps_details_modDifficultyID: true,
+                                users_maps_details_mapperUserIDTousers: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
@@ -245,14 +371,39 @@ modsRouter.route("/search")
             }
 
 
-            const rawMods = await prisma.mods.findMany({
-                where: { name: { startsWith: query } },
+            const rawMods = await prisma.mods_ids.findMany({
+                where: {
+                    mods_details: {
+                        some: {
+                            NOT: { timeApproved: null },
+                            name: { startsWith: query },
+                        },
+                    },
+                },
                 include: {
-                    publishers: true,
-                    maps: true,
                     difficulties: true,
-                    map_and_mod_submissions_map_and_mod_submissionsTomods_creationMSubmissionID: true,
-                    map_and_mod_submissions_map_and_mod_submissionsTomods_replacementMSubmissionID: true,
+                    mods_details: {
+                        where: { NOT: { timeApproved: null } },
+                        orderBy: { revision: "desc" },
+                        take: 1,
+                        include: { publishers: true },
+                    },
+                    maps_ids: {
+                        where: { maps_details: { some: { NOT: { timeApproved: null } } } },
+                        include: {
+                            maps_details: {
+                                where: { NOT: { timeApproved: null } },
+                                orderBy: { revision: "desc" },
+                                take: 1,
+                                include: {
+                                    map_lengths: true,
+                                    difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
+                                    difficulties_difficultiesTomaps_details_modDifficultyID: true,
+                                    users_maps_details_mapperUserIDTousers: true,
+                                },
+                            },
+                        },
+                    },
                 },
             });
 
@@ -285,14 +436,39 @@ modsRouter.route("/type")
             }
 
 
-            const rawMods = await prisma.mods.findMany({
-                where: { type: query },
+            const rawMods = await prisma.mods_ids.findMany({
+                where: {
+                    mods_details: {
+                        some: {
+                            NOT: { timeApproved: null },
+                            type: query,
+                        },
+                    },
+                },
                 include: {
-                    publishers: true,
-                    maps: true,
                     difficulties: true,
-                    map_and_mod_submissions_map_and_mod_submissionsTomods_creationMSubmissionID: true,
-                    map_and_mod_submissions_map_and_mod_submissionsTomods_replacementMSubmissionID: true,
+                    mods_details: {
+                        where: { NOT: { timeApproved: null } },
+                        orderBy: { revision: "desc" },
+                        take: 1,
+                        include: { publishers: true },
+                    },
+                    maps_ids: {
+                        where: { maps_details: { some: { NOT: { timeApproved: null } } } },
+                        include: {
+                            maps_details: {
+                                where: { NOT: { timeApproved: null } },
+                                orderBy: { revision: "desc" },
+                                take: 1,
+                                include: {
+                                    map_lengths: true,
+                                    difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
+                                    difficulties_difficultiesTomaps_details_modDifficultyID: true,
+                                    users_maps_details_mapperUserIDTousers: true,
+                                },
+                            },
+                        },
+                    },
                 },
             });
 
@@ -326,14 +502,39 @@ modsRouter.param("publisherID", async function (req, res, next) {
             return;
         }
 
-        const modsFromID = await prisma.mods.findMany({
-            where: { publisherID: id },
+        const modsFromID = await prisma.mods_ids.findMany({
+            where: {
+                mods_details: {
+                    some: {
+                        NOT: { timeApproved: null },
+                        publisherID: id,
+                    },
+                },
+            },
             include: {
-                publishers: true,
-                maps: true,
                 difficulties: true,
-                map_and_mod_submissions_map_and_mod_submissionsTomods_creationMSubmissionID: true,
-                map_and_mod_submissions_map_and_mod_submissionsTomods_replacementMSubmissionID: true,
+                mods_details: {
+                    where: { NOT: { timeApproved: null } },
+                    orderBy: { revision: "desc" },
+                    take: 1,
+                    include: { publishers: true },
+                },
+                maps_ids: {
+                    where: { maps_details: { some: { NOT: { timeApproved: null } } } },
+                    include: {
+                        maps_details: {
+                            where: { NOT: { timeApproved: null } },
+                            orderBy: { revision: "desc" },
+                            take: 1,
+                            include: {
+                                map_lengths: true,
+                                difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
+                                difficulties_difficultiesTomaps_details_modDifficultyID: true,
+                                users_maps_details_mapperUserIDTousers: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
@@ -363,14 +564,39 @@ modsRouter.param("gbUserID", async function (req, res, next) {
             return;
         }
 
-        const modsFromID = await prisma.mods.findMany({
-            where: { publishers: { gamebananaID: id} },
+        const modsFromID = await prisma.mods_ids.findMany({
+            where: {
+                mods_details: {
+                    some: {
+                        NOT: { timeApproved: null },
+                        publishers: { gamebananaID: id },
+                    },
+                },
+            },
             include: {
-                publishers: true,
-                maps: true,
                 difficulties: true,
-                map_and_mod_submissions_map_and_mod_submissionsTomods_creationMSubmissionID: true,
-                map_and_mod_submissions_map_and_mod_submissionsTomods_replacementMSubmissionID: true,
+                mods_details: {
+                    where: { NOT: { timeApproved: null } },
+                    orderBy: { revision: "desc" },
+                    take: 1,
+                    include: { publishers: true },
+                },
+                maps_ids: {
+                    where: { maps_details: { some: { NOT: { timeApproved: null } } } },
+                    include: {
+                        maps_details: {
+                            where: { NOT: { timeApproved: null } },
+                            orderBy: { revision: "desc" },
+                            take: 1,
+                            include: {
+                                map_lengths: true,
+                                difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
+                                difficulties_difficultiesTomaps_details_modDifficultyID: true,
+                                users_maps_details_mapperUserIDTousers: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
@@ -452,14 +678,39 @@ modsRouter.route("/user/:userID/publisher")
             const userID = <number>req.id2;     //can cast as number because the router.param already checked that the id is valid
 
 
-            const rawMods =  await prisma.mods.findMany({
-                where: { publishers: { userID: userID} },
+            const rawMods = await prisma.mods_ids.findMany({
+                where: {
+                    mods_details: {
+                        some: {
+                            NOT: { timeApproved: null },
+                            publishers: { userID: userID },
+                        },
+                    },
+                },
                 include: {
-                    publishers: true,
-                    maps: true,
                     difficulties: true,
-                    map_and_mod_submissions_map_and_mod_submissionsTomods_creationMSubmissionID: true,
-                    map_and_mod_submissions_map_and_mod_submissionsTomods_replacementMSubmissionID: true,
+                    mods_details: {
+                        where: { NOT: { timeApproved: null } },
+                        orderBy: { revision: "desc" },
+                        take: 1,
+                        include: { publishers: true },
+                    },
+                    maps_ids: {
+                        where: { maps_details: { some: { NOT: { timeApproved: null } } } },
+                        include: {
+                            maps_details: {
+                                where: { NOT: { timeApproved: null } },
+                                orderBy: { revision: "desc" },
+                                take: 1,
+                                include: {
+                                    map_lengths: true,
+                                    difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
+                                    difficulties_difficultiesTomaps_details_modDifficultyID: true,
+                                    users_maps_details_mapperUserIDTousers: true,
+                                },
+                            },
+                        },
+                    },
                 },
             });
 
@@ -486,19 +737,39 @@ modsRouter.route("/user/:userID/submitter")
             const userID = <number>req.id2;     //can cast as number because the router.param already checked that the id is valid
 
 
-            const rawMods =  await prisma.mods.findMany({
+            const rawMods = await prisma.mods_ids.findMany({
                 where: {
-                    OR: [
-                        { map_and_mod_submissions_map_and_mod_submissionsTomods_creationMSubmissionID: { submittedBy: userID } },
-                        { map_and_mod_submissions_map_and_mod_submissionsTomods_replacementMSubmissionID: { submittedBy: userID } },
-                    ]
+                    mods_details: {
+                        some: {
+                            NOT: { timeApproved: null },
+                            submittedBy: userID,
+                        },
+                    },
                 },
                 include: {
-                    publishers: true,
-                    maps: true,
                     difficulties: true,
-                    map_and_mod_submissions_map_and_mod_submissionsTomods_creationMSubmissionID: true,
-                    map_and_mod_submissions_map_and_mod_submissionsTomods_replacementMSubmissionID: true,
+                    mods_details: {
+                        where: { NOT: { timeApproved: null } },
+                        orderBy: { revision: "desc" },
+                        take: 1,
+                        include: { publishers: true },
+                    },
+                    maps_ids: {
+                        where: { maps_details: { some: { NOT: { timeApproved: null } } } },
+                        include: {
+                            maps_details: {
+                                where: { NOT: { timeApproved: null } },
+                                orderBy: { revision: "desc" },
+                                take: 1,
+                                include: {
+                                    map_lengths: true,
+                                    difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
+                                    difficulties_difficultiesTomaps_details_modDifficultyID: true,
+                                    users_maps_details_mapperUserIDTousers: true,
+                                },
+                            },
+                        },
+                    },
                 },
             });
 
@@ -549,7 +820,161 @@ modsRouter.route("/:modID")
     })
     .patch(async function (req, res, next) {
         try {
+            const type: mods_details_type | undefined = req.body.type === null ? undefined : req.body.type;
+            const name: string | undefined = req.body.name === null ? undefined : req.body.name;
+            const publisherName: string | undefined = req.body.publisherName === null ? undefined : req.body.publisherName;
+            const publisherID: number | undefined = req.body.publisherID === null ? undefined : req.body.publisherID;
+            const publisherGamebananaID: number | undefined = req.body.publisherGamebananaID === null ? undefined : req.body.publisherGamebananaID;
+            const userID: number | undefined = req.body.userID === null ? undefined : req.body.userID;
+            const contentWarning: boolean | undefined = req.body.contentWarning === null ? undefined : req.body.contentWarning;
+            const notes: string | undefined = req.body.notes === null ? undefined : req.body.notes;
+            const shortDescription: string | undefined = req.body.shortDescription === null ? undefined : req.body.shortDescription;
+            const longDescription: string | undefined = req.body.longDescription === null ? undefined : req.body.longDescription;
+            const gamebananaModID: number | undefined = req.body.gamebananaModID === null ? undefined : req.body.gamebananaModID;
+            const difficultyNames: string[] | undefined = req.body.difficultyNames === null ? undefined : req.body.difficultyNames;
 
+
+            const valid = validateModPatch({
+                type: type,
+                name: name,
+                publisherName: publisherName,
+                publisherID: publisherID,
+                publisherGamebananaID: publisherGamebananaID,
+                userID: userID,
+                contentWarning: contentWarning,
+                notes: notes,
+                shortDescription: shortDescription,
+                longDescription: longDescription,
+                gamebananaModID: gamebananaModID,
+                difficultyNames: difficultyNames,
+            });
+
+            if (!valid) {
+                res.status(400).json("Malformed request body");
+                return;
+            }
+
+
+            const rawMatchingMod = await prisma.mods_ids.findFirst({
+                where: {
+                    NOT: { id: req.id },
+                    mods_details: {
+                        some: {
+                            NOT: { timeApproved: null },    //should this be here? need to think about how this should work
+                            gamebananaModID: gamebananaModID,
+                        },
+                    },
+                },
+                include: {
+                    difficulties: true,
+                    mods_details: {
+                        where: { NOT: { timeApproved: null } },
+                        orderBy: { revision: "desc" },
+                        take: 1,
+                        include: { publishers: true },
+                    },
+                    maps_ids: {
+                        where: { maps_details: { some: { NOT: { timeApproved: null } } } },
+                        include: {
+                            maps_details: {
+                                where: { NOT: { timeApproved: null } },
+                                orderBy: { revision: "desc" },
+                                take: 1,
+                                include: {
+                                    map_lengths: true,
+                                    difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
+                                    difficulties_difficultiesTomaps_details_modDifficultyID: true,
+                                    users_maps_details_mapperUserIDTousers: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+
+            if (rawMatchingMod) {
+                const formattedMatchingMod = formatMod(rawMatchingMod);
+
+                if (isErrorWithMessage(formattedMatchingMod)) throw formattedMatchingMod;
+
+                res.status(400).json(formattedMatchingMod);
+            }
+
+
+            const publisherConnectionObject = await getPublisherConnectionObject(res, userID, publisherGamebananaID, publisherID, publisherName);
+
+            if (!publisherConnectionObject || isErrorWithMessage(publisherConnectionObject)) {
+                throw `publisherConnectionObject = "${publisherConnectionObject}"`;
+            }
+
+
+            let difficultyNamesArray: { name: string }[] = [];
+            let difficultiesDataArray: createParentDifficultyForMod[] = [];
+            if (difficultyNames) {
+                const difficultyArrays = await getDifficultyArrays(difficultyNames);
+
+                if (isErrorWithMessage(difficultyArrays)) throw difficultyArrays;
+
+                difficultyNamesArray = difficultyArrays[0];
+                difficultiesDataArray = <createParentDifficultyForMod[]>difficultyArrays[1];
+            }
+
+            for (const parentDifficulty of difficultiesDataArray) {
+                if (typeof (parentDifficulty) === "string") {
+
+                }
+            }
+
+            // const test = await prisma.mods_ids.update({
+            //     where: { id: req.id },
+            //     data: {
+            //         difficulties: {
+            //             updateMany: {
+            //                 where: {}
+            //             }
+            //         },
+            //     },
+            // });
+
+
+            const rawMod = await prisma.mods_ids.update({
+                where: { id: <number>req.id },  //can cast as number because the router.param already checked that the id was valid
+                data: {
+                    type: type,
+                    name: name,
+                    publishers: publisherConnectionObject,
+                    contentWarning: contentWarning,
+                    notes: notes,
+                    shortDescription: shortDescription,
+                    longDescription: longDescription,
+                    gamebananaModID: gamebananaModID,
+                },
+                include: {
+                    difficulties: true,
+                    mods_details: {
+                        where: { NOT: { timeApproved: null } },
+                        orderBy: { revision: "desc" },
+                        take: 1,
+                        include: { publishers: true },
+                    },
+                    maps_ids: {
+                        where: { maps_details: { some: { NOT: { timeApproved: null } } } },
+                        include: {
+                            maps_details: {
+                                where: { NOT: { timeApproved: null } },
+                                orderBy: { revision: "desc" },
+                                take: 1,
+                                include: {
+                                    map_lengths: true,
+                                    difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
+                                    difficulties_difficultiesTomaps_details_modDifficultyID: true,
+                                    users_maps_details_mapperUserIDTousers: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
         }
         catch (error) {
             next(error);
@@ -684,9 +1109,6 @@ const getPublisherConnectionObject = async function (res: Response, userID?: num
                 };
             }
         }
-        else {
-            throw "ajv somehow validated a POST without any way to define a publisher";
-        }
 
 
         return publisherConnectionObject;
@@ -699,51 +1121,20 @@ const getPublisherConnectionObject = async function (res: Response, userID?: num
 
 
 
-const getCreationMSubmissionObject = async function (submitterUser: users) {
+const getDifficultyArrays = async function (difficultyNames: (string | string[])[]) {
     try {
-        const time = Math.floor(new Date().getTime() / 1000);
-        const submitterID = submitterUser.id;
-        const submitterPermissionsArray = submitterUser.permissions.split(",");
-        let submitterHasPermission = false;
-        const creationMSubmissionObject: createMSubmissionData = {
-            timeSubmitted: time,
-            users_map_and_mod_submissions_submittedByTousers: { connect: { id: submitterID } },
-        };
+        let difficultyNamesArray: { name: string }[] = [];
+        let diffiucultiesDataArray: createParentDifficultyForMod[] = [];
 
-        for (const permission of submitterPermissionsArray) {
-            if (permission === "Map_Moderator" || permission === "Admin" || permission === "Super_Admin") {
-                submitterHasPermission = true;
-                break;
-            }
-        }
-
-        if (submitterHasPermission) {
-            creationMSubmissionObject.timeApproved = time;
-            creationMSubmissionObject.users_map_and_mod_submissions_approvedByTousers = { connect: { id: submitterID } };
-        }
-
-        return creationMSubmissionObject;
-    }
-    catch (error) {
-        return toErrorWithMessage(error);
-    }
-};
-
-
-
-
-const getDifficultiesCreationArray = async function (difficultyNames: (string | string[])[]) {
-    try {
-        let diffiucultiesCreationArray: createParentDifficultyForMod[] = [];
-        
         for (let parentDifficultyIndex = 0; parentDifficultyIndex < difficultyNames.length; parentDifficultyIndex++) {
             const parentDifficultyStringOrArray = difficultyNames[parentDifficultyIndex];
 
             if (typeof parentDifficultyStringOrArray === "string") {
-                diffiucultiesCreationArray.push({
+                diffiucultiesDataArray.push({
                     name: parentDifficultyStringOrArray,
                     order: parentDifficultyIndex + 1,
                 });
+                difficultyNamesArray.push({ name: parentDifficultyStringOrArray });
                 continue;
             }
 
@@ -756,16 +1147,22 @@ const getDifficultiesCreationArray = async function (difficultyNames: (string | 
                     name: childDifficultyName,
                     order: childDifficultyIndex,
                 });
+
+                difficultyNamesArray.push({ name: childDifficultyName });
             }
 
-            diffiucultiesCreationArray.push({
+            diffiucultiesDataArray.push({
                 name: parentDifficultyStringOrArray[0],
                 order: parentDifficultyIndex + 1,
                 other_difficulties: { create: childDifficultyArray },
             });
+
+            difficultyNamesArray.push({ name: parentDifficultyStringOrArray[0] });
         }
 
-        return diffiucultiesCreationArray;
+        const returnArray: ({ name: string }[] | createParentDifficultyForMod[])[] = [difficultyNamesArray, diffiucultiesDataArray];
+
+        return returnArray;
     }
     catch (error) {
         return toErrorWithMessage(error);
@@ -777,23 +1174,37 @@ const getDifficultiesCreationArray = async function (difficultyNames: (string | 
 
 const formatMod = function (rawMod: rawMod) {
     try {
+        if (rawMod.mods_details.length !== 1) {
+            throw `more than 1 mod_details for mod ${rawMod.id} passed to formatMod`;
+        }
+
+
         const id = rawMod.id;
-        const type = rawMod.type;
-        const name = rawMod.name;
-        const publisherID = rawMod.publisherID;
-        const publisherGamebananaID = rawMod.publishers.gamebananaID === null ? undefined : rawMod.publishers.gamebananaID;
-        const contentWarning = rawMod.contentWarning;
-        const notes = rawMod.notes === null ? undefined : rawMod.notes;
-        const shortDescription = rawMod.shortDescription;
-        const longDescription = rawMod.longDescription === null ? undefined : rawMod.longDescription;
-        const gamebananaModID = rawMod.gamebananaModID === null ? undefined : rawMod.gamebananaModID;
-        const validated = rawMod.map_and_mod_submissions_map_and_mod_submissionsTomods_creationMSubmissionID.timeApproved === null ? false : true;
-        const replacementModID = rawMod.replacementModID === null ? undefined : rawMod.replacementModID;
-        const replaced = rawMod.map_and_mod_submissions_map_and_mod_submissionsTomods_replacementMSubmissionID?.timeApproved === null ? undefined : replacementModID;
+        const revision = rawMod.mods_details[0].revision;
+        const type = rawMod.mods_details[0].type;
+        const name = rawMod.mods_details[0].name;
+        const publisherID = rawMod.mods_details[0].publisherID;
+        const publisherGamebananaID = rawMod.mods_details[0].publishers.gamebananaID === null ? undefined : rawMod.mods_details[0].publishers.gamebananaID;
+        const contentWarning = rawMod.mods_details[0].contentWarning;
+        const notes = rawMod.mods_details[0].notes === null ? undefined : rawMod.mods_details[0].notes;
+        const shortDescription = rawMod.mods_details[0].shortDescription;
+        const longDescription = rawMod.mods_details[0].longDescription === null ? undefined : rawMod.mods_details[0].longDescription;
+        const gamebananaModID = rawMod.mods_details[0].gamebananaModID === null ? undefined : rawMod.mods_details[0].gamebananaModID;
+        const rawMaps = rawMod.maps_ids;
+
+
+        const formattedMaps = rawMaps.map((rawMap) => {
+            const formattedMap = formatMaps(rawMap);
+
+            if (isErrorWithMessage(formattedMap)) throw formattedMap;
+
+            return formattedMap;
+        });
 
 
         const formattedMod: formattedMod = {
             id: id,
+            revision: revision,
             type: type,
             name: name,
             publisherID: publisherID,
@@ -803,9 +1214,7 @@ const formatMod = function (rawMod: rawMod) {
             shortDescription: shortDescription,
             longDescription: longDescription,
             gamebananaModID: gamebananaModID,
-            maps: rawMod.maps,
-            validated: validated,
-            replaced: replaced,
+            maps: formattedMaps,
         };
 
         if (rawMod.difficulties) {
@@ -1143,8 +1552,8 @@ mapsRouter.use(errorHandler);
 
 
 
-const formatMaps = async function (rawMap: unknown) {
-    
+const formatMaps = function (rawMap: rawMap): formattedMap | errorWithMessage {
+
 }
 
 
@@ -1470,14 +1879,32 @@ const param_modID = <expressRoute>async function (req, res, next) {
             return;
         }
 
-        const modFromID = await prisma.mods.findUnique({
+        const modFromID = await prisma.mods_ids.findUnique({
             where: { id: id },
             include: {
-                publishers: true,
-                maps: true,
                 difficulties: true,
-                map_and_mod_submissions_map_and_mod_submissionsTomods_creationMSubmissionID: true,
-                map_and_mod_submissions_map_and_mod_submissionsTomods_replacementMSubmissionID: true,
+                mods_details: {
+                    where: { NOT: { timeApproved: null } },
+                    orderBy: { revision: "desc" },
+                    take: 1,
+                    include: { publishers: true },
+                },
+                maps_ids: {
+                    where: { maps_details: { some: { NOT: { timeApproved: null } } } },
+                    include: {
+                        maps_details: {
+                            where: { NOT: { timeApproved: null } },
+                            orderBy: { revision: "desc" },
+                            take: 1,
+                            include: {
+                                map_lengths: true,
+                                difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
+                                difficulties_difficultiesTomaps_details_modDifficultyID: true,
+                                users_maps_details_mapperUserIDTousers: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 

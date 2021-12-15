@@ -3,8 +3,8 @@ import ajvModule from "ajv";
 
 
 
-const mapPostWithModSchema = {
-    $id: "mapPostWithModSchema",
+const mapPostSchema = {
+    $id: "mapPostSchema",
     type: "object",
     properties: {
         name: {
@@ -12,12 +12,7 @@ const mapPostWithModSchema = {
             minLength: 1,
             maxLength: 200,
         },
-        minimumModVersion: {
-            type: "string",
-            minLength: 1,
-            maxLength: 15,
-        },
-        assignedDifficulty: {
+        canonicalDifficulty: {
             type: "string",
             minLength: 1,
             maxLength: 50,
@@ -37,16 +32,12 @@ const mapPostWithModSchema = {
             minLength: 1,
             maxLength: 500,
         },
-        mapperUserName: {
+        minimumModVersion: {
             type: "string",
             minLength: 1,
-            maxLength: 50,
+            maxLength: 15,
         },
-        mapperNameString: {
-            type: "string",
-            minLength: 1,
-            maxLength: 50,
-        },
+        mapRemovedFromModBool: { type: "boolean" },
         techAny: {
             type: "array",
             uniqueItems: true,
@@ -140,20 +131,7 @@ const mapPostWithModSchema = {
         },
     ],
     additionalProperties: false,
-    required: ["name", "minimumModVersion", "assignedDifficulty", "length"],
-};
-
-
-const mapPostToModSchema = {
-    type: "object",
-    allOf: [
-        { $ref: "mapPostWithModSchema" },
-        {
-            properties: { updateCurrentModVersion: { type: "boolean" } },
-            required: ["updateCurrentModVersion"],
-        },
-    ],
-    additionalProperties: false,
+    required: ["name", "minimumModVersion", "length"],
 };
 
 
@@ -275,7 +253,7 @@ const mapPutSchema = {
 
 
 
-const ajv = new ajvModule({ allowUnionTypes: true, schemas: {mapPostWithModSchema} });
+const ajv = new ajvModule({ allowUnionTypes: true, schemas: {mapPostSchema} });
 
 
 
@@ -377,6 +355,11 @@ const modPatchSchema = {
             minLength: 1,
             maxLength: 200,
         },
+        publisherName: {
+            type: "string",
+            minLength: 1,
+            maxLength: 100,
+        },
         publisherID: {
             type: "integer",
             minimum: 0,
@@ -451,7 +434,7 @@ const publisherPatchSchema = {
 
 
 
-export const validateMapPostToMod = ajv.compile(mapPostToModSchema);
+export const validateMapPost = ajv.compile(mapPostSchema);
 export const validateMapPatch = ajv.compile(mapPatchSchema);
 export const validateMapPut = ajv.compile(mapPutSchema);
 export const validateModPost = ajv.compile(modPostSchema);

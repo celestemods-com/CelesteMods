@@ -736,24 +736,6 @@ router.route("/:userID/permissions")
 
 
 
-router.route("/:userID/submissions/feedback")
-    .get(async function (req, res, next) {
-        try {
-            const feedbackObjects = await prisma.general_feedback_submissions.findMany({
-                where: { users: { id: req.id } },
-            });
-
-            res.json(feedbackObjects);
-        }
-        catch (error) {
-            next(error);
-        }
-    })
-    .all(methodNotAllowed);
-
-
-
-
 router.use(noRouteError);
 
 router.use(errorHandler);

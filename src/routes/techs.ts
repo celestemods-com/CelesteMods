@@ -168,7 +168,7 @@ router.param("modID", (async function (req, res, next) {
             return;
         }
 
-        const exists = await prisma.mods.findUnique({ where: { id: id } });
+        const exists = await prisma.mods_ids.findUnique({ where: { id: id } });
         if (!exists) {
             res.status(404).json("modID does not exist");
             return;
@@ -187,7 +187,7 @@ router.route("/mod/:modID")
     .get(async function (req, res, next) {
         try {
             const rawTechs = await prisma.tech_list.findMany({
-                where: { maps_to_tech: { some: { maps: { modID: req.id2 } } } },
+                where: { maps_to_tech: { some: { maps_ids: { modID: req.id2 } } } },
                 include: { difficulties: true },
             });
 
@@ -221,7 +221,7 @@ router.param("mapID", (async function (req, res, next) {
             return;
         }
 
-        const exists = await prisma.maps.findUnique({ where: { id: id } });
+        const exists = await prisma.maps_ids.findUnique({ where: { id: id } });
         if (!exists) {
             res.status(404).json("mapID does not exist");
             return;

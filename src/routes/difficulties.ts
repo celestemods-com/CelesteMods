@@ -168,7 +168,7 @@ router.route("/search/mod")
             }
 
 
-            const difficulty = await prisma.difficulties.findMany({ where: { mods: { name: { startsWith: query } } } });
+            const difficulty = await prisma.difficulties.findMany({ where: { mods_ids: { mods_details: { some: { name: { startsWith: query } } } } } });
 
 
             res.json(difficulty);
@@ -193,7 +193,7 @@ router.param("modID", async function (req, res, next) {
             return;
         }
 
-        const exists = await prisma.mods.findUnique({ where: { id: id } });
+        const exists = await prisma.mods_ids.findUnique({ where: { id: id } });
         if (!exists) {
             res.status(404).json("modID does not exist");
             return;
@@ -381,7 +381,7 @@ router.use(errorHandler);
 
 const validateDifficulty = async function (id: number, parentModId: number | null, parentDifficultyId: number | null, order: number): Promise<difficulties | string | null> {
     if (parentModId) {
-        const modFromId = await prisma.mods.findUnique({ where: { id: parentModId } });
+        const modFromId = await prisma.mods_ids.findUnique({ where: { id: parentModId } });
 
         if (!modFromId) return "parentMod not found";
     }

@@ -1,4 +1,4 @@
-import { users, publishers, golden_players, tech_list, difficulties, mods, maps, map_and_mod_submissions } from ".prisma/client";
+import { users, publishers, golden_players, tech_list, difficulties, mods_ids, mods_details, maps_ids, maps_details, map_lengths } from ".prisma/client";
 
 
 export interface createUserData {
@@ -58,29 +58,60 @@ export interface rawTech extends tech_list {
 
 
 
-export interface rawMod extends mods {
-  publishers: publishers;
+export interface rawMod extends mods_ids {
   difficulties: difficulties[];
-  maps: maps[];
-  map_and_mod_submissions_map_and_mod_submissionsTomods_creationMSubmissionID: map_and_mod_submissions;
-  map_and_mod_submissions_map_and_mod_submissionsTomods_replacementMSubmissionID: map_and_mod_submissions | null;
+  mods_details: rawModDetails[];
+  maps_ids: rawMap[];
 }
 
+interface rawModDetails extends mods_details {
+  publishers: publishers;
+}
+
+
+
 export interface createChildDifficultyForMod {
+  id?: number;
   name: string;
   description?: string;
   order: number;
 }
 
 export interface createParentDifficultyForMod extends createChildDifficultyForMod {
-  other_difficulties?: {create: createChildDifficultyForMod[]};
+  other_difficulties?: { create: createChildDifficultyForMod[] };
+}
+
+export interface createMapWithMod {
+  name: string;
+  canonicalDifficulty?: string;
+  length: string;
+  description?: string;
+  notes?: string;
+  mapperUserID?: number;
+  mapperUserName?: string;
+  mapperNameString?: string;
+  chapter?: number;
+  side?: string;
+  modDifficulty?: string | string[];
+  overallRank?: number;
+  minimumModVersion: string;
+  mapRemovedFromModBool: boolean;
+  techAny?: string[];
+  techFC?: string[];
 }
 
 
 
 
-export interface rawMap extends maps {
+export interface rawMap extends maps_ids  {
+  maps_details: rawMapDetails[];
+}
 
+interface rawMapDetails extends maps_details {
+  map_lengths: map_lengths;
+  difficulties_difficultiesTomaps_details_canonicalDifficultyID: difficulties;
+  difficulties_difficultiesTomaps_details_modDifficultyID: difficulties | null;
+  users_maps_details_mapperUserIDTousers: users | null;
 }
 
 
@@ -88,14 +119,4 @@ export interface rawMap extends maps {
 
 export interface rawPublisher extends publishers {
 
-}
-
-
-
-
-export interface createMSubmissionData {
-  timeSubmitted: number;
-  users_map_and_mod_submissions_submittedByTousers: { connect: { id: number } },
-  timeApproved?: number | null;
-  users_map_and_mod_submissions_approvedByTousers?: { connect: { id: number } };
 }

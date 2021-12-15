@@ -1,4 +1,4 @@
-import { difficulties, maps } from ".prisma/client";
+import { difficulties } from ".prisma/client";
 
 interface formattedUser {
   id: number;
@@ -23,6 +23,7 @@ interface formattedTech {
 
 interface formattedMod {
   id: number;
+  revision: number;
   type: string;
   name: string;
   publisherID: number;
@@ -32,10 +33,8 @@ interface formattedMod {
   shortDescription: string;
   longDescription?: string;
   gamebananaModID?: number;
-  maps: maps[];
+  maps: formattedMap[];
   difficulties?: (string | string[])[];
-  validated: boolean;
-  replaced?: number;
 }
 
 interface formattedMap {
