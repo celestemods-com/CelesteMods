@@ -272,6 +272,13 @@ modsRouter.route("/")
             });
 
 
+            if (modUsesCustomDifficultiesBool && modType !== "Normal") {
+                //next task = implement connecting modDifficulty
+                //modDifficulty has already been checked by a helper function before the transaction, but could not be connected in the transaction
+                throw "not implemented yet";
+            }
+
+
             const rawMod = <rawMod>rawModAndStatus[0];
             const status = <number>rawModAndStatus[1];
 
