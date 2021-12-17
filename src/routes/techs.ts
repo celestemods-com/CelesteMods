@@ -187,7 +187,7 @@ router.route("/mod/:modID")
     .get(async function (req, res, next) {
         try {
             const rawTechs = await prisma.tech_list.findMany({
-                where: { maps_to_tech: { some: { maps_ids: { modID: req.id2 } } } },
+                where: { maps_to_tech: { some: { maps_details_maps_detailsTomaps_to_tech_mapID: { maps_ids: { modID: req.id2 } } } } },
                 include: { difficulties: true },
             });
 

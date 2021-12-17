@@ -5,8 +5,11 @@ import { prisma } from "../prismaClient";
 import { validateMapPost, validateMapPatch, validateMapPut, validateModPost, validateModPatch, validatePublisherPatch } from "../jsonSchemas/maps-mods-publishers";
 import { errorWithMessage, isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { expressRoute } from "../types/express";
-import { mods_details, mods_details_type, publishers, difficulties, users } from ".prisma/client";
-import { rawMod, rawMap, rawPublisher, createParentDifficultyForMod, createChildDifficultyForMod, createMapWithMod } from "../types/internal";
+import { mods_details, mods_details_type, publishers, difficulties, map_lengths } from ".prisma/client";
+import {
+    rawMod, rawMap, rawPublisher, createParentDifficultyForMod, createChildDifficultyForMod, jsonCreateMapWithMod, mapIdCreationObject,
+    mapDetailsCreationObject, mapToTechCreationObject, defaultDifficultyForMod, submitterUser
+} from "../types/internal";
 import { formattedMod, formattedMap, formattedPublisher } from "../types/frontend";
 
 
@@ -18,9 +21,26 @@ const submissionsRouter = express.Router();
 
 
 
+interface difficultyNamesArrayElement {
+    id?: number,
+    name: string,
+}
+
+
+
+
+const canonicalDifficultyNameErrorMessage = "canonicalDifficulty does not match any default parent difficulty names";
+const techNameErrorMessage = "A tech name in techAny did not match the names of any tech in the celestemods.com database";
+const lengthErrorMessage = "length does not match the name of any map lengths in the celestemods.com database";
+const invalidMapperUserIdErrorMessage = "No user found with ID = ";
+const invalidMapDifficultyErrorMessage = `All maps in a non-Normal mod must be assigned a modDifficulty that matches the difficulties used by the mod (whether default or custom).
+If the mod uses sub-difficulties, modDifficulty must be given in the form [difficulty, sub-difficulty].`;
+
+
+
 
 //comment out for production
-const submitterUser: users = {
+const submittingUser: submitterUser = {
     id: 5,
     displayName: "steve",
     discordID: "5",
@@ -29,6 +49,7 @@ const submitterUser: users = {
     displayDiscord: false,
     timeCreated: 1,
     permissions: "",
+    permissionsArray: [],
     accountStatus: "Active",
     timeDeletedOrBanned: null,
 };
@@ -84,7 +105,7 @@ modsRouter.route("/")
     })
     .post(async function (req, res, next) {
         try {
-            const type: mods_details_type = req.body.type;
+            const modType: mods_details_type = req.body.type;
             const name: string = req.body.name;
             const publisherName: string | undefined = req.body.publisherName;
             const publisherID: number | undefined = req.body.publisherID;
@@ -96,12 +117,12 @@ modsRouter.route("/")
             const longDescription: string | undefined = req.body.longDescription;
             const gamebananaModID: number = req.body.gamebananaModID;
             const difficultyNames: (string | string[])[] | undefined = req.body.difficulties;
-            const maps = req.body.maps;
+            const maps: jsonCreateMapWithMod[] = req.body.maps;
             const currentTime = Math.floor(new Date().getTime() / 1000);
 
 
             const valid = validateModPost({
-                type: type,
+                type: modType,
                 name: name,
                 publisherName: publisherName,
                 publisherID: publisherID,
@@ -124,53 +145,46 @@ modsRouter.route("/")
 
             const publisherConnectionObject = await getPublisherConnectionObject(res, userID, publisherGamebananaID, publisherID, publisherName);
 
+            if (res.errorSent) return;
+
             if (!publisherConnectionObject || isErrorWithMessage(publisherConnectionObject)) {
                 throw `publisherConnectionObject = "${publisherConnectionObject}"`;
             }
 
 
+            let difficultyNamesArray: difficultyNamesArrayElement[] = [];
             let difficultiesCreationArray: createParentDifficultyForMod[] = [];
+            let defaultDifficultyObjectsArray: defaultDifficultyForMod[] = [];
+            let modHasSubDifficultiesBool = true;
+            let modUsesCustomDifficultiesBool = true;
 
             if (difficultyNames) {
-                const diffiucultyArrays = await getDifficultyArrays(difficultyNames);
+                const difficultyArrays = getDifficultyArrays(difficultyNames);
 
-                if (isErrorWithMessage(diffiucultyArrays)) throw diffiucultyArrays;
+                if (isErrorWithMessage(difficultyArrays)) throw difficultyArrays;
 
-                difficultiesCreationArray = <createParentDifficultyForMod[]>diffiucultyArrays[0];
+                difficultyNamesArray = <difficultyNamesArrayElement[]>difficultyArrays[0];
+                difficultiesCreationArray = <createParentDifficultyForMod[]>difficultyArrays[1];
+                modHasSubDifficultiesBool = <boolean>difficultyArrays[2];
+
+                modUsesCustomDifficultiesBool = true;
+            }
+            else {
+                defaultDifficultyObjectsArray = await prisma.difficulties.findMany({
+                    where: { parentModID: null },
+                    include: { other_difficulties: true },
+                });
+
+                if (!defaultDifficultyObjectsArray.length) throw "there are no default difficulties";
             }
 
 
-            const mapsCreationObject = maps.map((mapObject: createMapWithMod) => {
+            const lengthObjectArray = await prisma.map_lengths.findMany();
 
-            });
+            const mapsIDsCreationArray = await getMapIDsCreationArray(res, maps, currentTime, modType, lengthObjectArray,
+                difficultiesCreationArray, defaultDifficultyObjectsArray, modUsesCustomDifficultiesBool, modHasSubDifficultiesBool);
 
-            const test = await prisma.mods_ids.create({
-                data: { //@ts-ignore
-                    mods_details: {create: [{}]},
-                    maps_ids: {
-                        create: [{
-                            maps_details: {
-                                create: [{
-                                    name: "test",
-                                    //.......
-                                }]
-                            }
-                        }]
-                    }
-                }
-            })
-
-            // const test2 = await prisma.maps_ids.create({
-            //     data: {
-            //         mods_ids: { connect: { id: 1 } },
-            //         maps_details: {
-            //             create: [{
-            //                 name: "test",
-                            
-            //             }]
-            //         }
-            //     }
-            // })
+            if (res.errorSent) return;
 
 
             const rawModAndStatus = await prisma.$transaction(async () => {
@@ -213,7 +227,7 @@ modsRouter.route("/")
                         difficulties: { create: difficultiesCreationArray },
                         mods_details: {
                             create: [{
-                                type: type,
+                                type: modType,
                                 name: name,
                                 publishers: publisherConnectionObject,
                                 contentWarning: contentWarning,
@@ -222,10 +236,10 @@ modsRouter.route("/")
                                 longDescription: longDescription,
                                 gamebananaModID: gamebananaModID,
                                 timeSubmitted: currentTime,
-                                users_mods_details_submittedByTousers: { connect: { id: submitterUser.id } },
+                                users_mods_details_submittedByTousers: { connect: { id: submittingUser.id } },
                             }],
                         },
-                        maps_ids: mapsCreationObject,
+                        maps_ids: { create: mapsIDsCreationArray},
                     },
                     include: {
                         difficulties: true,
@@ -903,6 +917,8 @@ modsRouter.route("/:modID")
 
             const publisherConnectionObject = await getPublisherConnectionObject(res, userID, publisherGamebananaID, publisherID, publisherName);
 
+            if (res.errorSent) return;
+
             if (!publisherConnectionObject || isErrorWithMessage(publisherConnectionObject)) {
                 throw `publisherConnectionObject = "${publisherConnectionObject}"`;
             }
@@ -910,13 +926,16 @@ modsRouter.route("/:modID")
 
             let difficultyNamesArray: { name: string }[] = [];
             let difficultiesDataArray: createParentDifficultyForMod[] = [];
+            let modHasSubDifficultiesBool = true;
+
             if (difficultyNames) {
-                const difficultyArrays = await getDifficultyArrays(difficultyNames);
+                const difficultyArrays = getDifficultyArrays(difficultyNames);
 
                 if (isErrorWithMessage(difficultyArrays)) throw difficultyArrays;
 
-                difficultyNamesArray = difficultyArrays[0];
+                difficultyNamesArray = <difficultyNamesArrayElement[]>difficultyArrays[0];
                 difficultiesDataArray = <createParentDifficultyForMod[]>difficultyArrays[1];
+                modHasSubDifficultiesBool = <boolean>difficultyArrays[2];
             }
 
             for (const parentDifficulty of difficultiesDataArray) {
@@ -1008,7 +1027,9 @@ modsRouter.use(errorHandler);
 
 
 
-const getPublisherConnectionObject = async function (res: Response, userID?: number, publisherGamebananaID?: number, publisherID?: number, publisherName?: string): Promise<{} | void | errorWithMessage> {
+const getPublisherConnectionObject = async function (res: Response, userID?: number, publisherGamebananaID?: number,
+    publisherID?: number, publisherName?: string): Promise<{} | void | errorWithMessage> {
+
     try {
         let publisherConnectionObject = {};
 
@@ -1021,11 +1042,13 @@ const getPublisherConnectionObject = async function (res: Response, userID?: num
 
             if (!userFromID) {
                 res.status(404).json("userID not found");
+                res.errorSent = true;
                 return;
             }
 
             if (userFromID.publishers.length < 1) {
                 res.status(400).json("Specified user has no associated publishers.");
+                res.errorSent = true;
                 return;
             }
 
@@ -1035,7 +1058,9 @@ const getPublisherConnectionObject = async function (res: Response, userID?: num
                     return publisher.id;
                 });
 
-                res.status(400).json("Specified user has more than 1 associated publisher. Please specify publisherID instead.\nPublisher IDs associated with the specified user are: " + publisherIDArray);
+                res.status(400).json(`Specified user has more than 1 associated publisher. Please specify publisherID instead.
+                Publisher IDs associated with the specified user are: ${publisherIDArray}`);
+                res.errorSent = true;
                 return;
             }
 
@@ -1054,6 +1079,7 @@ const getPublisherConnectionObject = async function (res: Response, userID?: num
 
                 if (nameFromGamebanana == "false") {
                     res.status(404).json("Specified Member ID does not exist on GameBanana.");
+                    res.errorSent = true;
                     return;
                 }
 
@@ -1070,6 +1096,7 @@ const getPublisherConnectionObject = async function (res: Response, userID?: num
 
             if (!publisherFromID) {
                 res.status(404).json("publisherID not found.");
+                res.errorSent = true;
                 return;
             }
 
@@ -1084,7 +1111,9 @@ const getPublisherConnectionObject = async function (res: Response, userID?: num
                     return publisher.id;
                 });
 
-                res.status(400).json("More than one publisher has the specified name. Please specify publisherID instead.\nPublisher IDs with the specified name are: " + publisherIDArray);
+                res.status(400).json(`More than one publisher has the specified name. Please specify publisherID instead.
+                Publisher IDs with the specified name are: ${publisherIDArray}`);
+                res.errorSent = true;
                 return;
             }
 
@@ -1098,6 +1127,7 @@ const getPublisherConnectionObject = async function (res: Response, userID?: num
 
                 if (gamebananaID === -1) {
                     res.status(404).json("Specified username does not exist on GameBanana.");
+                    res.errorSent = true;
                     return;
                 }
 
@@ -1121,16 +1151,17 @@ const getPublisherConnectionObject = async function (res: Response, userID?: num
 
 
 
-const getDifficultyArrays = async function (difficultyNames: (string | string[])[]) {
+const getDifficultyArrays = function (difficultyNames: (string | string[])[]) {
     try {
         let difficultyNamesArray: { name: string }[] = [];
-        let diffiucultiesDataArray: createParentDifficultyForMod[] = [];
+        let difficultiesDataArray: createParentDifficultyForMod[] = [];
+        let modHasSubDifficultiesBool = false;
 
         for (let parentDifficultyIndex = 0; parentDifficultyIndex < difficultyNames.length; parentDifficultyIndex++) {
             const parentDifficultyStringOrArray = difficultyNames[parentDifficultyIndex];
 
             if (typeof parentDifficultyStringOrArray === "string") {
-                diffiucultiesDataArray.push({
+                difficultiesDataArray.push({
                     name: parentDifficultyStringOrArray,
                     order: parentDifficultyIndex + 1,
                 });
@@ -1138,6 +1169,7 @@ const getDifficultyArrays = async function (difficultyNames: (string | string[])
                 continue;
             }
 
+            modHasSubDifficultiesBool = true;
             const childDifficultyArray: createChildDifficultyForMod[] = [];
 
             for (let childDifficultyIndex = 1; childDifficultyIndex < parentDifficultyStringOrArray.length; childDifficultyIndex++) {
@@ -1151,7 +1183,7 @@ const getDifficultyArrays = async function (difficultyNames: (string | string[])
                 difficultyNamesArray.push({ name: childDifficultyName });
             }
 
-            diffiucultiesDataArray.push({
+            difficultiesDataArray.push({
                 name: parentDifficultyStringOrArray[0],
                 order: parentDifficultyIndex + 1,
                 other_difficulties: { create: childDifficultyArray },
@@ -1160,7 +1192,7 @@ const getDifficultyArrays = async function (difficultyNames: (string | string[])
             difficultyNamesArray.push({ name: parentDifficultyStringOrArray[0] });
         }
 
-        const returnArray: ({ name: string }[] | createParentDifficultyForMod[])[] = [difficultyNamesArray, diffiucultiesDataArray];
+        const returnArray: ({ name: string }[] | createParentDifficultyForMod[] | boolean)[] = [difficultyNamesArray, difficultiesDataArray, modHasSubDifficultiesBool];
 
         return returnArray;
     }
@@ -1218,88 +1250,7 @@ const formatMod = function (rawMod: rawMod) {
         };
 
         if (rawMod.difficulties) {
-            const parentDifficultyArray: difficulties[] = [];
-            const subDifficultiesArray: difficulties[][] = [];
-
-            for (const difficulty of rawMod.difficulties) {     //iterate through all difficulties
-                const parentDifficultyID = difficulty.parentDifficultyID;
-
-                if (parentDifficultyID === null) {      //parent difficulties are added to parentDifficultyArray
-                    parentDifficultyArray.push(difficulty);
-                    continue;
-                }
-
-
-                let alreadyListed = false;      //sub-difficulties are added to an array of their siblings, which is an element of subDifficultiesArray
-
-                for (const siblingArray of subDifficultiesArray) {
-                    if (siblingArray[0].parentDifficultyID === parentDifficultyID) {
-                        siblingArray.push(difficulty);
-                        alreadyListed = true;
-                        break;
-                    }
-                }
-
-                if (!alreadyListed) {
-                    subDifficultiesArray.push([difficulty]);
-                }
-            }
-
-
-            const formattedArray: (string | string[])[] = [];   //the array that will be added to formattedMod
-
-            for (let parentOrder = 1; parentOrder <= parentDifficultyArray.length; parentOrder++) {   //iterate through all parent difficulties
-                let parentId = NaN;
-                let parentName = "";
-                let hasChildren = false;
-
-                for (const difficulty of parentDifficultyArray) {   //find the parent difficulty that matches the current value of parentOrder
-                    if (difficulty.order === parentOrder) {
-                        parentId = difficulty.id;
-                        parentName = difficulty.name;
-                        break;
-                    }
-                }
-
-                for (const siblingArray of subDifficultiesArray) {      //check any of the sibling arrays contain children of the current parent difficulty
-                    if (siblingArray[0].parentDifficultyID === id) {
-                        const parentAndChildrenArray = [parentName];    //the parent does have children, so create an array with the parent's name as element 0
-
-                        for (let siblingOrder = 1; siblingOrder <= siblingArray.length; siblingOrder++) {   //iterate through the parent's children
-                            for (const sibling of siblingArray) {       //find the sibling difficulty that matches the current value of siblingOrder
-                                if (sibling.order === siblingOrder) {
-                                    parentAndChildrenArray.push(sibling.name);  //add the matching sibling's name to the array
-                                    break;
-                                }
-                            }
-                        }
-
-                        formattedArray.push(parentAndChildrenArray);    //push the finished array to formattedArray
-                        hasChildren = true;
-                        break;
-                    }
-                }
-
-                if (!hasChildren) {     //the parent does not have children, so add it to formattedArray as a string
-                    formattedArray.push(parentName);
-                }
-            }
-
-
-            formattedArray.forEach((parentDifficulty) => {      //check that all orders are continuous
-                if (parentDifficulty === "") {
-                    throw `Parent difficulty orders for mod ${id} are not continuous`;
-                }
-
-                if (parentDifficulty instanceof Array) {
-                    parentDifficulty.forEach((childDifficulty) => {
-                        if (childDifficulty === "") {
-                            throw `Child difficulty orders for parent difficulty ${parentDifficulty[0]} in mod ${id} are not continuous`;
-                        }
-                    });
-                }
-            });
-
+            const formattedArray = getSortedDifficultyNames(rawMod.difficulties, id);
 
             formattedMod.difficulties = formattedArray;
         }
@@ -1311,6 +1262,96 @@ const formatMod = function (rawMod: rawMod) {
         return toErrorWithMessage(error);
     }
 };
+
+
+
+
+const getSortedDifficultyNames = function (difficulties: difficulties[], modID: number) {
+    const parentDifficultyArray: difficulties[] = [];
+    const subDifficultiesArray: difficulties[][] = [];
+
+    for (const difficulty of difficulties) {     //iterate through all difficulties
+        const parentDifficultyID = difficulty.parentDifficultyID;
+
+        if (parentDifficultyID === null) {      //parent difficulties are added to parentDifficultyArray
+            parentDifficultyArray.push(difficulty);
+            continue;
+        }
+
+
+        let alreadyListed = false;      //sub-difficulties are added to an array of their siblings, which is an element of subDifficultiesArray
+
+        for (const siblingArray of subDifficultiesArray) {
+            if (siblingArray[0].parentDifficultyID === parentDifficultyID) {
+                siblingArray.push(difficulty);
+                alreadyListed = true;
+                break;
+            }
+        }
+
+        if (!alreadyListed) {
+            subDifficultiesArray.push([difficulty]);
+        }
+    }
+
+
+    const formattedArray: (string | string[])[] = [];   //the array that will be added to formattedMod
+
+    for (let parentOrder = 1; parentOrder <= parentDifficultyArray.length; parentOrder++) {   //iterate through all parent difficulties
+        let parentId = NaN;
+        let parentName = "";
+        let hasChildren = false;
+
+        for (const difficulty of parentDifficultyArray) {   //find the parent difficulty that matches the current value of parentOrder
+            if (difficulty.order === parentOrder) {
+                parentId = difficulty.id;
+                parentName = difficulty.name;
+                break;
+            }
+        }
+
+        for (const siblingArray of subDifficultiesArray) {      //check any of the sibling arrays contain children of the current parent difficulty
+            if (siblingArray[0].parentDifficultyID === parentId) {
+                const parentAndChildrenArray = [parentName];    //the parent does have children, so create an array with the parent's name as element 0
+
+                for (let siblingOrder = 1; siblingOrder <= siblingArray.length; siblingOrder++) {   //iterate through the parent's children
+                    for (const sibling of siblingArray) {       //find the sibling difficulty that matches the current value of siblingOrder
+                        if (sibling.order === siblingOrder) {
+                            parentAndChildrenArray.push(sibling.name);  //add the matching sibling's name to the array
+                            break;
+                        }
+                    }
+                }
+
+                formattedArray.push(parentAndChildrenArray);    //push the finished array to formattedArray
+                hasChildren = true;
+                break;
+            }
+        }
+
+        if (!hasChildren) {     //the parent does not have children, so add it to formattedArray as a string
+            formattedArray.push(parentName);
+        }
+    }
+
+
+    formattedArray.forEach((parentDifficulty) => {      //check that all orders are continuous
+        if (parentDifficulty === "") {
+            throw `Parent difficulty orders for mod ${modID} are not continuous`;
+        }
+
+        if (parentDifficulty instanceof Array) {
+            parentDifficulty.forEach((childDifficulty) => {
+                if (childDifficulty === "") {
+                    throw `Child difficulty orders for parent difficulty ${parentDifficulty[0]} in mod ${modID} are not continuous`;
+                }
+            });
+        }
+    });
+
+
+    return formattedArray;
+}
 
 
 
@@ -1552,9 +1593,337 @@ mapsRouter.use(errorHandler);
 
 
 
+const getMapIDsCreationArray = async function (res: Response, maps: jsonCreateMapWithMod[], currentTime: number, modType: mods_details_type, lengthObjectArray: map_lengths[],
+    difficultiesCreationArray: createParentDifficultyForMod[], defaultDifficultyObjectsArray: defaultDifficultyForMod[],
+    modUsesCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean) {
+
+    try {
+        const mapIDsCreationArray: mapIdCreationObject[] = await Promise.all(
+            maps.map(
+                async (mapObject: jsonCreateMapWithMod) => {
+                    const mapIdCreationObject = await getMapIdCreationObject(mapObject, currentTime, modType, lengthObjectArray,
+                        difficultiesCreationArray, defaultDifficultyObjectsArray, modUsesCustomDifficultiesBool, modHasSubDifficultiesBool);
+
+                    return mapIdCreationObject;
+                }
+            )
+        );
+
+        return mapIDsCreationArray;
+    }
+    catch (error) {
+        if (error === canonicalDifficultyNameErrorMessage) {
+            res.status(404).json(canonicalDifficultyNameErrorMessage);
+            res.errorSent = true;
+            return;
+        }
+        if (error === techNameErrorMessage) {
+            res.status(404).json(techNameErrorMessage);
+            res.errorSent = true;
+            return;
+        }
+        if (error === lengthErrorMessage) {
+            res.status(404).json(lengthErrorMessage);
+            res.errorSent = true;
+            return;
+        }
+        if (typeof error === "string" && error.includes(invalidMapperUserIdErrorMessage)) {
+            res.status(404).json(error);
+            res.errorSent = true;
+            return;
+        }
+        if (error === invalidMapDifficultyErrorMessage) {
+            res.status(400).json(invalidMapDifficultyErrorMessage);
+            res.errorSent = true;
+            return;
+        }
+
+        throw error;
+    }
+}
+
+
+
+
+const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, currentTime: number, modType: mods_details_type,
+    lengthObjectArray: map_lengths[], customDifficultiesArray: createParentDifficultyForMod[], defaultDifficultyObjectsArray: defaultDifficultyForMod[],
+    modUsesCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean) {
+
+    const mapName = mapObject.name;
+    const lengthName = mapObject.length;
+    const mapDescription = mapObject.description;
+    const mapNotes = mapObject.notes;
+    const mapMinimumModVersion = mapObject.minimumModVersion;
+    const mapRemovedFromModBool = mapObject.mapRemovedFromModBool;
+    const techAny = mapObject.techAny;
+    const techFC = mapObject.techFC;
+    const canonicalDifficultyName = mapObject.canonicalDifficulty;
+    const mapperUserID = mapObject.mapperUserID;
+    const mapperNameString = mapObject.mapperNameString;
+    const chapter = mapObject.chapter;
+    const side = mapObject.side;
+    const modDifficulty = mapObject.modDifficulty;
+    const overallRank = mapObject.overallRank;
+
+
+    const canonicalDifficultyID = await getCanonicalDifficultyID(canonicalDifficultyName, techAny);
+
+
+    let lengthID = 0;
+
+    for (const length of lengthObjectArray) {
+        if (length.name === lengthName) {
+            lengthID = length.id;
+            break;
+        }
+    }
+
+    if (lengthID === 0) throw lengthErrorMessage;
+
+
+    const mapIdCreationObject: mapIdCreationObject = {
+        map_details: {
+            create: [{
+                name: mapName,
+                canonicalDifficulty: canonicalDifficultyID,
+                map_lengths: { connect: { id: lengthID } },
+                description: mapDescription,
+                notes: mapNotes,
+                minimumModVersion: mapMinimumModVersion,
+                mapRemovedFromModBool: mapRemovedFromModBool,
+                timeSubmitted: currentTime,
+                users_maps_details_submittedByTousers: { connect: { id: submittingUser.id } },
+            }],
+        },
+    };
+
+
+    const privilegedUserBool = privilegedUser(submittingUser);
+
+    if (isErrorWithMessage(privilegedUserBool)) throw privilegedUserBool;
+
+    if (privilegedUserBool) {
+        mapIdCreationObject.map_details.create[0].timeApproved = currentTime;
+        mapIdCreationObject.map_details.create[0].users_maps_details_approvedByTousers = { connect: { id: submittingUser.id } };
+    }
+
+
+    if (mapperUserID) {
+        const userFromID = await prisma.users.findUnique({ where: { id: mapperUserID } });
+
+        if (!userFromID) throw invalidMapperUserIdErrorMessage + `${mapperUserID}`;
+
+        mapIdCreationObject.map_details.create[0].users_maps_details_mapperUserIDTousers = { connect: { id: mapperUserID } };
+    }
+    else if (mapperNameString) {
+        mapIdCreationObject.map_details.create[0].mapperNameString = mapperNameString;
+    }
+
+
+    if (modType === "Normal") {
+        mapIdCreationObject.map_details.create[0].chapter = chapter;
+        mapIdCreationObject.map_details.create[0].side = side;
+    }
+    else {
+        handleNonNormalMods(mapIdCreationObject, modType, overallRank, modDifficulty, customDifficultiesArray,
+            defaultDifficultyObjectsArray, modUsesCustomDifficultiesBool, modHasSubDifficultiesBool);
+    }
+
+
+    if (techAny || techFC) {
+        const techCreationObjectArray: mapToTechCreationObject[] = [];
+
+
+        if (techAny) {
+            techAny.forEach((techName) => {
+                const techCreationObject = {
+                    maps_details_maps_detailsTomaps_to_tech_revision: 0,
+                    tech_list: { connect: { name: techName } },
+                    fullClearOnlyBool: false,
+                };
+
+                techCreationObjectArray.push(techCreationObject);
+            });
+        }
+
+
+        if (techFC) {
+            techFC.forEach((techName) => {
+                const techCreationObject = {
+                    maps_details_maps_detailsTomaps_to_tech_revision: 0,
+                    tech_list: { connect: { name: techName } },
+                    fullClearOnlyBool: true,
+                };
+
+                techCreationObjectArray.push(techCreationObject);
+            });
+        }
+
+
+        mapIdCreationObject.map_details.create[0].maps_to_tech_maps_detailsTomaps_to_tech_mapID = { create: techCreationObjectArray };
+    }
+
+
+    return mapIdCreationObject;
+};
+
+
+
+
+const handleNonNormalMods = function (mapIdCreationObject: mapIdCreationObject, modType: mods_details_type, overallRank: number | undefined,
+    modDifficulty: string | string[] | undefined, customDifficultiesArray: createParentDifficultyForMod[],
+    defaultDifficultyObjectsArray: defaultDifficultyForMod[], modUsesCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean) {
+
+    if (modType === "Contest") {
+        mapIdCreationObject.map_details.create[0].overallRank = overallRank;
+    }
+
+    if (!modDifficulty) throw invalidMapDifficultyErrorMessage;
+
+    let validModDifficultyBool = false;
+
+    if (modUsesCustomDifficultiesBool) {
+        if (!customDifficultiesArray.length) throw "customDifficultiesArray is empty";
+
+        if (modHasSubDifficultiesBool) {
+            if (!(modDifficulty instanceof Array)) throw invalidMapDifficultyErrorMessage;
+
+            for (const difficulty of customDifficultiesArray) {
+                if (!difficulty.other_difficulties) continue;
+
+                if (difficulty.name === modDifficulty[0]) {
+                    for (const childDifficulty of difficulty.other_difficulties.create) {
+                        if (childDifficulty.name === modDifficulty[1]) {
+                            validModDifficultyBool = true;
+                            break;
+                        }
+                    }
+
+                    break;
+                }
+            }
+        }
+        else {
+            for (const difficulty of customDifficultiesArray) {
+                if (typeof modDifficulty !== "string") throw invalidMapDifficultyErrorMessage;
+
+                if (difficulty.name === modDifficulty) {
+                    validModDifficultyBool = true;
+                    break;
+                }
+            }
+        }
+    }
+    else {
+        if (!defaultDifficultyObjectsArray.length) throw "defaultDifficultyObjectsArray is empty";
+
+        if (!(modDifficulty instanceof Array)) throw invalidMapDifficultyErrorMessage;
+
+        for (const difficulty of defaultDifficultyObjectsArray) {
+            if (!difficulty.other_difficulties || !difficulty.other_difficulties.length) continue;
+
+            if (difficulty.name === modDifficulty[0]) {
+                for (const childDifficulty of difficulty.other_difficulties) {
+                    if (childDifficulty.name === modDifficulty[1]) {
+                        validModDifficultyBool = true;
+                        mapIdCreationObject.map_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: childDifficulty.id } };
+                        break;
+                    }
+                }
+
+                break;
+            }
+        }
+    }
+}
+
+
+
+
+const getCanonicalDifficultyID = async function (canonicalDifficultyName: string | null | undefined, techAny: string[] | undefined) {
+    const parentDefaultDifficultyObjectsArray = await prisma.difficulties.findMany({
+        where: {
+            parentModID: null,
+            parentDifficultyID: null,
+        },
+    });
+
+
+    if (canonicalDifficultyName) {
+        for (const parentDifficulty of parentDefaultDifficultyObjectsArray) {
+            if (parentDifficulty.name === canonicalDifficultyName) {
+                return parentDifficulty.id;
+            }
+        }
+
+        throw canonicalDifficultyNameErrorMessage;
+    }
+    else {
+        if (!techAny) {
+            let easiestDifficultyID = 0;
+            let easiestDifficultyOrder = 99999;
+            for (const parentDifficulty of parentDefaultDifficultyObjectsArray) {
+                if (parentDifficulty.order === easiestDifficultyOrder) {
+                    throw "Two default parent difficulties have the same order";
+                }
+                if (parentDifficulty.order < easiestDifficultyOrder) {
+                    easiestDifficultyID = parentDifficulty.id;
+                    easiestDifficultyOrder = parentDifficulty.order;
+                }
+            }
+
+            if (easiestDifficultyID === 0) {
+                throw "Unable to find easiest parent default difficulty";
+            }
+
+            return easiestDifficultyID;
+        }
+
+        const techObjectsWithDifficultyObjectsArray = await prisma.tech_list.findMany({ include: { difficulties: true } });
+
+        let highestDifficultyID = 0;
+        let highestDifficultyOrder = 0;
+
+        for (const techName of techAny) {
+            let validTechName = false;
+
+            for (const techObject of techObjectsWithDifficultyObjectsArray) {
+                if (techObject.name === techName) {
+                    const difficultyOrder = techObject.difficulties.order;
+                    validTechName = true;
+
+                    if (difficultyOrder === highestDifficultyOrder) {
+                        throw "Two default parent difficulties have the same order";
+                    }
+
+                    if (difficultyOrder > highestDifficultyOrder) {
+                        highestDifficultyID = techObject.defaultDifficultyID;
+                        highestDifficultyOrder = difficultyOrder;
+                    }
+
+                    break;
+                }
+            }
+
+            if (!validTechName) {
+                throw techNameErrorMessage;
+            }
+        }
+
+        if (highestDifficultyID === 0) {
+            throw "Unable to find highestDifficultyID";
+        }
+
+        return highestDifficultyID;
+    }
+};
+
+
+
+
 const formatMaps = function (rawMap: rawMap): formattedMap | errorWithMessage {
 
-}
+};
 
 
 
@@ -1937,6 +2306,26 @@ const param_mapID = <expressRoute>async function (req, res, next) {
 
 
 
+
+
+
+
+const privilegedUser = function (user: submitterUser) {
+    try {
+        const permArray = user.permissionsArray;
+
+        if (!permArray.length) return false;
+
+        for (const perm of permArray) {
+            if (perm === "Super_Admin" || perm === "Admin" || perm === "Map_Moderator") return true;
+        }
+
+        return false;
+    }
+    catch (error) {
+        return toErrorWithMessage(error);
+    }
+}
 
 
 

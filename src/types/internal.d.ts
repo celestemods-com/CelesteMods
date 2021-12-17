@@ -1,4 +1,4 @@
-import { users, publishers, golden_players, tech_list, difficulties, mods_ids, mods_details, maps_ids, maps_details, map_lengths } from ".prisma/client";
+import { users, publishers, golden_players, tech_list, difficulties, mods_ids, mods_details, maps_ids, maps_details, maps_details_side, map_lengths } from ".prisma/client";
 
 
 export interface createUserData {
@@ -23,6 +23,10 @@ export interface updateUserData {
 export interface rawUser extends users {
   publishers: publishers[];
   golden_players: golden_players | null;
+}
+
+export interface submitterUser extends users {
+  permissionsArray: string[];
 }
 
 
@@ -81,17 +85,20 @@ export interface createParentDifficultyForMod extends createChildDifficultyForMo
   other_difficulties?: { create: createChildDifficultyForMod[] };
 }
 
-export interface createMapWithMod {
+export interface defaultDifficultyForMod extends difficulties {
+  other_difficulties?: difficulties[];
+}
+
+export interface jsonCreateMapWithMod {
   name: string;
-  canonicalDifficulty?: string;
+  canonicalDifficulty?: string | null;
   length: string;
   description?: string;
   notes?: string;
   mapperUserID?: number;
-  mapperUserName?: string;
   mapperNameString?: string;
   chapter?: number;
-  side?: string;
+  side?: maps_details_side;
   modDifficulty?: string | string[];
   overallRank?: number;
   minimumModVersion: string;
@@ -101,9 +108,45 @@ export interface createMapWithMod {
 }
 
 
+export interface mapIdCreationObject {
+  map_details: {
+    create: mapDetailsCreationObject[]
+  }
+}
+
+export interface mapDetailsCreationObject {
+  name: string;
+  canonicalDifficulty: number;
+  map_lengths: { connect: { id: number } };
+  description?: string;
+  notes?: string;
+  minimumModVersion: string;
+  mapRemovedFromModBool: boolean;
+  users_maps_details_mapperUserIDTousers?: { connect: { id: number } };
+  mapperNameString?: string;
+  timeSubmitted: number;
+  users_maps_details_submittedByTousers: { connect: { id: number } };
+  timeApproved?: number;
+  users_maps_details_approvedByTousers?: { connect: { id: number } };
+  chapter?: number;
+  side?: maps_details_side;
+  difficulties_difficultiesTomaps_details_modDifficultyID?: { connect: { id: number } };
+  overallRank?: number;
+  maps_to_tech_maps_detailsTomaps_to_tech_mapID?: {
+    create: mapToTechCreationObject[]
+  }
+}
+
+export interface mapToTechCreationObject {
+  maps_details_maps_detailsTomaps_to_tech_revision: number,
+  tech_list: { connect: { name: string } },
+  fullClearOnlyBool?: boolean;
+}
 
 
-export interface rawMap extends maps_ids  {
+
+
+export interface rawMap extends maps_ids {
   maps_details: rawMapDetails[];
 }
 

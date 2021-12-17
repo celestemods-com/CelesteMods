@@ -71,16 +71,6 @@ const mapPostSchema = {
                 },
                 {
                     properties: {
-                        mapperUserName: {
-                            type: "string",
-                            minLength: 1,
-                            maxLength: 50,
-                        },
-                    },
-                    required: ["mapperUserName"],
-                },
-                {
-                    properties: {
                         mapperNameString: {
                             type: "string",
                             minLength: 1,
@@ -131,7 +121,7 @@ const mapPostSchema = {
         },
     ],
     additionalProperties: false,
-    required: ["name", "minimumModVersion", "length"],
+    required: ["name", "minimumModVersion", "length", "mapRemovedFromModBool"],
 };
 
 
@@ -189,11 +179,6 @@ const mapPatchSchema = {
         mapperUserID: {
             type: "integer",
             minimum: 1,
-        },
-        mapperUserName: {
-            type: "string",
-            minLength: 1,
-            maxLength: 50,
         },
         mapperNameString: {
             type: "string",
@@ -335,7 +320,7 @@ const modPostSchema = {
             type: "array",
             uniqueItems: true,
             minItems: 1,
-            items: { $ref: "mapPostWithModSchema" },
+            items: { $ref: "mapPostSchema" },
         },
     },
     additionalProperties: false,

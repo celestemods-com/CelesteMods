@@ -135,6 +135,8 @@ model maps_details {
   users_maps_details_mapperUserIDTousers                        users?             @relation("maps_details_mapperUserIDTousers", fields: [mapperUserID], references: [id], onUpdate: Restrict, map: "maps_details_ibfk_2")
   difficulties_difficultiesTomaps_details_modDifficultyID       difficulties?      @relation("difficultiesTomaps_details_modDifficultyID", fields: [modDifficultyID], references: [id], onUpdate: Restrict, map: "maps_details_ibfk_5")
   users_maps_details_submittedByTousers                         users?             @relation("maps_details_submittedByTousers", fields: [submittedBy], references: [id], onUpdate: Restrict, map: "maps_details_ibfk_6")
+  maps_to_tech_maps_detailsTomaps_to_tech_mapID                 maps_to_tech[]     @relation("maps_detailsTomaps_to_tech_mapID")
+  maps_to_tech_maps_detailsTomaps_to_tech_revision              maps_to_tech[]     @relation("maps_detailsTomaps_to_tech_revision")
 
   @@id([id, revision])
   @@index([approvedBy], map: "approvedBy")
@@ -142,6 +144,7 @@ model maps_details {
   @@index([modDifficultyID], map: "difficultyID")
   @@index([lengthID], map: "lengthID")
   @@index([mapperUserID], map: "mapperUserID")
+  @@index([revision], map: "revision")
   @@index([submittedBy], map: "submittedBy")
 }
 
@@ -151,20 +154,22 @@ model maps_ids {
   mods_ids     mods_ids       @relation(fields: [modID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "maps_ids_ibfk_1")
   goldens      goldens[]
   maps_details maps_details[]
-  maps_to_tech maps_to_tech[]
   ratings      ratings[]
 
   @@index([modID], map: "modID")
 }
 
 model maps_to_tech {
-  mapID             Int       @db.UnsignedMediumInt
-  techID            Int       @db.UnsignedSmallInt
-  fullClearOnlyBool Boolean   @default(false)
-  maps_ids          maps_ids  @relation(fields: [mapID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "maps_to_tech_ibfk_1")
-  tech_list         tech_list @relation(fields: [techID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "maps_to_tech_ibfk_2")
+  mapID                                            Int          @db.UnsignedMediumInt
+  revision                                         Int          @db.UnsignedTinyInt
+  techID                                           Int          @db.UnsignedSmallInt
+  fullClearOnlyBool                                Boolean      @default(false)
+  maps_details_maps_detailsTomaps_to_tech_mapID    maps_details @relation("maps_detailsTomaps_to_tech_mapID", fields: [mapID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "maps_to_tech_ibfk_3")
+  maps_details_maps_detailsTomaps_to_tech_revision maps_details @relation("maps_detailsTomaps_to_tech_revision", fields: [revision], references: [revision], onDelete: Cascade, onUpdate: Restrict, map: "maps_to_tech_ibfk_4")
+  tech_list                                        tech_list    @relation(fields: [techID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "maps_to_tech_ibfk_2")
 
-  @@id([mapID, techID])
+  @@id([mapID, revision, techID])
+  @@index([revision], map: "revision")
   @@index([techID], map: "techID")
 }
 
@@ -270,7 +275,7 @@ model reviews_maps {
 
 model tech_list {
   id                  Int            @id @default(autoincrement()) @db.UnsignedSmallInt
-  name                String         @db.VarChar(50)
+  name                String         @unique(map: "name") @db.VarChar(50)
   description         String?        @db.VarChar(150)
   defaultDifficultyID Int            @db.UnsignedSmallInt
   difficulties        difficulties   @relation(fields: [defaultDifficultyID], references: [id], onUpdate: Restrict, map: "tech_list_ibfk_1")

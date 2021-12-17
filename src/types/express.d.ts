@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { difficulties, general_feedback_submissions_status, goldens_goldenList, ratings_quality } from '.prisma/client';
+import { difficulties, goldens_goldenList, ratings_quality } from '.prisma/client';
 import { rawTech, rawMod } from './internal';
 
 
@@ -11,19 +11,6 @@ declare global {
     parentModID?: number | null;
     parentDifficultyID?: number | null;
     order?: number | null;
-  };
-  type reqGFSubmission = {
-    id?: number;
-    feedback?: string;
-    status?: general_feedback_submissions_status;
-    hiddenVotesBool?: boolean;
-    timeSubmitted?: number;
-    submittedBy?: number;
-  };
-  type reqGFVote = {
-    generalFeedbackID?: number;
-    userID?: number;
-    inFavorBoolean?: boolean;
   };
   type reqGolden = {
     id?: number;
@@ -99,8 +86,6 @@ declare global {
       idsMatch?: boolean;
       valid?: boolean;
       difficulty?: difficulties;
-      gfSubmission?: reqGFSubmission;
-      gfVote?: reqGFVote;
       golden?: reqGolden;
       goldenPlayer?: reqGoldenPlayer;
       goldenRun?: reqGoldenRun;
@@ -115,6 +100,10 @@ declare global {
       mapReviews?: reqMapReview[];
       rating?: reqRating;
       tech?: rawTech;
+    }
+
+    interface Response {
+      errorSent?: boolean;
     }
   }
 }
