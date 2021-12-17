@@ -17,9 +17,14 @@ const noRouteError = function (_req: Request, res: Response, next: NextFunction)
 
 const errorHandler = function (error: Error, _req: Request, res: Response, _next: NextFunction) {
     console.log(error.message);
-    res.status(error.status || 500).send({
-        message: "Something went wrong"
-    });
+    try {
+        res.status(error.status || 500).send({
+            message: "Something went wrong"
+        });
+    }
+    catch (error) {
+        console.log("errorHandler tried to send the response after it had already been sent");
+    }
 }
 
 
