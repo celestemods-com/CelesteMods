@@ -38,7 +38,25 @@ interface formattedMod {
 }
 
 interface formattedMap {
-
+  id: number;
+  revision: number;
+  modID: number;
+  name: string;
+  canonicalDifficulty: string;
+  length: string;
+  description?: string;
+  notes?: string;
+  mapperUserID?: number;
+  mapperUserName?: string;
+  mapperNameString?: string;
+  chapter?: number;
+  side?: string;
+  modDifficulty?: string | string[];
+  overallRank?: number;
+  minimumModVersion: string | null;
+  mapRemovedFromModBool: boolean;
+  techAny?: string[];
+  techFC?: string[];
 }
 
 interface formattedPublisher {

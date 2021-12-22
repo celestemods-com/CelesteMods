@@ -1,4 +1,5 @@
-import { users, publishers, golden_players, tech_list, difficulties, mods_ids, mods_details, maps_ids, maps_details, maps_details_side, map_lengths } from ".prisma/client";
+import { users, publishers, golden_players, tech_list, difficulties, mods_ids, mods_details, maps_ids, maps_details, maps_details_side,
+  map_lengths, maps_to_tech } from ".prisma/client";
 
 
 export interface createUserData {
@@ -147,6 +148,7 @@ export interface mapToTechCreationObject {
 
 
 export interface rawMap extends maps_ids {
+  mods_ids?: rawModForMap;
   maps_details: rawMapDetails[];
 }
 
@@ -155,6 +157,15 @@ interface rawMapDetails extends maps_details {
   difficulties_difficultiesTomaps_details_canonicalDifficultyID: difficulties;
   difficulties_difficultiesTomaps_details_modDifficultyID: difficulties | null;
   users_maps_details_mapperUserIDTousers: users | null;
+  maps_to_tech_maps_detailsTomaps_to_tech_mapID: rawMapsToTech[];
+}
+
+interface rawMapsToTech extends maps_to_tech {
+  tech_list: tech_list;
+}
+
+interface rawModForMap extends mods_ids {
+  mods_details: mods_details[];
 }
 
 

@@ -82,6 +82,7 @@ modsRouter.route("/")
                                     difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
                                     difficulties_difficultiesTomaps_details_modDifficultyID: true,
                                     users_maps_details_mapperUserIDTousers: true,
+                                    maps_to_tech_maps_detailsTomaps_to_tech_mapID: { include: { tech_list: true } },
                                 },
                             },
                         },
@@ -210,6 +211,7 @@ modsRouter.route("/")
                                         difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
                                         difficulties_difficultiesTomaps_details_modDifficultyID: true,
                                         users_maps_details_mapperUserIDTousers: true,
+                                        maps_to_tech_maps_detailsTomaps_to_tech_mapID: { include: { tech_list: true } },
                                     },
                                 },
                             },
@@ -261,6 +263,7 @@ modsRouter.route("/")
                                         difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
                                         difficulties_difficultiesTomaps_details_modDifficultyID: true,
                                         users_maps_details_mapperUserIDTousers: true,
+                                        maps_to_tech_maps_detailsTomaps_to_tech_mapID: { include: { tech_list: true } },
                                     },
                                 },
                             },
@@ -337,6 +340,7 @@ modsRouter.param("gbModID", async function (req, res, next) {
                                 difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
                                 difficulties_difficultiesTomaps_details_modDifficultyID: true,
                                 users_maps_details_mapperUserIDTousers: true,
+                                maps_to_tech_maps_detailsTomaps_to_tech_mapID: { include: { tech_list: true } },
                             },
                         },
                     },
@@ -421,6 +425,7 @@ modsRouter.route("/search")
                                     difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
                                     difficulties_difficultiesTomaps_details_modDifficultyID: true,
                                     users_maps_details_mapperUserIDTousers: true,
+                                    maps_to_tech_maps_detailsTomaps_to_tech_mapID: { include: { tech_list: true } },
                                 },
                             },
                         },
@@ -486,6 +491,7 @@ modsRouter.route("/type")
                                     difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
                                     difficulties_difficultiesTomaps_details_modDifficultyID: true,
                                     users_maps_details_mapperUserIDTousers: true,
+                                    maps_to_tech_maps_detailsTomaps_to_tech_mapID: { include: { tech_list: true } },
                                 },
                             },
                         },
@@ -552,6 +558,7 @@ modsRouter.param("publisherID", async function (req, res, next) {
                                 difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
                                 difficulties_difficultiesTomaps_details_modDifficultyID: true,
                                 users_maps_details_mapperUserIDTousers: true,
+                                maps_to_tech_maps_detailsTomaps_to_tech_mapID: { include: { tech_list: true } },
                             },
                         },
                     },
@@ -614,6 +621,7 @@ modsRouter.param("gbUserID", async function (req, res, next) {
                                 difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
                                 difficulties_difficultiesTomaps_details_modDifficultyID: true,
                                 users_maps_details_mapperUserIDTousers: true,
+                                maps_to_tech_maps_detailsTomaps_to_tech_mapID: { include: { tech_list: true } },
                             },
                         },
                     },
@@ -685,7 +693,6 @@ modsRouter.route("/publisher/:publisherID")
 modsRouter.param("userID", async function (req, res, next) {
     try {
         await param_userID(req, res, next);
-        if (!res.status) next();
     }
     catch (error) {
         next(error);
@@ -728,6 +735,7 @@ modsRouter.route("/user/:userID/publisher")
                                     difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
                                     difficulties_difficultiesTomaps_details_modDifficultyID: true,
                                     users_maps_details_mapperUserIDTousers: true,
+                                    maps_to_tech_maps_detailsTomaps_to_tech_mapID: { include: { tech_list: true } },
                                 },
                             },
                         },
@@ -787,6 +795,7 @@ modsRouter.route("/user/:userID/submitter")
                                     difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
                                     difficulties_difficultiesTomaps_details_modDifficultyID: true,
                                     users_maps_details_mapperUserIDTousers: true,
+                                    maps_to_tech_maps_detailsTomaps_to_tech_mapID: { include: { tech_list: true } },
                                 },
                             },
                         },
@@ -816,7 +825,6 @@ modsRouter.route("/user/:userID/submitter")
 modsRouter.param("modID", async function (req, res, next) {
     try {
         await param_modID(req, res, next);
-        if (!res.status) next();
     }
     catch (error) {
         next(error);
@@ -906,6 +914,7 @@ modsRouter.route("/:modID")
                                     difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
                                     difficulties_difficultiesTomaps_details_modDifficultyID: true,
                                     users_maps_details_mapperUserIDTousers: true,
+                                    maps_to_tech_maps_detailsTomaps_to_tech_mapID: { include: { tech_list: true } },
                                 },
                             },
                         },
@@ -995,6 +1004,7 @@ modsRouter.route("/:modID")
                                     difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
                                     difficulties_difficultiesTomaps_details_modDifficultyID: true,
                                     users_maps_details_mapperUserIDTousers: true,
+                                    maps_to_tech_maps_detailsTomaps_to_tech_mapID: { include: { tech_list: true } },
                                 },
                             },
                         },
@@ -1233,7 +1243,7 @@ const formatMod = function (rawMod: rawMod) {
 
 
         const formattedMaps = rawMaps.map((rawMap) => {
-            const formattedMap = formatMaps(rawMap);
+            const formattedMap = formatMap(rawMap, type);
 
             if (isErrorWithMessage(formattedMap)) throw formattedMap;
 
@@ -1372,7 +1382,42 @@ const getSortedDifficultyNames = function (difficulties: difficulties[], modID: 
 mapsRouter.route("/")
     .get(async function (_req, res, next) {
         try {
+            const rawMaps = await prisma.maps_ids.findMany({
+                where: { maps_details: { some: { NOT: { timeApproved: null } } } },
+                include: {
+                    mods_ids: {
+                        include: {
+                            mods_details: {
+                                where: { NOT: { timeApproved: null } },
+                                orderBy: { revision: "desc" },
+                                take: 1,
+                            },
+                        },
+                    },
+                    maps_details: {
+                        where: { NOT: { timeApproved: null } },
+                        orderBy: { revision: "desc" },
+                        take: 1,
+                        include: {
+                            map_lengths: true,
+                            difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
+                            difficulties_difficultiesTomaps_details_modDifficultyID: true,
+                            users_maps_details_mapperUserIDTousers: true,
+                            maps_to_tech_maps_detailsTomaps_to_tech_mapID: { include: { tech_list: true } },
+                        },
+                    },
+                },
+            });
 
+            const formattedMaps = rawMaps.map((rawMap) => {
+                const modType = rawMap.mods_ids.mods_details[0].type;
+                const formattedMap = formatMap(rawMap, modType);
+                if (isErrorWithMessage(formattedMap)) throw formattedMap;
+                return formattedMap;
+            });
+
+
+            res.json(formattedMaps);
         }
         catch (error) {
             next(error);
@@ -1502,7 +1547,6 @@ mapsRouter.route("/length/:lengthID")
 mapsRouter.param("userID", async function (req, res, next) {
     try {
         await param_userID(req, res, next);
-        if (!res.status) next();
     }
     catch (error) {
         next(error);
@@ -1539,7 +1583,6 @@ mapsRouter.route("/user/:userID/submitter")
 mapsRouter.param("mapID", async function (req, res, next) {
     try {
         await param_mapID(req, res, next);
-        if (!res.status) next();
     }
     catch (error) {
         next(error);
@@ -1928,8 +1971,97 @@ const getCanonicalDifficultyID = async function (canonicalDifficultyName: string
 
 
 
-const formatMaps = function (rawMap: rawMap): formattedMap | errorWithMessage {
+const formatMap = function (rawMap: rawMap, modType: mods_details_type): formattedMap | errorWithMessage {
+    try {
+        const id = rawMap.id;
+        const revision = rawMap.maps_details[0].revision;
+        const modID = rawMap.modID;
+        const name = rawMap.maps_details[0].name;
+        const canonicalDifficulty = rawMap.maps_details[0].difficulties_difficultiesTomaps_details_canonicalDifficultyID.name;
+        const length = rawMap.maps_details[0].map_lengths.name;
+        const description = rawMap.maps_details[0].description === null ? undefined : rawMap.maps_details[0].description;
+        const notes = rawMap.maps_details[0].notes === null ? undefined : rawMap.maps_details[0].notes;
+        const minimumModVersion = rawMap.maps_details[0].minimumModVersion;
+        const mapRemovedFromModBool = rawMap.maps_details[0].mapRemovedFromModBool;
 
+
+        const mapperUserID = rawMap.maps_details[0].mapperUserID === null ? undefined : rawMap.maps_details[0].mapperUserID;
+        let mapperUserName;
+        let mapperNameString;
+
+        if (mapperUserID) {
+            mapperUserName = rawMap.maps_details[0].users_maps_details_mapperUserIDTousers?.displayName;
+        }
+        else {
+            mapperNameString = rawMap.maps_details[0].mapperNameString === null ? undefined : rawMap.maps_details[0].mapperNameString;
+        }
+
+
+        const formattedMap: formattedMap = {
+            id: id,
+            revision: revision,
+            modID: modID,
+            name: name,
+            canonicalDifficulty: canonicalDifficulty,
+            length: length,
+            description: description,
+            notes: notes,
+            mapperUserID: mapperUserID,
+            mapperUserName: mapperUserName,
+            mapperNameString: mapperNameString,
+            minimumModVersion: minimumModVersion,
+            mapRemovedFromModBool: mapRemovedFromModBool,
+        }
+
+
+        const techAny: string[] = [];
+        const techFC: string[] = [];
+
+        if (rawMap.maps_details[0].maps_to_tech_maps_detailsTomaps_to_tech_mapID) {
+            for (const tech of rawMap.maps_details[0].maps_to_tech_maps_detailsTomaps_to_tech_mapID) {
+                if (tech.fullClearOnlyBool) {
+                    techFC.push(tech.tech_list.name);
+                }
+                else {
+                    techAny.push(tech.tech_list.name);
+                }
+            }
+            
+            if (techAny.length) formattedMap.techAny = techAny;
+            if (techFC.length) formattedMap.techFC = techFC;
+        }
+
+
+        if (modType === "Normal") {
+            const chapter = rawMap.maps_details[0].chapter === null ? undefined : rawMap.maps_details[0].chapter;
+            const side = rawMap.maps_details[0].side === null ? undefined : rawMap.maps_details[0].side;
+
+            if (!chapter || !side) throw `Chapter or side is null in Normal map ${id}`;
+
+            formattedMap.chapter = chapter;
+            formattedMap.side = side;
+        }
+        else {
+            const modDifficulty = rawMap.maps_details[0].difficulties_difficultiesTomaps_details_modDifficultyID?.name;
+            
+            if (!modDifficulty) throw `modDifficulty is undefined in non-Normal map ${id}`;
+
+            formattedMap.modDifficulty = modDifficulty;
+
+
+            if (modType === "Contest") {
+                const overallRank = rawMap.maps_details[0].overallRank === null ? undefined : rawMap.maps_details[0].overallRank;
+
+                formattedMap.overallRank = overallRank;
+            }
+        }
+
+
+        return formattedMap;
+    }
+    catch (error) {
+        return (toErrorWithMessage(error));
+    }
 };
 
 
@@ -1972,7 +2104,6 @@ publishersRouter.route("/search")
 publishersRouter.param("userID", async function (req, res, next) {
     try {
         await param_userID(req, res, next);
-        if (!res.status) next();
     }
     catch (error) {
         next(error);
@@ -2063,8 +2194,7 @@ submissionsRouter.route("/")
 
 submissionsRouter.param("modID", async function (req, res, next) {
     try {
-        await param_modID;
-        if (!res.status) next();
+        await param_modID(req, res, next);
     }
     catch (error) {
         next(error);
@@ -2089,7 +2219,6 @@ submissionsRouter.route("/mod/:modID")
 submissionsRouter.param("mapID", async function (req, res, next) {
     try {
         await param_mapID(req, res, next);
-        if (!res.status) next();
     }
     catch (error) {
         next(error);
@@ -2114,7 +2243,6 @@ submissionsRouter.route("/map/:mapID")
 submissionsRouter.param("userID", async function (req, res, next) {
     try {
         await param_userID(req, res, next);
-        if (!res.status) next();
     }
     catch (error) {
         next(error);
@@ -2277,6 +2405,7 @@ const param_modID = <expressRoute>async function (req, res, next) {
                                 difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
                                 difficulties_difficultiesTomaps_details_modDifficultyID: true,
                                 users_maps_details_mapperUserIDTousers: true,
+                                maps_to_tech_maps_detailsTomaps_to_tech_mapID: { include: { tech_list: true } },
                             },
                         },
                     },
