@@ -1,4 +1,4 @@
-const isNumberArray = function (unknownArray: unknown[]): unknownArray is number[] {
+export const isNumberArray = function (unknownArray: unknown[]): unknownArray is number[] {
     if (unknownArray && !unknownArray.length) {
         return false
     }
@@ -11,5 +11,3 @@ const isNumberArray = function (unknownArray: unknown[]): unknownArray is number
 
     return true;
 }
-
-export { isNumberArray };

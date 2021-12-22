@@ -7,7 +7,7 @@ import { users } from ".prisma/client";
 import { formattedUser } from "../types/frontend";
 import { createUserData, updateUserData, rawUser } from "../types/internal";
 import { discordUser } from "../types/discord";
-import { isNumberArray } from "../utils";
+import { isNumberArray } from "../helperFunctions/utils";
 
 
 const router = express.Router();
