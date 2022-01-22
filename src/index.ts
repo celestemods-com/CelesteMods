@@ -57,7 +57,6 @@ app.use( function (req, res, next) {
 
 
 import { difficultiesRouter } from "./routes/difficulties";
-import { gfSubmissionsRouter, gfVotesRouter } from "./routes/generalfeedback";
 import { goldensRouter, goldenPlayersRouter, goldenRunsRouter, goldenSubmissionsRouter } from "./routes/goldens";
 import { lengthsRouter } from "./routes/lengths";
 import { modsRouter, mapsRouter, publishersRouter, mSubmissionsRouter } from "./routes/maps-mods-publishers";
@@ -66,8 +65,6 @@ import { techsRouter } from "./routes/techs";
 import { usersRouter } from "./routes/users";
 
 app.use("/difficulties", difficultiesRouter);
-app.use("/gfsubmissions", gfSubmissionsRouter);
-app.use("/gfvotes", gfVotesRouter);
 app.use("/goldens", goldensRouter);
 app.use("/goldenplayers", goldenPlayersRouter);
 app.use("/goldenruns", goldenRunsRouter);
