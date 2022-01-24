@@ -15,7 +15,6 @@ import { formatMod, getPublisherConnectionObject, getDifficultyArrays, getMapIDs
 const modsRouter = express.Router();
 const mapsRouter = express.Router();
 const publishersRouter = express.Router();
-const submissionsRouter = express.Router();
 
 
 
@@ -827,6 +826,68 @@ modsRouter.param("modID", async function (req, res, next) {
 });
 
 
+modsRouter.param("revision",async function (req, res, next) {
+    try {
+
+    }
+    catch (error) {
+        next(error);
+    }
+});
+
+
+
+
+modsRouter.route("/:modID/revisions")
+    .get(async function (req, res, next) {
+        try {
+
+        }
+        catch (error) {
+            next(error);
+        }
+    })
+    .all(methodNotAllowed);
+
+
+modsRouter.route("/:modID/revisions/:revision/accept")
+    .post(async function (req, res, next) {
+        try {
+
+        }
+        catch (error) {
+            next(error);
+        }
+    })
+    .all(methodNotAllowed);
+
+
+modsRouter.route("/:modID/revisions/:revision/reject")
+    .post(async function (req, res, next) {
+        try {
+
+        }
+        catch (error) {
+            next(error);
+        }
+    })
+    .all(methodNotAllowed);
+
+
+modsRouter.route("/:modID/revisions/:revision")
+    .get(async function (req, res, next) {
+        try {
+
+        }
+        catch (error) {
+            next(error);
+        }
+    })
+    .all(methodNotAllowed);
+
+
+
+
 modsRouter.route("/:modID")
     .get(async function (req, res, next) {
         try {
@@ -844,6 +905,11 @@ modsRouter.route("/:modID")
     })
     .patch(async function (req, res, next) {
         try {
+            //TODO: fix .patch to work with the new structure and helper formulae
+            //TODO: implement /mods/:modID/revisions routes
+            //then *i think* /mods should be done. double check and then work on /maps then /publishers
+
+
             const type: mods_details_type | undefined = req.body.type === null ? undefined : req.body.type;
             const name: string | undefined = req.body.name === null ? undefined : req.body.name;
             const publisherName: string | undefined = req.body.publisherName === null ? undefined : req.body.publisherName;
@@ -1262,6 +1328,68 @@ mapsRouter.param("mapID", async function (req, res, next) {
 });
 
 
+mapsRouter.param("revision",async function (req, res, next) {
+    try {
+
+    }
+    catch (error) {
+        next(error);
+    }
+});
+
+
+
+
+mapsRouter.route("/:mapID/revisions")
+    .get(async function (req, res, next) {
+        try {
+
+        }
+        catch (error) {
+            next(error);
+        }
+    })
+    .all(methodNotAllowed);
+
+
+mapsRouter.route("/:mapID/revisions/:revision/accept")
+    .post(async function (req, res, next) {
+        try {
+
+        }
+        catch (error) {
+            next(error);
+        }
+    })
+    .all(methodNotAllowed);
+
+
+mapsRouter.route("/:mapID/revisions/:revision/reject")
+    .post(async function (req, res, next) {
+        try {
+
+        }
+        catch (error) {
+            next(error);
+        }
+    })
+    .all(methodNotAllowed);
+
+
+mapsRouter.route("/:mapID/revisions/:revision")
+    .get(async function (req, res, next) {
+        try {
+
+        }
+        catch (error) {
+            next(error);
+        }
+    })
+    .all(methodNotAllowed);
+
+
+
+
 mapsRouter.route("/:mapID")
     .get(async function (req, res, next) {
         try {
@@ -1426,171 +1554,4 @@ publishersRouter.use(errorHandler);
 
 
 
-submissionsRouter.route("/")
-    .get(async function (_req, res, next) {
-        try {
-
-        }
-        catch (error) {
-            next(error);
-        }
-    })
-    .all(methodNotAllowed);
-
-
-
-
-submissionsRouter.param("modID", async function (req, res, next) {
-    try {
-        await param_modID(req, res, next);
-    }
-    catch (error) {
-        next(error);
-    }
-});
-
-
-submissionsRouter.route("/mod/:modID")
-    .get(async function (req, res, next) {
-        try {
-
-        }
-        catch (error) {
-            next(error);
-        }
-    })
-    .all(methodNotAllowed);
-
-
-
-
-submissionsRouter.param("mapID", async function (req, res, next) {
-    try {
-        await param_mapID(req, res, next);
-    }
-    catch (error) {
-        next(error);
-    }
-});
-
-
-submissionsRouter.route("/map/:mapID")
-    .get(async function (req, res, next) {
-        try {
-
-        }
-        catch (error) {
-            next(error);
-        }
-    })
-    .all(methodNotAllowed);
-
-
-
-
-submissionsRouter.param("userID", async function (req, res, next) {
-    try {
-        await param_userID(req, res, next);
-    }
-    catch (error) {
-        next(error);
-    }
-});
-
-
-submissionsRouter.route("/submitter/:userID")
-    .get(async function (req, res, next) {
-        try {
-
-        }
-        catch (error) {
-            next(error);
-        }
-    })
-    .all(methodNotAllowed);
-
-
-submissionsRouter.route("/approver/:userID")
-    .get(async function (req, res, next) {
-        try {
-
-        }
-        catch (error) {
-            next(error);
-        }
-    })
-    .all(methodNotAllowed);
-
-
-
-
-submissionsRouter.param("submissionID", async function (req, res, next) {
-    try {
-
-    }
-    catch (error) {
-        next(error);
-    }
-});
-
-
-submissionsRouter.route("/:submissionID")
-    .get(async function (req, res, next) {
-        try {
-
-        }
-        catch (error) {
-            next(error);
-        }
-    })
-    .delete(async function (req, res, next) {
-        try {
-
-        }
-        catch (error) {
-            next(error);
-        }
-    })
-    .all(methodNotAllowed);
-
-
-submissionsRouter.route("/:submissionID/accept")
-    .post(async function (req, res, next) {
-        try {
-
-        }
-        catch (error) {
-            next(error);
-        }
-    })
-    .all(methodNotAllowed);
-
-
-submissionsRouter.route("/:submissionID/reject")
-    .post(async function (req, res, next) {
-        try {
-
-        }
-        catch (error) {
-            next(error);
-        }
-    })
-    .all(methodNotAllowed);
-
-
-
-
-submissionsRouter.use(noRouteError);
-
-submissionsRouter.use(errorHandler);
-
-
-
-
-
-
-
-
-
-
-export { modsRouter, mapsRouter, publishersRouter, submissionsRouter as mSubmissionsRouter };
+export { modsRouter, mapsRouter, publishersRouter };
