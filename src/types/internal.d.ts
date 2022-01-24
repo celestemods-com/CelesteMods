@@ -76,13 +76,14 @@ interface rawModDetails extends mods_details {
 
 
 export interface createChildDifficultyForMod {
-  id?: number;
+  id: number;
   name: string;
   description?: string;
   order: number;
 }
 
 export interface createParentDifficultyForMod extends createChildDifficultyForMod {
+  id: number;
   other_difficulties?: { create: createChildDifficultyForMod[] };
 }
 

@@ -9,7 +9,7 @@ import {
 } from "../types/internal";
 import { formattedMod, formattedMap, formattedPublisher } from "../types/frontend";
 import { formatMod, getPublisherConnectionObject, getDifficultyArrays, getMapIDsCreationArray, param_userID, param_modID,
-    param_mapID, formatMap } from "../helperFunctions/maps-mods-publishers";
+    param_mapID, connectMapsToModDifficulties, formatMap } from "../helperFunctions/maps-mods-publishers";
 
 
 const modsRouter = express.Router();
@@ -127,7 +127,7 @@ modsRouter.route("/")
                 maps: maps,
             });
 
-            if (!valid) {
+            if (!valid || (difficultyNames && modType === "Normal")) {
                 res.status(400).json("Malformed request body");
                 return;
             }
@@ -142,42 +142,51 @@ modsRouter.route("/")
             }
 
 
-            let difficultyNamesArray: difficultyNamesArrayElement[] = [];
-            let difficultiesCreationArray: createParentDifficultyForMod[] = [];
-            let defaultDifficultyObjectsArray: defaultDifficultyForMod[] = [];
-            let modHasSubDifficultiesBool = true;
-            let modUsesCustomDifficultiesBool = true;
-
-            if (difficultyNames) {
-                const difficultyArrays = getDifficultyArrays(difficultyNames);
-
-                if (isErrorWithMessage(difficultyArrays)) throw difficultyArrays;
-
-                difficultyNamesArray = <difficultyNamesArrayElement[]>difficultyArrays[0];
-                difficultiesCreationArray = <createParentDifficultyForMod[]>difficultyArrays[1];
-                modHasSubDifficultiesBool = <boolean>difficultyArrays[2];
-
-                modUsesCustomDifficultiesBool = true;
-            }
-            else {
-                defaultDifficultyObjectsArray = await prisma.difficulties.findMany({
-                    where: { parentModID: null },
-                    include: { other_difficulties: true },
-                });
-
-                if (!defaultDifficultyObjectsArray.length) throw "there are no default difficulties";
-            }
-
-
-            const lengthObjectArray = await prisma.map_lengths.findMany();
-
-            const mapsIDsCreationArray = await getMapIDsCreationArray(res, maps, currentTime, modType, lengthObjectArray,
-                difficultiesCreationArray, defaultDifficultyObjectsArray, modUsesCustomDifficultiesBool, modHasSubDifficultiesBool);
-
-            if (res.errorSent) return;
-
-
             const rawModAndStatus = await prisma.$transaction(async () => {
+                let difficultyNamesArray: difficultyNamesArrayElement[] = [];
+                let difficultiesCreationArray: createParentDifficultyForMod[] = [];
+                let defaultDifficultyObjectsArray: defaultDifficultyForMod[] = [];
+                let modHasCustomDifficultiesBool = false;
+                let modHasSubDifficultiesBool = true;
+
+    
+                if (difficultyNames) {
+                    const difficultyWithHighestID = await prisma.difficulties.findMany({
+                        orderBy: { id: "desc" },
+                        take: 1,
+                        select: { id: true },
+                    });
+
+
+                    const difficultyArrays = getDifficultyArrays(difficultyNames, difficultyWithHighestID[0].id);
+    
+                    if (isErrorWithMessage(difficultyArrays)) throw difficultyArrays;
+    
+                    difficultyNamesArray = <difficultyNamesArrayElement[]>difficultyArrays[0];
+                    difficultiesCreationArray = <createParentDifficultyForMod[]>difficultyArrays[1];
+                    modHasSubDifficultiesBool = <boolean>difficultyArrays[2];
+
+                    modHasCustomDifficultiesBool = true;
+                }
+                else {
+                    defaultDifficultyObjectsArray = await prisma.difficulties.findMany({
+                        where: { parentModID: null },
+                        include: { other_difficulties: true },
+                    });
+    
+                    if (!defaultDifficultyObjectsArray.length) throw "there are no default difficulties";
+                }
+    
+    
+                const lengthObjectArray = await prisma.map_lengths.findMany();
+    
+
+                const mapsIDsCreationArray = await getMapIDsCreationArray(res, maps, currentTime, modType, lengthObjectArray,
+                    difficultiesCreationArray, defaultDifficultyObjectsArray, modHasCustomDifficultiesBool, modHasSubDifficultiesBool);
+    
+                if (res.errorSent) return;
+
+
                 const rawMatchingMod = await prisma.mods_ids.findFirst({
                     where: { mods_details: { some: { gamebananaModID: gamebananaModID } } },
                     include: {
@@ -264,15 +273,12 @@ modsRouter.route("/")
             });
 
 
-            if (modUsesCustomDifficultiesBool && modType !== "Normal") {
-                //next task = implement connecting modDifficulty
-                //modDifficulty has already been checked by a helper function before the transaction, but could not be connected in the transaction
-                throw "not implemented yet";
-            }
+            if (!rawModAndStatus) return;
 
 
             const rawMod = <rawMod>rawModAndStatus[0];
             const status = <number>rawModAndStatus[1];
+
 
             const formattedMod = formatMod(rawMod);
 
@@ -934,7 +940,13 @@ modsRouter.route("/:modID")
             let modHasSubDifficultiesBool = true;
 
             if (difficultyNames) {
-                const difficultyArrays = getDifficultyArrays(difficultyNames);
+                const difficultyWithHighestID = await prisma.difficulties.findMany({
+                    orderBy: { id: "desc" },
+                    take: 1,
+                    select: { id: true },
+                });
+
+                const difficultyArrays = getDifficultyArrays(difficultyNames, difficultyWithHighestID[0].id);
 
                 if (isErrorWithMessage(difficultyArrays)) throw difficultyArrays;
 

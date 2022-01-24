@@ -238,11 +238,6 @@ const mapPutSchema = {
 
 
 
-const ajv = new ajvModule({ allowUnionTypes: true, schemas: {mapPostSchema} });
-
-
-
-
 const modPostSchema = {
     type: "object",
     properties: {
@@ -416,6 +411,12 @@ const publisherPatchSchema = {
     additionalProperties: false,
     required: ["type", "name", "contentWarning", "shortDescription", "maps"],
 };
+
+
+
+
+const ajv = new ajvModule({ allowUnionTypes: true, schemas: {mapPostSchema} });
+
 
 
 

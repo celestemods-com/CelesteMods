@@ -162,21 +162,30 @@ export const getPublisherConnectionObject = async function (res: Response, userI
 
 
 
-export const getDifficultyArrays = function (difficultyNames: (string | string[])[]) {
+export const getDifficultyArrays = function (difficultyNames: (string | string[])[], highestCurrentDifficultyID: number) {
     try {
         let difficultyNamesArray: { name: string }[] = [];
         let difficultiesDataArray: createParentDifficultyForMod[] = [];
         let modHasSubDifficultiesBool = false;
+        let modDifficultyIDsArray: number[] = [];
 
+        
         for (let parentDifficultyIndex = 0; parentDifficultyIndex < difficultyNames.length; parentDifficultyIndex++) {
             const parentDifficultyStringOrArray = difficultyNames[parentDifficultyIndex];
 
             if (typeof parentDifficultyStringOrArray === "string") {
+                highestCurrentDifficultyID++;
+
+                modDifficultyIDsArray.push( highestCurrentDifficultyID );
+
                 difficultiesDataArray.push({
+                    id: highestCurrentDifficultyID,
                     name: parentDifficultyStringOrArray,
                     order: parentDifficultyIndex + 1,
                 });
+
                 difficultyNamesArray.push({ name: parentDifficultyStringOrArray });
+
                 continue;
             }
 
@@ -185,8 +194,12 @@ export const getDifficultyArrays = function (difficultyNames: (string | string[]
 
             for (let childDifficultyIndex = 1; childDifficultyIndex < parentDifficultyStringOrArray.length; childDifficultyIndex++) {
                 const childDifficultyName = parentDifficultyStringOrArray[childDifficultyIndex];
+                highestCurrentDifficultyID++;
+
+                modDifficultyIDsArray.push( highestCurrentDifficultyID );
 
                 childDifficultyArray.push({
+                    id: highestCurrentDifficultyID,
                     name: childDifficultyName,
                     order: childDifficultyIndex,
                 });
@@ -194,7 +207,12 @@ export const getDifficultyArrays = function (difficultyNames: (string | string[]
                 difficultyNamesArray.push({ name: childDifficultyName });
             }
 
+            highestCurrentDifficultyID++;
+
+            modDifficultyIDsArray.push( highestCurrentDifficultyID );
+
             difficultiesDataArray.push({
+                id: highestCurrentDifficultyID,
                 name: parentDifficultyStringOrArray[0],
                 order: parentDifficultyIndex + 1,
                 other_difficulties: { create: childDifficultyArray },
@@ -203,7 +221,8 @@ export const getDifficultyArrays = function (difficultyNames: (string | string[]
             difficultyNamesArray.push({ name: parentDifficultyStringOrArray[0] });
         }
 
-        const returnArray: ({ name: string }[] | createParentDifficultyForMod[] | boolean)[] = [difficultyNamesArray, difficultiesDataArray, modHasSubDifficultiesBool];
+        const returnArray: ({ name: string }[] | createParentDifficultyForMod[] | boolean | number[])[]
+            = [difficultyNamesArray, difficultiesDataArray, modHasSubDifficultiesBool, modDifficultyIDsArray];
 
         return returnArray;
     }
@@ -369,13 +388,13 @@ const getSortedDifficultyNames = function (difficulties: difficulties[], modID: 
 
 export const getMapIDsCreationArray = async function (res: Response, maps: jsonCreateMapWithMod[], currentTime: number, modType: mods_details_type, lengthObjectArray: map_lengths[],
     difficultiesCreationArray: createParentDifficultyForMod[], defaultDifficultyObjectsArray: defaultDifficultyForMod[],
-    modUsesCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean) {
+    modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean) {
     try {
         const mapIDsCreationArray: mapIdCreationObject[] = await Promise.all(
             maps.map(
                 async (mapObject: jsonCreateMapWithMod) => {
                     const mapIdCreationObject = await getMapIdCreationObject(mapObject, currentTime, modType, lengthObjectArray,
-                        difficultiesCreationArray, defaultDifficultyObjectsArray, modUsesCustomDifficultiesBool, modHasSubDifficultiesBool);
+                        difficultiesCreationArray, defaultDifficultyObjectsArray, modHasCustomDifficultiesBool, modHasSubDifficultiesBool);
 
                     return mapIdCreationObject;
                 }
@@ -420,7 +439,7 @@ export const getMapIDsCreationArray = async function (res: Response, maps: jsonC
 
 const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, currentTime: number, modType: mods_details_type,
     lengthObjectArray: map_lengths[], customDifficultiesArray: createParentDifficultyForMod[], defaultDifficultyObjectsArray: defaultDifficultyForMod[],
-    modUsesCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean) {
+    modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean) {
 
     const mapName = mapObject.name;
     const lengthName = mapObject.length;
@@ -499,7 +518,7 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
     }
     else {
         handleNonNormalMods(mapIdCreationObject, modType, overallRank, modDifficulty, customDifficultiesArray,
-            defaultDifficultyObjectsArray, modUsesCustomDifficultiesBool, modHasSubDifficultiesBool);
+            defaultDifficultyObjectsArray, modHasCustomDifficultiesBool, modHasSubDifficultiesBool);
     }
 
 
@@ -545,7 +564,7 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
 
 const handleNonNormalMods = function (mapIdCreationObject: mapIdCreationObject, modType: mods_details_type,
     overallRank: number | undefined, modDifficulty: string | string[] | undefined, customDifficultiesArray: createParentDifficultyForMod[],
-    defaultDifficultyObjectsArray: defaultDifficultyForMod[], modUsesCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean) {
+    defaultDifficultyObjectsArray: defaultDifficultyForMod[], modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean) {
 
     if (modType === "Contest") {
         mapIdCreationObject.map_details.create[0].overallRank = overallRank;
@@ -555,33 +574,33 @@ const handleNonNormalMods = function (mapIdCreationObject: mapIdCreationObject, 
 
     let validModDifficultyBool = false;
 
-    if (modUsesCustomDifficultiesBool) {
+    if (modHasCustomDifficultiesBool) {
         if (!customDifficultiesArray.length) throw "customDifficultiesArray is empty";
 
-        if (modHasSubDifficultiesBool) {
-            if (!(modDifficulty instanceof Array)) throw invalidMapDifficultyErrorMessage;
-
+        if (typeof modDifficulty === "string") {
             for (const difficulty of customDifficultiesArray) {
-                if (!difficulty.other_difficulties) continue;
+                if (typeof modDifficulty !== "string") throw invalidMapDifficultyErrorMessage;
 
-                if (difficulty.name === modDifficulty[0]) {
-                    for (const childDifficulty of difficulty.other_difficulties.create) {
-                        if (childDifficulty.name === modDifficulty[1]) {
-                            validModDifficultyBool = true;
-                            break;
-                        }
-                    }
-
+                if (difficulty.name === modDifficulty) {
+                    mapIdCreationObject.map_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: difficulty.id } };
+                    validModDifficultyBool = true;
                     break;
                 }
             }
         }
         else {
             for (const difficulty of customDifficultiesArray) {
-                if (typeof modDifficulty !== "string") throw invalidMapDifficultyErrorMessage;
+                if (!difficulty.other_difficulties) continue;
 
-                if (difficulty.name === modDifficulty) {
-                    validModDifficultyBool = true;
+                if (difficulty.name === modDifficulty[0]) {
+                    for (const childDifficulty of difficulty.other_difficulties.create) {
+                        if (childDifficulty.name === modDifficulty[1]) {
+                            mapIdCreationObject.map_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: childDifficulty.id } };
+                            validModDifficultyBool = true;
+                            break;
+                        }
+                    }
+
                     break;
                 }
             }
@@ -608,6 +627,8 @@ const handleNonNormalMods = function (mapIdCreationObject: mapIdCreationObject, 
             }
         }
     }
+
+    if (!validModDifficultyBool) throw "invalid modDifficulty";
 }
 
 
@@ -645,7 +666,7 @@ const getCanonicalDifficultyID = async function (canonicalDifficultyName: string
                 }
             }
 
-            if (easiestDifficultyID === 0) {
+            if (easiestDifficultyID === 0 || easiestDifficultyOrder === 99999) {
                 throw "Unable to find easiest parent default difficulty";
             }
 
@@ -690,6 +711,14 @@ const getCanonicalDifficultyID = async function (canonicalDifficultyName: string
         return highestDifficultyID;
     }
 };
+
+
+
+
+export const connectMapsToModDifficulties = async function (rawMod: rawMod) {
+    const modID = rawMod.id;
+
+}
 
 
 
