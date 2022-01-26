@@ -59,7 +59,7 @@ app.use( function (req, res, next) {
 import { difficultiesRouter } from "./routes/difficulties";
 import { goldensRouter, goldenPlayersRouter, goldenRunsRouter, goldenSubmissionsRouter } from "./routes/goldens";
 import { lengthsRouter } from "./routes/lengths";
-import { modsRouter, mapsRouter, publishersRouter, mSubmissionsRouter } from "./routes/maps-mods-publishers";
+import { modsRouter, mapsRouter, publishersRouter } from "./routes/maps-mods-publishers";
 import { reviewsRouter, ratingsRouter } from "./routes/reviews-ratings";
 import { techsRouter } from "./routes/techs";
 import { usersRouter } from "./routes/users";
@@ -73,7 +73,6 @@ app.use("/lengths", lengthsRouter);
 app.use("/mods", modsRouter);
 app.use("/maps", mapsRouter);
 app.use("/publishers", publishersRouter);
-app.use("/msubmissions", mSubmissionsRouter);
 app.use("/reviews", reviewsRouter);
 app.use("/ratings", ratingsRouter);
 app.use("/techs", techsRouter);
