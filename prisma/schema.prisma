@@ -181,7 +181,7 @@ model mods_details {
   publisherID                           Int               @db.UnsignedSmallInt
   contentWarning                        Boolean           @default(false)
   notes                                 String?           @db.VarChar(500)
-  shortDescription                      String            @db.VarChar(500)
+  shortDescription                      String            @db.VarChar(150)
   longDescription                       String?           @db.VarChar(1500)
   gamebananaModID                       Int               @db.UnsignedMediumInt
   timeSubmitted                         Int
