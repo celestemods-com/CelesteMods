@@ -275,8 +275,8 @@ const modPostSchema = {
         },
         shortDescription: {
             type: "string",
-            minLength: 0,
-            maxLength: 500,
+            minLength: 1,
+            maxLength: 150,
         },
         longDescription: {
             type: "string",
@@ -360,8 +360,8 @@ const modPatchSchema = {
         },
         shortDescription: {
             type: "string",
-            minLength: 0,
-            maxLength: 500,
+            minLength: 1,
+            maxLength: 150,
         },
         longDescription: {
             type: "string",
