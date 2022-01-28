@@ -16,6 +16,18 @@ const postSchema = {
             minLength: 0,
             maxLength: 150,
         },
+        videos: {
+            type: "array",
+            uniqueItems: true,
+            minItems: 0,
+            items: {
+                anyOf: [{
+                    type: "string",
+                    minLength: 1,
+                    maxLength: 100,
+                }],
+            },
+        },
         difficulty: {
             type: ["string", "integer"],
             minimum: 0,
@@ -38,6 +50,18 @@ const patchSchema = {
             type: ["string", "null"],
             minLength: 0,
             maxLength: 150,
+        },
+        videos: {
+            type: "array",
+            uniqueItems: true,
+            minItems: 0,
+            items: {
+                anyOf: [{
+                    type: "string",
+                    minLength: 1,
+                    maxLength: 100,
+                }],
+            },
         },
         difficulty: {
             type: ["string", "integer"],

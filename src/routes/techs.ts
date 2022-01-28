@@ -2,7 +2,7 @@ import express from "express";
 import { prisma } from "../prismaClient";
 import { validatePost, validatePatch } from "../jsonSchemas/techs";
 import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
-import { createTechData, rawTech, updateTechData } from "../types/internal";
+import { createTechData, createTechVideosData, rawTech, updateTechData } from "../types/internal";
 import { formattedTech } from "../types/frontend";
 
 
@@ -14,7 +14,12 @@ const router = express.Router();
 router.route("/")
     .get(async function (_req, res, next) {
         try {
-            const rawTechs = await prisma.tech_list.findMany({ include: { difficulties: true } });
+            const rawTechs = await prisma.tech_list.findMany({ 
+                include: {
+                    difficulties: true,
+                    tech_videos: true,
+                },
+            });
 
             const formattedTechs = rawTechs.map((rawTech) => {
                 const formattedTech = formatTech(rawTech);
@@ -32,11 +37,13 @@ router.route("/")
         try {
             const name: string = req.body.name;                         //cant be undefined after validatePost
             const description: string | undefined = req.body.description === "" ? undefined : req.body.description;
+            const techVideoUrlsArray: string[] | undefined = req.body.tutorialVideos;
             const difficulty: string | number = req.body.difficulty;    //cant be undefined after validatePost
 
             const valid = validatePost({
                 name: name,
                 description: description,
+                tutorialVideos: techVideoUrlsArray,
                 difficulty: difficulty,
             });
 
@@ -48,7 +55,10 @@ router.route("/")
 
             const matchingTech = await prisma.tech_list.findFirst({
                 where: { name: name },
-                include: { difficulties: true },
+                include: {
+                    difficulties: true,
+                    tech_videos: true,
+                },
             });
 
             if (matchingTech) {
@@ -58,11 +68,21 @@ router.route("/")
                 res.status(200).json(formattedMatchingTech);
                 return;
             }
+            
+
+            const createTechVideosArray: createTechVideosData[] = [];
+
+            if (techVideoUrlsArray && techVideoUrlsArray.length) {
+                techVideoUrlsArray.forEach( (url) => {
+                    createTechVideosArray.push({ url: url });
+                });
+            }
 
 
             const createData: createTechData = {
                 name: name,
                 description: description,
+                techVideos: { create: createTechVideosArray },
                 difficulties: {},
             };
 
@@ -103,7 +123,10 @@ router.route("/")
 
             const rawTech = await prisma.tech_list.create({
                 data: createData,
-                include: { difficulties: true },
+                include: {
+                    difficulties: true,
+                    tech_videos: true,
+                },
             });
 
 
@@ -135,7 +158,10 @@ router.route("/search")
 
             const rawTechs = await prisma.tech_list.findMany({
                 where: { name: { startsWith: query } },
-                include: { difficulties: true },
+                include: {
+                    difficulties: true,
+                    tech_videos: true,
+                },
             });
 
 
@@ -188,7 +214,10 @@ router.route("/mod/:modID")
         try {
             const rawTechs = await prisma.tech_list.findMany({
                 where: { maps_to_tech: { some: { maps_details_maps_detailsTomaps_to_tech_mapID: { maps_ids: { modID: req.id2 } } } } },
-                include: { difficulties: true },
+                include: {
+                    difficulties: true,
+                    tech_videos: true,
+                },
             });
 
 
@@ -241,7 +270,10 @@ router.route("/map/:mapID")
         try {
             const rawTechs = await prisma.tech_list.findMany({
                 where: { maps_to_tech: { some: { mapID: req.id2 } } },
-                include: { difficulties: true },
+                include: {
+                    difficulties: true,
+                    tech_videos: true,
+                },
             });
 
 
@@ -303,7 +335,10 @@ router.route("/difficulty/:difficultyID")
 
             const rawTechs = await prisma.tech_list.findMany({
                 where: { difficulties: { id: req.id2 } },
-                include: { difficulties: true },
+                include: {
+                    difficulties: true,
+                    tech_videos: true,
+                },
             });
 
 
@@ -343,7 +378,10 @@ router.param("techID", (async function (req, res, next) {
 
         const techFromID = await prisma.tech_list.findUnique({
             where: { id: id },
-            include: { difficulties: true },
+            include: {
+                difficulties: true,
+                tech_videos: true,
+            },
         });
 
         if (!techFromID) {
@@ -382,6 +420,7 @@ router.route("/:techID")
             const id = <number>req.id;  //cant be undefined because the router.param already checked that the id is valid
             const name: string | undefined = req.body.name;
             const description: string | null | undefined = req.body.description === "" ? null : req.body.description;
+            const techVideoUrlsArray: string[] | undefined = req.body.tutorialVideos;
             const difficulty: string | number | undefined = req.body.difficulty;
 
             const valid = validatePatch({
@@ -402,7 +441,10 @@ router.route("/:techID")
                         NOT: { id: id },
                         name: name,
                     },
-                    include: { difficulties: true },
+                    include: {
+                        difficulties: true,
+                        tech_videos: true,
+                    },
                 });
 
                 if (matchingTech) {
@@ -413,11 +455,21 @@ router.route("/:techID")
                     return;
                 }
             }
+            
+
+            const createTechVideosArray: createTechVideosData[] = [];
+
+            if (techVideoUrlsArray && techVideoUrlsArray.length) {
+                techVideoUrlsArray.forEach( (url) => {
+                    createTechVideosArray.push({ url: url });
+                });
+            }
 
 
             const updateData: updateTechData = {
                 name: name,
                 description: description,
+                techVideos: { connectOrCreate: createTechVideosArray },
             };
 
 
@@ -460,7 +512,10 @@ router.route("/:techID")
             const rawTech = await prisma.tech_list.update({
                 where: { id: id },
                 data: updateData,
-                include: { difficulties: true },
+                include: {
+                    difficulties: true,
+                    tech_videos: true,
+                },
             });
 
 
@@ -494,14 +549,31 @@ const formatTech = function (rawTech: rawTech) {
         const id = rawTech.id;
         const name = rawTech.name;
         const description = rawTech.description === null ? undefined : rawTech.description;
+        const techVideoObjectsArray = rawTech.techVideos === null ? undefined : rawTech.techVideos;
         const difficulty = rawTech.difficulties;
+
+
+        let videoUrlsArray;
+
+        if (techVideoObjectsArray && techVideoObjectsArray.length) {
+            const techVideoUrlsArray: string[] = [];
+
+            techVideoObjectsArray.forEach( (techVideo) => {
+                techVideoUrlsArray.push(techVideo.url);
+            });
+
+            videoUrlsArray = techVideoUrlsArray;
+        }
+
 
         const formattedTech: formattedTech = {
             id: id,
             name: name,
             description: description,
+            videos: videoUrlsArray,
             difficulty: difficulty,
         };
+
 
         return formattedTech;
     }

@@ -18,6 +18,7 @@ interface formattedTech {
   id: number;
   name: string;
   description?: string;
+  videos?: string[];
   difficulty: difficulties;
 }
 

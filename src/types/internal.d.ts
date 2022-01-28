@@ -1,4 +1,4 @@
-import { users, publishers, golden_players, tech_list, difficulties, mods_ids, mods_details, maps_ids, maps_details, maps_details_side,
+import { users, publishers, golden_players, tech_list, tech_videos, difficulties, mods_ids, mods_details, maps_ids, maps_details, maps_details_side,
   map_lengths, maps_to_tech } from ".prisma/client";
 
 
@@ -47,16 +47,23 @@ export interface createDifficultyData {
 export interface createTechData {
   name: string;
   description?: string | null;
+  techVideos?: { create: createTechVideosData[] };
   difficulties: Object;
+}
+
+export interface createTechVideosData {
+  url: string;
 }
 
 export interface updateTechData {
   name?: string;
   description?: string | null;
   difficulties?: Object;
+  techVideos?: { connectOrCreate: createTechVideosData[] };
 }
 
 export interface rawTech extends tech_list {
+  techVideos?: tech_videos[];
   difficulties: difficulties;
 }
 

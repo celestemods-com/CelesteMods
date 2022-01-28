@@ -280,8 +280,18 @@ model tech_list {
   defaultDifficultyID Int            @db.UnsignedSmallInt
   difficulties        difficulties   @relation(fields: [defaultDifficultyID], references: [id], onUpdate: Restrict, map: "tech_list_ibfk_1")
   maps_to_tech        maps_to_tech[]
+  tech_videos         tech_videos[]
 
   @@index([defaultDifficultyID], map: "defaultDifficultyID")
+}
+
+model tech_videos {
+  id        Int       @id @default(autoincrement()) @db.UnsignedSmallInt
+  techID    Int       @db.UnsignedSmallInt
+  url       String    @db.VarChar(100)
+  tech_list tech_list @relation(fields: [techID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "tech_videos_ibfk_1")
+
+  @@index([techID], map: "techID")
 }
 
 model users {
