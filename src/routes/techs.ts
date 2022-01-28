@@ -1,7 +1,7 @@
 import express from "express";
 import { prisma } from "../prismaClient";
 import { validatePost, validatePatch } from "../jsonSchemas/techs";
-import { errorWithMessage, isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
+import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { createTechData, rawTech, updateTechData } from "../types/internal";
 import { formattedTech } from "../types/frontend";
 

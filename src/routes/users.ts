@@ -2,7 +2,7 @@ import express from "express";
 import axios from "axios";
 import { prisma } from "../prismaClient";
 import { validatePost, validatePatch1, validatePatch2 } from "../jsonSchemas/users";
-import { errorWithMessage, isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
+import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { users } from ".prisma/client";
 import { formattedUser } from "../types/frontend";
 import { createUserData, updateUserData, rawUser } from "../types/internal";
@@ -743,7 +743,7 @@ router.use(errorHandler);
 
 
 
-const formatUser = function (rawUser: rawUser): formattedUser | errorWithMessage {
+const formatUser = function (rawUser: rawUser) {
     try {
         if (rawUser.accountStatus === "Deleted" || rawUser.accountStatus === "Banned") {
             const timeDeletedOrBanned = rawUser.timeDeletedOrBanned === null ? undefined : rawUser.timeDeletedOrBanned;
@@ -790,7 +790,7 @@ const formatUser = function (rawUser: rawUser): formattedUser | errorWithMessage
 
 
 
-const getDiscordUser = async function (tokenType: String, token: String): Promise<discordUser | errorWithMessage> {
+const getDiscordUser = async function (tokenType: String, token: String) {
     try {
         const options = {
             url: "https://discord.com/api/users/@me",
