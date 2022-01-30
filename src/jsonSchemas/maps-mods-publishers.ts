@@ -300,6 +300,7 @@ const modPostSchema = {
                     {
                         type: "array",
                         uniqueItems: true,
+                        minItems: 1,
                         items: {
                             anyOf: [{
                                 type: "string",

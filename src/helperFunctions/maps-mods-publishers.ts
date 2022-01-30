@@ -912,6 +912,56 @@ export const param_mapID = <expressRoute>async function (req, res, next) {
 }
 
 
+export const param_modRevision = <expressRoute>async function (req, res, next) {
+    try {
+        const modID = <number>req.id;
+        const revisionRaw: unknown = req.params.modRevision;
+        const revision = Number(revisionRaw);
+
+        if (isNaN(revision)) {
+            res.status(400).json("revision is not a number");
+            return;
+        }
+
+        const modFromID = await prisma.mods_ids.findUnique({
+            where: { id: modID },
+            include: {
+                difficulties: true,
+                mods_details: {
+                    where: { revision: revision },
+                    include: { publishers: true },
+                },
+                maps_ids: {
+                    include: {
+                        maps_details: {
+                            orderBy: { revision: "desc" },
+                            include: {
+                                map_lengths: true,
+                                difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
+                                difficulties_difficultiesTomaps_details_modDifficultyID: true,
+                                users_maps_details_mapperUserIDTousers: true,
+                                maps_to_tech_maps_detailsTomaps_to_tech_mapID: { include: { tech_list: true } },
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        if (!modFromID) {
+            res.status(404).json(`revision ${revision} does not exist for specified modID`);
+            return;
+        }
+
+        req.revision = revision;
+        next();
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+
 
 
 

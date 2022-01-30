@@ -9,7 +9,8 @@ import {
 } from "../types/internal";
 import { formattedMod, formattedMap, formattedPublisher } from "../types/frontend";
 import { formatMod, getPublisherConnectionObject, getDifficultyArrays, getMapIDsCreationArray, param_userID, param_modID,
-    param_mapID, connectMapsToModDifficulties, formatMap } from "../helperFunctions/maps-mods-publishers";
+    param_mapID, param_modRevision, connectMapsToModDifficulties, formatMap } from "../helperFunctions/maps-mods-publishers";
+import { getCurrentTime } from "../helperFunctions/utils";
 
 
 const modsRouter = express.Router();
@@ -107,7 +108,7 @@ modsRouter.route("/")
             const gamebananaModID: number = req.body.gamebananaModID;
             const difficultyNames: (string | string[])[] | undefined = req.body.difficulties;
             const maps: jsonCreateMapWithMod[] = req.body.maps;
-            const currentTime = Math.floor(new Date().getTime() / 1000);
+            const currentTime = getCurrentTime();
 
 
             const valid = validateModPost({
@@ -826,9 +827,9 @@ modsRouter.param("modID", async function (req, res, next) {
 });
 
 
-modsRouter.param("revision",async function (req, res, next) {
+modsRouter.param("modRevision",async function (req, res, next) {
     try {
-
+        await param_modRevision(req, res, next);
     }
     catch (error) {
         next(error);
@@ -841,7 +842,46 @@ modsRouter.param("revision",async function (req, res, next) {
 modsRouter.route("/:modID/revisions")
     .get(async function (req, res, next) {
         try {
+            const modID = <number>req.id;
 
+
+            const rawMods = await prisma.mods_ids.findMany({
+                where: { id: modID },
+                include: {
+                    difficulties: true,
+                    mods_details: {
+                        orderBy: { revision: "desc" },
+                        include: { publishers: true },
+                    },
+                    maps_ids: {
+                        where: { maps_details: { some: { NOT: { timeApproved: null } } } },
+                        include: {
+                            maps_details: {
+                                where: { NOT: { timeApproved: null } },
+                                orderBy: { revision: "desc" },
+                                take: 1,
+                                include: {
+                                    map_lengths: true,
+                                    difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
+                                    difficulties_difficultiesTomaps_details_modDifficultyID: true,
+                                    users_maps_details_mapperUserIDTousers: true,
+                                    maps_to_tech_maps_detailsTomaps_to_tech_mapID: { include: { tech_list: true } },
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+
+
+            const formattedMods = rawMods.map((rawmod) => {
+                const formattedMod = formatMod(rawmod);
+                if (isErrorWithMessage(formattedMod)) throw formattedMod;
+                return formattedMod;
+            });
+
+
+            res.json(formattedMods);
         }
         catch (error) {
             next(error);
@@ -850,10 +890,63 @@ modsRouter.route("/:modID/revisions")
     .all(methodNotAllowed);
 
 
-modsRouter.route("/:modID/revisions/:revision/accept")
+modsRouter.route("/:modID/revisions/:modRevision/accept")
     .post(async function (req, res, next) {
         try {
+            const id = <number> req.id;
+            const revision = <number> req.revision;
+            const time = getCurrentTime();
 
+            const id_revision = {
+                id: id,
+                revision: revision,
+            }
+
+
+            const rawModOuter = await prisma.$transaction(async () => {
+                await prisma.mods_details.update({
+                    where: { id_revision: id_revision },
+                    data: { timeApproved: time },
+                });
+
+                const rawModInner = <rawMod> await prisma.mods_ids.findFirst({
+                    where: {
+                        id: req.id,
+                    },
+                    include: {
+                        difficulties: true,
+                        mods_details: {
+                            where: { revision: revision },
+                            include: { publishers: true },
+                        },
+                        maps_ids: {
+                            where: { maps_details: { some: { NOT: { timeApproved: null } } } },
+                            include: {
+                                maps_details: {
+                                    where: { NOT: { timeApproved: null } },
+                                    orderBy: { revision: "desc" },
+                                    take: 1,
+                                    include: {
+                                        map_lengths: true,
+                                        difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
+                                        difficulties_difficultiesTomaps_details_modDifficultyID: true,
+                                        users_maps_details_mapperUserIDTousers: true,
+                                        maps_to_tech_maps_detailsTomaps_to_tech_mapID: { include: { tech_list: true } },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                });
+
+                return rawModInner;
+            });
+
+
+            const formattedMod = formatMod(rawModOuter);
+
+            
+            res.json(formattedMod);
         }
         catch (error) {
             next(error);
@@ -862,22 +955,86 @@ modsRouter.route("/:modID/revisions/:revision/accept")
     .all(methodNotAllowed);
 
 
-modsRouter.route("/:modID/revisions/:revision/reject")
+modsRouter.route("/:modID/revisions/:modRevision/reject")
     .post(async function (req, res, next) {
         try {
+            const id = <number> req.id;
+            const revision = <number> req.revision;
 
+            const id_revision = {
+                id: id,
+                revision: revision,
+            }
+
+
+            await prisma.$transaction(async () => {
+                await prisma.mods_details.delete({ where: { id_revision: id_revision } });
+
+                const modFromID = await prisma.mods_ids.findUnique({
+                    where: { id: id },
+                    include: { mods_details: true },
+                });
+
+                if (!modFromID?.mods_details || !modFromID?.mods_details.length) {  //TODO: test whether an empty mods_ids has no mods_details property or an empty array
+                    await prisma.mods_ids.delete({ where: { id: id } });
+                }
+            });
+
+
+            res.status(204);
         }
         catch (error) {
-            next(error);
+            if (error === "RecordNotFound") {
+                res.status(404).json("Specified mod does not have the specified revision");
+            }
+            else {
+                next(error);
+            }
         }
     })
     .all(methodNotAllowed);
 
 
-modsRouter.route("/:modID/revisions/:revision")
+modsRouter.route("/:modID/revisions/:modRevision")
     .get(async function (req, res, next) {
         try {
+            const id = <number> req.id;
+            const revision = <number> req.revision;
 
+
+            const rawMod = <rawMod> await prisma.mods_ids.findUnique({
+                where: { id: id },
+                include: {
+                    difficulties: true,
+                    mods_details: {
+                        where: { revision: revision },
+                        include: { publishers: true },
+                    },
+                    maps_ids: {
+                        where: { maps_details: { some: { NOT: { timeApproved: null } } } },
+                        include: {
+                            maps_details: {
+                                where: { NOT: { timeApproved: null } },
+                                orderBy: { revision: "desc" },
+                                take: 1,
+                                include: {
+                                    map_lengths: true,
+                                    difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
+                                    difficulties_difficultiesTomaps_details_modDifficultyID: true,
+                                    users_maps_details_mapperUserIDTousers: true,
+                                    maps_to_tech_maps_detailsTomaps_to_tech_mapID: { include: { tech_list: true } },
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+
+            
+            const formattedMod = formatMod(rawMod);
+
+
+            res.json(formattedMod);
         }
         catch (error) {
             next(error);
@@ -906,7 +1063,7 @@ modsRouter.route("/:modID")
     .patch(async function (req, res, next) {
         try {
             //TODO: fix .patch to work with the new structure and helper formulae
-            //TODO: implement /mods/:modID/revisions routes
+            //TODO: implement handling of multiple revisions for formatMod and formatMap
             //then *i think* /mods should be done. double check and then work on /maps then /publishers
 
 
@@ -1328,7 +1485,7 @@ mapsRouter.param("mapID", async function (req, res, next) {
 });
 
 
-mapsRouter.param("revision",async function (req, res, next) {
+mapsRouter.param("mapRvision",async function (req, res, next) {
     try {
 
     }
@@ -1352,7 +1509,7 @@ mapsRouter.route("/:mapID/revisions")
     .all(methodNotAllowed);
 
 
-mapsRouter.route("/:mapID/revisions/:revision/accept")
+mapsRouter.route("/:mapID/revisions/:mapRevision/accept")
     .post(async function (req, res, next) {
         try {
 
@@ -1364,7 +1521,7 @@ mapsRouter.route("/:mapID/revisions/:revision/accept")
     .all(methodNotAllowed);
 
 
-mapsRouter.route("/:mapID/revisions/:revision/reject")
+mapsRouter.route("/:mapID/revisions/:mapRevision/reject")
     .post(async function (req, res, next) {
         try {
 
@@ -1376,7 +1533,7 @@ mapsRouter.route("/:mapID/revisions/:revision/reject")
     .all(methodNotAllowed);
 
 
-mapsRouter.route("/:mapID/revisions/:revision")
+mapsRouter.route("/:mapID/revisions/:mapRevision")
     .get(async function (req, res, next) {
         try {
 

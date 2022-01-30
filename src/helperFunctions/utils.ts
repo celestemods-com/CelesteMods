@@ -11,3 +11,8 @@ export const isNumberArray = function (unknownArray: unknown[]): unknownArray is
 
     return true;
 }
+
+
+export const getCurrentTime = function() {
+    return Math.floor(new Date().getTime() / 1000);
+}

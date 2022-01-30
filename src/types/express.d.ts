@@ -82,6 +82,7 @@ declare global {
       id?: number;
       id2?: number;
       id3?: number;
+      revision?: number;
       name?: string;
       idsMatch?: boolean;
       valid?: boolean;
