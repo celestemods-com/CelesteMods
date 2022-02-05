@@ -122,7 +122,6 @@ model maps_details {
   side                                                          maps_details_side?
   modDifficultyID                                               Int?               @db.UnsignedSmallInt
   overallRank                                                   Int?               @db.UnsignedTinyInt
-  minimumModVersion                                             String?            @db.VarChar(15)
   mapRemovedFromModBool                                         Boolean            @default(false)
   timeSubmitted                                                 Int
   submittedBy                                                   Int?               @db.UnsignedSmallInt
@@ -149,12 +148,13 @@ model maps_details {
 }
 
 model maps_ids {
-  id           Int            @id @default(autoincrement()) @db.UnsignedMediumInt
-  modID        Int            @db.UnsignedSmallInt
-  mods_ids     mods_ids       @relation(fields: [modID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "maps_ids_ibfk_1")
-  goldens      goldens[]
-  maps_details maps_details[]
-  ratings      ratings[]
+  id                 Int            @id @default(autoincrement()) @db.UnsignedMediumInt
+  modID              Int            @db.UnsignedSmallInt
+  minimumModRevision Int            @db.UnsignedTinyInt
+  mods_ids           mods_ids       @relation(fields: [modID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "maps_ids_ibfk_1")
+  goldens            goldens[]
+  maps_details       maps_details[]
+  ratings            ratings[]
 
   @@index([modID], map: "modID")
 }

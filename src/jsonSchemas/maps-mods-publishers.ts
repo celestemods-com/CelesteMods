@@ -12,6 +12,10 @@ const mapPostSchema = {
             minLength: 1,
             maxLength: 200,
         },
+        minimumModRevision: {
+            type: "integer",
+            minimum: 1,
+        },
         canonicalDifficulty: {
             type: "string",
             minLength: 1,
@@ -31,11 +35,6 @@ const mapPostSchema = {
             type: "string",
             minLength: 1,
             maxLength: 500,
-        },
-        minimumModVersion: {
-            type: "string",
-            minLength: 1,
-            maxLength: 15,
         },
         mapRemovedFromModBool: { type: "boolean" },
         techAny: {
@@ -121,7 +120,7 @@ const mapPostSchema = {
         },
     ],
     additionalProperties: false,
-    required: ["name", "minimumModVersion", "length", "mapRemovedFromModBool"],
+    required: ["name", "length", "mapRemovedFromModBool"],
 };
 
 
@@ -133,10 +132,9 @@ const mapPatchSchema = {
             minLength: 1,
             maxLength: 200,
         },
-        minimumModVersion: {
-            type: "string",
-            minLength: 1,
-            maxLength: 15,
+        minimumModRevision: {
+            type: "integer",
+            minimum: 1,
         },
         assignedDifficulty: {
             type: "string",
@@ -221,18 +219,6 @@ const mapPatchSchema = {
         },
     ],
     additionalProperties: false,
-};
-
-
-const mapPutSchema = {
-    type: "object",
-    properties: {
-        maximumModVersion: {
-            type: "string",
-            minLength: 1,
-            maxLength: 15,
-        },
-    },
 };
 
 
@@ -373,30 +359,6 @@ const modPatchSchema = {
             type: "integer",
             minimum: 0,
         },
-        difficulties: {
-            type: "array",
-            uniqueItems: true,
-            items: {
-                anyOf: [
-                    {
-                        type: "string",
-                        minLength: 1,
-                        maxLength: 50,
-                    },
-                    {
-                        type: "array",
-                        uniqueItems: true,
-                        items: {
-                            anyOf: [{
-                                type: "string",
-                                minLength: 1,
-                                maxLength: 50,
-                            }],
-                        },
-                    },
-                ],
-            },
-        },
     },
     additionalProperties: false,
 };
@@ -423,7 +385,6 @@ const ajv = new ajvModule({ allowUnionTypes: true, schemas: {mapPostSchema} });
 
 export const validateMapPost = ajv.compile(mapPostSchema);
 export const validateMapPatch = ajv.compile(mapPatchSchema);
-export const validateMapPut = ajv.compile(mapPutSchema);
 export const validateModPost = ajv.compile(modPostSchema);
 export const validateModPatch = ajv.compile(modPatchSchema);
 export const validatePublisherPatch = ajv.compile(publisherPatchSchema);

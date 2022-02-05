@@ -11,24 +11,6 @@ import { formattedMod, formattedMap, formattedPublisher } from "../types/fronten
 
 
 
-//comment out for production
-const submittingUser: submitterUser = {
-    id: 5,
-    displayName: "steve",
-    discordID: "5",
-    discordUsername: "steve",
-    discordDiscrim: "5555",
-    displayDiscord: false,
-    timeCreated: 1,
-    permissions: "",
-    permissionsArray: [],
-    accountStatus: "Active",
-    timeDeletedOrBanned: null,
-};
-
-
-
-
 const canonicalDifficultyNameErrorMessage = "canonicalDifficulty does not match any default parent difficulty names";
 const techNameErrorMessage = "A tech name in techAny did not match the names of any tech in the celestemods.com database";
 const lengthErrorMessage = "length does not match the name of any map lengths in the celestemods.com database";
@@ -386,15 +368,15 @@ const getSortedDifficultyNames = function (difficulties: difficulties[], modID: 
 
 
 
-export const getMapIDsCreationArray = async function (res: Response, maps: jsonCreateMapWithMod[], currentTime: number, modType: mods_details_type, lengthObjectArray: map_lengths[],
+export const getMapIDsCreationArray = async function (res: Response, maps: jsonCreateMapWithMod[], currentModRevision: number, currentTime: number, modType: mods_details_type, lengthObjectArray: map_lengths[],
     difficultiesCreationArray: createParentDifficultyForMod[], defaultDifficultyObjectsArray: defaultDifficultyForMod[],
-    modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean) {
+    modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean, submittingUser: submitterUser) {
     try {
         const mapIDsCreationArray: mapIdCreationObject[] = await Promise.all(
             maps.map(
                 async (mapObject: jsonCreateMapWithMod) => {
-                    const mapIdCreationObject = await getMapIdCreationObject(mapObject, currentTime, modType, lengthObjectArray,
-                        difficultiesCreationArray, defaultDifficultyObjectsArray, modHasCustomDifficultiesBool, modHasSubDifficultiesBool);
+                    const mapIdCreationObject = await getMapIdCreationObject(mapObject, currentModRevision, currentTime, modType, lengthObjectArray,
+                        difficultiesCreationArray, defaultDifficultyObjectsArray, modHasCustomDifficultiesBool, modHasSubDifficultiesBool, submittingUser);
 
                     return mapIdCreationObject;
                 }
@@ -437,15 +419,16 @@ export const getMapIDsCreationArray = async function (res: Response, maps: jsonC
 
 
 
-const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, currentTime: number, modType: mods_details_type,
+const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, currentModRevision: number, currentTime: number, modType: mods_details_type,
     lengthObjectArray: map_lengths[], customDifficultiesArray: createParentDifficultyForMod[], defaultDifficultyObjectsArray: defaultDifficultyForMod[],
-    modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean) {
+    modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean, submittingUser: submitterUser) {
 
+    const minimumModRevision = currentModRevision === 0 ? 1 : (mapObject.minimumModRevision ? mapObject.minimumModRevision : currentModRevision); 
+        //a currentModVersion of 0 means that this method is being called from /mods POST so any set value for minimumModRevision is ignored
     const mapName = mapObject.name;
     const lengthName = mapObject.length;
     const mapDescription = mapObject.description;
     const mapNotes = mapObject.notes;
-    const mapMinimumModVersion = mapObject.minimumModVersion;
     const mapRemovedFromModBool = mapObject.mapRemovedFromModBool;
     const techAny = mapObject.techAny;
     const techFC = mapObject.techFC;
@@ -474,6 +457,7 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
 
 
     const mapIdCreationObject: mapIdCreationObject = {
+        minimumModRevision: minimumModRevision,
         map_details: {
             create: [{
                 name: mapName,
@@ -481,7 +465,6 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
                 map_lengths: { connect: { id: lengthID } },
                 description: mapDescription,
                 notes: mapNotes,
-                minimumModVersion: mapMinimumModVersion,
                 mapRemovedFromModBool: mapRemovedFromModBool,
                 timeSubmitted: currentTime,
                 users_maps_details_submittedByTousers: { connect: { id: submittingUser.id } },
@@ -728,12 +711,12 @@ export const formatMap = function (rawMap: rawMap, modType: mods_details_type): 
         const id = rawMap.id;
         const revision = rawMap.maps_details[0].revision;
         const modID = rawMap.modID;
+        const minimumModRevision = rawMap.minimumModRevision;
         const name = rawMap.maps_details[0].name;
         const canonicalDifficulty = rawMap.maps_details[0].difficulties_difficultiesTomaps_details_canonicalDifficultyID.name;
         const length = rawMap.maps_details[0].map_lengths.name;
         const description = rawMap.maps_details[0].description === null ? undefined : rawMap.maps_details[0].description;
         const notes = rawMap.maps_details[0].notes === null ? undefined : rawMap.maps_details[0].notes;
-        const minimumModVersion = rawMap.maps_details[0].minimumModVersion;
         const mapRemovedFromModBool = rawMap.maps_details[0].mapRemovedFromModBool;
 
 
@@ -753,6 +736,7 @@ export const formatMap = function (rawMap: rawMap, modType: mods_details_type): 
             id: id,
             revision: revision,
             modID: modID,
+            minimumModRevision: minimumModRevision,
             name: name,
             canonicalDifficulty: canonicalDifficulty,
             length: length,
@@ -761,7 +745,6 @@ export const formatMap = function (rawMap: rawMap, modType: mods_details_type): 
             mapperUserID: mapperUserID,
             mapperUserName: mapperUserName,
             mapperNameString: mapperNameString,
-            minimumModVersion: minimumModVersion,
             mapRemovedFromModBool: mapRemovedFromModBool,
         }
 
@@ -970,7 +953,7 @@ export const param_modRevision = <expressRoute>async function (req, res, next) {
 
 
 
-const privilegedUser = function (user: submitterUser) {
+export const privilegedUser = function (user: submitterUser) {
     try {
         const permArray = user.permissionsArray;
 

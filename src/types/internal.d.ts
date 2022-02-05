@@ -1,4 +1,4 @@
-import { users, publishers, golden_players, tech_list, tech_videos, difficulties, mods_ids, mods_details, maps_ids, maps_details, maps_details_side,
+import { users, publishers, golden_players, tech_list, tech_videos, difficulties, mods_ids, mods_details, mods_details_type, maps_ids, maps_details, maps_details_side,
   map_lengths, maps_to_tech } from ".prisma/client";
 
 
@@ -81,6 +81,27 @@ interface rawModDetails extends mods_details {
 }
 
 
+export interface modDetailsCreationObject {
+  revision: number;
+  type: mods_details_type;
+  name: string;
+  publishers: publisherConnectionObject;
+  contentWarning: boolean;
+  notes?: string | null;
+  shortDescription: string;
+  longDescription?: string | null;
+  gamebananaModID: number;
+  timeSubmitted: number;
+  users_mods_details_submittedByTousers: { connect: { id: number } };
+  timeApproved?: number;
+  users_mods_details_approvedByTousers?: { connect: { id: number } };
+}
+
+export interface loneModDetailsCreationObject extends modDetailsCreationObject {
+  mods_ids: { connect: { id: number } }
+}
+
+
 
 export interface createChildDifficultyForMod {
   id: number;
@@ -100,6 +121,7 @@ export interface defaultDifficultyForMod extends difficulties {
 
 export interface jsonCreateMapWithMod {
   name: string;
+  minimumModRevision: number;
   canonicalDifficulty?: string | null;
   length: string;
   description?: string;
@@ -110,7 +132,6 @@ export interface jsonCreateMapWithMod {
   side?: maps_details_side;
   modDifficulty?: string | string[];
   overallRank?: number;
-  minimumModVersion: string;
   mapRemovedFromModBool: boolean;
   techAny?: string[];
   techFC?: string[];
@@ -118,6 +139,7 @@ export interface jsonCreateMapWithMod {
 
 
 export interface mapIdCreationObject {
+  minimumModRevision: number;
   map_details: {
     create: mapDetailsCreationObject[]
   }
@@ -129,7 +151,6 @@ export interface mapDetailsCreationObject {
   map_lengths: { connect: { id: number } };
   description?: string;
   notes?: string;
-  minimumModVersion: string;
   mapRemovedFromModBool: boolean;
   users_maps_details_mapperUserIDTousers?: { connect: { id: number } };
   mapperNameString?: string;
@@ -180,5 +201,9 @@ interface rawModForMap extends mods_ids {
 
 
 export interface rawPublisher extends publishers {
+
+}
+
+export interface publisherConnectionObject {
 
 }

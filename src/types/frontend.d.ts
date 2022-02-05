@@ -42,6 +42,7 @@ interface formattedMap {
   id: number;
   revision: number;
   modID: number;
+  minimumModRevision: number;
   name: string;
   canonicalDifficulty: string;
   length: string;
@@ -54,7 +55,6 @@ interface formattedMap {
   side?: string;
   modDifficulty?: string | string[];
   overallRank?: number;
-  minimumModVersion: string | null;
   mapRemovedFromModBool: boolean;
   techAny?: string[];
   techFC?: string[];
