@@ -218,27 +218,15 @@ export const getDifficultyArrays = function (difficultyNames: (string | string[]
 
 export const formatMod = function (rawMod: rawMod) {
     try {
-        if (rawMod.mods_details.length !== 1) {
-            throw `more than 1 mod_details for mod ${rawMod.id} passed to formatMod`;
-        }
-
+        if (rawMod.mods_details.length < 1) throw "no modDetails passed to formatMod";
 
         const id = rawMod.id;
-        const revision = rawMod.mods_details[0].revision;
-        const type = rawMod.mods_details[0].type;
-        const name = rawMod.mods_details[0].name;
-        const publisherID = rawMod.mods_details[0].publisherID;
-        const publisherGamebananaID = rawMod.mods_details[0].publishers.gamebananaID === null ? undefined : rawMod.mods_details[0].publishers.gamebananaID;
-        const contentWarning = rawMod.mods_details[0].contentWarning;
-        const notes = rawMod.mods_details[0].notes === null ? undefined : rawMod.mods_details[0].notes;
-        const shortDescription = rawMod.mods_details[0].shortDescription;
-        const longDescription = rawMod.mods_details[0].longDescription === null ? undefined : rawMod.mods_details[0].longDescription;
-        const gamebananaModID = rawMod.mods_details[0].gamebananaModID === null ? undefined : rawMod.mods_details[0].gamebananaModID;
         const rawMaps = rawMod.maps_ids;
+        let outerType: mods_details_type;
 
 
         const formattedMaps = rawMaps.map((rawMap) => {
-            const formattedMap = formatMap(rawMap, type);
+            const formattedMap = formatMap(rawMap, outerType);
 
             if (isErrorWithMessage(formattedMap)) throw formattedMap;
 
@@ -246,29 +234,52 @@ export const formatMod = function (rawMod: rawMod) {
         });
 
 
-        const formattedMod: formattedMod = {
-            id: id,
-            revision: revision,
-            type: type,
-            name: name,
-            publisherID: publisherID,
-            publisherGamebananaID: publisherGamebananaID,
-            contentWarning: contentWarning,
-            notes: notes,
-            shortDescription: shortDescription,
-            longDescription: longDescription,
-            gamebananaModID: gamebananaModID,
-            maps: formattedMaps,
-        };
+        let formattedDifficultiesArray: (string | string[])[];
 
         if (rawMod.difficulties) {
-            const formattedArray = getSortedDifficultyNames(rawMod.difficulties, id);
-
-            formattedMod.difficulties = formattedArray;
+            formattedDifficultiesArray = getSortedDifficultyNames(rawMod.difficulties, id);
         }
 
 
-        return formattedMod;
+        const outerFormattedMod = rawMod.mods_details.map( (modDetails) => {
+            const revision = modDetails.revision;
+            const innerType = modDetails.type;
+            const name = modDetails.name;
+            const publisherID = modDetails.publisherID;
+            const publisherGamebananaID = modDetails.publishers.gamebananaID === null ? undefined : modDetails.publishers.gamebananaID;
+            const contentWarning = modDetails.contentWarning;
+            const notes = modDetails.notes === null ? undefined : modDetails.notes;
+            const shortDescription = modDetails.shortDescription;
+            const longDescription = modDetails.longDescription === null ? undefined : modDetails.longDescription;
+            const gamebananaModID = modDetails.gamebananaModID === null ? undefined : modDetails.gamebananaModID;
+
+
+            const innerFormattedMod: formattedMod = {
+                id: id,
+                revision: revision,
+                type: innerType,
+                name: name,
+                publisherID: publisherID,
+                publisherGamebananaID: publisherGamebananaID,
+                contentWarning: contentWarning,
+                notes: notes,
+                shortDescription: shortDescription,
+                longDescription: longDescription,
+                gamebananaModID: gamebananaModID,
+                maps: formattedMaps,
+            };
+
+
+            if (rawMod.difficulties) {
+                innerFormattedMod.difficulties = formattedDifficultiesArray;
+            }
+
+
+            return innerFormattedMod;
+        });
+
+
+        return outerFormattedMod;
     }
     catch (error) {
         return toErrorWithMessage(error);
@@ -706,93 +717,100 @@ export const connectMapsToModDifficulties = async function (rawMod: rawMod) {
 
 
 
-export const formatMap = function (rawMap: rawMap, modType: mods_details_type): formattedMap | errorWithMessage {
+export const formatMap = function (rawMap: rawMap, modType: mods_details_type) {
     try {
         const id = rawMap.id;
-        const revision = rawMap.maps_details[0].revision;
         const modID = rawMap.modID;
         const minimumModRevision = rawMap.minimumModRevision;
-        const name = rawMap.maps_details[0].name;
-        const canonicalDifficulty = rawMap.maps_details[0].difficulties_difficultiesTomaps_details_canonicalDifficultyID.name;
-        const length = rawMap.maps_details[0].map_lengths.name;
-        const description = rawMap.maps_details[0].description === null ? undefined : rawMap.maps_details[0].description;
-        const notes = rawMap.maps_details[0].notes === null ? undefined : rawMap.maps_details[0].notes;
-        const mapRemovedFromModBool = rawMap.maps_details[0].mapRemovedFromModBool;
 
 
-        const mapperUserID = rawMap.maps_details[0].mapperUserID === null ? undefined : rawMap.maps_details[0].mapperUserID;
-        let mapperUserName;
-        let mapperNameString;
-
-        if (mapperUserID) {
-            mapperUserName = rawMap.maps_details[0].users_maps_details_mapperUserIDTousers?.displayName;
-        }
-        else {
-            mapperNameString = rawMap.maps_details[0].mapperNameString === null ? undefined : rawMap.maps_details[0].mapperNameString;
-        }
+        const outerFormattedMap = rawMap.maps_details.map( (mapDetails) => {
+            const revision = mapDetails.revision;
+            const name = mapDetails.name;
+            const canonicalDifficulty = mapDetails.difficulties_difficultiesTomaps_details_canonicalDifficultyID.name;
+            const length = mapDetails.map_lengths.name;
+            const description = mapDetails.description === null ? undefined : mapDetails.description;
+            const notes = mapDetails.notes === null ? undefined : mapDetails.notes;
+            const mapRemovedFromModBool = mapDetails.mapRemovedFromModBool;
 
 
-        const formattedMap: formattedMap = {
-            id: id,
-            revision: revision,
-            modID: modID,
-            minimumModRevision: minimumModRevision,
-            name: name,
-            canonicalDifficulty: canonicalDifficulty,
-            length: length,
-            description: description,
-            notes: notes,
-            mapperUserID: mapperUserID,
-            mapperUserName: mapperUserName,
-            mapperNameString: mapperNameString,
-            mapRemovedFromModBool: mapRemovedFromModBool,
-        }
+            const mapperUserID = mapDetails.mapperUserID === null ? undefined : mapDetails.mapperUserID;
+            let mapperUserName;
+            let mapperNameString;
+
+            if (mapperUserID) {
+                mapperUserName = mapDetails.users_maps_details_mapperUserIDTousers?.displayName;
+            }
+            else {
+                mapperNameString = mapDetails.mapperNameString === null ? undefined : mapDetails.mapperNameString;
+            }
 
 
-        const techAny: string[] = [];
-        const techFC: string[] = [];
+            const innerFormattedMap: formattedMap = {
+                id: id,
+                revision: revision,
+                modID: modID,
+                minimumModRevision: minimumModRevision,
+                name: name,
+                canonicalDifficulty: canonicalDifficulty,
+                length: length,
+                description: description,
+                notes: notes,
+                mapperUserID: mapperUserID,
+                mapperUserName: mapperUserName,
+                mapperNameString: mapperNameString,
+                mapRemovedFromModBool: mapRemovedFromModBool,
+            }
 
-        if (rawMap.maps_details[0].maps_to_tech_maps_detailsTomaps_to_tech_mapID) {
-            for (const tech of rawMap.maps_details[0].maps_to_tech_maps_detailsTomaps_to_tech_mapID) {
-                if (tech.fullClearOnlyBool) {
-                    techFC.push(tech.tech_list.name);
+
+            const techAny: string[] = [];
+            const techFC: string[] = [];
+
+            if (mapDetails.maps_to_tech_maps_detailsTomaps_to_tech_mapID) {
+                for (const tech of mapDetails.maps_to_tech_maps_detailsTomaps_to_tech_mapID) {
+                    if (tech.fullClearOnlyBool) {
+                        techFC.push(tech.tech_list.name);
+                    }
+                    else {
+                        techAny.push(tech.tech_list.name);
+                    }
                 }
-                else {
-                    techAny.push(tech.tech_list.name);
+                
+                if (techAny.length) innerFormattedMap.techAny = techAny;
+                if (techFC.length) innerFormattedMap.techFC = techFC;
+            }
+
+
+            if (modType === "Normal") {
+                const chapter = mapDetails.chapter === null ? undefined : mapDetails.chapter;
+                const side = mapDetails.side === null ? undefined : mapDetails.side;
+
+                if (!chapter || !side) throw `Chapter or side is null in Normal map ${id}`;
+
+                innerFormattedMap.chapter = chapter;
+                innerFormattedMap.side = side;
+            }
+            else {
+                const modDifficulty = mapDetails.difficulties_difficultiesTomaps_details_modDifficultyID?.name;
+                
+                if (!modDifficulty) throw `modDifficulty is undefined in non-Normal map ${id}`;
+
+                innerFormattedMap.modDifficulty = modDifficulty;
+
+
+                if (modType === "Contest") {
+                    const overallRank = mapDetails.overallRank === null ? undefined : mapDetails.overallRank;
+
+                    innerFormattedMap.overallRank = overallRank;
                 }
             }
-            
-            if (techAny.length) formattedMap.techAny = techAny;
-            if (techFC.length) formattedMap.techFC = techFC;
-        }
 
 
-        if (modType === "Normal") {
-            const chapter = rawMap.maps_details[0].chapter === null ? undefined : rawMap.maps_details[0].chapter;
-            const side = rawMap.maps_details[0].side === null ? undefined : rawMap.maps_details[0].side;
-
-            if (!chapter || !side) throw `Chapter or side is null in Normal map ${id}`;
-
-            formattedMap.chapter = chapter;
-            formattedMap.side = side;
-        }
-        else {
-            const modDifficulty = rawMap.maps_details[0].difficulties_difficultiesTomaps_details_modDifficultyID?.name;
-            
-            if (!modDifficulty) throw `modDifficulty is undefined in non-Normal map ${id}`;
-
-            formattedMap.modDifficulty = modDifficulty;
+            return innerFormattedMap;
+        });
 
 
-            if (modType === "Contest") {
-                const overallRank = rawMap.maps_details[0].overallRank === null ? undefined : rawMap.maps_details[0].overallRank;
-
-                formattedMap.overallRank = overallRank;
-            }
-        }
-
-
-        return formattedMap;
+        return outerFormattedMap;
     }
     catch (error) {
         return (toErrorWithMessage(error));

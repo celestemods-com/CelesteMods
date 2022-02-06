@@ -34,7 +34,7 @@ interface formattedMod {
   shortDescription: string;
   longDescription?: string;
   gamebananaModID?: number;
-  maps: formattedMap[];
+  maps: formattedMap[][];
   difficulties?: (string | string[])[];
 }
 

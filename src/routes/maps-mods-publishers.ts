@@ -434,7 +434,7 @@ modsRouter.route("/search")
             });
 
 
-            const formattedMods: formattedMod[] = rawMods.map((rawMod) => {
+            const formattedMods: formattedMod[][] = rawMods.map((rawMod) => {
                 const formattedMod = formatMod(rawMod);
                 if (isErrorWithMessage(formattedMod)) throw formattedMod;
                 return formattedMod;
@@ -500,7 +500,7 @@ modsRouter.route("/type")
             });
 
 
-            const formattedMods: formattedMod[] = rawMods.map((rawMod) => {
+            const formattedMods: formattedMod[][] = rawMods.map((rawMod) => {
                 const formattedMod = formatMod(rawMod);
                 if (isErrorWithMessage(formattedMod)) throw formattedMod;
                 return formattedMod;
