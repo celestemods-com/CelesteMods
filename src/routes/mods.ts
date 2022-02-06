@@ -8,8 +8,10 @@ import {
     modDetailsCreationObject, loneModDetailsCreationObject, submitterUser, publisherConnectionObject
 } from "../types/internal";
 import { formattedMod } from "../types/frontend";
-import { formatMod, getPublisherConnectionObject, getDifficultyArrays, getMapIDsCreationArray, param_userID, param_modID,
-    param_modRevision, privilegedUser } from "../helperFunctions/maps-mods-publishers";
+import {
+    formatMod, getPublisherConnectionObject, getDifficultyArrays, getMapIDsCreationArray, param_userID, param_modID,
+    param_modRevision, privilegedUser
+} from "../helperFunctions/maps-mods-publishers";
 import { getCurrentTime } from "../helperFunctions/utils";
 
 
@@ -139,7 +141,7 @@ modsRouter.route("/")
                 let modHasCustomDifficultiesBool = false;
                 let modHasSubDifficultiesBool = true;
 
-    
+
                 if (difficultyNames) {
                     const difficultyWithHighestID = await prisma.difficulties.findMany({
                         orderBy: { id: "desc" },
@@ -149,9 +151,9 @@ modsRouter.route("/")
 
 
                     const difficultyArrays = getDifficultyArrays(difficultyNames, difficultyWithHighestID[0].id);
-    
+
                     if (isErrorWithMessage(difficultyArrays)) throw difficultyArrays;
-    
+
                     difficultyNamesArray = <difficultyNamesForModArrayElement[]>difficultyArrays[0];
                     difficultiesCreationArray = <createParentDifficultyForMod[]>difficultyArrays[1];
                     modHasSubDifficultiesBool = <boolean>difficultyArrays[2];
@@ -163,17 +165,17 @@ modsRouter.route("/")
                         where: { parentModID: null },
                         include: { other_difficulties: true },
                     });
-    
+
                     if (!defaultDifficultyObjectsArray.length) throw "there are no default difficulties";
                 }
-    
-    
+
+
                 const lengthObjectArray = await prisma.map_lengths.findMany();
-    
+
 
                 const mapsIDsCreationArray = await getMapIDsCreationArray(res, maps, 0, currentTime, modType, lengthObjectArray,
                     difficultiesCreationArray, defaultDifficultyObjectsArray, modHasCustomDifficultiesBool, modHasSubDifficultiesBool, submittingUser);
-    
+
                 if (res.errorSent) return;
 
 
@@ -225,7 +227,7 @@ modsRouter.route("/")
                     timeSubmitted: currentTime,
                     users_mods_details_submittedByTousers: { connect: { id: submittingUser.id } },
                 }
-                
+
 
                 const privilegedUserBool = privilegedUser(submittingUser);
 
@@ -239,9 +241,9 @@ modsRouter.route("/")
                     data: {
                         difficulties: { create: difficultiesCreationArray },
                         mods_details: {
-                            create: [ modDetailsCreationObject ],
+                            create: [modDetailsCreationObject],
                         },
-                        maps_ids: { create: mapsIDsCreationArray},
+                        maps_ids: { create: mapsIDsCreationArray },
                     },
                     include: {
                         difficulties: true,
@@ -829,7 +831,7 @@ modsRouter.param("modID", async function (req, res, next) {
 });
 
 
-modsRouter.param("modRevision",async function (req, res, next) {
+modsRouter.param("modRevision", async function (req, res, next) {
     try {
         await param_modRevision(req, res, next);
     }
@@ -895,8 +897,8 @@ modsRouter.route("/:modID/revisions")
 modsRouter.route("/:modID/revisions/:modRevision/accept")
     .post(async function (req, res, next) {
         try {
-            const id = <number> req.id;
-            const revision = <number> req.revision;
+            const id = <number>req.id;
+            const revision = <number>req.revision;
             const time = getCurrentTime();
 
             const id_revision = {
@@ -911,7 +913,7 @@ modsRouter.route("/:modID/revisions/:modRevision/accept")
                     data: { timeApproved: time },
                 });
 
-                const rawModInner = <rawMod> await prisma.mods_ids.findFirst({
+                const rawModInner = <rawMod>await prisma.mods_ids.findFirst({
                     where: {
                         id: req.id,
                     },
@@ -947,7 +949,7 @@ modsRouter.route("/:modID/revisions/:modRevision/accept")
 
             const formattedMod = formatMod(rawModOuter);
 
-            
+
             res.json(formattedMod);
         }
         catch (error) {
@@ -960,8 +962,8 @@ modsRouter.route("/:modID/revisions/:modRevision/accept")
 modsRouter.route("/:modID/revisions/:modRevision/reject")
     .post(async function (req, res, next) {
         try {
-            const id = <number> req.id;
-            const revision = <number> req.revision;
+            const id = <number>req.id;
+            const revision = <number>req.revision;
 
             const id_revision = {
                 id: id,
@@ -1000,11 +1002,11 @@ modsRouter.route("/:modID/revisions/:modRevision/reject")
 modsRouter.route("/:modID/revisions/:modRevision")
     .get(async function (req, res, next) {
         try {
-            const id = <number> req.id;
-            const revision = <number> req.revision;
+            const id = <number>req.id;
+            const revision = <number>req.revision;
 
 
-            const rawMod = <rawMod> await prisma.mods_ids.findUnique({
+            const rawMod = <rawMod>await prisma.mods_ids.findUnique({
                 where: { id: id },
                 include: {
                     difficulties: true,
@@ -1032,7 +1034,7 @@ modsRouter.route("/:modID/revisions/:modRevision")
                 },
             });
 
-            
+
             const formattedMod = formatMod(rawMod);
 
 
@@ -1178,17 +1180,17 @@ modsRouter.route("/:modID")
 
 
                 const latestValidModDetails = latestValidRevision?.mods_details[0];
-                
+
                 if (!latestValidModDetails) throw "latestValidModDetails does not exist";
 
 
                 let publisherConnectionObject: publisherConnectionObject = {};
-    
+
                 if (publisherGamebananaID || publisherID || publisherName || userID) {
                     const publisherConnectionReturnedObject = await getPublisherConnectionObject(res, userID, publisherGamebananaID, publisherID, publisherName);
-    
+
                     if (res.errorSent) return;
-    
+
                     if (!publisherConnectionReturnedObject || isErrorWithMessage(publisherConnectionReturnedObject)) {
                         throw `publisherConnectionObject = "${publisherConnectionReturnedObject}"`;
                     }
