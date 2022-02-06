@@ -4,7 +4,7 @@ import { validateMapPost, validateMapPatch, validateModPost, validateModPatch, v
 import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { mods_details, mods_details_type, publishers } from ".prisma/client";
 import {
-    rawMod, rawMap, rawPublisher, createParentDifficultyForMod, createChildDifficultyForMod, jsonCreateMapWithMod,
+    rawMod, rawMap, rawPublisher, createParentDifficultyForMod, createChildDifficultyForMod, difficultyNamesForModArrayElement, jsonCreateMapWithMod,
     mapIdCreationObject, mapDetailsCreationObject, mapToTechCreationObject, defaultDifficultyForMod, modDetailsCreationObject,
     loneModDetailsCreationObject, submitterUser, publisherConnectionObject
 } from "../types/internal";
@@ -17,14 +17,6 @@ import { getCurrentTime } from "../helperFunctions/utils";
 const modsRouter = express.Router();
 const mapsRouter = express.Router();
 const publishersRouter = express.Router();
-
-
-
-
-interface difficultyNamesArrayElement {
-    id?: number,
-    name: string,
-}
 
 
 
@@ -144,7 +136,7 @@ modsRouter.route("/")
 
 
             const rawModAndStatus = await prisma.$transaction(async () => {
-                let difficultyNamesArray: difficultyNamesArrayElement[] = [];
+                let difficultyNamesArray: difficultyNamesForModArrayElement[] = [];
                 let difficultiesCreationArray: createParentDifficultyForMod[] = [];
                 let defaultDifficultyObjectsArray: defaultDifficultyForMod[] = [];
                 let modHasCustomDifficultiesBool = false;
@@ -163,7 +155,7 @@ modsRouter.route("/")
     
                     if (isErrorWithMessage(difficultyArrays)) throw difficultyArrays;
     
-                    difficultyNamesArray = <difficultyNamesArrayElement[]>difficultyArrays[0];
+                    difficultyNamesArray = <difficultyNamesForModArrayElement[]>difficultyArrays[0];
                     difficultiesCreationArray = <createParentDifficultyForMod[]>difficultyArrays[1];
                     modHasSubDifficultiesBool = <boolean>difficultyArrays[2];
 

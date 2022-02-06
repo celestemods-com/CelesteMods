@@ -103,6 +103,11 @@ export interface loneModDetailsCreationObject extends modDetailsCreationObject {
 
 
 
+export interface difficultyNamesForModArrayElement {
+  id?: number,
+  name: string,
+}
+
 export interface createChildDifficultyForMod {
   id: number;
   name: string;
