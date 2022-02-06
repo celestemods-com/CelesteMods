@@ -1067,10 +1067,6 @@ modsRouter.route("/:modID")
     })
     .patch(async function (req, res, next) {
         try {
-            //TODO: implement handling of multiple revisions for formatMod and formatMap
-            //then *i think* /mods should be done. double check and then work on /maps then /publishers
-
-
             const id = <number>req.id;
             const type: mods_details_type | undefined = req.body.type === null ? undefined : req.body.type;
             const name: string | undefined = req.body.name === null ? undefined : req.body.name;
