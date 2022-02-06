@@ -1144,7 +1144,7 @@ modsRouter.route("/:modID")
 
                 if (isErrorWithMessage(formattedMatchingMod)) throw formattedMatchingMod;
 
-                res.status(200).json(formattedMatchingMod);
+                res.status(400).json(formattedMatchingMod);
 
                 return;
             }
@@ -1268,7 +1268,7 @@ modsRouter.route("/:modID")
 
             const formattedMod = formatMod(rawMod);
 
-            res.status(201).json(formattedMod);
+            res.json(formattedMod);
         }
         catch (error) {
             next(error);
