@@ -205,10 +205,6 @@ interface rawModForMap extends mods_ids {
 
 
 
-export interface rawPublisher extends publishers {
-
-}
-
 export interface publisherConnectionObject {
 
 }

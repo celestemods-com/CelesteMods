@@ -1,6 +1,6 @@
 import { difficulties } from ".prisma/client";
 
-interface formattedUser {
+export interface formattedUser {
   id: number;
   displayName: string;
   discordUsername?: string;
@@ -14,7 +14,7 @@ interface formattedUser {
   goldenPlayerID?: number;
 }
 
-interface formattedTech {
+export interface formattedTech {
   id: number;
   name: string;
   description?: string;
@@ -22,7 +22,7 @@ interface formattedTech {
   difficulty: difficulties;
 }
 
-interface formattedMod {
+export interface formattedMod {
   id: number;
   revision: number;
   type: string;
@@ -38,7 +38,7 @@ interface formattedMod {
   difficulties?: (string | string[])[];
 }
 
-interface formattedMap {
+export interface formattedMap {
   id: number;
   revision: number;
   modID: number;
@@ -59,9 +59,3 @@ interface formattedMap {
   techAny?: string[];
   techFC?: string[];
 }
-
-interface formattedPublisher {
-
-}
-
-export { formattedUser, formattedTech, formattedMod, formattedMap, formattedPublisher };

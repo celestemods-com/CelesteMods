@@ -1,14 +1,14 @@
 import express, { NextFunction, Response } from "express";
 import { prisma } from "../prismaClient";
-import { validateMapPost, validateMapPatch, validatePublisherPatch } from "../jsonSchemas/maps-mods-publishers";
+import { validateMapPost, validateMapPatch } from "../jsonSchemas/maps-mods-publishers";
 import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { mods_details, mods_details_type, publishers } from ".prisma/client";
 import {
-    rawMod, rawMap, rawPublisher, createParentDifficultyForMod, createChildDifficultyForMod, difficultyNamesForModArrayElement, jsonCreateMapWithMod,
+    rawMod, rawMap, createParentDifficultyForMod, createChildDifficultyForMod, difficultyNamesForModArrayElement, jsonCreateMapWithMod,
     mapIdCreationObject, mapDetailsCreationObject, mapToTechCreationObject, defaultDifficultyForMod, modDetailsCreationObject,
     loneModDetailsCreationObject, submitterUser, publisherConnectionObject
 } from "../types/internal";
-import { formattedMod, formattedMap, formattedPublisher } from "../types/frontend";
+import { formattedMod, formattedMap } from "../types/frontend";
 import { formatMod, getPublisherConnectionObject, getDifficultyArrays, getMapIDsCreationArray, param_userID, param_modID,
     param_mapID, param_modRevision, connectMapsToModDifficulties, formatMap, privilegedUser } from "../helperFunctions/maps-mods-publishers";
 import { getCurrentTime } from "../helperFunctions/utils";

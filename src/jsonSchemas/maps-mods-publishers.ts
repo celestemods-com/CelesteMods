@@ -366,13 +366,36 @@ const modPatchSchema = {
 
 
 
-const publisherPatchSchema = {
+const validatePublisherPostOrPatchSchema = {
     type: "object",
-    properties: {
-
-    },
+    anyOf: [
+        {
+            properties: {
+                gamebananaID: {
+                    type: "integer",
+                    minimum: 1,
+                },
+            },
+        },
+        {
+            properties: {
+                name: {
+                    type: "string",
+                    minLength: 1,
+                    maxLength: 100,
+                },
+            },
+        },
+        {
+            properties: {
+                userID: {
+                    type: "integer",
+                    minimum: 1,
+                }
+            },
+        },
+    ],
     additionalProperties: false,
-    required: ["type", "name", "contentWarning", "shortDescription", "maps"],
 };
 
 
@@ -387,4 +410,4 @@ export const validateMapPost = ajv.compile(mapPostSchema);
 export const validateMapPatch = ajv.compile(mapPatchSchema);
 export const validateModPost = ajv.compile(modPostSchema);
 export const validateModPatch = ajv.compile(modPatchSchema);
-export const validatePublisherPatch = ajv.compile(publisherPatchSchema);
+export const validatePublisherPostOrPatch = ajv.compile(validatePublisherPostOrPatchSchema);

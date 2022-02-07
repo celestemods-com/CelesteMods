@@ -4,9 +4,9 @@ import axios from "axios";
 import { expressRoute } from "../types/express";
 import { errorWithMessage, isErrorWithMessage, toErrorWithMessage } from "../errorHandling";
 import { difficulties, map_lengths, mods_details_type } from ".prisma/client";
-import { rawMod, rawMap, rawPublisher, createParentDifficultyForMod, createChildDifficultyForMod, jsonCreateMapWithMod,
+import { rawMod, rawMap, createParentDifficultyForMod, createChildDifficultyForMod, jsonCreateMapWithMod,
     mapIdCreationObject, mapToTechCreationObject, defaultDifficultyForMod, submitterUser } from "../types/internal";
-import { formattedMod, formattedMap, formattedPublisher } from "../types/frontend";
+import { formattedMod, formattedMap } from "../types/frontend";
 
 
 
@@ -963,6 +963,34 @@ export const param_modRevision = <expressRoute>async function (req, res, next) {
 }
 
 
+export const param_publisherID = <expressRoute>async function (req, res, next) {
+    try {
+        const idRaw: unknown = req.params.publisherID;
+
+        const id = Number(idRaw);
+
+        if (isNaN(id)) {
+            res.status(400).json("publisherID is not a number");
+            return;
+        }
+
+        const publisherFromID = await prisma.publishers.findUnique({ where: { id: id } });
+
+        if (!publisherFromID) {
+            res.status(404).json("publisherID does not exist");
+            return;
+        }
+
+        req.publisher = publisherFromID;
+        req.id = id;
+        next();
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+
 
 
 
@@ -991,7 +1019,7 @@ export const privilegedUser = function (user: submitterUser) {
 
 
 
-const getGamebananaUsernameById = async function (gamebananaID: number) {
+export const getGamebananaUsernameById = async function (gamebananaID: number) {
     try {
         const options = {
             url: `https://api.gamebanana.com/Core/Member/IdentifyById?userid=${gamebananaID}`

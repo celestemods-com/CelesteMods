@@ -211,7 +211,7 @@ model mods_ids {
 
 model publishers {
   id           Int            @id @default(autoincrement()) @db.UnsignedSmallInt
-  gamebananaID Int            @unique(map: "gamebananaID") @db.UnsignedMediumInt
+  gamebananaID Int?           @unique(map: "gamebananaID") @db.UnsignedMediumInt
   name         String         @db.VarChar(100)
   userID       Int?           @db.UnsignedSmallInt
   users        users?         @relation(fields: [userID], references: [id], onUpdate: Restrict, map: "publishers_ibfk_1")
