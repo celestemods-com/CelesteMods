@@ -1276,7 +1276,11 @@ modsRouter.route("/:modID")
     })
     .delete(async function (req, res, next) {
         try {
+            const id = <number>req.id;
 
+            await prisma.mods_ids.delete({ where: { id: id } });
+
+            res.status(204);
         }
         catch (error) {
             next(error);
