@@ -143,11 +143,15 @@ export interface jsonCreateMapWithMod {
 }
 
 
-export interface mapIdCreationObject {
+export interface mapIdCreationObjectForMod {
   minimumModRevision: number;
   map_details: {
     create: mapDetailsCreationObject[]
-  }
+  };
+}
+
+export interface mapIdCreationObjectStandalone extends mapIdCreationObjectForMod {
+  modID: number;
 }
 
 export interface mapDetailsCreationObject {

@@ -5,7 +5,7 @@ import { expressRoute } from "../types/express";
 import { errorWithMessage, isErrorWithMessage, toErrorWithMessage } from "../errorHandling";
 import { difficulties, map_lengths, mods_details_type } from ".prisma/client";
 import { rawMod, rawMap, createParentDifficultyForMod, createChildDifficultyForMod, jsonCreateMapWithMod,
-    mapIdCreationObject, mapToTechCreationObject, defaultDifficultyForMod, submitterUser } from "../types/internal";
+    mapIdCreationObjectForMod, mapToTechCreationObject, defaultDifficultyForMod, submitterUser } from "../types/internal";
 import { formattedMod, formattedMap } from "../types/frontend";
 
 
@@ -14,8 +14,8 @@ import { formattedMod, formattedMap } from "../types/frontend";
 const canonicalDifficultyNameErrorMessage = "canonicalDifficulty does not match any default parent difficulty names";
 const techNameErrorMessage = "A tech name in techAny did not match the names of any tech in the celestemods.com database";
 const lengthErrorMessage = "length does not match the name of any map lengths in the celestemods.com database";
-const invalidMapperUserIdErrorMessage = "No user found with ID = ";
-const invalidMapDifficultyErrorMessage = `All maps in a non-Normal mod must be assigned a modDifficulty that matches the difficulties used by the mod (whether default or custom).
+export const invalidMapperUserIdErrorMessage = "No user found with ID = ";
+export const invalidMapDifficultyErrorMessage = `All maps in a non-Normal mod must be assigned a modDifficulty that matches the difficulties used by the mod (whether default or custom).
 If the mod uses sub-difficulties, modDifficulty must be given in the form [difficulty, sub-difficulty].`;
 
 
@@ -383,7 +383,7 @@ export const getMapIDsCreationArray = async function (res: Response, maps: jsonC
     difficultiesCreationArray: createParentDifficultyForMod[], defaultDifficultyObjectsArray: defaultDifficultyForMod[],
     modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean, submittingUser: submitterUser) {
     try {
-        const mapIDsCreationArray: mapIdCreationObject[] = await Promise.all(
+        const mapIDsCreationArray: mapIdCreationObjectForMod[] = await Promise.all(
             maps.map(
                 async (mapObject: jsonCreateMapWithMod) => {
                     const mapIdCreationObject = await getMapIdCreationObject(mapObject, currentModRevision, currentTime, modType, lengthObjectArray,
@@ -454,20 +454,10 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
 
     const canonicalDifficultyID = await getCanonicalDifficultyID(canonicalDifficultyName, techAny);
 
-
-    let lengthID = 0;
-
-    for (const length of lengthObjectArray) {
-        if (length.name === lengthName) {
-            lengthID = length.id;
-            break;
-        }
-    }
-
-    if (lengthID === 0) throw lengthErrorMessage;
+    const lengthID = await getLengthID(lengthName, lengthObjectArray);
 
 
-    const mapIdCreationObject: mapIdCreationObject = {
+    const mapIdCreationObject: mapIdCreationObjectForMod = {
         minimumModRevision: minimumModRevision,
         map_details: {
             create: [{
@@ -556,7 +546,7 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
 
 
 
-const handleNonNormalMods = function (mapIdCreationObject: mapIdCreationObject, modType: mods_details_type,
+const handleNonNormalMods = function (mapIdCreationObject: mapIdCreationObjectForMod, modType: mods_details_type,
     overallRank: number | undefined, modDifficulty: string | string[] | undefined, customDifficultiesArray: createParentDifficultyForMod[],
     defaultDifficultyObjectsArray: defaultDifficultyForMod[], modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean) {
 
@@ -628,7 +618,7 @@ const handleNonNormalMods = function (mapIdCreationObject: mapIdCreationObject, 
 
 
 
-const getCanonicalDifficultyID = async function (canonicalDifficultyName: string | null | undefined, techAny: string[] | undefined) {
+export const getCanonicalDifficultyID = async function (canonicalDifficultyName: string | null | undefined, techAny: string[] | undefined) {
     const parentDefaultDifficultyObjectsArray = await prisma.difficulties.findMany({
         where: {
             parentModID: null,
@@ -709,9 +699,31 @@ const getCanonicalDifficultyID = async function (canonicalDifficultyName: string
 
 
 
+export const getLengthID = async function (lengthName: string, lengthObjectArray?: map_lengths[]) {
+    if (!lengthObjectArray || !lengthObjectArray.length) {
+        lengthObjectArray = await prisma.map_lengths.findMany();
+    }
+    
+    let lengthID = 0;
+
+    for (const length of lengthObjectArray) {
+        if (length.name === lengthName) {
+            lengthID = length.id;
+            break;
+        }
+    }
+
+    if (lengthID === 0) throw lengthErrorMessage;
+
+    return lengthID;
+}
+
+
+
+
 export const connectMapsToModDifficulties = async function (rawMod: rawMod) {
     const modID = rawMod.id;
-
+    throw "unimplemented";
 }
 
 
@@ -903,16 +915,6 @@ export const param_modID = <expressRoute>async function (req, res, next) {
 }
 
 
-export const param_mapID = <expressRoute>async function (req, res, next) {
-    try {
-
-    }
-    catch (error) {
-        next(error);
-    }
-}
-
-
 export const param_modRevision = <expressRoute>async function (req, res, next) {
     try {
         const modID = <number>req.id;
@@ -961,6 +963,147 @@ export const param_modRevision = <expressRoute>async function (req, res, next) {
         next(error);
     }
 }
+
+
+export const param_mapID = <expressRoute>async function (req, res, next) {
+    try {
+        const idRaw: unknown = req.params.mapID;
+
+        const id = Number(idRaw);
+
+        if (isNaN(id)) {
+            res.status(400).json("mapID is not a number");
+            return;
+        }
+
+        const rawMap = await prisma.maps_ids.findUnique({
+            where: { id: id },
+            include: {
+                mods_ids: {
+                    include: {
+                        mods_details: {
+                            where: { NOT: { timeApproved: null } },
+                            orderBy: { revision: "desc" },
+                            take: 1,
+                        },
+                    },
+                },
+                maps_details: {
+                    where: { NOT: { timeApproved: null } },
+                    orderBy: { revision: "desc" },
+                    take: 1,
+                    include: {
+                        map_lengths: true,
+                        difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
+                        difficulties_difficultiesTomaps_details_modDifficultyID: true,
+                        users_maps_details_mapperUserIDTousers: true,
+                        maps_to_tech_maps_detailsTomaps_to_tech_mapID: { include: { tech_list: true } },
+                    },
+                },
+            },
+        });
+
+        if (!rawMap) {
+            res.status(404).json("mapID does not exist");
+            return;
+        }
+
+        req.map = rawMap;
+        req.id = id;
+        next();
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+
+export const param_mapRevision = <expressRoute> async function (req, res, next) {
+    try {
+        const mapID = <number>req.id;
+        const revisionRaw: unknown = req.params.mapRevision;
+        const revision = Number(revisionRaw);
+
+        if (isNaN(revision)) {
+            res.status(400).json("revision is not a number");
+            return;
+        }
+
+        const mapFromID = await prisma.maps_ids.findFirst({
+            where: {
+                id: mapID,
+                maps_details: { some: { revision: revision } },
+            },
+        });
+
+        if (!mapFromID) {
+            res.status(404).json(`revision ${revision} does not exist for specified mapID`);
+            return;
+        }
+
+        req.revision = revision;
+        next();
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+
+export const param_lengthID = <expressRoute>async function (req, res, next) {
+    try {
+        const idRaw: unknown = req.params.lengthID;
+
+        const id = Number(idRaw);
+
+        if (isNaN(id)) {
+            res.status(400).json("lengthID is not a number");
+            return;
+        }
+
+        const exists = await prisma.map_lengths.findUnique({ where: { id: id } });
+
+        if (!exists) {
+            res.status(404).json("lengthID does not exist");
+            return;
+        }
+
+        req.id2 = id;
+        next();
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+
+export const param_lengthOrder = <expressRoute>async function (req, res, next) {
+    try {
+        const orderRaw: unknown = req.params.lengthOrder;
+
+        const order = Number(orderRaw);
+
+        if (isNaN(order)) {
+            res.status(400).json("lengthID is not a number");
+            return;
+        }
+
+        const lengthFromId = await prisma.map_lengths.findUnique({ where: { order: order } });
+
+        if (!lengthFromId) {
+            res.status(404).json("lengthID does not exist");
+            return;
+        }
+
+        req.id2 = lengthFromId.id;
+        next();
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+
 
 
 export const param_publisherID = <expressRoute>async function (req, res, next) {

@@ -13,6 +13,7 @@ import {
     param_modRevision, privilegedUser
 } from "../helperFunctions/maps-mods-publishers";
 import { getCurrentTime } from "../helperFunctions/utils";
+import { mapPost } from "./maps";
 
 
 const modsRouter = express.Router();
@@ -1288,7 +1289,7 @@ modsRouter.route("/:modID")
     })
     .post(async function (req, res, next) {
         try {
-
+            await mapPost(req, res, next);
         }
         catch (error) {
             next(error);
