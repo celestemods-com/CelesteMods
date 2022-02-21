@@ -132,6 +132,11 @@ const mapPatchSchema = {
             minLength: 1,
             maxLength: 200,
         },
+        canonicalDifficulty: {
+            type: "string",
+            minLength: 0,
+            maxLength: 50,
+        },
         minimumModRevision: {
             type: "integer",
             minimum: 1,

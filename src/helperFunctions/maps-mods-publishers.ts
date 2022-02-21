@@ -536,7 +536,7 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
         }
 
 
-        mapIdCreationObject.map_details.create[0].maps_to_tech_maps_detailsTomaps_to_tech_mapID = { create: techCreationObjectArray };
+        mapIdCreationObject.map_details.create[0].maps_to_tech = { create: techCreationObjectArray };
     }
 
 
@@ -778,8 +778,8 @@ export const formatMap = function (rawMap: rawMap, modType: mods_details_type) {
             const techAny: string[] = [];
             const techFC: string[] = [];
 
-            if (mapDetails.maps_to_tech_maps_detailsTomaps_to_tech_mapID) {
-                for (const tech of mapDetails.maps_to_tech_maps_detailsTomaps_to_tech_mapID) {
+            if (mapDetails.maps_to_tech) {
+                for (const tech of mapDetails.maps_to_tech) {
                     if (tech.fullClearOnlyBool) {
                         techFC.push(tech.tech_list.name);
                     }
@@ -892,7 +892,7 @@ export const param_modID = <expressRoute>async function (req, res, next) {
                                 difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
                                 difficulties_difficultiesTomaps_details_modDifficultyID: true,
                                 users_maps_details_mapperUserIDTousers: true,
-                                maps_to_tech_maps_detailsTomaps_to_tech_mapID: { include: { tech_list: true } },
+                                maps_to_tech: { include: { tech_list: true } },
                             },
                         },
                     },
@@ -943,7 +943,7 @@ export const param_modRevision = <expressRoute>async function (req, res, next) {
                                 difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
                                 difficulties_difficultiesTomaps_details_modDifficultyID: true,
                                 users_maps_details_mapperUserIDTousers: true,
-                                maps_to_tech_maps_detailsTomaps_to_tech_mapID: { include: { tech_list: true } },
+                                maps_to_tech: { include: { tech_list: true } },
                             },
                         },
                     },
@@ -997,7 +997,7 @@ export const param_mapID = <expressRoute>async function (req, res, next) {
                         difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
                         difficulties_difficultiesTomaps_details_modDifficultyID: true,
                         users_maps_details_mapperUserIDTousers: true,
-                        maps_to_tech_maps_detailsTomaps_to_tech_mapID: { include: { tech_list: true } },
+                        maps_to_tech: { include: { tech_list: true } },
                     },
                 },
             },

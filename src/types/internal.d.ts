@@ -156,13 +156,13 @@ export interface mapIdCreationObjectStandalone extends mapIdCreationObjectForMod
 
 export interface mapDetailsCreationObject {
   name: string;
-  canonicalDifficulty: number;
+  canonicalDifficulty?: number;
   map_lengths: { connect: { id: number } };
-  description?: string;
-  notes?: string;
+  description?: string | null;
+  notes?: string | null;
   mapRemovedFromModBool: boolean;
   users_maps_details_mapperUserIDTousers?: { connect: { id: number } };
-  mapperNameString?: string;
+  mapperNameString?: string | null;
   timeSubmitted: number;
   users_maps_details_submittedByTousers: { connect: { id: number } };
   timeApproved?: number;
@@ -170,16 +170,20 @@ export interface mapDetailsCreationObject {
   chapter?: number;
   side?: maps_details_side;
   difficulties_difficultiesTomaps_details_modDifficultyID?: { connect: { id: number } };
-  overallRank?: number;
-  maps_to_tech_maps_detailsTomaps_to_tech_mapID?: {
+  overallRank?: number | null;
+  maps_to_tech?: {
     create: mapToTechCreationObject[]
   }
 }
 
+export interface mapDetailsCreationObjectStandalone extends mapDetailsCreationObject {
+  maps_ids: { connect: { id: number } };
+  difficulties_difficultiesTomaps_details_canonicalDifficultyID: { connect: { id: number } };
+}
+
 export interface mapToTechCreationObject {
-  maps_details_maps_detailsTomaps_to_tech_revision: number,
-  tech_list: { connect: { name: string } },
-  fullClearOnlyBool?: boolean;
+  tech_list: { connect: { id: number } | { name: string } },
+  fullClearOnlyBool: boolean;
 }
 
 
@@ -195,7 +199,7 @@ interface rawMapDetails extends maps_details {
   difficulties_difficultiesTomaps_details_canonicalDifficultyID: difficulties;
   difficulties_difficultiesTomaps_details_modDifficultyID: difficulties | null;
   users_maps_details_mapperUserIDTousers: users | null;
-  maps_to_tech_maps_detailsTomaps_to_tech_mapID: rawMapsToTech[];
+  maps_to_tech: rawMapsToTech[];
 }
 
 interface rawMapsToTech extends maps_to_tech {
