@@ -1,18 +1,12 @@
-import express, { NextFunction, Response } from "express";
+import express, { } from "express";
 import { prisma } from "../prismaClient";
 import { validateMapPost, validateMapPatch } from "../jsonSchemas/maps-mods-publishers";
 import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
-import { mods_details, mods_details_type, maps_details_side, publishers } from ".prisma/client";
+import { mods_details_type, maps_details_side } from ".prisma/client";
+import { rawMap, mapIdCreationObjectStandalone, mapToTechCreationObject, submitterUser, rawMod, mapDetailsCreationObjectStandalone } from "../types/internal";
 import {
-    rawMap, createParentDifficultyForMod, createChildDifficultyForMod, difficultyNamesForModArrayElement,
-    mapIdCreationObjectStandalone, mapDetailsCreationObject, mapToTechCreationObject, defaultDifficultyForMod, modDetailsCreationObject,
-    loneModDetailsCreationObject, submitterUser, publisherConnectionObject, rawMod, mapDetailsCreationObjectStandalone
-} from "../types/internal";
-import { formattedMap } from "../types/frontend";
-import {
-    getMapIDsCreationArray, param_userID, invalidMapperUserIdErrorMessage,
-    param_mapID, connectMapsToModDifficulties, formatMap, privilegedUser, param_lengthID, param_lengthOrder, param_mapRevision, getCanonicalDifficultyID,
-    getLengthID, invalidMapDifficultyErrorMessage
+    param_userID, invalidMapperUserIdErrorMessage, param_mapID, formatMap, privilegedUser, param_lengthID, param_lengthOrder,
+    param_mapRevision, getCanonicalDifficultyID, getLengthID, invalidMapDifficultyErrorMessage
 } from "../helperFunctions/maps-mods-publishers";
 import { getCurrentTime } from "../helperFunctions/utils";
 import { expressRoute } from "../types/express";
