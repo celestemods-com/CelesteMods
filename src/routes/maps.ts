@@ -1315,7 +1315,15 @@ mapsRouter.route("/:mapID")
             res.json(formattedMap);
         }
         catch (error) {
-            next(error);
+            if (typeof error === "string" && error.includes(invalidMapperUserIdErrorMessage)) {
+                res.status(404).json(error);
+            }
+            else if (error === invalidMapDifficultyErrorMessage) {
+                res.status(400).json(invalidMapDifficultyErrorMessage);
+            }
+            else {
+                next(error);
+            }
         }
     })
     .delete(async function (req, res, next) {
@@ -1577,7 +1585,15 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
         res.json(formattedMap);
     }
     catch (error) {
-        next(error);
+        if (typeof error === "string" && error.includes(invalidMapperUserIdErrorMessage)){
+            res.status(404).json(error);
+        }
+        else if (error === invalidMapDifficultyErrorMessage) {
+            res.status(400).json(invalidMapDifficultyErrorMessage);
+        }
+        else {
+            next(error);
+        }
     }
 }
 
