@@ -85,7 +85,7 @@ export interface modDetailsCreationObject {
   revision: number;
   type: mods_details_type;
   name: string;
-  publishers: publisherConnectionObject;
+  publishers: publisherConnectionObject | publisherCreationObject;
   contentWarning: boolean;
   notes?: string | null;
   shortDescription: string;
@@ -214,5 +214,13 @@ interface rawModForMap extends mods_ids {
 
 
 export interface publisherConnectionObject {
+  connect: { id: number } | { gamebananaID: number };
+}
 
+
+export interface publisherCreationObject {
+  create: {
+    name: string,
+    gamebananaID: number,
+  };
 }

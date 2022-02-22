@@ -5,12 +5,11 @@ import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from
 import { mods_details_type } from ".prisma/client";
 import {
     rawMod, createParentDifficultyForMod, difficultyNamesForModArrayElement, jsonCreateMapWithMod, defaultDifficultyForMod,
-    modDetailsCreationObject, loneModDetailsCreationObject, submitterUser, publisherConnectionObject
+    modDetailsCreationObject, loneModDetailsCreationObject, submitterUser, publisherConnectionObject, publisherCreationObject
 } from "../types/internal";
 import { formattedMod } from "../types/frontend";
 import {
-    formatMod, getPublisherConnectionObject, getDifficultyArrays, getMapIDsCreationArray, param_userID, param_modID,
-    param_modRevision, privilegedUser
+    formatMod, getPublisherCreateOrConnectObject, getDifficultyArrays, getMapIDsCreationArray, param_userID, param_modID, param_modRevision, privilegedUser
 } from "../helperFunctions/maps-mods-publishers";
 import { getCurrentTime } from "../helperFunctions/utils";
 import { mapPost } from "./maps";
@@ -126,7 +125,7 @@ modsRouter.route("/")
             }
 
 
-            const publisherConnectionObject = await getPublisherConnectionObject(res, userID, publisherGamebananaID, publisherID, publisherName);
+            const publisherConnectionObject = await getPublisherCreateOrConnectObject(res, userID, publisherGamebananaID, publisherID, publisherName);
 
             if (res.errorSent) return;
 
@@ -1185,10 +1184,10 @@ modsRouter.route("/:modID")
                 if (!latestValidModDetails) throw "latestValidModDetails does not exist";
 
 
-                let publisherConnectionObject: publisherConnectionObject = {};
+                let publisherCreateOrConnectObject: publisherConnectionObject | publisherCreationObject | undefined = undefined;
 
                 if (publisherGamebananaID || publisherID || publisherName || userID) {
-                    const publisherConnectionReturnedObject = await getPublisherConnectionObject(res, userID, publisherGamebananaID, publisherID, publisherName);
+                    const publisherConnectionReturnedObject = await getPublisherCreateOrConnectObject(res, userID, publisherGamebananaID, publisherID, publisherName);
 
                     if (res.errorSent) return;
 
@@ -1196,10 +1195,10 @@ modsRouter.route("/:modID")
                         throw `publisherConnectionObject = "${publisherConnectionReturnedObject}"`;
                     }
 
-                    publisherConnectionObject = publisherConnectionReturnedObject;
+                    publisherCreateOrConnectObject = publisherConnectionReturnedObject;
                 }
                 else {
-                    const publisherConnectionReturnedObject = await getPublisherConnectionObject(res, undefined, undefined,
+                    const publisherConnectionReturnedObject = await getPublisherCreateOrConnectObject(res, undefined, undefined,
                         latestValidRevision?.mods_details[0].publisherID, undefined);
 
                     if (res.errorSent) return;
@@ -1208,15 +1207,17 @@ modsRouter.route("/:modID")
                         throw `publisherConnectionObject = "${publisherConnectionReturnedObject}"`;
                     }
 
-                    publisherConnectionObject = publisherConnectionReturnedObject;
+                    publisherCreateOrConnectObject = publisherConnectionReturnedObject;
                 }
+
+                if (!publisherCreateOrConnectObject) throw "publisherCreateOrConnectObject is undefined";
 
 
                 const modDetailsCreationObject: loneModDetailsCreationObject = {
                     revision: newRevisionNumber,
                     type: !type ? latestValidModDetails.type : type,
                     name: !name ? latestValidModDetails.name : name,
-                    publishers: publisherConnectionObject,
+                    publishers: publisherCreateOrConnectObject,
                     contentWarning: !contentWarning ? latestValidModDetails.contentWarning : contentWarning,
                     notes: notes === undefined ? latestValidModDetails.notes : notes,
                     shortDescription: !shortDescription ? latestValidModDetails.shortDescription : shortDescription,

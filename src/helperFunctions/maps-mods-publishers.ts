@@ -4,8 +4,10 @@ import axios from "axios";
 import { expressRoute } from "../types/express";
 import { errorWithMessage, isErrorWithMessage, toErrorWithMessage } from "../errorHandling";
 import { difficulties, map_lengths, mods_details_type } from ".prisma/client";
-import { rawMod, rawMap, createParentDifficultyForMod, createChildDifficultyForMod, jsonCreateMapWithMod,
-    mapIdCreationObjectForMod, mapToTechCreationObject, defaultDifficultyForMod, submitterUser } from "../types/internal";
+import {
+    rawMod, rawMap, createParentDifficultyForMod, createChildDifficultyForMod, jsonCreateMapWithMod, mapIdCreationObjectForMod,
+    mapToTechCreationObject, defaultDifficultyForMod, submitterUser, publisherConnectionObject, publisherCreationObject
+} from "../types/internal";
 import { formattedMod, formattedMap } from "../types/frontend";
 
 
@@ -21,10 +23,10 @@ If the mod uses sub-difficulties, modDifficulty must be given in the form [diffi
 
 
 
-export const getPublisherConnectionObject = async function (res: Response, userID?: number, publisherGamebananaID?: number,
-    publisherID?: number, publisherName?: string): Promise<{} | void | errorWithMessage> {
+export const getPublisherCreateOrConnectObject = async function (res: Response, userID?: number, publisherGamebananaID?: number,
+    publisherID?: number, publisherName?: string) {
     try {
-        let publisherConnectionObject = {};
+        let publisherCreateOrConnectObject: publisherConnectionObject | publisherCreationObject | undefined = undefined;
 
 
         if (userID) {
@@ -57,13 +59,13 @@ export const getPublisherConnectionObject = async function (res: Response, userI
                 return;
             }
 
-            publisherConnectionObject = { connect: { id: userFromID.publishers[0].id } };
+            publisherCreateOrConnectObject = { connect: { id: userFromID.publishers[0].id } };
         }
         else if (publisherGamebananaID) {
             const publisherFromGbID = await prisma.publishers.findUnique({ where: { gamebananaID: publisherGamebananaID } });
 
             if (publisherFromGbID) {
-                publisherConnectionObject = { connect: { id: publisherGamebananaID } };
+                publisherCreateOrConnectObject = { connect: { gamebananaID: publisherGamebananaID } };
             }
             else {
                 const nameFromGamebanana = await getGamebananaUsernameById(publisherGamebananaID);
@@ -76,7 +78,7 @@ export const getPublisherConnectionObject = async function (res: Response, userI
                     return;
                 }
 
-                publisherConnectionObject = {
+                publisherCreateOrConnectObject = {
                     create: {
                         name: nameFromGamebanana,
                         gamebananaID: publisherGamebananaID,
@@ -93,7 +95,7 @@ export const getPublisherConnectionObject = async function (res: Response, userI
                 return;
             }
 
-            publisherConnectionObject = { connect: { id: publisherID } };
+            publisherCreateOrConnectObject = { connect: { id: publisherID } };
         }
         else if (publisherName) {
             const publishersFromName = await prisma.publishers.findMany({ where: { name: publisherName } });
@@ -111,7 +113,7 @@ export const getPublisherConnectionObject = async function (res: Response, userI
             }
 
             if (publishersFromName.length === 1) {
-                publisherConnectionObject = { connect: { id: publishersFromName[0].id } };
+                publisherCreateOrConnectObject = { connect: { id: publishersFromName[0].id } };
             }
             else {
                 const gamebananaID = await getGamebananaIdByUsername(publisherName);
@@ -124,7 +126,7 @@ export const getPublisherConnectionObject = async function (res: Response, userI
                     return;
                 }
 
-                publisherConnectionObject = {
+                publisherCreateOrConnectObject = {
                     create: {
                         name: publisherName,
                         gamebananaID: gamebananaID,
@@ -133,8 +135,9 @@ export const getPublisherConnectionObject = async function (res: Response, userI
             }
         }
 
-
-        return publisherConnectionObject;
+        if (publisherCreateOrConnectObject) {
+            return publisherCreateOrConnectObject;
+        }
     }
     catch (error) {
         return toErrorWithMessage(error);
@@ -151,14 +154,14 @@ export const getDifficultyArrays = function (difficultyNames: (string | string[]
         let modHasSubDifficultiesBool = false;
         let modDifficultyIDsArray: number[] = [];
 
-        
+
         for (let parentDifficultyIndex = 0; parentDifficultyIndex < difficultyNames.length; parentDifficultyIndex++) {
             const parentDifficultyStringOrArray = difficultyNames[parentDifficultyIndex];
 
             if (typeof parentDifficultyStringOrArray === "string") {
                 highestCurrentDifficultyID++;
 
-                modDifficultyIDsArray.push( highestCurrentDifficultyID );
+                modDifficultyIDsArray.push(highestCurrentDifficultyID);
 
                 difficultiesDataArray.push({
                     id: highestCurrentDifficultyID,
@@ -178,7 +181,7 @@ export const getDifficultyArrays = function (difficultyNames: (string | string[]
                 const childDifficultyName = parentDifficultyStringOrArray[childDifficultyIndex];
                 highestCurrentDifficultyID++;
 
-                modDifficultyIDsArray.push( highestCurrentDifficultyID );
+                modDifficultyIDsArray.push(highestCurrentDifficultyID);
 
                 childDifficultyArray.push({
                     id: highestCurrentDifficultyID,
@@ -191,7 +194,7 @@ export const getDifficultyArrays = function (difficultyNames: (string | string[]
 
             highestCurrentDifficultyID++;
 
-            modDifficultyIDsArray.push( highestCurrentDifficultyID );
+            modDifficultyIDsArray.push(highestCurrentDifficultyID);
 
             difficultiesDataArray.push({
                 id: highestCurrentDifficultyID,
@@ -241,7 +244,7 @@ export const formatMod = function (rawMod: rawMod) {
         }
 
 
-        const outerFormattedMod = rawMod.mods_details.map( (modDetails) => {
+        const outerFormattedMod = rawMod.mods_details.map((modDetails) => {
             const revision = modDetails.revision;
             const innerType = modDetails.type;
             const name = modDetails.name;
@@ -434,8 +437,8 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
     lengthObjectArray: map_lengths[], customDifficultiesArray: createParentDifficultyForMod[], defaultDifficultyObjectsArray: defaultDifficultyForMod[],
     modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean, submittingUser: submitterUser) {
 
-    const minimumModRevision = currentModRevision === 0 ? 1 : (mapObject.minimumModRevision ? mapObject.minimumModRevision : currentModRevision); 
-        //a currentModVersion of 0 means that this method is being called from /mods POST so any set value for minimumModRevision is ignored
+    const minimumModRevision = currentModRevision === 0 ? 1 : (mapObject.minimumModRevision ? mapObject.minimumModRevision : currentModRevision);
+    //a currentModVersion of 0 means that this method is being called from /mods POST so any set value for minimumModRevision is ignored
     const mapName = mapObject.name;
     const lengthName = mapObject.length;
     const mapDescription = mapObject.description;
@@ -703,7 +706,7 @@ export const getLengthID = async function (lengthName: string, lengthObjectArray
     if (!lengthObjectArray || !lengthObjectArray.length) {
         lengthObjectArray = await prisma.map_lengths.findMany();
     }
-    
+
     let lengthID = 0;
 
     for (const length of lengthObjectArray) {
@@ -736,7 +739,7 @@ export const formatMap = function (rawMap: rawMap, modType: mods_details_type) {
         const minimumModRevision = rawMap.minimumModRevision;
 
 
-        const outerFormattedMap = rawMap.maps_details.map( (mapDetails) => {
+        const outerFormattedMap = rawMap.maps_details.map((mapDetails) => {
             const revision = mapDetails.revision;
             const name = mapDetails.name;
             const canonicalDifficulty = mapDetails.difficulties_difficultiesTomaps_details_canonicalDifficultyID.name;
@@ -787,7 +790,7 @@ export const formatMap = function (rawMap: rawMap, modType: mods_details_type) {
                         techAny.push(tech.tech_list.name);
                     }
                 }
-                
+
                 if (techAny.length) innerFormattedMap.techAny = techAny;
                 if (techFC.length) innerFormattedMap.techFC = techFC;
             }
@@ -804,7 +807,7 @@ export const formatMap = function (rawMap: rawMap, modType: mods_details_type) {
             }
             else {
                 const modDifficulty = mapDetails.difficulties_difficultiesTomaps_details_modDifficultyID?.name;
-                
+
                 if (!modDifficulty) throw `modDifficulty is undefined in non-Normal map ${id}`;
 
                 innerFormattedMap.modDifficulty = modDifficulty;
@@ -1018,7 +1021,7 @@ export const param_mapID = <expressRoute>async function (req, res, next) {
 }
 
 
-export const param_mapRevision = <expressRoute> async function (req, res, next) {
+export const param_mapRevision = <expressRoute>async function (req, res, next) {
     try {
         const mapID = <number>req.id;
         const revisionRaw: unknown = req.params.mapRevision;
