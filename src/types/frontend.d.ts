@@ -36,6 +36,7 @@ export interface formattedMod {
   gamebananaModID?: number;
   maps: formattedMap[][];
   difficulties?: (string | string[])[];
+  approved: boolean;
 }
 
 export interface formattedMap {
@@ -58,4 +59,5 @@ export interface formattedMap {
   mapRemovedFromModBool: boolean;
   techAny?: string[];
   techFC?: string[];
+  approved: boolean;
 }

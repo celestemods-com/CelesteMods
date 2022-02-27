@@ -793,7 +793,7 @@ mapsRouter.route("/:mapID/revisions/:mapRevision/accept")
             const mapId = <number>req.id;
             const revision = <number>req.revision;
             const currentTime = getCurrentTime();
-            const submitterId = submittingUser.id;
+            const submitterId = submittingUser.id;  //comment out for production
 
 
             const outerRawMap = await prisma.$transaction(async () => {
@@ -884,7 +884,7 @@ mapsRouter.route("/:mapID/revisions/:mapRevision/reject")
             }
 
 
-            res.status(204);
+            res.sendStatus(204);
         }
         catch (error) {
             next(error);
@@ -1332,7 +1332,7 @@ mapsRouter.route("/:mapID")
 
             await prisma.maps_ids.delete({ where: { id: id } });
 
-            res.status(204);
+            res.sendStatus(204);
         }
         catch (error) {
             next(error);

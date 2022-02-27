@@ -9,7 +9,8 @@ import {
 } from "../types/internal";
 import { formattedMod } from "../types/frontend";
 import {
-    formatMod, getPublisherCreateOrConnectObject, getDifficultyArrays, getMapIDsCreationArray, param_userID, param_modID, param_modRevision, privilegedUser
+    formatMod, getPublisherCreateOrConnectObject, getDifficultyArrays, getMapIDsCreationArray, param_userID, param_modID, param_modRevision,
+    privilegedUser, noModDetailsErrorMessage
 } from "../helperFunctions/maps-mods-publishers";
 import { getCurrentTime } from "../helperFunctions/utils";
 import { mapPost } from "./maps";
@@ -74,7 +75,11 @@ modsRouter.route("/")
 
             const formattedMods = rawMods.map((rawmod) => {
                 const formattedMod = formatMod(rawmod);
+
                 if (isErrorWithMessage(formattedMod)) throw formattedMod;
+
+                if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawmod.id}: ` + noModDetailsErrorMessage;
+
                 return formattedMod;
             });
 
@@ -288,6 +293,11 @@ modsRouter.route("/")
 
             if (isErrorWithMessage(formattedMod)) throw formattedMod;
 
+            if (formattedMod === noModDetailsErrorMessage) {
+                res.status(400).json(noModDetailsErrorMessage);
+                return;
+            }
+
             res.status(status).json(formattedMod);
         }
         catch (error) {
@@ -373,6 +383,11 @@ modsRouter.route("/gamebanana/:gbModID")
 
             if (isErrorWithMessage(formattedMod)) throw formattedMod;
 
+            if (formattedMod === noModDetailsErrorMessage) {
+                res.status(400).json(noModDetailsErrorMessage);
+                return;
+            }
+
             res.json(formattedMod);
         }
         catch (error) {
@@ -433,9 +448,13 @@ modsRouter.route("/search")
             });
 
 
-            const formattedMods: formattedMod[][] = rawMods.map((rawMod) => {
+            const formattedMods: (formattedMod[] | string)[] = rawMods.map((rawMod) => {
                 const formattedMod = formatMod(rawMod);
+
                 if (isErrorWithMessage(formattedMod)) throw formattedMod;
+
+                if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawMod.id}: ` + noModDetailsErrorMessage;
+
                 return formattedMod;
             });
 
@@ -499,9 +518,13 @@ modsRouter.route("/type")
             });
 
 
-            const formattedMods: formattedMod[][] = rawMods.map((rawMod) => {
+            const formattedMods: (formattedMod[] | string)[] = rawMods.map((rawMod) => {
                 const formattedMod = formatMod(rawMod);
+
                 if (isErrorWithMessage(formattedMod)) throw formattedMod;
+
+                if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawMod.id}: ` + noModDetailsErrorMessage;
+
                 return formattedMod;
             });
 
@@ -649,9 +672,13 @@ modsRouter.route("/publisher/gamebanana/:gbUserID")
             const rawMods = <rawMod[]>req.mods;     //can cast as rawMod[] because the router.param already checked that the array isnt empty
 
 
-            const formattedMods = rawMods.map((rawmod) => {
-                const formattedMod = formatMod(rawmod);
+            const formattedMods = rawMods.map((rawMod) => {
+                const formattedMod = formatMod(rawMod);
+
                 if (isErrorWithMessage(formattedMod)) throw formattedMod;
+
+                if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawMod.id}: ` + noModDetailsErrorMessage;
+
                 return formattedMod;
             });
 
@@ -671,9 +698,13 @@ modsRouter.route("/publisher/:publisherID")
             const rawMods = <rawMod[]>req.mods;     //can cast as rawMod[] because the router.param already checked that the array isnt empty
 
 
-            const formattedMods = rawMods.map((rawmod) => {
-                const formattedMod = formatMod(rawmod);
+            const formattedMods = rawMods.map((rawMod) => {
+                const formattedMod = formatMod(rawMod);
+
                 if (isErrorWithMessage(formattedMod)) throw formattedMod;
+
+                if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawMod.id}: ` + noModDetailsErrorMessage;
+
                 return formattedMod;
             });
 
@@ -743,9 +774,13 @@ modsRouter.route("/user/:userID/publisher")
             });
 
 
-            const formattedMods = rawMods.map((rawmod) => {
-                const formattedMod = formatMod(rawmod);
+            const formattedMods = rawMods.map((rawMod) => {
+                const formattedMod = formatMod(rawMod);
+
                 if (isErrorWithMessage(formattedMod)) throw formattedMod;
+
+                if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawMod.id}: ` + noModDetailsErrorMessage;
+
                 return formattedMod;
             });
 
@@ -803,9 +838,13 @@ modsRouter.route("/user/:userID/submitter")
             });
 
 
-            const formattedMods = rawMods.map((rawmod) => {
-                const formattedMod = formatMod(rawmod);
+            const formattedMods = rawMods.map((rawMod) => {
+                const formattedMod = formatMod(rawMod);
+
                 if (isErrorWithMessage(formattedMod)) throw formattedMod;
+
+                if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawMod.id}: ` + noModDetailsErrorMessage;
+
                 return formattedMod;
             });
 
@@ -849,7 +888,7 @@ modsRouter.route("/:modID/revisions")
             const modID = <number>req.id;
 
 
-            const rawMods = await prisma.mods_ids.findMany({
+            const rawMod = <rawMod>await prisma.mods_ids.findUnique({
                 where: { id: modID },
                 include: {
                     difficulties: true,
@@ -878,14 +917,16 @@ modsRouter.route("/:modID/revisions")
             });
 
 
-            const formattedMods = rawMods.map((rawmod) => {
-                const formattedMod = formatMod(rawmod);
-                if (isErrorWithMessage(formattedMod)) throw formattedMod;
-                return formattedMod;
-            });
+            const formattedMod = formatMod(rawMod);
 
+            if (isErrorWithMessage(formattedMod)) throw formattedMod;
 
-            res.json(formattedMods);
+            if (formattedMod === noModDetailsErrorMessage) {
+                res.status(400).json(noModDetailsErrorMessage);
+                return;
+            }
+
+            res.json(formattedMod);
         }
         catch (error) {
             next(error);
@@ -901,6 +942,8 @@ modsRouter.route("/:modID/revisions/:modRevision/accept")
             const revision = <number>req.revision;
             const time = getCurrentTime();
 
+            const submitterID = submittingUser.id;  //comment out for production
+
             const id_revision = {
                 id: id,
                 revision: revision,
@@ -910,7 +953,10 @@ modsRouter.route("/:modID/revisions/:modRevision/accept")
             const rawModOuter = await prisma.$transaction(async () => {
                 await prisma.mods_details.update({
                     where: { id_revision: id_revision },
-                    data: { timeApproved: time },
+                    data: {
+                        timeApproved: time,
+                        users_mods_details_approvedByTousers: { connect: { id: submitterID}},
+                    },
                 });
 
                 const rawModInner = <rawMod>await prisma.mods_ids.findFirst({
@@ -949,6 +995,12 @@ modsRouter.route("/:modID/revisions/:modRevision/accept")
 
             const formattedMod = formatMod(rawModOuter);
 
+            if (isErrorWithMessage(formattedMod)) throw formattedMod;
+
+            if (formattedMod === noModDetailsErrorMessage) {
+                res.status(400).json(noModDetailsErrorMessage);
+                return;
+            }
 
             res.json(formattedMod);
         }
@@ -985,7 +1037,7 @@ modsRouter.route("/:modID/revisions/:modRevision/reject")
             });
 
 
-            res.status(204);
+            res.sendStatus(204);
         }
         catch (error) {
             if (error === "RecordNotFound") {
@@ -1037,6 +1089,12 @@ modsRouter.route("/:modID/revisions/:modRevision")
 
             const formattedMod = formatMod(rawMod);
 
+            if (isErrorWithMessage(formattedMod)) throw formattedMod;
+
+            if (formattedMod === noModDetailsErrorMessage) {
+                res.status(400).json(noModDetailsErrorMessage);
+                return;
+            }
 
             res.json(formattedMod);
         }
@@ -1057,6 +1115,11 @@ modsRouter.route("/:modID")
             const formattedMod = formatMod(rawMod);
 
             if (isErrorWithMessage(formattedMod)) throw formattedMod;
+
+            if (formattedMod === noModDetailsErrorMessage) {
+                res.status(400).json(noModDetailsErrorMessage);
+                return;
+            }
 
             res.json(formattedMod);
         }
@@ -1143,6 +1206,11 @@ modsRouter.route("/:modID")
                 const formattedMatchingMod = formatMod(rawMatchingMod);
 
                 if (isErrorWithMessage(formattedMatchingMod)) throw formattedMatchingMod;
+    
+                if (formattedMatchingMod === noModDetailsErrorMessage) {
+                    res.status(400).json(noModDetailsErrorMessage);
+                    return;
+                }
 
                 res.status(400).json(formattedMatchingMod);
 
@@ -1270,6 +1338,13 @@ modsRouter.route("/:modID")
 
             const formattedMod = formatMod(rawMod);
 
+            if (isErrorWithMessage(formattedMod)) throw formattedMod;
+
+            if (formattedMod === noModDetailsErrorMessage) {
+                res.status(400).json(noModDetailsErrorMessage);
+                return;
+            }
+
             res.json(formattedMod);
         }
         catch (error) {
@@ -1282,7 +1357,7 @@ modsRouter.route("/:modID")
 
             await prisma.mods_ids.delete({ where: { id: id } });
 
-            res.status(204);
+            res.sendStatus(204);
         }
         catch (error) {
             next(error);

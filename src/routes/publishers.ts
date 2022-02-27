@@ -285,7 +285,7 @@ publishersRouter.route("/:publisherID")
 
             await prisma.publishers.delete({ where: { id: id } });
 
-            res.status(204);
+            res.sendStatus(204);
         }
         catch (error) {
             next(error);

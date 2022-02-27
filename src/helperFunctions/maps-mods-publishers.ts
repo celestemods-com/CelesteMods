@@ -19,6 +19,7 @@ const lengthErrorMessage = "length does not match the name of any map lengths in
 export const invalidMapperUserIdErrorMessage = "No user found with ID = ";
 export const invalidMapDifficultyErrorMessage = `All maps in a non-Normal mod must be assigned a modDifficulty that matches the difficulties used by the mod (whether default or custom).
 If the mod uses sub-difficulties, modDifficulty must be given in the form [difficulty, sub-difficulty].`;
+export const noModDetailsErrorMessage = "The specified modID exists, but no revisions have been approved by staff. Use GET /mods/{mod.id}/revisions"
 
 
 
@@ -221,11 +222,11 @@ export const getDifficultyArrays = function (difficultyNames: (string | string[]
 
 export const formatMod = function (rawMod: rawMod) {
     try {
-        if (rawMod.mods_details.length < 1) throw "no modDetails passed to formatMod";
+        if (rawMod.mods_details.length < 1) return noModDetailsErrorMessage;
 
         const id = rawMod.id;
         const rawMaps = rawMod.maps_ids;
-        let outerType: mods_details_type;
+        let outerType: mods_details_type = rawMod.mods_details[0].type;
 
 
         const formattedMaps = rawMaps.map((rawMap) => {
@@ -255,6 +256,7 @@ export const formatMod = function (rawMod: rawMod) {
             const shortDescription = modDetails.shortDescription;
             const longDescription = modDetails.longDescription === null ? undefined : modDetails.longDescription;
             const gamebananaModID = modDetails.gamebananaModID === null ? undefined : modDetails.gamebananaModID;
+            const approvedBool = modDetails.timeApproved === null ? false : true;
 
 
             const innerFormattedMod: formattedMod = {
@@ -269,6 +271,7 @@ export const formatMod = function (rawMod: rawMod) {
                 shortDescription: shortDescription,
                 longDescription: longDescription,
                 gamebananaModID: gamebananaModID,
+                approved: approvedBool,
                 maps: formattedMaps,
             };
 
@@ -747,6 +750,7 @@ export const formatMap = function (rawMap: rawMap, modType: mods_details_type) {
             const description = mapDetails.description === null ? undefined : mapDetails.description;
             const notes = mapDetails.notes === null ? undefined : mapDetails.notes;
             const mapRemovedFromModBool = mapDetails.mapRemovedFromModBool;
+            const approvedBool = mapDetails.timeApproved === null ? false : true;
 
 
             const mapperUserID = mapDetails.mapperUserID === null ? undefined : mapDetails.mapperUserID;
@@ -775,6 +779,7 @@ export const formatMap = function (rawMap: rawMap, modType: mods_details_type) {
                 mapperUserName: mapperUserName,
                 mapperNameString: mapperNameString,
                 mapRemovedFromModBool: mapRemovedFromModBool,
+                approved: approvedBool,
             }
 
 
@@ -954,8 +959,8 @@ export const param_modRevision = <expressRoute>async function (req, res, next) {
             },
         });
 
-        if (!modFromID) {
-            res.status(404).json(`revision ${revision} does not exist for specified modID`);
+        if (!modFromID || !modFromID.mods_details.length) {
+            res.status(404).json(`Revision ${revision} does not exist for specified modID`);
             return;
         }
 
