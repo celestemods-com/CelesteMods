@@ -513,7 +513,10 @@ mapsRouter.route("/length/order/:lengthOrder")
                         },
                     },
                     maps_details: {
-                        where: { NOT: { timeApproved: null } },
+                        where: {
+                            NOT: { timeApproved: null },
+                            lengthID: lengthID,
+                        },
                         orderBy: { revision: "desc" },
                         take: 1,
                         include: {
@@ -574,7 +577,10 @@ mapsRouter.route("/length/:lengthID")
                         },
                     },
                     maps_details: {
-                        where: { NOT: { timeApproved: null } },
+                        where: {
+                            NOT: { timeApproved: null },
+                            lengthID: lengthID,
+                        },
                         orderBy: { revision: "desc" },
                         take: 1,
                         include: {
@@ -647,7 +653,10 @@ mapsRouter.route("/user/:userID/mapper")
                         },
                     },
                     maps_details: {
-                        where: { NOT: { timeApproved: null } },
+                        where: {
+                            NOT: { timeApproved: null },
+                            mapperUserID: userID,
+                        },
                         orderBy: { revision: "desc" },
                         take: 1,
                         include: {
@@ -708,7 +717,10 @@ mapsRouter.route("/user/:userID/submitter")
                         },
                     },
                     maps_details: {
-                        where: { NOT: { timeApproved: null } },
+                        where: {
+                            NOT: { timeApproved: null },
+                            submittedBy: userID,
+                        },
                         orderBy: { revision: "desc" },
                         take: 1,
                         include: {
