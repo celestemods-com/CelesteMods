@@ -422,7 +422,10 @@ modsRouter.route("/search")
                 include: {
                     difficulties: true,
                     mods_details: {
-                        where: { NOT: { timeApproved: null } },
+                        where: {
+                            NOT: { timeApproved: null },
+                            name: { startsWith: query },
+                        },
                         orderBy: { revision: "desc" },
                         take: 1,
                         include: { publishers: true },
@@ -492,7 +495,10 @@ modsRouter.route("/type")
                 include: {
                     difficulties: true,
                     mods_details: {
-                        where: { NOT: { timeApproved: null } },
+                        where: {
+                            NOT: { timeApproved: null },
+                            type: query,
+                        },
                         orderBy: { revision: "desc" },
                         take: 1,
                         include: { publishers: true },
@@ -563,7 +569,10 @@ modsRouter.param("publisherID", async function (req, res, next) {
             include: {
                 difficulties: true,
                 mods_details: {
-                    where: { NOT: { timeApproved: null } },
+                    where: {
+                        NOT: { timeApproved: null },
+                        publisherID: id,
+                    },
                     orderBy: { revision: "desc" },
                     take: 1,
                     include: { publishers: true },
@@ -626,7 +635,10 @@ modsRouter.param("gbUserID", async function (req, res, next) {
             include: {
                 difficulties: true,
                 mods_details: {
-                    where: { NOT: { timeApproved: null } },
+                    where: {
+                        NOT: { timeApproved: null },
+                        publishers: { gamebananaID: id },
+                    },
                     orderBy: { revision: "desc" },
                     take: 1,
                     include: { publishers: true },
@@ -748,7 +760,10 @@ modsRouter.route("/user/:userID/publisher")
                 include: {
                     difficulties: true,
                     mods_details: {
-                        where: { NOT: { timeApproved: null } },
+                        where: {
+                            NOT: { timeApproved: null },
+                            publishers: { userID: userID },
+                        },
                         orderBy: { revision: "desc" },
                         take: 1,
                         include: { publishers: true },
@@ -812,7 +827,10 @@ modsRouter.route("/user/:userID/submitter")
                 include: {
                     difficulties: true,
                     mods_details: {
-                        where: { NOT: { timeApproved: null } },
+                        where: {
+                            NOT: { timeApproved: null },
+                            submittedBy: userID,
+                        },
                         orderBy: { revision: "desc" },
                         take: 1,
                         include: { publishers: true },

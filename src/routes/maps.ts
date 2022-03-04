@@ -108,7 +108,10 @@ mapsRouter.route("/search")
                     mods_ids: {
                         include: {
                             mods_details: {
-                                where: { NOT: { timeApproved: null } },
+                                where: {
+                                    NOT: { timeApproved: null },
+                                    name: { startsWith: query },
+                                },
                                 orderBy: { revision: "desc" },
                                 take: 1,
                             },
@@ -183,7 +186,10 @@ mapsRouter.route("/search/mapper")
                         },
                     },
                     maps_details: {
-                        where: { NOT: { timeApproved: null } },
+                        where: {
+                            NOT: { timeApproved: null },
+                            mapperNameString: { startsWith: query },
+                        },
                         orderBy: { revision: "desc" },
                         take: 1,
                         include: {
@@ -251,7 +257,10 @@ mapsRouter.route("/search/tech")
                         },
                     },
                     maps_details: {
-                        where: { NOT: { timeApproved: null } },
+                        where: {
+                            NOT: { timeApproved: null },
+                            maps_to_tech: { some: { tech_list: { name: query } } },
+                        },
                         orderBy: { revision: "desc" },
                         take: 1,
                         include: {
@@ -326,7 +335,17 @@ mapsRouter.route("/search/tech/any")
                         },
                     },
                     maps_details: {
-                        where: { NOT: { timeApproved: null } },
+                        where: {
+                            NOT: { timeApproved: null },
+                            maps_to_tech: {
+                                some: {
+                                    fullClearOnlyBool: false,
+                                    tech_list: {
+                                        name: query,
+                                    },
+                                },
+                            },
+                        },
                         orderBy: { revision: "desc" },
                         take: 1,
                         include: {
@@ -401,7 +420,17 @@ mapsRouter.route("/search/tech/fc")
                         },
                     },
                     maps_details: {
-                        where: { NOT: { timeApproved: null } },
+                        where: {
+                            NOT: { timeApproved: null },
+                            maps_to_tech: {
+                                some: {
+                                    fullClearOnlyBool: true,
+                                    tech_list: {
+                                        name: query,
+                                    },
+                                },
+                            },
+                        },
                         orderBy: { revision: "desc" },
                         take: 1,
                         include: {
