@@ -415,8 +415,10 @@ modsRouter.route("/search")
                 where: {
                     mods_details: {
                         some: {
-                            NOT: { timeApproved: null },
-                            name: { startsWith: query },
+                            AND: {
+                                NOT: { timeApproved: null },
+                                name: { startsWith: query },
+                            },
                         },
                     },
                 },
@@ -424,8 +426,10 @@ modsRouter.route("/search")
                     difficulties: true,
                     mods_details: {
                         where: {
-                            NOT: { timeApproved: null },
-                            name: { startsWith: query },
+                            AND: {
+                                NOT: { timeApproved: null },
+                                name: { startsWith: query },
+                            },
                         },
                         orderBy: { revision: "desc" },
                         take: 1,
@@ -489,8 +493,10 @@ modsRouter.route("/type")
                 where: {
                     mods_details: {
                         some: {
-                            NOT: { timeApproved: null },
-                            type: query,
+                            AND: {
+                                NOT: { timeApproved: null },
+                                type: query,
+                            },
                         },
                     },
                 },
@@ -498,8 +504,10 @@ modsRouter.route("/type")
                     difficulties: true,
                     mods_details: {
                         where: {
-                            NOT: { timeApproved: null },
-                            type: query,
+                            AND: {
+                                NOT: { timeApproved: null },
+                                type: query,
+                            },
                         },
                         orderBy: { revision: "desc" },
                         take: 1,
@@ -570,8 +578,10 @@ modsRouter.param("publisherID", async function (req, res, next) {
             where: {
                 mods_details: {
                     some: {
-                        NOT: { timeApproved: null },
-                        publisherID: id,
+                        AND: {
+                            NOT: { timeApproved: null },
+                            publisherID: id,
+                        },
                     },
                 },
             },
@@ -579,8 +589,10 @@ modsRouter.param("publisherID", async function (req, res, next) {
                 difficulties: true,
                 mods_details: {
                     where: {
-                        NOT: { timeApproved: null },
-                        publisherID: id,
+                        AND: {
+                            NOT: { timeApproved: null },
+                            publisherID: id,
+                        },
                     },
                     orderBy: { revision: "desc" },
                     take: 1,
@@ -643,8 +655,10 @@ modsRouter.param("gbUserID", async function (req, res, next) {
             where: {
                 mods_details: {
                     some: {
-                        NOT: { timeApproved: null },
-                        publishers: { gamebananaID: id },
+                        AND: {
+                            NOT: { timeApproved: null },
+                            publishers: { gamebananaID: id },
+                        },
                     },
                 },
             },
@@ -652,8 +666,10 @@ modsRouter.param("gbUserID", async function (req, res, next) {
                 difficulties: true,
                 mods_details: {
                     where: {
-                        NOT: { timeApproved: null },
-                        publishers: { gamebananaID: id },
+                        AND: {
+                            NOT: { timeApproved: null },
+                            publishers: { gamebananaID: id },
+                        },
                     },
                     orderBy: { revision: "desc" },
                     take: 1,
@@ -768,8 +784,10 @@ modsRouter.route("/user/:userID/publisher")
                 where: {
                     mods_details: {
                         some: {
-                            NOT: { timeApproved: null },
-                            publishers: { userID: userID },
+                            AND: {
+                                NOT: { timeApproved: null },
+                                publishers: { userID: userID },
+                            },
                         },
                     },
                 },
@@ -777,8 +795,10 @@ modsRouter.route("/user/:userID/publisher")
                     difficulties: true,
                     mods_details: {
                         where: {
-                            NOT: { timeApproved: null },
-                            publishers: { userID: userID },
+                            AND: {
+                                NOT: { timeApproved: null },
+                                publishers: { userID: userID },
+                            },
                         },
                         orderBy: { revision: "desc" },
                         take: 1,
@@ -835,8 +855,10 @@ modsRouter.route("/user/:userID/submitter")
                 where: {
                     mods_details: {
                         some: {
-                            NOT: { timeApproved: null },
-                            submittedBy: userID,
+                            AND: {
+                                NOT: { timeApproved: null },
+                                submittedBy: userID,
+                            },
                         },
                     },
                 },
@@ -844,8 +866,10 @@ modsRouter.route("/user/:userID/submitter")
                     difficulties: true,
                     mods_details: {
                         where: {
-                            NOT: { timeApproved: null },
-                            submittedBy: userID,
+                            AND: {
+                                NOT: { timeApproved: null },
+                                submittedBy: userID,
+                            },
                         },
                         orderBy: { revision: "desc" },
                         take: 1,
