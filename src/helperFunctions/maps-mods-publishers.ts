@@ -1092,14 +1092,14 @@ export const param_lengthOrder = <expressRoute>async function (req, res, next) {
         const order = Number(orderRaw);
 
         if (isNaN(order)) {
-            res.status(400).json("lengthID is not a number");
+            res.status(400).json("lengthOrder is not a number");
             return;
         }
 
         const lengthFromId = await prisma.map_lengths.findUnique({ where: { order: order } });
 
         if (!lengthFromId) {
-            res.status(404).json("lengthID does not exist");
+            res.status(404).json("lengthOrder does not exist");
             return;
         }
 

@@ -19,7 +19,7 @@ const mapsRouter = express.Router();
 
 //comment out for production
 const submittingUser: submitterUser = {
-    id: 5,
+    id: 1,
     displayName: "steve",
     discordID: "5",
     discordUsername: "steve",
@@ -99,8 +99,10 @@ mapsRouter.route("/search")
                 where: {
                     maps_details: {
                         some: {
-                            NOT: { timeApproved: null },
-                            name: { startsWith: query },
+                            AND: {
+                                NOT: { timeApproved: null },
+                                name: { startsWith: query },
+                            },
                         },
                     }
                 },
@@ -108,17 +110,19 @@ mapsRouter.route("/search")
                     mods_ids: {
                         include: {
                             mods_details: {
-                                where: {
-                                    NOT: { timeApproved: null },
-                                    name: { startsWith: query },
-                                },
+                                where: { NOT: { timeApproved: null } },
                                 orderBy: { revision: "desc" },
                                 take: 1,
                             },
                         },
                     },
                     maps_details: {
-                        where: { NOT: { timeApproved: null } },
+                        where: {
+                            AND: {
+                                NOT: { timeApproved: null },
+                                name: { startsWith: query },
+                            },
+                        },
                         orderBy: { revision: "desc" },
                         take: 1,
                         include: {
@@ -132,9 +136,10 @@ mapsRouter.route("/search")
                 },
             });
 
-
             const formattedMaps = rawMaps.map((rawMap) => {
                 const modType = rawMap.mods_ids.mods_details[0].type;
+
+                if (!modType) throw "modType is undefined";
 
                 const formattedMap = formatMap(rawMap, modType);
 
@@ -170,10 +175,12 @@ mapsRouter.route("/search/mapper")
                 where: {
                     maps_details: {
                         some: {
-                            NOT: { timeApproved: null },
-                            mapperNameString: { startsWith: query },
+                            AND: {
+                                NOT: { timeApproved: null },
+                                mapperNameString: { startsWith: query },
+                            },
                         },
-                    }
+                    },
                 },
                 include: {
                     mods_ids: {
@@ -187,8 +194,10 @@ mapsRouter.route("/search/mapper")
                     },
                     maps_details: {
                         where: {
-                            NOT: { timeApproved: null },
-                            mapperNameString: { startsWith: query },
+                            AND: {
+                                NOT: { timeApproved: null },
+                                mapperNameString: { startsWith: query },
+                            },
                         },
                         orderBy: { revision: "desc" },
                         take: 1,
@@ -241,8 +250,10 @@ mapsRouter.route("/search/tech")
                 where: {
                     maps_details: {
                         some: {
-                            NOT: { timeApproved: null },
-                            maps_to_tech: { some: { tech_list: { name: query } } },
+                            AND: {
+                                NOT: { timeApproved: null },
+                                maps_to_tech: { some: { tech_list: { name: query } } },
+                            },
                         },
                     },
                 },
@@ -258,8 +269,10 @@ mapsRouter.route("/search/tech")
                     },
                     maps_details: {
                         where: {
-                            NOT: { timeApproved: null },
-                            maps_to_tech: { some: { tech_list: { name: query } } },
+                            AND: {
+                                NOT: { timeApproved: null },
+                                maps_to_tech: { some: { tech_list: { name: query } } },
+                            },
                         },
                         orderBy: { revision: "desc" },
                         take: 1,
@@ -312,12 +325,14 @@ mapsRouter.route("/search/tech/any")
                 where: {
                     maps_details: {
                         some: {
-                            NOT: { timeApproved: null },
-                            maps_to_tech: {
-                                some: {
-                                    fullClearOnlyBool: false,
-                                    tech_list: {
-                                        name: query,
+                            AND: {
+                                NOT: { timeApproved: null },
+                                maps_to_tech: {
+                                    some: {
+                                        fullClearOnlyBool: false,
+                                        tech_list: {
+                                            name: query,
+                                        },
                                     },
                                 },
                             },
@@ -336,12 +351,14 @@ mapsRouter.route("/search/tech/any")
                     },
                     maps_details: {
                         where: {
-                            NOT: { timeApproved: null },
-                            maps_to_tech: {
-                                some: {
-                                    fullClearOnlyBool: false,
-                                    tech_list: {
-                                        name: query,
+                            AND: {
+                                NOT: { timeApproved: null },
+                                maps_to_tech: {
+                                    some: {
+                                        fullClearOnlyBool: false,
+                                        tech_list: {
+                                            name: query,
+                                        },
                                     },
                                 },
                             },
@@ -397,12 +414,14 @@ mapsRouter.route("/search/tech/fc")
                 where: {
                     maps_details: {
                         some: {
-                            NOT: { timeApproved: null },
-                            maps_to_tech: {
-                                some: {
-                                    fullClearOnlyBool: true,
-                                    tech_list: {
-                                        name: query,
+                            AND: {
+                                NOT: { timeApproved: null },
+                                maps_to_tech: {
+                                    some: {
+                                        fullClearOnlyBool: true,
+                                        tech_list: {
+                                            name: query,
+                                        },
                                     },
                                 },
                             },
@@ -421,12 +440,14 @@ mapsRouter.route("/search/tech/fc")
                     },
                     maps_details: {
                         where: {
-                            NOT: { timeApproved: null },
-                            maps_to_tech: {
-                                some: {
-                                    fullClearOnlyBool: true,
-                                    tech_list: {
-                                        name: query,
+                            AND: {
+                                NOT: { timeApproved: null },
+                                maps_to_tech: {
+                                    some: {
+                                        fullClearOnlyBool: true,
+                                        tech_list: {
+                                            name: query,
+                                        },
                                     },
                                 },
                             },
@@ -847,7 +868,7 @@ mapsRouter.route("/:mapID/revisions/:mapRevision/accept")
                     },
                     data: {
                         timeApproved: currentTime,
-                        approvedBy: submitterId,
+                        users_maps_details_approvedByTousers: { connect: { id: submitterId } },
                     },
                 });
 
