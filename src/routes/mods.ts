@@ -410,6 +410,7 @@ modsRouter.route("/search")
             }
 
 
+            console.log(`query = ${query}`)
             const rawMods = await prisma.mods_ids.findMany({
                 where: {
                     mods_details: {
@@ -451,6 +452,7 @@ modsRouter.route("/search")
             });
 
 
+            console.log(`rawMods = ${rawMods}`)
             const formattedMods: (formattedMod[] | string)[] = rawMods.map((rawMod) => {
                 const formattedMod = formatMod(rawMod);
 
@@ -475,7 +477,7 @@ modsRouter.route("/search")
 modsRouter.route("/type")
     .get(async function (req, res, next) {
         try {
-            const query = req.query.name;
+            const query = req.query.type;
 
             if (query !== "Normal" && query !== "Collab" && query !== "Contest" && query !== "Lobby") {
                 res.sendStatus(400);
@@ -557,6 +559,13 @@ modsRouter.param("publisherID", async function (req, res, next) {
             return;
         }
 
+        const publisherFromID = await prisma.publishers.findUnique({ where: { id: id } });
+
+        if (!publisherFromID) {
+            res.status(404).json("publisherID does not exist");
+            return;
+        }
+
         const modsFromID = await prisma.mods_ids.findMany({
             where: {
                 mods_details: {
@@ -598,7 +607,7 @@ modsRouter.param("publisherID", async function (req, res, next) {
         });
 
         if (!modsFromID || !modsFromID.length) {
-            res.status(404).json("publisherID does not exist");
+            res.status(209).json("publisherID exists but has no approved mods");
             return;
         }
 
@@ -623,6 +632,13 @@ modsRouter.param("gbUserID", async function (req, res, next) {
             return;
         }
 
+        const publisherFromID = await prisma.publishers.findUnique({ where: { gamebananaID: id } });
+
+        if (!publisherFromID) {
+            res.status(404).json("gamebananaID does not exist in the celestemods.com database");
+            return;
+        }
+
         const modsFromID = await prisma.mods_ids.findMany({
             where: {
                 mods_details: {
@@ -664,7 +680,7 @@ modsRouter.param("gbUserID", async function (req, res, next) {
         });
 
         if (!modsFromID || !modsFromID.length) {
-            res.status(404).json("gamebananaUserID does not exist");
+            res.status(209).json("gamebananaID exists in the celestemods.com database but has no approved mods");
             return;
         }
 
