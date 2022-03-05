@@ -989,7 +989,7 @@ modsRouter.route("/:modID/revisions/:modRevision/accept")
                     where: { id_revision: id_revision },
                     data: {
                         timeApproved: time,
-                        users_mods_details_approvedByTousers: { connect: { id: submitterID}},
+                        users_mods_details_approvedByTousers: { connect: { id: submitterID } },
                     },
                 });
 
@@ -1240,7 +1240,7 @@ modsRouter.route("/:modID")
                 const formattedMatchingMod = formatMod(rawMatchingMod);
 
                 if (isErrorWithMessage(formattedMatchingMod)) throw formattedMatchingMod;
-    
+
                 if (formattedMatchingMod === noModDetailsErrorMessage) {
                     res.status(400).json(noModDetailsErrorMessage);
                     return;
