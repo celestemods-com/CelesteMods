@@ -1,6 +1,6 @@
 import express from "express";
 import { prisma } from "../prismaClient";
-import { validatePublisherPostOrPatch } from "../jsonSchemas/maps-mods-publishers";
+import { validatePublisherPost, validatePublisherPatch } from "../jsonSchemas/maps-mods-publishers";
 import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { publishers } from ".prisma/client";
 import { param_userID, param_publisherID, getGamebananaUsernameById } from "../helperFunctions/maps-mods-publishers";
@@ -29,12 +29,13 @@ publishersRouter.route("/")
             const userID: number | undefined = req.body.userID === null ? undefined : req.body.userID;
 
 
-            const valid = validatePublisherPostOrPatch({
+            const valid = validatePublisherPost({
                 gamebananaID: gamebananaID,
                 name: name,
                 userID: userID,
             });
 
+            
             if (!valid) {
                 res.status(400).json("Malformed request body");
                 return;
@@ -187,7 +188,7 @@ publishersRouter.route("/:publisherID")
             const userID: number | undefined = req.body.userID;
 
 
-            const valid = validatePublisherPostOrPatch({
+            const valid = validatePublisherPatch({
                 gamebananaID: gamebananaID,
                 name: name,
                 userID: userID,

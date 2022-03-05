@@ -100,7 +100,7 @@ const mapPostSchema = {
                         modDifficulty: {
                             type: ["string", "array"],
                             minLength: 1,
-            
+
                             uniqueItems: false,
                             minItems: 2,
                             maxItems: 2,
@@ -207,7 +207,7 @@ const mapPatchSchema = {
                 modDifficulty: {
                     type: ["string", "array"],
                     minLength: 1,
-    
+
                     uniqueItems: false,
                     minItems: 2,
                     maxItems: 2,
@@ -371,7 +371,7 @@ const modPatchSchema = {
 
 
 
-const validatePublisherPostOrPatchSchema = {
+const validatePublisherPostSchema = {
     type: "object",
     anyOf: [
         {
@@ -381,6 +381,7 @@ const validatePublisherPostOrPatchSchema = {
                     minimum: 1,
                 },
             },
+            required: ["gamebananaID"],
         },
         {
             properties: {
@@ -390,23 +391,45 @@ const validatePublisherPostOrPatchSchema = {
                     maxLength: 100,
                 },
             },
+            required: ["name"],
         },
         {
             properties: {
                 userID: {
                     type: "integer",
                     minimum: 1,
-                }
+                },
             },
+            required: ["userID"],
         },
     ],
+};
+
+
+const validatePublisherPatchSchema = {
+    type: "object",
+    properties: {
+        gamebananaID: {
+            type: "integer",
+            minimum: 1,
+        },
+        name: {
+            type: "string",
+            minLength: 1,
+            maxLength: 100,
+        },
+        userID: {
+            type: "integer",
+            minimum: 1,
+        }
+    },
     additionalProperties: false,
 };
 
 
 
 
-const ajv = new ajvModule({ allowUnionTypes: true, schemas: {mapPostSchema} });
+const ajv = new ajvModule({ allowUnionTypes: true, schemas: { mapPostSchema } });
 
 
 
@@ -415,4 +438,5 @@ export const validateMapPost = ajv.compile(mapPostSchema);
 export const validateMapPatch = ajv.compile(mapPatchSchema);
 export const validateModPost = ajv.compile(modPostSchema);
 export const validateModPatch = ajv.compile(modPatchSchema);
-export const validatePublisherPostOrPatch = ajv.compile(validatePublisherPostOrPatchSchema);
+export const validatePublisherPost = ajv.compile(validatePublisherPostSchema);
+export const validatePublisherPatch = ajv.compile(validatePublisherPatchSchema);
