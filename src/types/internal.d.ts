@@ -143,20 +143,26 @@ export interface jsonCreateMapWithMod {
 }
 
 
-export interface mapIdCreationObjectForMod {
+interface mapIdCreationObject {
   minimumModRevision: number;
-  map_details: {
+}
+
+export interface mapIdCreationObjectForMod extends mapIdCreationObject {
+  maps_details: {
     create: mapDetailsCreationObject[]
   };
 }
 
-export interface mapIdCreationObjectStandalone extends mapIdCreationObjectForMod {
+export interface mapIdCreationObjectStandalone extends mapIdCreationObject {
   modID: number;
+  maps_details: {
+    create: mapDetailsCreationObject[]
+  };
 }
 
 export interface mapDetailsCreationObject {
   name: string;
-  canonicalDifficulty?: number;
+  difficulties_difficultiesTomaps_details_canonicalDifficultyID: { connect: { id: number } };
   map_lengths: { connect: { id: number } };
   description?: string | null;
   notes?: string | null;
@@ -178,7 +184,6 @@ export interface mapDetailsCreationObject {
 
 export interface mapDetailsCreationObjectStandalone extends mapDetailsCreationObject {
   maps_ids: { connect: { id: number } };
-  difficulties_difficultiesTomaps_details_canonicalDifficultyID: { connect: { id: number } };
 }
 
 export interface mapToTechCreationObject {

@@ -410,7 +410,6 @@ modsRouter.route("/search")
             }
 
 
-            console.log(`query = ${query}`)
             const rawMods = await prisma.mods_ids.findMany({
                 where: {
                     mods_details: {
@@ -456,7 +455,6 @@ modsRouter.route("/search")
             });
 
 
-            console.log(`rawMods = ${rawMods}`)
             const formattedMods: (formattedMod[] | string)[] = rawMods.map((rawMod) => {
                 const formattedMod = formatMod(rawMod);
 

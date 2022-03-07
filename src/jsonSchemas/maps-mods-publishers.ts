@@ -14,7 +14,7 @@ const mapPostSchema = {
         },
         minimumModRevision: {
             type: "integer",
-            minimum: 1,
+            minimum: 0,
         },
         canonicalDifficulty: {
             type: "string",
@@ -119,8 +119,7 @@ const mapPostSchema = {
             ],
         },
     ],
-    additionalProperties: false,
-    required: ["name", "length", "mapRemovedFromModBool"],
+    required: ["name", "length"],
 };
 
 

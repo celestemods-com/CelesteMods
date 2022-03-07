@@ -15,7 +15,7 @@ import { formattedMod, formattedMap } from "../types/frontend";
 
 const canonicalDifficultyNameErrorMessage = "canonicalDifficulty does not match any default parent difficulty names";
 const techNameErrorMessage = "A tech name in techAny did not match the names of any tech in the celestemods.com database";
-const lengthErrorMessage = "length does not match the name of any map lengths in the celestemods.com database";
+export const lengthErrorMessage = "length does not match the name of any map lengths in the celestemods.com database";
 export const invalidMapperUserIdErrorMessage = "No user found with ID = ";
 export const invalidMapDifficultyErrorMessage = `All maps in a non-Normal mod must be assigned a modDifficulty that matches the difficulties used by the mod (whether default or custom).
 If the mod uses sub-difficulties, modDifficulty must be given in the form [difficulty, sub-difficulty].`;
@@ -465,10 +465,10 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
 
     const mapIdCreationObject: mapIdCreationObjectForMod = {
         minimumModRevision: minimumModRevision,
-        map_details: {
+        maps_details: {
             create: [{
                 name: mapName,
-                canonicalDifficulty: canonicalDifficultyID,
+                difficulties_difficultiesTomaps_details_canonicalDifficultyID: { connect: { id: canonicalDifficultyID } },
                 map_lengths: { connect: { id: lengthID } },
                 description: mapDescription,
                 notes: mapNotes,
@@ -485,8 +485,8 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
     if (isErrorWithMessage(privilegedUserBool)) throw privilegedUserBool;
 
     if (privilegedUserBool) {
-        mapIdCreationObject.map_details.create[0].timeApproved = currentTime;
-        mapIdCreationObject.map_details.create[0].users_maps_details_approvedByTousers = { connect: { id: submittingUser.id } };
+        mapIdCreationObject.maps_details.create[0].timeApproved = currentTime;
+        mapIdCreationObject.maps_details.create[0].users_maps_details_approvedByTousers = { connect: { id: submittingUser.id } };
     }
 
 
@@ -495,16 +495,16 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
 
         if (!userFromID) throw invalidMapperUserIdErrorMessage + `${mapperUserID}`;
 
-        mapIdCreationObject.map_details.create[0].users_maps_details_mapperUserIDTousers = { connect: { id: mapperUserID } };
+        mapIdCreationObject.maps_details.create[0].users_maps_details_mapperUserIDTousers = { connect: { id: mapperUserID } };
     }
     else if (mapperNameString) {
-        mapIdCreationObject.map_details.create[0].mapperNameString = mapperNameString;
+        mapIdCreationObject.maps_details.create[0].mapperNameString = mapperNameString;
     }
 
 
     if (modType === "Normal") {
-        mapIdCreationObject.map_details.create[0].chapter = chapter;
-        mapIdCreationObject.map_details.create[0].side = side;
+        mapIdCreationObject.maps_details.create[0].chapter = chapter;
+        mapIdCreationObject.maps_details.create[0].side = side;
     }
     else {
         handleNonNormalMods(mapIdCreationObject, modType, overallRank, modDifficulty, customDifficultiesArray,
@@ -542,7 +542,7 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
         }
 
 
-        mapIdCreationObject.map_details.create[0].maps_to_tech = { create: techCreationObjectArray };
+        mapIdCreationObject.maps_details.create[0].maps_to_tech = { create: techCreationObjectArray };
     }
 
 
@@ -557,7 +557,7 @@ const handleNonNormalMods = function (mapIdCreationObject: mapIdCreationObjectFo
     defaultDifficultyObjectsArray: defaultDifficultyForMod[], modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean) {
 
     if (modType === "Contest") {
-        mapIdCreationObject.map_details.create[0].overallRank = overallRank;
+        mapIdCreationObject.maps_details.create[0].overallRank = overallRank;
     }
 
     if (!modDifficulty) throw invalidMapDifficultyErrorMessage;
@@ -572,7 +572,7 @@ const handleNonNormalMods = function (mapIdCreationObject: mapIdCreationObjectFo
                 if (typeof modDifficulty !== "string") throw invalidMapDifficultyErrorMessage;
 
                 if (difficulty.name === modDifficulty) {
-                    mapIdCreationObject.map_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: difficulty.id } };
+                    mapIdCreationObject.maps_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: difficulty.id } };
                     validModDifficultyBool = true;
                     break;
                 }
@@ -585,7 +585,7 @@ const handleNonNormalMods = function (mapIdCreationObject: mapIdCreationObjectFo
                 if (difficulty.name === modDifficulty[0]) {
                     for (const childDifficulty of difficulty.other_difficulties.create) {
                         if (childDifficulty.name === modDifficulty[1]) {
-                            mapIdCreationObject.map_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: childDifficulty.id } };
+                            mapIdCreationObject.maps_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: childDifficulty.id } };
                             validModDifficultyBool = true;
                             break;
                         }
@@ -608,7 +608,7 @@ const handleNonNormalMods = function (mapIdCreationObject: mapIdCreationObjectFo
                 for (const childDifficulty of difficulty.other_difficulties) {
                     if (childDifficulty.name === modDifficulty[1]) {
                         validModDifficultyBool = true;
-                        mapIdCreationObject.map_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: childDifficulty.id } };
+                        mapIdCreationObject.maps_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: childDifficulty.id } };
                         break;
                     }
                 }

@@ -16,8 +16,15 @@ const noRouteError = function (_req: Request, res: Response, next: NextFunction)
 }
 
 const errorHandler = function (error: Error, _req: Request, res: Response, _next: NextFunction) {
-    console.log(error.message);
     try {
+        if (error.message) {
+            console.log(error.message);
+        }
+        else {
+            console.log(error);
+        }
+
+        
         res.status(error.status || 500).send({
             message: "Something went wrong"
         });

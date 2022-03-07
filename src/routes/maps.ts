@@ -6,7 +6,7 @@ import { mods_details_type, maps_details_side } from ".prisma/client";
 import { rawMap, mapIdCreationObjectStandalone, mapToTechCreationObject, submitterUser, rawMod, mapDetailsCreationObjectStandalone } from "../types/internal";
 import {
     param_userID, invalidMapperUserIdErrorMessage, param_mapID, formatMap, privilegedUser, param_lengthID, param_lengthOrder,
-    param_mapRevision, getCanonicalDifficultyID, getLengthID, invalidMapDifficultyErrorMessage
+    param_mapRevision, getCanonicalDifficultyID, getLengthID, invalidMapDifficultyErrorMessage, lengthErrorMessage
 } from "../helperFunctions/maps-mods-publishers";
 import { getCurrentTime } from "../helperFunctions/utils";
 import { expressRoute } from "../types/express";
@@ -1363,10 +1363,14 @@ mapsRouter.route("/:mapID")
                 });
 
 
+                console.log(innerRawMap)
                 return innerRawMap;
             });
 
-            if (!outerRawMap) return;
+            if (!outerRawMap) {
+                console.log("outerRawMap is undefined");
+                return;
+            }
 
 
             const formattedMap = formatMap(outerRawMap, modType);
@@ -1453,8 +1457,13 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
             techFC: techFC,
         });
 
-        if (!valid || (modDifficulty && modType === "Normal")) {
+        if (!valid) {
             res.status(400).json("Malformed request body");
+            return;
+        }
+
+        if ((modDifficulty || overallRank) && modType === "Normal") {
+            res.status(400).json("modDifficulty and overallRank cannot be included in a Normal mod");
             return;
         }
 
@@ -1471,10 +1480,10 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
         const mapIdCreationObject: mapIdCreationObjectStandalone = {
             modID: modID,
             minimumModRevision: minimumModRevision,
-            map_details: {
+            maps_details: {
                 create: [{
                     name: name,
-                    canonicalDifficulty: canonicalDifficultyID,
+                    difficulties_difficultiesTomaps_details_canonicalDifficultyID: { connect: { id: canonicalDifficultyID }},
                     map_lengths: { connect: { id: lengthID } },
                     description: description,
                     notes: notes,
@@ -1491,8 +1500,8 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
         if (isErrorWithMessage(privilegedUserBool)) throw privilegedUserBool;
 
         if (privilegedUserBool) {
-            mapIdCreationObject.map_details.create[0].timeApproved = currentTime;
-            mapIdCreationObject.map_details.create[0].users_maps_details_approvedByTousers = { connect: { id: submittingUser.id } };
+            mapIdCreationObject.maps_details.create[0].timeApproved = currentTime;
+            mapIdCreationObject.maps_details.create[0].users_maps_details_approvedByTousers = { connect: { id: submittingUser.id } };
         }
 
 
@@ -1501,20 +1510,27 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
 
             if (!userFromID) throw invalidMapperUserIdErrorMessage + `${mapperUserID}`;
 
-            mapIdCreationObject.map_details.create[0].users_maps_details_mapperUserIDTousers = { connect: { id: mapperUserID } };
+            mapIdCreationObject.maps_details.create[0].users_maps_details_mapperUserIDTousers = { connect: { id: mapperUserID } };
+            mapIdCreationObject.maps_details.create[0].mapperNameString = userFromID.displayName;
         }
         else if (mapperNameString) {
-            mapIdCreationObject.map_details.create[0].mapperNameString = mapperNameString;
+            mapIdCreationObject.maps_details.create[0].mapperNameString = mapperNameString;
+        }
+        else if (modType !== "Normal") {
+            throw "Non-Normal mods must have mapperUserID or mapperNameString";
+        }
+        else {
+            mapIdCreationObject.maps_details.create[0].mapperNameString = modFromID.mods_details[0].publishers.name;
         }
 
 
         if (modType === "Normal") {
-            mapIdCreationObject.map_details.create[0].chapter = chapter;
-            mapIdCreationObject.map_details.create[0].side = side;
+            mapIdCreationObject.maps_details.create[0].chapter = chapter;
+            mapIdCreationObject.maps_details.create[0].side = side;
         }
         else {
             if (modType === "Contest") {
-                mapIdCreationObject.map_details.create[0].overallRank = overallRank;
+                mapIdCreationObject.maps_details.create[0].overallRank = overallRank;
             }
 
 
@@ -1554,7 +1570,7 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
                     if (parentDifficulty.name === parentDifficultyName) {
                         for (const childDifficulty of parentDifficulty.other_difficulties) {
                             if (childDifficulty.name === childDifficultyName) {
-                                mapIdCreationObject.map_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: childDifficulty.id } };
+                                mapIdCreationObject.maps_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: childDifficulty.id } };
                                 validModDifficultyBool = true;
                                 break;
                             }
@@ -1568,7 +1584,7 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
                 const difficultyName = <string>modDifficulty;
                 for (const difficulty of modDifficultiesArray) {
                     if (difficulty.name === difficultyName) {
-                        mapIdCreationObject.map_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: difficulty.id } };
+                        mapIdCreationObject.maps_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: difficulty.id } };
                         validModDifficultyBool = true;
                         break;
                     }
@@ -1608,7 +1624,7 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
             }
 
 
-            mapIdCreationObject.map_details.create[0].maps_to_tech = { create: techCreationObjectArray };
+            mapIdCreationObject.maps_details.create[0].maps_to_tech = { create: techCreationObjectArray };
         }
 
 
@@ -1625,7 +1641,6 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
                     },
                 },
                 maps_details: {
-                    where: { NOT: { timeApproved: null } },
                     orderBy: { revision: "desc" },
                     take: 1,
                     include: {
@@ -1638,6 +1653,8 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
                 },
             },
         });
+
+        console.log(rawMap)
 
         const formattedMap = formatMap(rawMap, modType);
 
@@ -1652,6 +1669,11 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
         }
         else if (error === invalidMapDifficultyErrorMessage) {
             res.status(400).json(invalidMapDifficultyErrorMessage);
+        }
+        else if (error === lengthErrorMessage) {
+            res.status(404).json(lengthErrorMessage);
+            res.errorSent = true;
+            return;
         }
         else {
             next(error);
