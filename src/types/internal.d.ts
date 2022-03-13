@@ -132,7 +132,7 @@ export interface jsonCreateMapWithMod {
   description?: string;
   notes?: string;
   mapperUserID?: number;
-  mapperNameString?: string;
+  mapperNameString: string;
   chapter?: number;
   side?: maps_details_side;
   modDifficulty?: string | string[];
@@ -168,7 +168,7 @@ export interface mapDetailsCreationObject {
   notes?: string | null;
   mapRemovedFromModBool: boolean;
   users_maps_details_mapperUserIDTousers?: { connect: { id: number } };
-  mapperNameString?: string | null;
+  mapperNameString: string;
   timeSubmitted: number;
   users_maps_details_submittedByTousers: { connect: { id: number } };
   timeApproved?: number;
@@ -195,7 +195,7 @@ export interface mapToTechCreationObject {
 
 
 export interface rawMap extends maps_ids {
-  mods_ids?: rawModForMap;
+  mods_ids?: modIdsForMap;
   maps_details: rawMapDetails[];
 }
 
@@ -211,8 +211,12 @@ interface rawMapsToTech extends maps_to_tech {
   tech_list: tech_list;
 }
 
-interface rawModForMap extends mods_ids {
-  mods_details: mods_details[];
+interface modIdsForMap extends mods_ids {
+  mods_details: modDetailsForMap[];
+}
+
+interface modDetailsForMap extends mods_details {
+  publishers: publishers;
 }
 
 
@@ -228,4 +232,9 @@ export interface publisherCreationObject {
     name: string,
     gamebananaID: number,
   };
+}
+
+
+export interface rawPublisher extends publishers {
+  users: users | null;
 }

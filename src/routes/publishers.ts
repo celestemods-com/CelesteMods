@@ -3,7 +3,8 @@ import { prisma } from "../prismaClient";
 import { validatePublisherPost, validatePublisherPatch } from "../jsonSchemas/maps-mods-publishers";
 import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { publishers } from ".prisma/client";
-import { param_userID, param_publisherID, getGamebananaUsernameById } from "../helperFunctions/maps-mods-publishers";
+import { param_userID, param_publisherID, getGamebananaUsernameById, formatPublisher } from "../helperFunctions/maps-mods-publishers";
+import { rawPublisher } from "../types/internal";
 
 
 const publishersRouter = express.Router();
@@ -14,9 +15,19 @@ const publishersRouter = express.Router();
 publishersRouter.route("/")
     .get(async function (_req, res, next) {
         try {
-            const publishers = await prisma.publishers.findMany();
+            const rawPublishers = await prisma.publishers.findMany({ include: { users: true } });
 
-            res.json(publishers);
+            const formattedPublishers = await Promise.all(
+                rawPublishers.map(
+                    async (rawPublisher) => {
+                        const formattedPublisher = await formatPublisher(rawPublisher);
+
+                        if (isErrorWithMessage(formattedPublisher)) throw formattedPublisher;
+                        
+                        return formattedPublisher;
+            }));
+
+            res.json(formattedPublishers);
         }
         catch (error) {
             next(error);
@@ -25,14 +36,14 @@ publishersRouter.route("/")
     .post(async function (req, res, next) {
         try {
             const gamebananaID: number | undefined = req.body.gamebananaID === null ? undefined : req.body.gamebananaID;
-            const name: string | undefined = req.body.name === null ? undefined : req.body.name;
             const userID: number | undefined = req.body.userID === null ? undefined : req.body.userID;
+            const name: string | undefined = userID || req.body.name === null ? undefined : req.body.name;
 
 
             const valid = validatePublisherPost({
                 gamebananaID: gamebananaID,
-                name: name,
                 userID: userID,
+                name: name,
             });
 
             
@@ -42,7 +53,7 @@ publishersRouter.route("/")
             }
 
 
-            const matchingPublisher = await prisma.publishers.findFirst({
+            const rawMatchingPublisher = await prisma.publishers.findFirst({
                 where: {
                     OR: [
                         { gamebananaID: gamebananaID },     //TODO: test how prisma handles undefined == null and null == null
@@ -52,27 +63,33 @@ publishersRouter.route("/")
                         },
                     ],
                 },
+                include: { users: true },
             });
 
-            if (matchingPublisher) {
-                res.status(200).json(matchingPublisher);
+            if (rawMatchingPublisher) {
+                const formattedMatchingPublisher = await formatPublisher(rawMatchingPublisher);
+
+                if (isErrorWithMessage(formattedMatchingPublisher)) throw formattedMatchingPublisher;
+
+                res.status(200).json(formattedMatchingPublisher);
                 return;
             }
 
 
-            let publisher: publishers;
+            let rawPublisher: rawPublisher;
 
             if (gamebananaID) {
                 const gamebananaUsername = await getGamebananaUsernameById(gamebananaID);
 
                 if (isErrorWithMessage(gamebananaUsername)) throw gamebananaUsername;
 
-                publisher = await prisma.publishers.create({
+                rawPublisher = await prisma.publishers.create({
                     data: {
                         gamebananaID: gamebananaID,
                         name: gamebananaUsername,
-                        userID: userID,
+                        users: { connect: { id: userID } },
                     },
+                    include: { users: true },
                 });
             }
             else if (userID) {
@@ -83,21 +100,29 @@ publishersRouter.route("/")
                     return;
                 }
 
-                publisher = await prisma.publishers.create({
+                rawPublisher = await prisma.publishers.create({
                     data: {
                         name: userFromID.displayName,
-                        userID: userID,
+                        users: { connect: { id: userID } },
                     },
+                    include: { users: true },
                 });
             }
             else {
                 if (!name) throw "name is undefined";
 
-                publisher = await prisma.publishers.create({ data: { name: name } });
+                rawPublisher = await prisma.publishers.create({
+                    data: { name: name },
+                    include: { users: true },
+                });
             }
 
 
-            res.status(201).json(publisher);
+            const formattedPublisher = await formatPublisher(rawPublisher);
+
+            if (isErrorWithMessage(formattedPublisher)) throw formattedPublisher;
+
+            res.status(201).json(formattedPublisher);
         }
         catch (error) {
             next(error);
@@ -118,9 +143,22 @@ publishersRouter.route("/search")
                 return;
             }
 
-            const publishers = await prisma.publishers.findMany({ where: { name: { startsWith: query } } });
+            const rawPublishers = await prisma.publishers.findMany({
+                where: { name: { startsWith: query } },
+                include: { users: true },
+            });
 
-            res.json(publishers);
+            const formattedPublishers = await Promise.all(
+                rawPublishers.map(
+                    async (rawPublisher) => {
+                        const formattedPublisher = await formatPublisher(rawPublisher);
+
+                        if (isErrorWithMessage(formattedPublisher)) throw formattedPublisher;
+                        
+                        return formattedPublisher;
+            }));
+
+            res.json(formattedPublishers);
         }
         catch (error) {
             next(error);
@@ -146,9 +184,22 @@ publishersRouter.route("/user/:userID")
         try {
             const id = <number>req.id2; //.param has already checked that the id is valid
 
-            const publishers = await prisma.publishers.findMany({ where: { userID: id } });
+            const rawPublishers = await prisma.publishers.findMany({
+                where: { userID: id },
+                include: { users: true },
+            });
 
-            res.json(publishers);
+            const formattedPublishers = await Promise.all(
+                rawPublishers.map(
+                    async (rawPublisher) => {
+                        const formattedPublisher = await formatPublisher(rawPublisher);
+
+                        if (isErrorWithMessage(formattedPublisher)) throw formattedPublisher;
+                        
+                        return formattedPublisher;
+            }));
+
+            res.json(formattedPublishers);
         }
         catch (error) {
             next(error);
@@ -172,9 +223,14 @@ publishersRouter.param("publisherID", async function (req, res, next) {
 publishersRouter.route("/:publisherID")
     .get(async function (req, res, next) {
         try {
-            const publisher = <publishers>req.publisher;
+            const rawPublisher = <rawPublisher>req.publisher;
 
-            res.json(publisher);
+
+            const formattedPublisher = await formatPublisher(rawPublisher);
+
+            if (isErrorWithMessage(formattedPublisher)) throw formattedPublisher;
+
+            res.json(formattedPublisher);
         }
         catch (error) {
             next(error);
@@ -200,7 +256,7 @@ publishersRouter.route("/:publisherID")
             }
 
 
-            const matchingPublisher = await prisma.publishers.findFirst({
+            const rawMatchingPublisher = await prisma.publishers.findFirst({
                 where: {
                     AND: [
                         {
@@ -219,28 +275,34 @@ publishersRouter.route("/:publisherID")
                         },
                     ],
                 },
+                include: { users: true },
             });
 
-            if (matchingPublisher) {
-                res.status(400).json(matchingPublisher);
+            if (rawMatchingPublisher) {
+                const formattedPublisher = await formatPublisher(rawMatchingPublisher);
+    
+                if (isErrorWithMessage(formattedPublisher)) throw formattedPublisher;
+
+                res.status(400).json(rawMatchingPublisher);
                 return;
             }
 
 
-            let publisher: publishers;
+            let rawPublisher: rawPublisher;
 
             if (gamebananaID) {
                 const gamebananaUsername = await getGamebananaUsernameById(gamebananaID);
 
                 if (isErrorWithMessage(gamebananaUsername)) throw gamebananaUsername;
 
-                publisher = await prisma.publishers.update({
+                rawPublisher = await prisma.publishers.update({
                     where: { id: id },
                     data: {
                         gamebananaID: gamebananaID,
                         name: gamebananaUsername,
-                        userID: userID,
+                        users: { connect: { id: userID } },
                     },
+                    include: { users: true },
                 });
             }
             else if (userID) {
@@ -251,30 +313,36 @@ publishersRouter.route("/:publisherID")
                     return;
                 }
 
-                publisher = await prisma.publishers.update({
+                rawPublisher = await prisma.publishers.update({
                     where: { id: id },
                     data: {
                         gamebananaID: gamebananaID,
                         name: userFromID.displayName,
-                        userID: userID,
+                        users: { connect: { id: userID } },
                     },
+                    include: { users: true },
                 });
             }
             else {
                 if (!name) throw "name is undefined";
 
-                publisher = await prisma.publishers.update({
+                rawPublisher = await prisma.publishers.update({
                     where: { id: id },
                     data: {
                         gamebananaID: gamebananaID,
                         name: name,
-                        userID: userID,
+                        users: { connect: { id: userID } },
                     },
+                    include: { users: true },
                 });
             }
 
 
-            res.status(200).json(publisher);
+            const formattedPublisher = await formatPublisher(rawPublisher);
+
+            if (isErrorWithMessage(formattedPublisher)) throw formattedPublisher;
+
+            res.status(200).json(formattedPublisher);
         }
         catch (error) {
             next(error);

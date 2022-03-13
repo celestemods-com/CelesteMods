@@ -6,15 +6,16 @@ import { errorWithMessage, isErrorWithMessage, toErrorWithMessage } from "../err
 import { difficulties, map_lengths, mods_details_type } from ".prisma/client";
 import {
     rawMod, rawMap, createParentDifficultyForMod, createChildDifficultyForMod, jsonCreateMapWithMod, mapIdCreationObjectForMod,
-    mapToTechCreationObject, defaultDifficultyForMod, submitterUser, publisherConnectionObject, publisherCreationObject
+    mapToTechCreationObject, defaultDifficultyForMod, submitterUser, publisherConnectionObject, publisherCreationObject, rawPublisher
 } from "../types/internal";
-import { formattedMod, formattedMap } from "../types/frontend";
+import { formattedMod, formattedMap, formattedPublisher } from "../types/frontend";
 
 
 
 
 const canonicalDifficultyNameErrorMessage = "canonicalDifficulty does not match any default parent difficulty names";
 const techNameErrorMessage = "A tech name in techAny did not match the names of any tech in the celestemods.com database";
+const gamebananaApiError = "GameBanana api not responding as expected.";
 export const lengthErrorMessage = "length does not match the name of any map lengths in the celestemods.com database";
 export const invalidMapperUserIdErrorMessage = "No user found with ID = ";
 export const invalidMapDifficultyErrorMessage = `All maps in a non-Normal mod must be assigned a modDifficulty that matches the difficulties used by the mod (whether default or custom).
@@ -28,7 +29,6 @@ export const getPublisherCreateOrConnectObject = async function (res: Response, 
     publisherID?: number, publisherName?: string) {
     try {
         let publisherCreateOrConnectObject: publisherConnectionObject | publisherCreationObject | undefined = undefined;
-
 
         if (userID) {
             const userFromID = await prisma.users.findUnique({
@@ -61,6 +61,7 @@ export const getPublisherCreateOrConnectObject = async function (res: Response, 
             }
 
             publisherCreateOrConnectObject = { connect: { id: userFromID.publishers[0].id } };
+            publisherName = userFromID.publishers[0].name;
         }
         else if (publisherGamebananaID) {
             const publisherFromGbID = await prisma.publishers.findUnique({ where: { gamebananaID: publisherGamebananaID } });
@@ -85,6 +86,7 @@ export const getPublisherCreateOrConnectObject = async function (res: Response, 
                         gamebananaID: publisherGamebananaID,
                     },
                 };
+                publisherName = nameFromGamebanana;
             }
         }
         else if (publisherID) {
@@ -97,6 +99,7 @@ export const getPublisherCreateOrConnectObject = async function (res: Response, 
             }
 
             publisherCreateOrConnectObject = { connect: { id: publisherID } };
+            publisherName = publisherFromID.name;
         }
         else if (publisherName) {
             const publishersFromName = await prisma.publishers.findMany({ where: { name: publisherName } });
@@ -136,8 +139,8 @@ export const getPublisherCreateOrConnectObject = async function (res: Response, 
             }
         }
 
-        if (publisherCreateOrConnectObject) {
-            return publisherCreateOrConnectObject;
+        if (publisherCreateOrConnectObject && publisherName) {
+            return [publisherCreateOrConnectObject, publisherName];
         }
     }
     catch (error) {
@@ -220,22 +223,23 @@ export const getDifficultyArrays = function (difficultyNames: (string | string[]
 
 
 
-export const formatMod = function (rawMod: rawMod) {
+export const formatMod = async function (rawMod: rawMod) {
     try {
         if (rawMod.mods_details.length < 1) return noModDetailsErrorMessage;
 
         const id = rawMod.id;
         const rawMaps = rawMod.maps_ids;
-        let outerType: mods_details_type = rawMod.mods_details[0].type;
 
 
-        const formattedMaps = rawMaps.map((rawMap) => {
-            const formattedMap = formatMap(rawMap, outerType);
+        const formattedMaps = await Promise.all(
+            rawMaps.map(
+                async (rawMap) => {
+                    const formattedMap = await formatMap(rawMap, rawMod);
 
-            if (isErrorWithMessage(formattedMap)) throw formattedMap;
+                    if (isErrorWithMessage(formattedMap)) throw formattedMap;
 
-            return formattedMap;
-        });
+                    return formattedMap;
+        }));
 
 
         let formattedDifficultiesArray: (string | string[])[];
@@ -385,14 +389,14 @@ const getSortedDifficultyNames = function (difficulties: difficulties[], modID: 
 
 
 
-export const getMapIDsCreationArray = async function (res: Response, maps: jsonCreateMapWithMod[], currentModRevision: number, currentTime: number, modType: mods_details_type, lengthObjectArray: map_lengths[],
-    difficultiesCreationArray: createParentDifficultyForMod[], defaultDifficultyObjectsArray: defaultDifficultyForMod[],
-    modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean, submittingUser: submitterUser) {
+export const getMapIDsCreationArray = async function (res: Response, maps: jsonCreateMapWithMod[], currentModRevision: number, currentTime: number, modType: mods_details_type,
+    publisherName: string, lengthObjectArray: map_lengths[], difficultiesCreationArray: createParentDifficultyForMod[],
+    defaultDifficultyObjectsArray: defaultDifficultyForMod[], modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean, submittingUser: submitterUser) {
     try {
         const mapIDsCreationArray: mapIdCreationObjectForMod[] = await Promise.all(
             maps.map(
                 async (mapObject: jsonCreateMapWithMod) => {
-                    const mapIdCreationObject = await getMapIdCreationObject(mapObject, currentModRevision, currentTime, modType, lengthObjectArray,
+                    const mapIdCreationObject = await getMapIdCreationObject(mapObject, currentModRevision, currentTime, modType, publisherName, lengthObjectArray,
                         difficultiesCreationArray, defaultDifficultyObjectsArray, modHasCustomDifficultiesBool, modHasSubDifficultiesBool, submittingUser);
 
                     return mapIdCreationObject;
@@ -437,7 +441,7 @@ export const getMapIDsCreationArray = async function (res: Response, maps: jsonC
 
 
 const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, currentModRevision: number, currentTime: number, modType: mods_details_type,
-    lengthObjectArray: map_lengths[], customDifficultiesArray: createParentDifficultyForMod[], defaultDifficultyObjectsArray: defaultDifficultyForMod[],
+    publisherName: string, lengthObjectArray: map_lengths[], customDifficultiesArray: createParentDifficultyForMod[], defaultDifficultyObjectsArray: defaultDifficultyForMod[],
     modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean, submittingUser: submitterUser) {
 
     const minimumModRevision = currentModRevision === 0 ? 1 : (mapObject.minimumModRevision ? mapObject.minimumModRevision : currentModRevision);
@@ -451,7 +455,7 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
     const techFC = mapObject.techFC;
     const canonicalDifficultyName = mapObject.canonicalDifficulty;
     const mapperUserID = mapObject.mapperUserID;
-    const mapperNameString = mapObject.mapperNameString;
+    let mapperNameString = mapObject.mapperNameString;
     const chapter = mapObject.chapter;
     const side = mapObject.side;
     const modDifficulty = mapObject.modDifficulty;
@@ -463,6 +467,21 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
     const lengthID = await getLengthID(lengthName, lengthObjectArray);
 
 
+    if (mapperUserID) {
+        const userFromID = await prisma.users.findUnique({ where: { id: mapperUserID } });
+
+        if (!userFromID) throw invalidMapperUserIdErrorMessage + `${mapperUserID}`;
+
+        mapperNameString = userFromID.displayName;
+    }
+    else if (modType === "Normal") {
+        mapperNameString = publisherName;
+    }
+    else if (!mapperNameString) {
+        throw "Non-Normal maps must have mapperUserID or mapperNameString";
+    }
+
+
     const mapIdCreationObject: mapIdCreationObjectForMod = {
         minimumModRevision: minimumModRevision,
         maps_details: {
@@ -472,6 +491,7 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
                 map_lengths: { connect: { id: lengthID } },
                 description: mapDescription,
                 notes: mapNotes,
+                mapperNameString: mapperNameString,
                 mapRemovedFromModBool: mapRemovedFromModBool,
                 timeSubmitted: currentTime,
                 users_maps_details_submittedByTousers: { connect: { id: submittingUser.id } },
@@ -491,14 +511,7 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
 
 
     if (mapperUserID) {
-        const userFromID = await prisma.users.findUnique({ where: { id: mapperUserID } });
-
-        if (!userFromID) throw invalidMapperUserIdErrorMessage + `${mapperUserID}`;
-
         mapIdCreationObject.maps_details.create[0].users_maps_details_mapperUserIDTousers = { connect: { id: mapperUserID } };
-    }
-    else if (mapperNameString) {
-        mapIdCreationObject.maps_details.create[0].mapperNameString = mapperNameString;
     }
 
 
@@ -735,99 +748,126 @@ export const connectMapsToModDifficulties = async function (rawMod: rawMod) {
 
 
 
-export const formatMap = function (rawMap: rawMap, modType: mods_details_type) {
+export const formatMap = async function (rawMap: rawMap, rawMod?: rawMod) {
     try {
         const id = rawMap.id;
         const modID = rawMap.modID;
         const minimumModRevision = rawMap.minimumModRevision;
 
+        const modType = rawMod ? rawMod.mods_details[0].type : rawMap.mods_ids?.mods_details[0].type;
+        if (!modType) throw `modType is undefined for map ${id}`;
 
-        const outerFormattedMap = rawMap.maps_details.map((mapDetails) => {
-            const revision = mapDetails.revision;
-            const name = mapDetails.name;
-            const canonicalDifficulty = mapDetails.difficulties_difficultiesTomaps_details_canonicalDifficultyID.name;
-            const length = mapDetails.map_lengths.name;
-            const description = mapDetails.description === null ? undefined : mapDetails.description;
-            const notes = mapDetails.notes === null ? undefined : mapDetails.notes;
-            const mapRemovedFromModBool = mapDetails.mapRemovedFromModBool;
-            const approvedBool = mapDetails.timeApproved === null ? false : true;
+        const publisherName = rawMod ? rawMod.mods_details[0].publishers.name : rawMap.mods_ids?.mods_details[0].publishers.name;
+        if (!publisherName) throw `publisherName is undefined for map ${id}`;
 
 
-            const mapperUserID = mapDetails.mapperUserID === null ? undefined : mapDetails.mapperUserID;
-            let mapperUserName;
-            let mapperNameString;
-
-            if (mapperUserID) {
-                mapperUserName = mapDetails.users_maps_details_mapperUserIDTousers?.displayName;
-            }
-            else {
-                mapperNameString = mapDetails.mapperNameString === null ? undefined : mapDetails.mapperNameString;
-            }
-
-
-            const innerFormattedMap: formattedMap = {
-                id: id,
-                revision: revision,
-                modID: modID,
-                minimumModRevision: minimumModRevision,
-                name: name,
-                canonicalDifficulty: canonicalDifficulty,
-                length: length,
-                description: description,
-                notes: notes,
-                mapperUserID: mapperUserID,
-                mapperUserName: mapperUserName,
-                mapperNameString: mapperNameString,
-                mapRemovedFromModBool: mapRemovedFromModBool,
-                approved: approvedBool,
-            }
+        const outerFormattedMap = await Promise.all(
+            rawMap.maps_details.map(
+                async (mapDetails) => {
+                    const revision = mapDetails.revision;
+                    const name = mapDetails.name;
+                    const canonicalDifficulty = mapDetails.difficulties_difficultiesTomaps_details_canonicalDifficultyID.name;
+                    const length = mapDetails.map_lengths.name;
+                    const description = mapDetails.description === null ? undefined : mapDetails.description;
+                    const notes = mapDetails.notes === null ? undefined : mapDetails.notes;
+                    const mapRemovedFromModBool = mapDetails.mapRemovedFromModBool;
+                    const approvedBool = mapDetails.timeApproved === null ? false : true;
 
 
-            const techAny: string[] = [];
-            const techFC: string[] = [];
+                    const mapperUserID = mapDetails.mapperUserID === null ? undefined : mapDetails.mapperUserID;
+                    let mapperNameString: string;
 
-            if (mapDetails.maps_to_tech) {
-                for (const tech of mapDetails.maps_to_tech) {
-                    if (tech.fullClearOnlyBool) {
-                        techFC.push(tech.tech_list.name);
+                    if (mapperUserID) {
+                        if (!mapDetails.users_maps_details_mapperUserIDTousers) {
+                            throw `mapDetails.users_maps_details_mapperUserIDTousers is unexpectedly undefined for map ${id}`;
+                        }
+
+                        mapperNameString = mapDetails.users_maps_details_mapperUserIDTousers?.displayName;
+
+                        if (mapperNameString !== mapDetails.mapperNameString) {
+                            await prisma.maps_details.update({
+                                where: { id: mapDetails.id },
+                                data: { mapperNameString: mapperNameString },
+                            });
+                        }
+                    }
+                    else if (modType === "Normal") {
+                        mapperNameString = publisherName
+
+                        if (mapperNameString !== mapDetails.mapperNameString) {
+                            await prisma.maps_details.update({
+                                where: { id: mapDetails.id },
+                                data: { mapperNameString: mapperNameString },
+                            });
+                        }
                     }
                     else {
-                        techAny.push(tech.tech_list.name);
+                        mapperNameString = mapDetails.mapperNameString;
                     }
-                }
-
-                if (techAny.length) innerFormattedMap.techAny = techAny;
-                if (techFC.length) innerFormattedMap.techFC = techFC;
-            }
 
 
-            if (modType === "Normal") {
-                const chapter = mapDetails.chapter === null ? undefined : mapDetails.chapter;
-                const side = mapDetails.side === null ? undefined : mapDetails.side;
-
-                if (!chapter || !side) throw `Chapter or side is null in Normal map ${id}`;
-
-                innerFormattedMap.chapter = chapter;
-                innerFormattedMap.side = side;
-            }
-            else {
-                const modDifficulty = mapDetails.difficulties_difficultiesTomaps_details_modDifficultyID?.name;
-
-                if (!modDifficulty) throw `modDifficulty is undefined in non-Normal map ${id}`;
-
-                innerFormattedMap.modDifficulty = modDifficulty;
-
-
-                if (modType === "Contest") {
-                    const overallRank = mapDetails.overallRank === null ? undefined : mapDetails.overallRank;
-
-                    innerFormattedMap.overallRank = overallRank;
-                }
-            }
+                    const innerFormattedMap: formattedMap = {
+                        id: id,
+                        revision: revision,
+                        modID: modID,
+                        minimumModRevision: minimumModRevision,
+                        name: name,
+                        canonicalDifficulty: canonicalDifficulty,
+                        length: length,
+                        description: description,
+                        notes: notes,
+                        mapperUserID: mapperUserID,
+                        mapperNameString: mapperNameString,
+                        mapRemovedFromModBool: mapRemovedFromModBool,
+                        approved: approvedBool,
+                    }
 
 
-            return innerFormattedMap;
-        });
+                    const techAny: string[] = [];
+                    const techFC: string[] = [];
+
+                    if (mapDetails.maps_to_tech) {
+                        for (const tech of mapDetails.maps_to_tech) {
+                            if (tech.fullClearOnlyBool) {
+                                techFC.push(tech.tech_list.name);
+                            }
+                            else {
+                                techAny.push(tech.tech_list.name);
+                            }
+                        }
+
+                        if (techAny.length) innerFormattedMap.techAny = techAny;
+                        if (techFC.length) innerFormattedMap.techFC = techFC;
+                    }
+
+
+                    if (modType === "Normal") {
+                        const chapter = mapDetails.chapter === null ? undefined : mapDetails.chapter;
+                        const side = mapDetails.side === null ? undefined : mapDetails.side;
+
+                        if (!chapter || !side) throw `Chapter or side is null in Normal map ${id}`;
+
+                        innerFormattedMap.chapter = chapter;
+                        innerFormattedMap.side = side;
+                    }
+                    else {
+                        const modDifficulty = mapDetails.difficulties_difficultiesTomaps_details_modDifficultyID?.name;
+
+                        if (!modDifficulty) throw `modDifficulty is undefined in non-Normal map ${id}`;
+
+                        innerFormattedMap.modDifficulty = modDifficulty;
+
+
+                        if (modType === "Contest") {
+                            const overallRank = mapDetails.overallRank === null ? undefined : mapDetails.overallRank;
+
+                            innerFormattedMap.overallRank = overallRank;
+                        }
+                    }
+
+
+                    return innerFormattedMap;
+        }));
 
 
         return outerFormattedMap;
@@ -993,6 +1033,7 @@ export const param_mapID = <expressRoute>async function (req, res, next) {
                             where: { NOT: { timeApproved: null } },
                             orderBy: { revision: "desc" },
                             take: 1,
+                            include: { publishers: true },
                         },
                     },
                 },
@@ -1125,7 +1166,10 @@ export const param_publisherID = <expressRoute>async function (req, res, next) {
             return;
         }
 
-        const publisherFromID = await prisma.publishers.findUnique({ where: { id: id } });
+        const publisherFromID = await prisma.publishers.findUnique({
+            where: { id: id },
+            include: { users: true },
+        });
 
         if (!publisherFromID) {
             res.status(404).json("publisherID does not exist");
@@ -1179,8 +1223,7 @@ export const getGamebananaUsernameById = async function (gamebananaID: number) {
         const axiosResponse = await axios(options);
 
         if (axiosResponse.status != 200) {
-            const error = new Error("GameBanana api not responding as expected.");
-            throw error;
+            throw gamebananaApiError;
         }
 
         const gamebananaName = String(axiosResponse.data[0]);
@@ -1204,8 +1247,7 @@ const getGamebananaIdByUsername = async function (gamebananaUsername: string) {
         const axiosResponse = await axios(options);
 
         if (axiosResponse.status != 200) {
-            const error = new Error("GameBanana api not responding as expected.");
-            throw error;
+            throw gamebananaApiError;
         }
 
         let gamebananaID = Number(axiosResponse.data[0]);
@@ -1215,6 +1257,81 @@ const getGamebananaIdByUsername = async function (gamebananaUsername: string) {
         }
 
         return gamebananaID;
+    }
+    catch (error) {
+        return toErrorWithMessage(error);
+    }
+}
+
+
+
+
+export const formatPublisher = async function (rawPublisher: rawPublisher) {
+    try {
+        const id = rawPublisher.id;
+        const gamebananaID = rawPublisher.gamebananaID;
+        const userID = rawPublisher.userID;
+
+
+        let name = "";
+        if (userID) {
+            if (!rawPublisher.users) throw `users is unexpectedly null for publisher ${id}`;
+
+            name = rawPublisher.users.displayName;
+        }
+        else if (gamebananaID) {
+            try {
+                const name = await getGamebananaUsernameById(gamebananaID);
+
+                if (isErrorWithMessage(name)) throw name;
+
+                if (name !== rawPublisher.name) {
+                    await prisma.publishers.update({
+                        where: { id: id },
+                        data: { name: name },
+                    });
+                }
+            }
+            catch (error) {
+                if (error === gamebananaApiError) {
+                    if (rawPublisher.name) {
+                        name = rawPublisher.name;
+                    }
+                    else {
+                        throw `publisher ${id} has no name set, and a name value cannot currently be acquired from GameBanana`;
+                    }
+                }
+                else {
+                    throw error;
+                }
+            }
+        }
+        else if (rawPublisher.name) {
+            name = rawPublisher.name;
+        }
+        else {
+            throw `no name in rawPublisher ${id}`;
+        }
+
+
+        if (name === "") throw `no name generated while formatting publisher ${id}`;
+
+
+        const formattedPublisher: formattedPublisher = {
+            id: id,
+            name: name,
+        }
+
+        if (gamebananaID) {
+            formattedPublisher.gamebananaID = gamebananaID;
+        }
+
+        if (userID) {
+            formattedPublisher.userID = userID;
+        }
+
+
+        return formattedPublisher;
     }
     catch (error) {
         return toErrorWithMessage(error);

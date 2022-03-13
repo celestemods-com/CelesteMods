@@ -73,15 +73,17 @@ modsRouter.route("/")
             });
 
 
-            const formattedMods = rawMods.map((rawmod) => {
-                const formattedMod = formatMod(rawmod);
+            const formattedMods = await Promise.all(
+                rawMods.map(
+                    async (rawmod) => {
+                        const formattedMod = await formatMod(rawmod);
 
-                if (isErrorWithMessage(formattedMod)) throw formattedMod;
+                        if (isErrorWithMessage(formattedMod)) throw formattedMod;
 
-                if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawmod.id}: ` + noModDetailsErrorMessage;
+                        if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawmod.id}: ` + noModDetailsErrorMessage;
 
-                return formattedMod;
-            });
+                        return formattedMod;
+            }));
 
 
             res.json(formattedMods);
@@ -94,7 +96,7 @@ modsRouter.route("/")
         try {
             const modType: mods_details_type = req.body.type;
             const name: string = req.body.name;
-            const publisherName: string | undefined = req.body.publisherName;
+            const jsonPublisherName: string | undefined = req.body.publisherName;
             const publisherID: number | undefined = req.body.publisherID;
             const publisherGamebananaID: number | undefined = req.body.publisherGamebananaID;
             const userID: number | undefined = req.body.userID;
@@ -111,7 +113,7 @@ modsRouter.route("/")
             const valid = validateModPost({
                 type: modType,
                 name: name,
-                publisherName: publisherName,
+                publisherName: jsonPublisherName,
                 publisherID: publisherID,
                 publisherGamebananaID: publisherGamebananaID,
                 userID: userID,
@@ -130,13 +132,16 @@ modsRouter.route("/")
             }
 
 
-            const publisherConnectionObject = await getPublisherCreateOrConnectObject(res, userID, publisherGamebananaID, publisherID, publisherName);
+            const publisherConnectionObjectArray = await getPublisherCreateOrConnectObject(res, userID, publisherGamebananaID, publisherID, jsonPublisherName);
 
             if (res.errorSent) return;
 
-            if (!publisherConnectionObject || isErrorWithMessage(publisherConnectionObject)) {
-                throw `publisherConnectionObject = "${publisherConnectionObject}"`;
+            if (!publisherConnectionObjectArray || isErrorWithMessage(publisherConnectionObjectArray)) {
+                throw `publisherConnectionObject = "${publisherConnectionObjectArray}"`;
             }
+
+            const publisherConnectionObject = <publisherConnectionObject | publisherCreationObject>publisherConnectionObjectArray[0];
+            const publisherName = <string>publisherConnectionObjectArray[1];
 
 
             const rawModAndStatus = await prisma.$transaction(async () => {
@@ -178,7 +183,7 @@ modsRouter.route("/")
                 const lengthObjectArray = await prisma.map_lengths.findMany();
 
 
-                const mapsIDsCreationArray = await getMapIDsCreationArray(res, maps, 0, currentTime, modType, lengthObjectArray,
+                const mapsIDsCreationArray = await getMapIDsCreationArray(res, maps, 0, currentTime, modType, publisherName, lengthObjectArray,
                     difficultiesCreationArray, defaultDifficultyObjectsArray, modHasCustomDifficultiesBool, modHasSubDifficultiesBool, submittingUser);
 
                 if (res.errorSent) return;
@@ -289,7 +294,7 @@ modsRouter.route("/")
             const status = <number>rawModAndStatus[1];
 
 
-            const formattedMod = formatMod(rawMod);
+            const formattedMod = await formatMod(rawMod);
 
             if (isErrorWithMessage(formattedMod)) throw formattedMod;
 
@@ -379,7 +384,7 @@ modsRouter.route("/gamebanana/:gbModID")
 
             if (!rawMod) throw "rawMod = null or undefined";
 
-            const formattedMod = formatMod(rawMod);
+            const formattedMod = await formatMod(rawMod);
 
             if (isErrorWithMessage(formattedMod)) throw formattedMod;
 
@@ -455,15 +460,17 @@ modsRouter.route("/search")
             });
 
 
-            const formattedMods: (formattedMod[] | string)[] = rawMods.map((rawMod) => {
-                const formattedMod = formatMod(rawMod);
+            const formattedMods = await Promise.all(
+                rawMods.map(
+                    async (rawmod) => {
+                        const formattedMod = await formatMod(rawmod);
 
-                if (isErrorWithMessage(formattedMod)) throw formattedMod;
+                        if (isErrorWithMessage(formattedMod)) throw formattedMod;
 
-                if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawMod.id}: ` + noModDetailsErrorMessage;
+                        if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawmod.id}: ` + noModDetailsErrorMessage;
 
-                return formattedMod;
-            });
+                        return formattedMod;
+            }));
 
 
             res.json(formattedMods);
@@ -532,15 +539,17 @@ modsRouter.route("/type")
             });
 
 
-            const formattedMods: (formattedMod[] | string)[] = rawMods.map((rawMod) => {
-                const formattedMod = formatMod(rawMod);
+            const formattedMods = await Promise.all(
+                rawMods.map(
+                    async (rawmod) => {
+                        const formattedMod = await formatMod(rawmod);
 
-                if (isErrorWithMessage(formattedMod)) throw formattedMod;
+                        if (isErrorWithMessage(formattedMod)) throw formattedMod;
 
-                if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawMod.id}: ` + noModDetailsErrorMessage;
+                        if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawmod.id}: ` + noModDetailsErrorMessage;
 
-                return formattedMod;
-            });
+                        return formattedMod;
+            }));
 
 
             res.json(formattedMods);
@@ -714,15 +723,17 @@ modsRouter.route("/publisher/gamebanana/:gbUserID")
             const rawMods = <rawMod[]>req.mods;     //can cast as rawMod[] because the router.param already checked that the array isnt empty
 
 
-            const formattedMods = rawMods.map((rawMod) => {
-                const formattedMod = formatMod(rawMod);
+            const formattedMods = await Promise.all(
+                rawMods.map(
+                    async (rawmod) => {
+                        const formattedMod = await formatMod(rawmod);
 
-                if (isErrorWithMessage(formattedMod)) throw formattedMod;
+                        if (isErrorWithMessage(formattedMod)) throw formattedMod;
 
-                if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawMod.id}: ` + noModDetailsErrorMessage;
+                        if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawmod.id}: ` + noModDetailsErrorMessage;
 
-                return formattedMod;
-            });
+                        return formattedMod;
+            }));
 
 
             res.json(formattedMods);
@@ -740,15 +751,17 @@ modsRouter.route("/publisher/:publisherID")
             const rawMods = <rawMod[]>req.mods;     //can cast as rawMod[] because the router.param already checked that the array isnt empty
 
 
-            const formattedMods = rawMods.map((rawMod) => {
-                const formattedMod = formatMod(rawMod);
+            const formattedMods = await Promise.all(
+                rawMods.map(
+                    async (rawmod) => {
+                        const formattedMod = await formatMod(rawmod);
 
-                if (isErrorWithMessage(formattedMod)) throw formattedMod;
+                        if (isErrorWithMessage(formattedMod)) throw formattedMod;
 
-                if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawMod.id}: ` + noModDetailsErrorMessage;
+                        if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawmod.id}: ` + noModDetailsErrorMessage;
 
-                return formattedMod;
-            });
+                        return formattedMod;
+            }));
 
 
             res.json(formattedMods);
@@ -823,15 +836,17 @@ modsRouter.route("/user/:userID/publisher")
             });
 
 
-            const formattedMods = rawMods.map((rawMod) => {
-                const formattedMod = formatMod(rawMod);
+            const formattedMods = await Promise.all(
+                rawMods.map(
+                    async (rawmod) => {
+                        const formattedMod = await formatMod(rawmod);
 
-                if (isErrorWithMessage(formattedMod)) throw formattedMod;
+                        if (isErrorWithMessage(formattedMod)) throw formattedMod;
 
-                if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawMod.id}: ` + noModDetailsErrorMessage;
+                        if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawmod.id}: ` + noModDetailsErrorMessage;
 
-                return formattedMod;
-            });
+                        return formattedMod;
+            }));
 
 
             res.json(formattedMods);
@@ -894,15 +909,17 @@ modsRouter.route("/user/:userID/submitter")
             });
 
 
-            const formattedMods = rawMods.map((rawMod) => {
-                const formattedMod = formatMod(rawMod);
+            const formattedMods = await Promise.all(
+                rawMods.map(
+                    async (rawmod) => {
+                        const formattedMod = await formatMod(rawmod);
 
-                if (isErrorWithMessage(formattedMod)) throw formattedMod;
+                        if (isErrorWithMessage(formattedMod)) throw formattedMod;
 
-                if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawMod.id}: ` + noModDetailsErrorMessage;
+                        if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawmod.id}: ` + noModDetailsErrorMessage;
 
-                return formattedMod;
-            });
+                        return formattedMod;
+            }));
 
 
             res.json(formattedMods);
@@ -973,7 +990,7 @@ modsRouter.route("/:modID/revisions")
             });
 
 
-            const formattedMod = formatMod(rawMod);
+            const formattedMod = await formatMod(rawMod);
 
             if (isErrorWithMessage(formattedMod)) throw formattedMod;
 
@@ -1049,7 +1066,7 @@ modsRouter.route("/:modID/revisions/:modRevision/accept")
             });
 
 
-            const formattedMod = formatMod(rawModOuter);
+            const formattedMod = await formatMod(rawModOuter);
 
             if (isErrorWithMessage(formattedMod)) throw formattedMod;
 
@@ -1143,7 +1160,7 @@ modsRouter.route("/:modID/revisions/:modRevision")
             });
 
 
-            const formattedMod = formatMod(rawMod);
+            const formattedMod = await formatMod(rawMod);
 
             if (isErrorWithMessage(formattedMod)) throw formattedMod;
 
@@ -1168,7 +1185,7 @@ modsRouter.route("/:modID")
         try {
             const rawMod = <rawMod>req.mod    //can cast as rawMod because the router.param already checked that the id is valid
 
-            const formattedMod = formatMod(rawMod);
+            const formattedMod = await formatMod(rawMod);
 
             if (isErrorWithMessage(formattedMod)) throw formattedMod;
 
@@ -1259,7 +1276,7 @@ modsRouter.route("/:modID")
             });
 
             if (rawMatchingMod) {
-                const formattedMatchingMod = formatMod(rawMatchingMod);
+                const formattedMatchingMod = await formatMod(rawMatchingMod);
 
                 if (isErrorWithMessage(formattedMatchingMod)) throw formattedMatchingMod;
 
@@ -1311,27 +1328,27 @@ modsRouter.route("/:modID")
                 let publisherCreateOrConnectObject: publisherConnectionObject | publisherCreationObject | undefined = undefined;
 
                 if (publisherGamebananaID || publisherID || publisherName || userID) {
-                    const publisherConnectionReturnedObject = await getPublisherCreateOrConnectObject(res, userID, publisherGamebananaID, publisherID, publisherName);
+                    const publisherConnectionReturnedArray = await getPublisherCreateOrConnectObject(res, userID, publisherGamebananaID, publisherID, publisherName);
 
                     if (res.errorSent) return;
 
-                    if (!publisherConnectionReturnedObject || isErrorWithMessage(publisherConnectionReturnedObject)) {
-                        throw `publisherConnectionObject = "${publisherConnectionReturnedObject}"`;
+                    if (!publisherConnectionReturnedArray || isErrorWithMessage(publisherConnectionReturnedArray)) {
+                        throw `publisherConnectionObject = "${publisherConnectionReturnedArray}"`;
                     }
 
-                    publisherCreateOrConnectObject = publisherConnectionReturnedObject;
+                    publisherCreateOrConnectObject = <publisherConnectionObject | publisherCreationObject>publisherConnectionReturnedArray[0];
                 }
                 else {
-                    const publisherConnectionReturnedObject = await getPublisherCreateOrConnectObject(res, undefined, undefined,
+                    const publisherConnectionReturnedArray = await getPublisherCreateOrConnectObject(res, undefined, undefined,
                         latestValidRevision?.mods_details[0].publisherID, undefined);
 
                     if (res.errorSent) return;
 
-                    if (!publisherConnectionReturnedObject || isErrorWithMessage(publisherConnectionReturnedObject)) {
-                        throw `publisherConnectionObject = "${publisherConnectionReturnedObject}"`;
+                    if (!publisherConnectionReturnedArray || isErrorWithMessage(publisherConnectionReturnedArray)) {
+                        throw `publisherConnectionObject = "${publisherConnectionReturnedArray}"`;
                     }
 
-                    publisherCreateOrConnectObject = publisherConnectionReturnedObject;
+                    publisherCreateOrConnectObject = <publisherConnectionObject | publisherCreationObject>publisherConnectionReturnedArray[0];
                 }
 
                 if (!publisherCreateOrConnectObject) throw "publisherCreateOrConnectObject is undefined";
@@ -1392,7 +1409,7 @@ modsRouter.route("/:modID")
             if (!rawMod) throw "no rawMod";
 
 
-            const formattedMod = formatMod(rawMod);
+            const formattedMod = await formatMod(rawMod);
 
             if (isErrorWithMessage(formattedMod)) throw formattedMod;
 
@@ -1429,7 +1446,7 @@ modsRouter.route("/:modID")
     })
     .all(methodNotAllowed);
 
-
+    
 
 
 modsRouter.use(noRouteError);

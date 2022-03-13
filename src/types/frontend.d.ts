@@ -50,8 +50,7 @@ export interface formattedMap {
   description?: string;
   notes?: string;
   mapperUserID?: number;
-  mapperUserName?: string;
-  mapperNameString?: string;
+  mapperNameString: string;
   chapter?: number;
   side?: string;
   modDifficulty?: string | string[];
@@ -60,4 +59,11 @@ export interface formattedMap {
   techAny?: string[];
   techFC?: string[];
   approved: boolean;
+}
+
+export interface formattedPublisher {
+  id: number;
+  name: string;
+  gamebananaID?: number;
+  userID?: number;
 }

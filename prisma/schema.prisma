@@ -113,7 +113,7 @@ model maps_details {
   mapId                                                         Int                @db.UnsignedMediumInt
   revision                                                      Int                @default(0) @db.UnsignedTinyInt
   mapperUserID                                                  Int?               @db.UnsignedSmallInt
-  mapperNameString                                              String?            @db.VarChar(50)
+  mapperNameString                                              String             @db.VarChar(50)
   name                                                          String             @db.VarChar(200)
   canonicalDifficultyID                                         Int                @db.UnsignedSmallInt
   lengthID                                                      Int                @db.UnsignedTinyInt

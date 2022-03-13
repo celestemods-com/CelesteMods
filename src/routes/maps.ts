@@ -2,7 +2,7 @@ import express, { } from "express";
 import { prisma } from "../prismaClient";
 import { validateMapPost, validateMapPatch } from "../jsonSchemas/maps-mods-publishers";
 import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
-import { mods_details_type, maps_details_side } from ".prisma/client";
+import { mods_details_type, maps_details_side, users } from ".prisma/client";
 import { rawMap, mapIdCreationObjectStandalone, mapToTechCreationObject, submitterUser, rawMod, mapDetailsCreationObjectStandalone } from "../types/internal";
 import {
     param_userID, invalidMapperUserIdErrorMessage, param_mapID, formatMap, privilegedUser, param_lengthID, param_lengthOrder,
@@ -47,6 +47,7 @@ mapsRouter.route("/")
                                 where: { NOT: { timeApproved: null } },
                                 orderBy: { revision: "desc" },
                                 take: 1,
+                                include: { publishers: true },
                             },
                         },
                     },
@@ -65,12 +66,13 @@ mapsRouter.route("/")
                 },
             });
 
-            const formattedMaps = rawMaps.map((rawMap) => {
-                const modType = rawMap.mods_ids.mods_details[0].type;
-                const formattedMap = formatMap(rawMap, modType);
-                if (isErrorWithMessage(formattedMap)) throw formattedMap;
-                return formattedMap;
-            });
+            const formattedMaps = await Promise.all(
+                rawMaps.map(
+                    async (rawMap) => {
+                        const formattedMap = await formatMap(rawMap);
+                        if (isErrorWithMessage(formattedMap)) throw formattedMap;
+                        return formattedMap;
+            }));
 
 
             res.json(formattedMaps);
@@ -113,6 +115,7 @@ mapsRouter.route("/search")
                                 where: { NOT: { timeApproved: null } },
                                 orderBy: { revision: "desc" },
                                 take: 1,
+                                include: { publishers: true },
                             },
                         },
                     },
@@ -136,17 +139,13 @@ mapsRouter.route("/search")
                 },
             });
 
-            const formattedMaps = rawMaps.map((rawMap) => {
-                const modType = rawMap.mods_ids.mods_details[0].type;
-
-                if (!modType) throw "modType is undefined";
-
-                const formattedMap = formatMap(rawMap, modType);
-
-                if (isErrorWithMessage(formattedMap)) throw formattedMap;
-
-                return formattedMap;
-            });
+            const formattedMaps = await Promise.all(
+                rawMaps.map(
+                    async (rawMap) => {
+                        const formattedMap = await formatMap(rawMap);
+                        if (isErrorWithMessage(formattedMap)) throw formattedMap;
+                        return formattedMap;
+            }));
 
 
             res.json(formattedMaps);
@@ -189,6 +188,7 @@ mapsRouter.route("/search/mapper")
                                 where: { NOT: { timeApproved: null } },
                                 orderBy: { revision: "desc" },
                                 take: 1,
+                                include: { publishers: true },
                             },
                         },
                     },
@@ -213,15 +213,13 @@ mapsRouter.route("/search/mapper")
             });
 
 
-            const formattedMaps = rawMaps.map((rawMap) => {
-                const modType = rawMap.mods_ids.mods_details[0].type;
-
-                const formattedMap = formatMap(rawMap, modType);
-
-                if (isErrorWithMessage(formattedMap)) throw formattedMap;
-
-                return formattedMap;
-            });
+            const formattedMaps = await Promise.all(
+                rawMaps.map(
+                    async (rawMap) => {
+                        const formattedMap = await formatMap(rawMap);
+                        if (isErrorWithMessage(formattedMap)) throw formattedMap;
+                        return formattedMap;
+            }));
 
 
             res.json(formattedMaps);
@@ -264,6 +262,7 @@ mapsRouter.route("/search/tech")
                                 where: { NOT: { timeApproved: null } },
                                 orderBy: { revision: "desc" },
                                 take: 1,
+                                include: { publishers: true },
                             },
                         },
                     },
@@ -288,15 +287,13 @@ mapsRouter.route("/search/tech")
             });
 
 
-            const formattedMaps = rawMaps.map((rawMap) => {
-                const modType = rawMap.mods_ids.mods_details[0].type;
-
-                const formattedMap = formatMap(rawMap, modType);
-
-                if (isErrorWithMessage(formattedMap)) throw formattedMap;
-
-                return formattedMap;
-            });
+            const formattedMaps = await Promise.all(
+                rawMaps.map(
+                    async (rawMap) => {
+                        const formattedMap = await formatMap(rawMap);
+                        if (isErrorWithMessage(formattedMap)) throw formattedMap;
+                        return formattedMap;
+            }));
 
 
             res.json(formattedMaps);
@@ -346,6 +343,7 @@ mapsRouter.route("/search/tech/any")
                                 where: { NOT: { timeApproved: null } },
                                 orderBy: { revision: "desc" },
                                 take: 1,
+                                include: { publishers: true },
                             },
                         },
                     },
@@ -375,17 +373,15 @@ mapsRouter.route("/search/tech/any")
                     },
                 },
             });
+            
 
-
-            const formattedMaps = rawMaps.map((rawMap) => {
-                const modType = rawMap.mods_ids.mods_details[0].type;
-
-                const formattedMap = formatMap(rawMap, modType);
-
-                if (isErrorWithMessage(formattedMap)) throw formattedMap;
-
-                return formattedMap;
-            });
+            const formattedMaps = await Promise.all(
+                rawMaps.map(
+                    async (rawMap) => {
+                        const formattedMap = await formatMap(rawMap);
+                        if (isErrorWithMessage(formattedMap)) throw formattedMap;
+                        return formattedMap;
+            }));
 
 
             res.json(formattedMaps);
@@ -435,6 +431,7 @@ mapsRouter.route("/search/tech/fc")
                                 where: { NOT: { timeApproved: null } },
                                 orderBy: { revision: "desc" },
                                 take: 1,
+                                include: { publishers: true },
                             },
                         },
                     },
@@ -464,17 +461,15 @@ mapsRouter.route("/search/tech/fc")
                     },
                 },
             });
+            
 
-
-            const formattedMaps = rawMaps.map((rawMap) => {
-                const modType = rawMap.mods_ids.mods_details[0].type;
-
-                const formattedMap = formatMap(rawMap, modType);
-
-                if (isErrorWithMessage(formattedMap)) throw formattedMap;
-
-                return formattedMap;
-            });
+            const formattedMaps = await Promise.all(
+                rawMaps.map(
+                    async (rawMap) => {
+                        const formattedMap = await formatMap(rawMap);
+                        if (isErrorWithMessage(formattedMap)) throw formattedMap;
+                        return formattedMap;
+            }));
 
 
             res.json(formattedMaps);
@@ -530,6 +525,7 @@ mapsRouter.route("/length/order/:lengthOrder")
                                 where: { NOT: { timeApproved: null } },
                                 orderBy: { revision: "desc" },
                                 take: 1,
+                                include: { publishers: true },
                             },
                         },
                     },
@@ -550,17 +546,15 @@ mapsRouter.route("/length/order/:lengthOrder")
                     },
                 },
             });
+            
 
-
-            const formattedMaps = rawMaps.map((rawMap) => {
-                const modType = rawMap.mods_ids.mods_details[0].type;
-
-                const formattedMap = formatMap(rawMap, modType);
-
-                if (isErrorWithMessage(formattedMap)) throw formattedMap;
-
-                return formattedMap;
-            });
+            const formattedMaps = await Promise.all(
+                rawMaps.map(
+                    async (rawMap) => {
+                        const formattedMap = await formatMap(rawMap);
+                        if (isErrorWithMessage(formattedMap)) throw formattedMap;
+                        return formattedMap;
+            }));
 
 
             res.json(formattedMaps);
@@ -594,6 +588,7 @@ mapsRouter.route("/length/:lengthID")
                                 where: { NOT: { timeApproved: null } },
                                 orderBy: { revision: "desc" },
                                 take: 1,
+                                include: { publishers: true },
                             },
                         },
                     },
@@ -614,17 +609,15 @@ mapsRouter.route("/length/:lengthID")
                     },
                 },
             });
+            
 
-
-            const formattedMaps = rawMaps.map((rawMap) => {
-                const modType = rawMap.mods_ids.mods_details[0].type;
-
-                const formattedMap = formatMap(rawMap, modType);
-
-                if (isErrorWithMessage(formattedMap)) throw formattedMap;
-
-                return formattedMap;
-            });
+            const formattedMaps = await Promise.all(
+                rawMaps.map(
+                    async (rawMap) => {
+                        const formattedMap = await formatMap(rawMap);
+                        if (isErrorWithMessage(formattedMap)) throw formattedMap;
+                        return formattedMap;
+            }));
 
 
             res.json(formattedMaps);
@@ -670,6 +663,7 @@ mapsRouter.route("/user/:userID/mapper")
                                 where: { NOT: { timeApproved: null } },
                                 orderBy: { revision: "desc" },
                                 take: 1,
+                                include: { publishers: true },
                             },
                         },
                     },
@@ -690,17 +684,15 @@ mapsRouter.route("/user/:userID/mapper")
                     },
                 },
             });
+            
 
-
-            const formattedMaps = rawMaps.map((rawMap) => {
-                const modType = rawMap.mods_ids.mods_details[0].type;
-
-                const formattedMap = formatMap(rawMap, modType);
-
-                if (isErrorWithMessage(formattedMap)) throw formattedMap;
-
-                return formattedMap;
-            });
+            const formattedMaps = await Promise.all(
+                rawMaps.map(
+                    async (rawMap) => {
+                        const formattedMap = await formatMap(rawMap);
+                        if (isErrorWithMessage(formattedMap)) throw formattedMap;
+                        return formattedMap;
+            }));
 
 
             res.json(formattedMaps);
@@ -734,6 +726,7 @@ mapsRouter.route("/user/:userID/submitter")
                                 where: { NOT: { timeApproved: null } },
                                 orderBy: { revision: "desc" },
                                 take: 1,
+                                include: { publishers: true },
                             },
                         },
                     },
@@ -754,17 +747,15 @@ mapsRouter.route("/user/:userID/submitter")
                     },
                 },
             });
+            
 
-
-            const formattedMaps = rawMaps.map((rawMap) => {
-                const modType = rawMap.mods_ids.mods_details[0].type;
-
-                const formattedMap = formatMap(rawMap, modType);
-
-                if (isErrorWithMessage(formattedMap)) throw formattedMap;
-
-                return formattedMap;
-            });
+            const formattedMaps = await Promise.all(
+                rawMaps.map(
+                    async (rawMap) => {
+                        const formattedMap = await formatMap(rawMap);
+                        if (isErrorWithMessage(formattedMap)) throw formattedMap;
+                        return formattedMap;
+            }));
 
 
             res.json(formattedMaps);
@@ -815,6 +806,7 @@ mapsRouter.route("/:mapID/revisions")
                                 where: { NOT: { timeApproved: null } },
                                 orderBy: { revision: "desc" },
                                 take: 1,
+                                include: { publishers: true },
                             },
                         },
                     },
@@ -832,10 +824,7 @@ mapsRouter.route("/:mapID/revisions")
             });
 
 
-            if (!rawMap.mods_ids) throw "mods_ids is undefined";
-            const modType = rawMap?.mods_ids.mods_details[0].type;
-
-            const formattedMap = formatMap(rawMap, modType);
+            const formattedMap = await formatMap(rawMap);
 
             if (isErrorWithMessage(formattedMap)) throw formattedMap;
 
@@ -881,6 +870,7 @@ mapsRouter.route("/:mapID/revisions/:mapRevision/accept")
                                     where: { NOT: { timeApproved: null } },
                                     orderBy: { revision: "desc" },
                                     take: 1,
+                                    include: { publishers: true },
                                 },
                             },
                         },
@@ -901,10 +891,7 @@ mapsRouter.route("/:mapID/revisions/:mapRevision/accept")
             });
 
 
-            if (!outerRawMap.mods_ids) throw "mods_ids is undefined";
-            const modType = outerRawMap?.mods_ids.mods_details[0].type;
-
-            const formattedMap = formatMap(outerRawMap, modType);
+            const formattedMap = await formatMap(outerRawMap);
 
             if (isErrorWithMessage(formattedMap)) throw formattedMap;
 
@@ -971,6 +958,7 @@ mapsRouter.route("/:mapID/revisions/:mapRevision")
                                 where: { NOT: { timeApproved: null } },
                                 orderBy: { revision: "desc" },
                                 take: 1,
+                                include: { publishers: true },
                             },
                         },
                     },
@@ -988,10 +976,7 @@ mapsRouter.route("/:mapID/revisions/:mapRevision")
             });
 
 
-            if (!rawMap.mods_ids) throw "mods_ids is undefined";
-            const modType = rawMap?.mods_ids.mods_details[0].type;
-
-            const formattedMap = formatMap(rawMap, modType);
+            const formattedMap = await formatMap(rawMap);
 
             if (isErrorWithMessage(formattedMap)) throw formattedMap;
 
@@ -1022,6 +1007,7 @@ mapsRouter.route("/:mapID")
                                 where: { NOT: { timeApproved: null } },
                                 orderBy: { revision: "desc" },
                                 take: 1,
+                                include: { publishers: true },
                             },
                         },
                     },
@@ -1041,10 +1027,7 @@ mapsRouter.route("/:mapID")
             });
 
 
-            if (!rawMap.mods_ids) throw "mods_ids is undefined";
-            const modType = rawMap?.mods_ids.mods_details[0].type;
-
-            const formattedMap = formatMap(rawMap, modType);
+            const formattedMap = await formatMap(rawMap);
 
             if (isErrorWithMessage(formattedMap)) throw formattedMap;
 
@@ -1061,14 +1044,15 @@ mapsRouter.route("/:mapID")
             const mapFromID = <rawMap>req.map;
             const modID = mapFromID.modID;
             const modType = <mods_details_type>mapFromID.mods_ids?.mods_details[0].type;
+            const publisherName = <string>mapFromID.mods_ids?.mods_details[0].publishers.name;
             const name: string = !req.body.name ? mapFromID.maps_details[0].name : req.body.name;
             const canonicalDifficultyName: string | undefined = req.body.canonicalDifficulty === null ?
                 undefined : req.body.canonicalDifficulty;
             const lengthName: string | undefined = req.body.length;
             const description: string | null = req.body.description === undefined ? mapFromID.maps_details[0].description : req.body.description;
             const notes: string | null = req.body.notes === undefined ? mapFromID.maps_details[0].notes : req.body.notes;
-            const mapperUserID: number | null = req.body.mapperUserID === undefined ? mapFromID.maps_details[0].mapperUserID : req.body.mapperUserID;
-            const mapperNameString: string = !req.body.mapperNameString ? mapFromID.maps_details[0].mapperNameString : req.body.mapperNameString;
+            let mapperUserID: number | null = req.body.mapperUserID === undefined ? mapFromID.maps_details[0].mapperUserID : req.body.mapperUserID;
+            let mapperNameString: string | undefined = req.body.mapperNameString;
             const chapter: number | null = !req.body.chapter ? mapFromID.maps_details[0].chapter : req.body.chapter;
             const side: maps_details_side | null = !req.body.side ? mapFromID.maps_details[0].side : req.body.side;
             const modDifficulty: string | string[] | undefined = req.body.modDifficulty === null ? undefined : req.body.modDifficulty;
@@ -1120,6 +1104,22 @@ mapsRouter.route("/:mapID")
                 }
 
 
+                if (mapperUserID) {
+                    const userFromID = await prisma.users.findUnique({ where: { id: mapperUserID } });
+
+                    if (!userFromID) throw invalidMapperUserIdErrorMessage + `${mapperUserID}`;
+
+                    mapperNameString = userFromID.displayName;
+                }
+                else if (modType === "Normal") {
+                    mapperNameString = publisherName;
+                }
+                else if (!mapperNameString) {
+                    mapperUserID = mapFromID.maps_details[0].mapperUserID;
+                    mapperNameString = mapFromID.maps_details[0].mapperNameString;
+                }
+
+
                 const mapDetailsCreationObject: mapDetailsCreationObjectStandalone = {
                     maps_ids: { connect: { id: mapID } },
                     name: name,
@@ -1127,10 +1127,16 @@ mapsRouter.route("/:mapID")
                     map_lengths: { connect: { id: lengthID } },
                     description: description,
                     notes: notes,
+                    mapperNameString: mapperNameString,
                     mapRemovedFromModBool: mapRemovedFromModBool,
                     timeSubmitted: currentTime,
                     users_maps_details_submittedByTousers: { connect: { id: submittingUser.id } },
                 };
+
+
+                if (mapperUserID) {
+                    mapDetailsCreationObject.users_maps_details_mapperUserIDTousers = { connect: { id: mapperUserID } };
+                }
 
 
                 const privilegedUserBool = privilegedUser(submittingUser);
@@ -1140,25 +1146,6 @@ mapsRouter.route("/:mapID")
                 if (privilegedUserBool) {
                     mapDetailsCreationObject.timeApproved = currentTime;
                     mapDetailsCreationObject.users_maps_details_approvedByTousers = { connect: { id: submittingUser.id } };
-                }
-
-
-                if (mapperUserID) {
-                    const userFromID = await prisma.users.findUnique({ where: { id: mapperUserID } });
-
-                    if (!userFromID) throw invalidMapperUserIdErrorMessage + `${mapperUserID}`;
-
-                    mapDetailsCreationObject.users_maps_details_mapperUserIDTousers = { connect: { id: mapperUserID } };
-                }
-                else if (mapperNameString) {
-                    mapDetailsCreationObject.mapperNameString = mapperNameString;
-                }
-                else {
-                    const mapperUserIdFromID = mapFromID.maps_details[0].mapperUserID;
-                    if (mapperUserIdFromID) {
-                        mapDetailsCreationObject.users_maps_details_mapperUserIDTousers = { connect: { id: mapperUserIdFromID } };
-                    }
-                    mapDetailsCreationObject.mapperNameString = mapFromID.maps_details[0].mapperNameString;
                 }
 
 
@@ -1346,6 +1333,7 @@ mapsRouter.route("/:mapID")
                                     where: { NOT: { timeApproved: null } },
                                     orderBy: { revision: "desc" },
                                     take: 1,
+                                    include: { publishers: true },
                                 },
                             },
                         },
@@ -1373,7 +1361,7 @@ mapsRouter.route("/:mapID")
             }
 
 
-            const formattedMap = formatMap(outerRawMap, modType);
+            const formattedMap = await formatMap(outerRawMap);
 
             if (isErrorWithMessage(formattedMap)) throw formattedMap;
 
@@ -1421,6 +1409,7 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
         const modID = <number>req.id;
         const modFromID = <rawMod>req.mod;
         const modType = modFromID.mods_details[0].type;
+        const publisherName: string = modFromID.mods_details[0].publishers.name;
         const name: string = req.body.name;
         const minimumModRevision: number = !req.body.minimumModRevision ? modFromID.mods_details[0].revision : req.body.minimumModRevision;
         const canonicalDifficultyName: string | undefined = req.body.canonicalDifficulty === null ? undefined : req.body.canonicalDifficulty;
@@ -1428,7 +1417,7 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
         const description: string | undefined = req.body.description === null ? undefined : req.body.description;
         const notes: string | undefined = req.body.notes === null ? undefined : req.body.notes;
         const mapperUserID: number | undefined = req.body.mapperUserID === null ? undefined : req.body.mapperUserID;
-        const mapperNameString: string | undefined = req.body.mapperNameString === null ? undefined : req.body.mapperNameString;
+        let mapperNameString: string | undefined = req.body.mapperNameString;
         const chapter: number | undefined = req.body.chapter === null ? undefined : req.body.chapter;
         const side: maps_details_side | undefined = req.body.side === null ? undefined : req.body.side;
         const modDifficulty: string | string[] | undefined = req.body.modDifficulty === null ? undefined : req.body.modDifficulty;
@@ -1477,6 +1466,21 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
         const lengthID = await getLengthID(lengthName);
 
 
+        if (mapperUserID) {
+            const userFromID = await prisma.users.findUnique({ where: { id: mapperUserID } });
+
+            if (!userFromID) throw invalidMapperUserIdErrorMessage + `${mapperUserID}`;
+
+            mapperNameString = userFromID.displayName;
+        }
+        else if (modType === "Normal") {
+            mapperNameString = publisherName;
+        }
+        else if (!mapperNameString) {
+            throw "Non-Normal mods must have mapperUserID or mapperNameString";
+        }
+
+
         const mapIdCreationObject: mapIdCreationObjectStandalone = {
             modID: modID,
             minimumModRevision: minimumModRevision,
@@ -1487,11 +1491,17 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
                     map_lengths: { connect: { id: lengthID } },
                     description: description,
                     notes: notes,
+                    mapperNameString: mapperNameString,
                     mapRemovedFromModBool: mapRemovedFromModBool,
                     timeSubmitted: currentTime,
                     users_maps_details_submittedByTousers: { connect: { id: submittingUser.id } }
                 }]
             }
+        }
+
+
+        if (mapperUserID) {
+            mapIdCreationObject.maps_details.create[0].users_maps_details_mapperUserIDTousers = { connect: { id: mapperUserID } };
         }
 
 
@@ -1502,25 +1512,6 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
         if (privilegedUserBool) {
             mapIdCreationObject.maps_details.create[0].timeApproved = currentTime;
             mapIdCreationObject.maps_details.create[0].users_maps_details_approvedByTousers = { connect: { id: submittingUser.id } };
-        }
-
-
-        if (mapperUserID) {
-            const userFromID = await prisma.users.findUnique({ where: { id: mapperUserID } });
-
-            if (!userFromID) throw invalidMapperUserIdErrorMessage + `${mapperUserID}`;
-
-            mapIdCreationObject.maps_details.create[0].users_maps_details_mapperUserIDTousers = { connect: { id: mapperUserID } };
-            mapIdCreationObject.maps_details.create[0].mapperNameString = userFromID.displayName;
-        }
-        else if (mapperNameString) {
-            mapIdCreationObject.maps_details.create[0].mapperNameString = mapperNameString;
-        }
-        else if (modType !== "Normal") {
-            throw "Non-Normal mods must have mapperUserID or mapperNameString";
-        }
-        else {
-            mapIdCreationObject.maps_details.create[0].mapperNameString = modFromID.mods_details[0].publishers.name;
         }
 
 
@@ -1637,6 +1628,7 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
                             where: { NOT: { timeApproved: null } },
                             orderBy: { revision: "desc" },
                             take: 1,
+                            include: { publishers: true },
                         },
                     },
                 },
@@ -1656,7 +1648,7 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
 
         console.log(rawMap)
 
-        const formattedMap = formatMap(rawMap, modType);
+        const formattedMap = await formatMap(rawMap);
 
         if (isErrorWithMessage(formattedMap)) throw formattedMap;
 
