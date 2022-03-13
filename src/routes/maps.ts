@@ -6,7 +6,7 @@ import { mods_details_type, maps_details_side, users } from ".prisma/client";
 import { rawMap, mapIdCreationObjectStandalone, mapToTechCreationObject, submitterUser, rawMod, mapDetailsCreationObjectStandalone } from "../types/internal";
 import {
     param_userID, invalidMapperUserIdErrorMessage, param_mapID, formatMap, privilegedUser, param_lengthID, param_lengthOrder,
-    param_mapRevision, getCanonicalDifficultyID, getLengthID, invalidMapDifficultyErrorMessage, lengthErrorMessage
+    param_mapRevision, getCanonicalDifficultyID, getLengthID, invalidMapDifficultyErrorMessage, lengthErrorMessage, noMapDetailsErrorMessage
 } from "../helperFunctions/maps-mods-publishers";
 import { getCurrentTime } from "../helperFunctions/utils";
 import { expressRoute } from "../types/express";
@@ -70,7 +70,11 @@ mapsRouter.route("/")
                 rawMaps.map(
                     async (rawMap) => {
                         const formattedMap = await formatMap(rawMap);
+
                         if (isErrorWithMessage(formattedMap)) throw formattedMap;
+
+                        if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
+
                         return formattedMap;
             }));
 
@@ -143,7 +147,11 @@ mapsRouter.route("/search")
                 rawMaps.map(
                     async (rawMap) => {
                         const formattedMap = await formatMap(rawMap);
+
                         if (isErrorWithMessage(formattedMap)) throw formattedMap;
+
+                        if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
+
                         return formattedMap;
             }));
 
@@ -217,7 +225,11 @@ mapsRouter.route("/search/mapper")
                 rawMaps.map(
                     async (rawMap) => {
                         const formattedMap = await formatMap(rawMap);
+
                         if (isErrorWithMessage(formattedMap)) throw formattedMap;
+
+                        if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
+
                         return formattedMap;
             }));
 
@@ -291,7 +303,11 @@ mapsRouter.route("/search/tech")
                 rawMaps.map(
                     async (rawMap) => {
                         const formattedMap = await formatMap(rawMap);
+
                         if (isErrorWithMessage(formattedMap)) throw formattedMap;
+
+                        if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
+
                         return formattedMap;
             }));
 
@@ -379,7 +395,11 @@ mapsRouter.route("/search/tech/any")
                 rawMaps.map(
                     async (rawMap) => {
                         const formattedMap = await formatMap(rawMap);
+
                         if (isErrorWithMessage(formattedMap)) throw formattedMap;
+
+                        if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
+
                         return formattedMap;
             }));
 
@@ -467,7 +487,11 @@ mapsRouter.route("/search/tech/fc")
                 rawMaps.map(
                     async (rawMap) => {
                         const formattedMap = await formatMap(rawMap);
+
                         if (isErrorWithMessage(formattedMap)) throw formattedMap;
+
+                        if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
+
                         return formattedMap;
             }));
 
@@ -552,7 +576,11 @@ mapsRouter.route("/length/order/:lengthOrder")
                 rawMaps.map(
                     async (rawMap) => {
                         const formattedMap = await formatMap(rawMap);
+
                         if (isErrorWithMessage(formattedMap)) throw formattedMap;
+
+                        if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
+
                         return formattedMap;
             }));
 
@@ -615,7 +643,11 @@ mapsRouter.route("/length/:lengthID")
                 rawMaps.map(
                     async (rawMap) => {
                         const formattedMap = await formatMap(rawMap);
+
                         if (isErrorWithMessage(formattedMap)) throw formattedMap;
+
+                        if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
+
                         return formattedMap;
             }));
 
@@ -690,7 +722,11 @@ mapsRouter.route("/user/:userID/mapper")
                 rawMaps.map(
                     async (rawMap) => {
                         const formattedMap = await formatMap(rawMap);
+
                         if (isErrorWithMessage(formattedMap)) throw formattedMap;
+
+                        if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
+
                         return formattedMap;
             }));
 
@@ -753,7 +789,11 @@ mapsRouter.route("/user/:userID/submitter")
                 rawMaps.map(
                     async (rawMap) => {
                         const formattedMap = await formatMap(rawMap);
+
                         if (isErrorWithMessage(formattedMap)) throw formattedMap;
+
+                        if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
+
                         return formattedMap;
             }));
 
@@ -828,6 +868,11 @@ mapsRouter.route("/:mapID/revisions")
 
             if (isErrorWithMessage(formattedMap)) throw formattedMap;
 
+            if (formattedMap === noMapDetailsErrorMessage) {
+                res.status(400).json(noMapDetailsErrorMessage);
+                return;
+            }
+
 
             res.json(formattedMap);
         }
@@ -894,6 +939,11 @@ mapsRouter.route("/:mapID/revisions/:mapRevision/accept")
             const formattedMap = await formatMap(outerRawMap);
 
             if (isErrorWithMessage(formattedMap)) throw formattedMap;
+
+            if (formattedMap === noMapDetailsErrorMessage) {
+                res.status(400).json(noMapDetailsErrorMessage);
+                return;
+            }
 
 
             res.json(formattedMap);
@@ -980,6 +1030,11 @@ mapsRouter.route("/:mapID/revisions/:mapRevision")
 
             if (isErrorWithMessage(formattedMap)) throw formattedMap;
 
+            if (formattedMap === noMapDetailsErrorMessage) {
+                res.status(400).json(noMapDetailsErrorMessage);
+                return;
+            }
+
 
             res.json(formattedMap);
         }
@@ -1030,6 +1085,11 @@ mapsRouter.route("/:mapID")
             const formattedMap = await formatMap(rawMap);
 
             if (isErrorWithMessage(formattedMap)) throw formattedMap;
+
+            if (formattedMap === noMapDetailsErrorMessage) {
+                res.status(400).json(noMapDetailsErrorMessage);
+                return;
+            }
 
 
             res.json(formattedMap);
@@ -1365,6 +1425,11 @@ mapsRouter.route("/:mapID")
 
             if (isErrorWithMessage(formattedMap)) throw formattedMap;
 
+            if (formattedMap === noMapDetailsErrorMessage) {
+                res.status(400).json(noMapDetailsErrorMessage);
+                return;
+            }
+
 
             res.json(formattedMap);
         }
@@ -1651,6 +1716,11 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
         const formattedMap = await formatMap(rawMap);
 
         if (isErrorWithMessage(formattedMap)) throw formattedMap;
+
+        if (formattedMap === noMapDetailsErrorMessage) {
+            res.status(400).json(noMapDetailsErrorMessage);
+            return;
+        }
 
 
         res.json(formattedMap);

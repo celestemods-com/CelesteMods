@@ -21,6 +21,7 @@ export const invalidMapperUserIdErrorMessage = "No user found with ID = ";
 export const invalidMapDifficultyErrorMessage = `All maps in a non-Normal mod must be assigned a modDifficulty that matches the difficulties used by the mod (whether default or custom).
 If the mod uses sub-difficulties, modDifficulty must be given in the form [difficulty, sub-difficulty].`;
 export const noModDetailsErrorMessage = "The specified modID exists, but no revisions have been approved by staff. Use GET /mods/{mod.id}/revisions"
+export const noMapDetailsErrorMessage = "The specified mapID exists, but no revisions have been approved by staff. Use GET /maps/{map.id}/revisions"
 
 
 
@@ -237,6 +238,8 @@ export const formatMod = async function (rawMod: rawMod) {
                     const formattedMap = await formatMap(rawMap, rawMod);
 
                     if (isErrorWithMessage(formattedMap)) throw formattedMap;
+
+                    if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
 
                     return formattedMap;
         }));
@@ -750,11 +753,14 @@ export const connectMapsToModDifficulties = async function (rawMod: rawMod) {
 
 export const formatMap = async function (rawMap: rawMap, rawMod?: rawMod) {
     try {
+        if (rawMap.maps_details.length < 1) return noMapDetailsErrorMessage;
+        
         const id = rawMap.id;
         const modID = rawMap.modID;
         const minimumModRevision = rawMap.minimumModRevision;
 
         const modType = rawMod ? rawMod.mods_details[0].type : rawMap.mods_ids?.mods_details[0].type;
+        console.log(modType);
         if (!modType) throw `modType is undefined for map ${id}`;
 
         const publisherName = rawMod ? rawMod.mods_details[0].publishers.name : rawMap.mods_ids?.mods_details[0].publishers.name;
