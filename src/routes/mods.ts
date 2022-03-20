@@ -1292,7 +1292,7 @@ modsRouter.route("/:modID")
 
 
             const rawMod = await prisma.$transaction(async () => {
-                const latestRevision = await prisma.mods_ids.findUnique({
+                const latestRevisionObject = await prisma.mods_ids.findUnique({
                     where: { id: id },
                     include: {
                         mods_details: {
@@ -1302,9 +1302,9 @@ modsRouter.route("/:modID")
                     },
                 });
 
-                if (!latestRevision?.mods_details || !latestRevision.mods_details.length) throw `Mod ${id} does not have any mod details!`;
+                if (!latestRevisionObject?.mods_details || !latestRevisionObject.mods_details.length) throw `Mod ${id} does not have any mod details!`;
 
-                const newRevisionNumber = latestRevision?.mods_details[0].revision + 1;
+                const newRevisionNumber = latestRevisionObject?.mods_details[0].revision + 1;
 
 
                 const latestValidRevision = await prisma.mods_ids.findUnique({
