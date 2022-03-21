@@ -760,7 +760,6 @@ export const formatMap = async function (rawMap: rawMap, rawMod?: rawMod) {
         const minimumModRevision = rawMap.minimumModRevision;
 
         const modType = rawMod ? rawMod.mods_details[0].type : rawMap.mods_ids?.mods_details[0].type;
-        console.log(modType);
         if (!modType) throw `modType is undefined for map ${id}`;
 
         const publisherName = rawMod ? rawMod.mods_details[0].publishers.name : rawMap.mods_ids?.mods_details[0].publishers.name;
@@ -1282,21 +1281,32 @@ export const formatPublisher = async function (rawPublisher: rawPublisher) {
         let name = "";
         if (userID) {
             if (!rawPublisher.users) throw `users is unexpectedly null for publisher ${id}`;
+            
+            const displayName = rawPublisher.users.displayName;
 
-            name = rawPublisher.users.displayName;
+            if (name !== displayName) {
+                await prisma.publishers.update({
+                    where: { id: id },
+                    data: { name: displayName },
+                });
+            }
+
+            name = displayName;
         }
         else if (gamebananaID) {
             try {
-                const name = await getGamebananaUsernameById(gamebananaID);
+                const gbUsername = await getGamebananaUsernameById(gamebananaID);
 
-                if (isErrorWithMessage(name)) throw name;
+                if (isErrorWithMessage(gbUsername)) throw gbUsername;
 
-                if (name !== rawPublisher.name) {
+                if (gbUsername !== rawPublisher.name) {
                     await prisma.publishers.update({
                         where: { id: id },
-                        data: { name: name },
+                        data: { name: gbUsername },
                     });
                 }
+
+                name = gbUsername;
             }
             catch (error) {
                 if (error === gamebananaApiError) {

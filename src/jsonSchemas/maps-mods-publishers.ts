@@ -55,6 +55,39 @@ const mapPostSchema = {
                 maxLength: 50,
             },
         },
+        mapperUserID: {
+            type: "integer",
+            minimum: 1,
+        },
+        mapperNameString: {
+            type: "string",
+            minLength: 1,
+            maxLength: 50,
+        },
+        chapter: {
+            type: "integer",
+            minimum: 1,
+        },
+        side: {
+            type: "string",
+            enum: ["A", "B", "C", "D", "E"],
+        },
+        modDifficulty: {
+            type: ["string", "array"],
+            minLength: 1,
+
+            uniqueItems: false,
+            minItems: 2,
+            maxItems: 2,
+            items: {
+                type: "string",
+                minLength: 1,
+            },
+        },
+        overallRank: {
+            type: "integer",
+            minimum: 1,
+        },
     },
     allOf: [
         {
@@ -92,6 +125,8 @@ const mapPostSchema = {
                             type: "string",
                             enum: ["A", "B", "C", "D", "E"],
                         },
+                        modDifficulty: false,
+                        overallRank: false,
                     },
                     required: ["chapter", "side"],
                 },
@@ -113,6 +148,8 @@ const mapPostSchema = {
                             type: "integer",
                             minimum: 1,
                         },
+                        chapter: false,
+                        side: false,
                     },
                     required: ["modDifficulty"],
                 },
@@ -120,6 +157,7 @@ const mapPostSchema = {
         },
     ],
     required: ["name", "length"],
+    additionalProperties: false,
 };
 
 
@@ -178,6 +216,9 @@ const mapPatchSchema = {
                 maxLength: 50,
             },
         },
+        mapRemovedFromModBool: {
+            type: "boolean",
+        },
         mapperUserID: {
             type: "integer",
             minimum: 1,
@@ -187,38 +228,106 @@ const mapPatchSchema = {
             minLength: 1,
             maxLength: 50,
         },
+        chapter: {
+            type: "integer",
+            minimum: 1,
+        },
+        side: {
+            type: "string",
+            enum: ["A", "B", "C", "D", "E"],
+        },
+        modDifficulty: {
+            type: ["string", "array"],
+            minLength: 1,
+
+            uniqueItems: false,
+            minItems: 2,
+            maxItems: 2,
+            items: {
+                type: "string",
+                minLength: 1,
+            },
+        },
+        overallRank: {
+            type: "integer",
+            minimum: 1,
+        },
     },
-    oneOf: [
+    allOf: [
         {
-            properties: {
-                chapter: {
-                    type: "integer",
-                    minimum: 1,
+            if: {
+                properties: {
+                    chapter: {
+                        type: "integer",
+                        minimum: 1,
+                    },
                 },
-                side: {
-                    type: "string",
-                    enum: ["A", "B", "C", "D", "E"],
-                },
+                required: ["chapter"],
+            },
+            then: {
+                allOf: [
+                    { not: { required: ["modDifficulty"] } },
+                    { not: { required: ["overallRank"] } },
+                ],
             },
         },
         {
-            properties: {
-                modDifficulty: {
-                    type: ["string", "array"],
-                    minLength: 1,
-
-                    uniqueItems: false,
-                    minItems: 2,
-                    maxItems: 2,
-                    items: {
+            if: {
+                properties: {
+                    side: {
                         type: "string",
-                        minLength: 1,
+                        enum: ["A", "B", "C", "D", "E"],
                     },
                 },
-                overallRank: {
-                    type: "integer",
-                    minimum: 1,
+                required: ["side"],
+            },
+            then: {
+                allOf: [
+                    { not: { required: ["modDifficulty"] } },
+                    { not: { required: ["overallRank"] } },
+                ],
+            },
+        },
+        {
+            if: {
+                properties: {
+                    modDifficulty: {
+                        type: ["string", "array"],
+                        minLength: 1,
+
+                        uniqueItems: false,
+                        minItems: 2,
+                        maxItems: 2,
+                        items: {
+                            type: "string",
+                            minLength: 1,
+                        },
+                    },
                 },
+                required: ["modDifficulty"],
+            },
+            then: {
+                allOf: [
+                    { not: { required: ["chapter"] } },
+                    { not: { required: ["side"] } },
+                ]
+            },
+        },
+        {
+            if: {
+                properties: {
+                    overallRank: {
+                        type: "integer",
+                        minimum: 1,
+                    },
+                },
+                required: ["overallRank"],
+            },
+            then: {
+                allOf: [
+                    { not: { required: ["chapter"] } },
+                    { not: { required: ["side"] } },
+                ]
             },
         },
     ],
@@ -428,7 +537,19 @@ const validatePublisherPatchSchema = {
 
 
 
-const ajv = new ajvModule({ allowUnionTypes: true, schemas: { mapPostSchema } });
+const ajv = new ajvModule({
+    allowUnionTypes: true,
+    schemas: { mapPostSchema },
+    logger: {
+        log: console.log.bind(console),
+        warn: function warn() {
+            console.warn.apply(console);
+        },
+        error: function error() {
+            console.error.apply(console);
+        },
+    }
+});
 
 
 

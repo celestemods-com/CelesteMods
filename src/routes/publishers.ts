@@ -239,9 +239,10 @@ publishersRouter.route("/:publisherID")
     .patch(async function (req, res, next) {
         try {
             const id = <number>req.id   //.param already checked that the id is valid
-            const gamebananaID: number | undefined = req.body.gamebananaID;
-            const name: string | undefined = req.body.name === null ? undefined : req.body.name;
-            const userID: number | undefined = req.body.userID;
+            let gamebananaID: number | undefined = req.body.gamebananaID;
+            let name: string | undefined = req.body.name === null ? undefined : req.body.name;
+            let userID: number | undefined = req.body.userID;
+            const publisherFromId = <publishers>req.publisher;
 
 
             const valid = validatePublisherPatch({
@@ -295,6 +296,8 @@ publishersRouter.route("/:publisherID")
 
                 if (isErrorWithMessage(gamebananaUsername)) throw gamebananaUsername;
 
+                if (!userID) userID = publisherFromId.userID === null ? undefined : publisherFromId.userID;
+
                 rawPublisher = await prisma.publishers.update({
                     where: { id: id },
                     data: {
@@ -313,11 +316,17 @@ publishersRouter.route("/:publisherID")
                     return;
                 }
 
+                if (publisherFromId.gamebananaID) {
+                    name = undefined;
+                }
+                else {
+                    name = userFromID.displayName;
+                }
+
                 rawPublisher = await prisma.publishers.update({
                     where: { id: id },
                     data: {
-                        gamebananaID: gamebananaID,
-                        name: userFromID.displayName,
+                        name: name,
                         users: { connect: { id: userID } },
                     },
                     include: { users: true },
@@ -326,12 +335,20 @@ publishersRouter.route("/:publisherID")
             else {
                 if (!name) throw "name is undefined";
 
+                if (publisherFromId.gamebananaID) {
+                    res.status(400).json("The specified publisher has a gamebananaID specified so the publisher name is determined by the associated gamebanana username");
+                    return;
+                }
+
+                if (publisherFromId.userID) {
+                    res.status(400).json("The specified publisher is linked to a celestemods.com userID so the publisher name is determined by the user's displayName");
+                    return;
+                }
+
                 rawPublisher = await prisma.publishers.update({
                     where: { id: id },
                     data: {
-                        gamebananaID: gamebananaID,
                         name: name,
-                        users: { connect: { id: userID } },
                     },
                     include: { users: true },
                 });

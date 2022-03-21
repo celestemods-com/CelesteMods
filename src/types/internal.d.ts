@@ -184,6 +184,7 @@ export interface mapDetailsCreationObject {
 
 export interface mapDetailsCreationObjectStandalone extends mapDetailsCreationObject {
   maps_ids: { connect: { id: number } };
+  revision: number;
 }
 
 export interface mapToTechCreationObject {
@@ -217,6 +218,25 @@ interface modIdsForMap extends mods_ids {
 
 interface modDetailsForMap extends mods_details {
   publishers: publishers;
+}
+
+
+
+export interface mapValidationJson {
+  name: string,
+  canonicalDifficulty?: string,
+  length?: string,
+  description: string | null,
+  notes: string | null,
+  mapperUserID: number | null,
+  mapperNameString?: string,
+  chapter?: number,
+  side?: maps_details_side,
+  modDifficulty?: string | string[],
+  overallRank?: number,
+  mapRemovedFromModBool: boolean,
+  techAny: string[] | undefined,
+  techFC: string[] | undefined,
 }
 
 

@@ -3,7 +3,10 @@ import { prisma } from "../prismaClient";
 import { validateMapPost, validateMapPatch } from "../jsonSchemas/maps-mods-publishers";
 import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { mods_details_type, maps_details_side, users } from ".prisma/client";
-import { rawMap, mapIdCreationObjectStandalone, mapToTechCreationObject, submitterUser, rawMod, mapDetailsCreationObjectStandalone } from "../types/internal";
+import {
+    rawMap, mapIdCreationObjectStandalone, mapToTechCreationObject, submitterUser, rawMod, mapDetailsCreationObjectStandalone,
+    mapValidationJson
+} from "../types/internal";
 import {
     param_userID, invalidMapperUserIdErrorMessage, param_mapID, formatMap, privilegedUser, param_lengthID, param_lengthOrder,
     param_mapRevision, getCanonicalDifficultyID, getLengthID, invalidMapDifficultyErrorMessage, lengthErrorMessage, noMapDetailsErrorMessage
@@ -76,7 +79,7 @@ mapsRouter.route("/")
                         if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
 
                         return formattedMap;
-            }));
+                    }));
 
 
             res.json(formattedMaps);
@@ -153,7 +156,7 @@ mapsRouter.route("/search")
                         if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
 
                         return formattedMap;
-            }));
+                    }));
 
 
             res.json(formattedMaps);
@@ -231,7 +234,7 @@ mapsRouter.route("/search/mapper")
                         if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
 
                         return formattedMap;
-            }));
+                    }));
 
 
             res.json(formattedMaps);
@@ -309,7 +312,7 @@ mapsRouter.route("/search/tech")
                         if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
 
                         return formattedMap;
-            }));
+                    }));
 
 
             res.json(formattedMaps);
@@ -389,7 +392,7 @@ mapsRouter.route("/search/tech/any")
                     },
                 },
             });
-            
+
 
             const formattedMaps = await Promise.all(
                 rawMaps.map(
@@ -401,7 +404,7 @@ mapsRouter.route("/search/tech/any")
                         if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
 
                         return formattedMap;
-            }));
+                    }));
 
 
             res.json(formattedMaps);
@@ -481,7 +484,7 @@ mapsRouter.route("/search/tech/fc")
                     },
                 },
             });
-            
+
 
             const formattedMaps = await Promise.all(
                 rawMaps.map(
@@ -493,7 +496,7 @@ mapsRouter.route("/search/tech/fc")
                         if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
 
                         return formattedMap;
-            }));
+                    }));
 
 
             res.json(formattedMaps);
@@ -570,7 +573,7 @@ mapsRouter.route("/length/order/:lengthOrder")
                     },
                 },
             });
-            
+
 
             const formattedMaps = await Promise.all(
                 rawMaps.map(
@@ -582,7 +585,7 @@ mapsRouter.route("/length/order/:lengthOrder")
                         if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
 
                         return formattedMap;
-            }));
+                    }));
 
 
             res.json(formattedMaps);
@@ -637,7 +640,7 @@ mapsRouter.route("/length/:lengthID")
                     },
                 },
             });
-            
+
 
             const formattedMaps = await Promise.all(
                 rawMaps.map(
@@ -649,7 +652,7 @@ mapsRouter.route("/length/:lengthID")
                         if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
 
                         return formattedMap;
-            }));
+                    }));
 
 
             res.json(formattedMaps);
@@ -716,7 +719,7 @@ mapsRouter.route("/user/:userID/mapper")
                     },
                 },
             });
-            
+
 
             const formattedMaps = await Promise.all(
                 rawMaps.map(
@@ -728,7 +731,7 @@ mapsRouter.route("/user/:userID/mapper")
                         if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
 
                         return formattedMap;
-            }));
+                    }));
 
 
             res.json(formattedMaps);
@@ -783,7 +786,7 @@ mapsRouter.route("/user/:userID/submitter")
                     },
                 },
             });
-            
+
 
             const formattedMaps = await Promise.all(
                 rawMaps.map(
@@ -795,7 +798,7 @@ mapsRouter.route("/user/:userID/submitter")
                         if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
 
                         return formattedMap;
-            }));
+                    }));
 
 
             res.json(formattedMaps);
@@ -1106,24 +1109,23 @@ mapsRouter.route("/:mapID")
             const modType = <mods_details_type>mapFromID.mods_ids?.mods_details[0].type;
             const publisherName = <string>mapFromID.mods_ids?.mods_details[0].publishers.name;
             const name: string = !req.body.name ? mapFromID.maps_details[0].name : req.body.name;
-            const canonicalDifficultyName: string | undefined = req.body.canonicalDifficulty === null ?
-                undefined : req.body.canonicalDifficulty;
-            const lengthName: string | undefined = req.body.length;
+            const canonicalDifficultyName: string | undefined = req.body.canonicalDifficulty ? req.body.canonicalDifficulty : undefined;
+            const lengthName: string | undefined = req.body.length
             const description: string | null = req.body.description === undefined ? mapFromID.maps_details[0].description : req.body.description;
             const notes: string | null = req.body.notes === undefined ? mapFromID.maps_details[0].notes : req.body.notes;
             let mapperUserID: number | null = req.body.mapperUserID === undefined ? mapFromID.maps_details[0].mapperUserID : req.body.mapperUserID;
             let mapperNameString: string | undefined = req.body.mapperNameString;
-            const chapter: number | null = !req.body.chapter ? mapFromID.maps_details[0].chapter : req.body.chapter;
-            const side: maps_details_side | null = !req.body.side ? mapFromID.maps_details[0].side : req.body.side;
-            const modDifficulty: string | string[] | undefined = req.body.modDifficulty === null ? undefined : req.body.modDifficulty;
-            const overallRank: number | null = !req.body.overallRank ? mapFromID.maps_details[0].overallRank : req.body.overallRank;
+            const chapter: number | undefined = req.body.chapter;
+            const side: maps_details_side | undefined = req.body.side;
+            const modDifficulty: string | string[] | undefined = req.body.modDifficulty;
+            const overallRank: number | undefined = req.body.overallRank;
             const mapRemovedFromModBool: boolean = !req.body.mapRemovedFromModBool ? mapFromID.maps_details[0].mapRemovedFromModBool : req.body.mapRemovedFromModBool;
             const techAny: string[] | undefined = req.body.techAny === null ? undefined : req.body.techAny;
             const techFC: string[] | undefined = req.body.techFC === null ? undefined : req.body.techFC;
             const currentTime = getCurrentTime();
 
 
-            const valid = validateMapPatch({
+            const validationJson: mapValidationJson = {
                 name: name,
                 canonicalDifficulty: canonicalDifficultyName,
                 length: lengthName,
@@ -1131,21 +1133,43 @@ mapsRouter.route("/:mapID")
                 notes: notes,
                 mapperUserID: mapperUserID,
                 mapperNameString: mapperNameString,
-                chapter: chapter,
-                side: side,
                 modDifficulty: modDifficulty,
                 overallRank: overallRank,
                 mapRemovedFromModBool: mapRemovedFromModBool,
                 techAny: techAny,
                 techFC: techFC,
-            });
+            };
+
+            if (chapter || side) {
+                validationJson.chapter = chapter;
+                validationJson.side = side;
+            }
+            else if (modDifficulty || overallRank) {
+                validationJson.modDifficulty = modDifficulty;
+                validationJson.overallRank = overallRank;
+            }
+
+            const valid = validateMapPatch(validationJson);
 
             if (!valid || (modDifficulty && modType === "Normal")) {
+                console.log(validateMapPatch.errors);
                 res.status(400).json("Malformed request body");
                 return;
             }
 
+            
             const outerRawMap = await prisma.$transaction(async () => {
+                const latestRevisionObject = await prisma.maps_details.findFirst({
+                    where: { mapId: mapID },
+                    orderBy: { revision: "desc" },
+                    take: 1,
+                });
+
+                if (!latestRevisionObject) throw `Map ${mapID} does not have any map details!`;
+
+                const newRevisionNumber = latestRevisionObject.revision + 1;
+
+
                 let canonicalDifficultyID: number;
                 if (canonicalDifficultyName === undefined) {
                     canonicalDifficultyID = mapFromID.maps_details[0].canonicalDifficultyID;
@@ -1182,6 +1206,7 @@ mapsRouter.route("/:mapID")
 
                 const mapDetailsCreationObject: mapDetailsCreationObjectStandalone = {
                     maps_ids: { connect: { id: mapID } },
+                    revision: newRevisionNumber,
                     name: name,
                     difficulties_difficultiesTomaps_details_canonicalDifficultyID: { connect: { id: canonicalDifficultyID } },
                     map_lengths: { connect: { id: lengthID } },
@@ -1313,7 +1338,7 @@ mapsRouter.route("/:mapID")
 
                         if (!difficultyIdFromId) {
                             res.status(400).json(`The existing version of this map is somehow both non-Normal and lacks a modDifficulty.
-                            Please include a modDifficulty so this can be fixed.`);
+                                Please include a modDifficulty so this can be fixed.`);
                             console.log(`maps_details (id: ${mapFromID.maps_details[0].id}, rev: ${mapFromID.maps_details[0].revision}) is non-Normal but lacks a modDifficulty`);
                             return;
                         }
@@ -1552,7 +1577,7 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
             maps_details: {
                 create: [{
                     name: name,
-                    difficulties_difficultiesTomaps_details_canonicalDifficultyID: { connect: { id: canonicalDifficultyID }},
+                    difficulties_difficultiesTomaps_details_canonicalDifficultyID: { connect: { id: canonicalDifficultyID } },
                     map_lengths: { connect: { id: lengthID } },
                     description: description,
                     notes: notes,
@@ -1726,7 +1751,7 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
         res.json(formattedMap);
     }
     catch (error) {
-        if (typeof error === "string" && error.includes(invalidMapperUserIdErrorMessage)){
+        if (typeof error === "string" && error.includes(invalidMapperUserIdErrorMessage)) {
             res.status(404).json(error);
         }
         else if (error === invalidMapDifficultyErrorMessage) {
