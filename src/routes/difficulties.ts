@@ -285,7 +285,7 @@ router.route("/:diffID")
                 order: order,
             });
 
-            if (!valid) {
+            if (!valid || (!name && !description && !parentModID && !parentDifficultyID && !order)) {
                 res.status(400).json("Malformed request body");
                 return;
             }

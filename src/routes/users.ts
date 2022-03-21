@@ -418,7 +418,7 @@ router.route("/:userID")
                 goldenPlayerID: goldenPlayerID,
             });
 
-            if (!valid) {
+            if (!valid || (!displayName && !displayDiscord && !gamebananaIDsArray && !goldenPlayerID)) {
                 res.status(400).json("Malformed request body");
                 return;
             }

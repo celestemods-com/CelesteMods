@@ -251,7 +251,7 @@ publishersRouter.route("/:publisherID")
                 userID: userID,
             });
 
-            if (!valid) {
+            if (!valid || (!gamebananaID && !name && !userID)) {
                 res.status(400).json("Malformed request body");
                 return;
             }

@@ -1231,7 +1231,9 @@ modsRouter.route("/:modID")
                 gamebananaModID: gamebananaModID,
             });
 
-            if (!valid) {
+            if (!valid || (!type && !name && !publisherName && !publisherID && !publisherGamebananaID && !userID && !contentWarning && !notes &&
+                !shortDescription && !longDescription && !gamebananaModID)) {
+                
                 res.status(400).json("Malformed request body");
                 return;
             }

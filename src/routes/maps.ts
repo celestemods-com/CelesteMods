@@ -1151,8 +1151,9 @@ mapsRouter.route("/:mapID")
 
             const valid = validateMapPatch(validationJson);
 
-            if (!valid || (modDifficulty && modType === "Normal")) {
-                console.log(validateMapPatch.errors);
+            if (!valid || (modDifficulty && modType === "Normal") || (!canonicalDifficultyName && !lengthName && !description && !notes && !mapperUserID
+                && !mapperNameString && !chapter && !side && !modDifficulty && !overallRank && !mapRemovedFromModBool && !techAny && !techFC)) {
+                
                 res.status(400).json("Malformed request body");
                 return;
             }

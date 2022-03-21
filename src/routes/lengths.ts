@@ -129,7 +129,7 @@ router.route("/:id")
 
             if (!reqLength) throw "reqLength is undefined or null";
 
-            if (!valid) {
+            if (!valid || (!reqLength.name && !reqLength.description && !reqLength.order)) {
                 res.status(400).json("Malformed request body");
                 return;
             }
