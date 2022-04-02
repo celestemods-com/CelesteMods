@@ -3,7 +3,7 @@ import { prisma } from "../prismaClient";
 import axios from "axios";
 import { expressRoute } from "../types/express";
 import { errorWithMessage, isErrorWithMessage, toErrorWithMessage } from "../errorHandling";
-import { difficulties, map_lengths, mods_details_type } from ".prisma/client";
+import { difficulties, map_lengths, mods_details_type, publishers, users } from ".prisma/client";
 import {
     rawMod, rawMap, createParentDifficultyForMod, createChildDifficultyForMod, jsonCreateMapWithMod, mapIdCreationObjectForMod,
     mapToTechCreationObject, defaultDifficultyForMod, submitterUser, publisherConnectionObject, publisherCreationObject, rawPublisher
@@ -242,7 +242,7 @@ export const formatMod = async function (rawMod: rawMod) {
                     if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
 
                     return formattedMap;
-        }));
+                }));
 
 
         let formattedDifficultiesArray: (string | string[])[];
@@ -754,7 +754,7 @@ export const connectMapsToModDifficulties = async function (rawMod: rawMod) {
 export const formatMap = async function (rawMap: rawMap, rawMod?: rawMod) {
     try {
         if (rawMap.maps_details.length < 1) return noMapDetailsErrorMessage;
-        
+
         const id = rawMap.id;
         const modID = rawMap.modID;
         const minimumModRevision = rawMap.minimumModRevision;
@@ -872,7 +872,7 @@ export const formatMap = async function (rawMap: rawMap, rawMod?: rawMod) {
 
 
                     return innerFormattedMap;
-        }));
+                }));
 
 
         return outerFormattedMap;
@@ -1271,6 +1271,86 @@ const getGamebananaIdByUsername = async function (gamebananaUsername: string) {
 
 
 
+export const patchPublisherWithGamebananaID = async function (id: number, gamebananaID: number, userID: number | null | undefined, publisherFromId: publishers) {
+    try {
+        const gamebananaUsername = await getGamebananaUsernameById(gamebananaID);
+
+        if (isErrorWithMessage(gamebananaUsername)) throw gamebananaUsername;
+
+        if (!userID) {
+            userID = publisherFromId.userID === null ? undefined : publisherFromId.userID;
+        }
+
+        const rawPublisher = await prisma.publishers.update({
+            where: { id: id },
+            data: {
+                gamebananaID: gamebananaID,
+                name: gamebananaUsername,
+                users: { connect: { id: userID } },
+            },
+            include: { users: true },
+        });
+
+        return rawPublisher;
+    }
+    catch (error) {
+        return toErrorWithMessage(error);
+    }
+}
+
+
+
+
+export const patchPublisherWithUserID = async function (userFromID: users, id: number, publisherFromId: publishers) {
+    try {
+        let name: string;
+        
+        if (publisherFromId.gamebananaID) {
+            name = publisherFromId.name;
+        }
+        else {
+            name = userFromID.displayName;
+        }
+
+        const rawPublisher = await prisma.publishers.update({
+            where: { id: id },
+            data: {
+                name: name,
+                users: { connect: { id: userFromID.id } },
+            },
+            include: { users: true },
+        });
+
+        return rawPublisher;
+    }
+    catch (error) {
+        return toErrorWithMessage(error);
+    }
+}
+
+
+
+
+export const patchPublisherWithName = async function (id: number, name: string) {
+    try {
+        const rawPublisher = await prisma.publishers.update({
+            where: { id: id },
+            data: {
+                name: name,
+            },
+            include: { users: true },
+        });
+
+        return rawPublisher;
+    }
+    catch (error) {
+        return toErrorWithMessage(error);
+    }
+}
+
+
+
+
 export const formatPublisher = async function (rawPublisher: rawPublisher) {
     try {
         const id = rawPublisher.id;
@@ -1281,7 +1361,7 @@ export const formatPublisher = async function (rawPublisher: rawPublisher) {
         let name = "";
         if (userID) {
             if (!rawPublisher.users) throw `users is unexpectedly null for publisher ${id}`;
-            
+
             const displayName = rawPublisher.users.displayName;
 
             if (name !== displayName) {

@@ -1102,7 +1102,7 @@ mapsRouter.route("/:mapID")
         }
     })
     .patch(async function (req, res, next) {
-        try {
+        try {   //TODO: finish moving over patch publisher code so that null values can be properly handled. then handle null values in map PATCH and finish testing it
             const mapID = <number>req.id;
             const mapFromID = <rawMap>req.map;
             const modID = mapFromID.modID;

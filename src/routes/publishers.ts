@@ -1,9 +1,9 @@
 import express from "express";
 import { prisma } from "../prismaClient";
 import { validatePublisherPost, validatePublisherPatch } from "../jsonSchemas/maps-mods-publishers";
-import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
+import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed, errorWithMessage } from "../errorHandling";
 import { publishers } from ".prisma/client";
-import { param_userID, param_publisherID, getGamebananaUsernameById, formatPublisher } from "../helperFunctions/maps-mods-publishers";
+import { param_userID, param_publisherID, getGamebananaUsernameById, formatPublisher, patchPublisherWithName, patchPublisherWithUserID, patchPublisherWithGamebananaID } from "../helperFunctions/maps-mods-publishers";
 import { rawPublisher } from "../types/internal";
 
 
@@ -239,9 +239,9 @@ publishersRouter.route("/:publisherID")
     .patch(async function (req, res, next) {
         try {
             const id = <number>req.id   //.param already checked that the id is valid
-            let gamebananaID: number | undefined = req.body.gamebananaID;
+            let gamebananaID: number | null | undefined = req.body.gamebananaID;
             let name: string | undefined = req.body.name === null ? undefined : req.body.name;
-            let userID: number | undefined = req.body.userID;
+            let userID: number | null | undefined = req.body.userID;
             const publisherFromId = <publishers>req.publisher;
 
 
@@ -251,7 +251,7 @@ publishersRouter.route("/:publisherID")
                 userID: userID,
             });
 
-            if (!valid || (!gamebananaID && !name && !userID)) {
+            if (!valid || (gamebananaID === undefined && !name && userID === undefined)) {
                 res.status(400).json("Malformed request body");
                 return;
             }
@@ -289,71 +289,39 @@ publishersRouter.route("/:publisherID")
             }
 
 
-            let rawPublisher: rawPublisher;
+            let rawPublisher: rawPublisher | errorWithMessage;
 
             if (gamebananaID) {
-                const gamebananaUsername = await getGamebananaUsernameById(gamebananaID);
-
-                if (isErrorWithMessage(gamebananaUsername)) throw gamebananaUsername;
-
-                if (!userID) userID = publisherFromId.userID === null ? undefined : publisherFromId.userID;
-
-                rawPublisher = await prisma.publishers.update({
-                    where: { id: id },
-                    data: {
-                        gamebananaID: gamebananaID,
-                        name: gamebananaUsername,
-                        users: { connect: { id: userID } },
-                    },
-                    include: { users: true },
-                });
+                rawPublisher = await patchPublisherWithGamebananaID(id, gamebananaID, userID, publisherFromId);
             }
             else if (userID) {
                 const userFromID = await prisma.users.findUnique({ where: { id: userID } });
-
+        
                 if (!userFromID) {
                     res.status(404).json("userID does not exist");
                     return;
                 }
 
-                if (publisherFromId.gamebananaID) {
-                    name = undefined;
-                }
-                else {
-                    name = userFromID.displayName;
-                }
-
-                rawPublisher = await prisma.publishers.update({
-                    where: { id: id },
-                    data: {
-                        name: name,
-                        users: { connect: { id: userID } },
-                    },
-                    include: { users: true },
-                });
+                rawPublisher = await patchPublisherWithUserID(userFromID, id, publisherFromId);
             }
             else {
                 if (!name) throw "name is undefined";
 
                 if (publisherFromId.gamebananaID) {
-                    res.status(400).json("The specified publisher has a gamebananaID specified so the publisher name is determined by the associated gamebanana username");
+                    res.status(400).json("The specified publisher has a gamebananaID specified, so the publisher name is determined by the associated gamebanana username");
                     return;
                 }
 
                 if (publisherFromId.userID) {
-                    res.status(400).json("The specified publisher is linked to a celestemods.com userID so the publisher name is determined by the user's displayName");
+                    res.status(400).json("The specified publisher is linked to a celestemods.com userID, so the publisher name is determined by the user's displayName");
                     return;
                 }
 
-                rawPublisher = await prisma.publishers.update({
-                    where: { id: id },
-                    data: {
-                        name: name,
-                    },
-                    include: { users: true },
-                });
+                rawPublisher = await patchPublisherWithName(id, name);
             }
 
+
+            if (isErrorWithMessage(rawPublisher)) throw rawPublisher;
 
             const formattedPublisher = await formatPublisher(rawPublisher);
 

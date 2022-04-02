@@ -429,7 +429,7 @@ router.route("/:techID")
                 difficulty: difficulty,
             });
 
-            if (!valid || (!name && !description && !techVideoUrlsArray && !difficulty)) {
+            if (!valid || (!name && description === undefined && !techVideoUrlsArray && !difficulty)) {
                 res.status(400).json("Malformed request body");
                 return;
             }

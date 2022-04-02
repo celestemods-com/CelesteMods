@@ -275,7 +275,7 @@ router.route("/:diffID")
             const description: string | undefined = req.body.description;
             const parentModID: number | null = req.body.parentModID === undefined ? difficultyFromId.parentModID : (req.body.parentModID === 0 ? null : req.body.parentModID);
             const parentDifficultyID: number | null = req.body.parentDifficultyID === undefined ? difficultyFromId.parentDifficultyID : (req.body.parentDifficultyID === 0 ? null : req.body.parentDifficultyID);
-            const order: number = req.body.order != null ? req.body.order : difficultyFromId.order;
+            const order: number | undefined = req.body.order === null ? undefined : req.body.order;
 
             const valid = validatePatch({
                 name: name,
@@ -285,7 +285,7 @@ router.route("/:diffID")
                 order: order,
             });
 
-            if (!valid || (!name && !description && !parentModID && !parentDifficultyID && !order)) {
+            if (!valid || (!name && !description && req.body.parentModId === undefined && req.body.parentDifficultyID === undefined && !order)) {
                 res.status(400).json("Malformed request body");
                 return;
             }
@@ -379,7 +379,7 @@ router.use(errorHandler);
 
 
 
-const validateDifficulty = async function (id: number, parentModId: number | null, parentDifficultyId: number | null, order: number): Promise<difficulties | string | null> {
+const validateDifficulty = async function (id: number, parentModId: number | null, parentDifficultyId: number | null, order: number | undefined): Promise<difficulties | string | null> {
     if (parentModId) {
         const modFromId = await prisma.mods_ids.findUnique({ where: { id: parentModId } });
 
