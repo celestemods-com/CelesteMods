@@ -24,10 +24,12 @@ const errorHandler = function (error: Error, _req: Request, res: Response, _next
             console.log(error);
         }
 
-        
-        res.status(error.status || 500).send({
-            message: "Something went wrong"
-        });
+        if (process.env.NODE_ENV === "dev") {
+            res.status(error.status || 500).json(error.message);
+        }
+        else {
+            res.status(error.status || 500).json("Something went wrong");
+        }
     }
     catch (error) {
         console.log("errorHandler tried to send the response after it had already been sent");
