@@ -1102,7 +1102,7 @@ mapsRouter.route("/:mapID")
         }
     })
     .patch(async function (req, res, next) {
-        try {   //TODO: finish moving over patch publisher code so that null values can be properly handled. then handle null input values in map PATCH and finish testing it
+        try {   //TODO: null input values are now properly handled in map PATCH but not map POST. finish testing PATCH and then make sure POST properly handles NULLs
             const mapID = <number>req.id;
             const mapFromID = <rawMap>req.map;
             const modID = mapFromID.modID;
@@ -1131,6 +1131,8 @@ mapsRouter.route("/:mapID")
                 length: lengthName,
                 description: description,
                 notes: notes,
+                mapperUserID: mapperUserID,
+                mapperNameString: mapperNameString,
                 modDifficulty: modDifficulty,
                 overallRank: overallRank,
                 mapRemovedFromModBool: mapRemovedFromModBool,
@@ -1143,8 +1145,6 @@ mapsRouter.route("/:mapID")
                 validationJson.side = side;
             }
             else if (modDifficulty || overallRank !== undefined) {
-                validationJson.mapperUserID = mapperUserID;
-                validationJson.mapperNameString = mapperNameString;
                 validationJson.modDifficulty = modDifficulty;
                 validationJson.overallRank = overallRank;
             }
