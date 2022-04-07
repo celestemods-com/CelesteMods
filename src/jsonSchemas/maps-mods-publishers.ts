@@ -170,7 +170,7 @@ const mapPatchSchema = {
             maxLength: 200,
         },
         canonicalDifficulty: {
-            type: "string",
+            type: ["string", "null"],
             minLength: 0,
             maxLength: 50,
         },
@@ -189,12 +189,12 @@ const mapPatchSchema = {
             maxLength: 20,
         },
         description: {
-            type: "string",
+            type: ["string", "null"],
             minLength: 1,
             maxLength: 500,
         },
         notes: {
-            type: "string",
+            type: ["string", "null"],
             minLength: 1,
             maxLength: 500,
         },
@@ -219,15 +219,6 @@ const mapPatchSchema = {
         mapRemovedFromModBool: {
             type: "boolean",
         },
-        mapperUserID: {
-            type: "integer",
-            minimum: 1,
-        },
-        mapperNameString: {
-            type: "string",
-            minLength: 1,
-            maxLength: 50,
-        },
         chapter: {
             type: "integer",
             minimum: 1,
@@ -235,6 +226,15 @@ const mapPatchSchema = {
         side: {
             type: "string",
             enum: ["A", "B", "C", "D", "E"],
+        },
+        mapperUserID: {
+            type: ["integer", "null"],
+            minimum: 1,
+        },
+        mapperNameString: {
+            type: "string",
+            minLength: 1,
+            maxLength: 50,
         },
         modDifficulty: {
             type: ["string", "array"],
@@ -249,7 +249,7 @@ const mapPatchSchema = {
             },
         },
         overallRank: {
-            type: "integer",
+            type: ["integer", "null"],
             minimum: 1,
         },
     },
@@ -268,6 +268,8 @@ const mapPatchSchema = {
                 allOf: [
                     { not: { required: ["modDifficulty"] } },
                     { not: { required: ["overallRank"] } },
+                    { not: { required: ["mapperUserID"] } },
+                    { not: { required: ["mapperNameString"] } },
                 ],
             },
         },
@@ -285,6 +287,8 @@ const mapPatchSchema = {
                 allOf: [
                     { not: { required: ["modDifficulty"] } },
                     { not: { required: ["overallRank"] } },
+                    { not: { required: ["mapperUserID"] } },
+                    { not: { required: ["mapperNameString"] } },
                 ],
             },
         },
@@ -317,11 +321,46 @@ const mapPatchSchema = {
             if: {
                 properties: {
                     overallRank: {
-                        type: "integer",
+                        type: ["integer", "null"],
                         minimum: 1,
                     },
                 },
                 required: ["overallRank"],
+            },
+            then: {
+                allOf: [
+                    { not: { required: ["chapter"] } },
+                    { not: { required: ["side"] } },
+                ]
+            },
+        },
+        {
+            if: {
+                properties: {
+                    mapperUserID: {
+                        type: ["integer", "null"],
+                        minimum: 1,
+                    },
+                },
+                required: ["mapperUserID"],
+            },
+            then: {
+                allOf: [
+                    { not: { required: ["chapter"] } },
+                    { not: { required: ["side"] } },
+                ]
+            },
+        },
+        {
+            if: {
+                properties: {
+                    mapperNameString: {
+                        type: "string",
+                        minLength: 1,
+                        maxLength: 50,
+                    },
+                },
+                required: ["mapperNameString"],
             },
             then: {
                 allOf: [

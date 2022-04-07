@@ -1102,14 +1102,14 @@ mapsRouter.route("/:mapID")
         }
     })
     .patch(async function (req, res, next) {
-        try {   //TODO: finish moving over patch publisher code so that null values can be properly handled. then handle null values in map PATCH and finish testing it
+        try {   //TODO: finish moving over patch publisher code so that null values can be properly handled. then handle null input values in map PATCH and finish testing it
             const mapID = <number>req.id;
             const mapFromID = <rawMap>req.map;
             const modID = mapFromID.modID;
             const modType = <mods_details_type>mapFromID.mods_ids?.mods_details[0].type;
             const publisherName = <string>mapFromID.mods_ids?.mods_details[0].publishers.name;
             const name: string = !req.body.name ? mapFromID.maps_details[0].name : req.body.name;
-            const canonicalDifficultyName: string | undefined = req.body.canonicalDifficulty ? req.body.canonicalDifficulty : undefined;
+            const canonicalDifficultyName: string | null | undefined = req.body.canonicalDifficulty;
             const lengthName: string | undefined = req.body.length
             const description: string | null = req.body.description === undefined ? mapFromID.maps_details[0].description : req.body.description;
             const notes: string | null = req.body.notes === undefined ? mapFromID.maps_details[0].notes : req.body.notes;
@@ -1118,7 +1118,7 @@ mapsRouter.route("/:mapID")
             const chapter: number | undefined = req.body.chapter;
             const side: maps_details_side | undefined = req.body.side;
             const modDifficulty: string | string[] | undefined = req.body.modDifficulty;
-            const overallRank: number | undefined = req.body.overallRank;
+            const overallRank: number | null | undefined = req.body.overallRank;
             const mapRemovedFromModBool: boolean = !req.body.mapRemovedFromModBool ? mapFromID.maps_details[0].mapRemovedFromModBool : req.body.mapRemovedFromModBool;
             const techAny: string[] | undefined = req.body.techAny === null ? undefined : req.body.techAny;
             const techFC: string[] | undefined = req.body.techFC === null ? undefined : req.body.techFC;
@@ -1131,8 +1131,6 @@ mapsRouter.route("/:mapID")
                 length: lengthName,
                 description: description,
                 notes: notes,
-                mapperUserID: mapperUserID,
-                mapperNameString: mapperNameString,
                 modDifficulty: modDifficulty,
                 overallRank: overallRank,
                 mapRemovedFromModBool: mapRemovedFromModBool,
@@ -1144,15 +1142,18 @@ mapsRouter.route("/:mapID")
                 validationJson.chapter = chapter;
                 validationJson.side = side;
             }
-            else if (modDifficulty || overallRank) {
+            else if (modDifficulty || overallRank !== undefined) {
+                validationJson.mapperUserID = mapperUserID;
+                validationJson.mapperNameString = mapperNameString;
                 validationJson.modDifficulty = modDifficulty;
                 validationJson.overallRank = overallRank;
             }
 
             const valid = validateMapPatch(validationJson);
 
-            if (!valid || (modDifficulty && modType === "Normal") || (!canonicalDifficultyName && !lengthName && !description && !notes && !mapperUserID
-                && !mapperNameString && !chapter && !side && !modDifficulty && !overallRank && !mapRemovedFromModBool && !techAny && !techFC)) {
+            if (!valid || (modDifficulty && modType === "Normal") || (canonicalDifficultyName === undefined && !lengthName && description === undefined &&
+                notes === undefined && mapperUserID === undefined && !mapperNameString && !chapter && !side && !modDifficulty && overallRank === undefined
+                && !mapRemovedFromModBool && !techAny && !techFC)) {
                 
                 res.status(400).json("Malformed request body");
                 return;
