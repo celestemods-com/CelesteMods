@@ -1304,7 +1304,7 @@ export const patchPublisherWithGamebananaID = async function (id: number, gameba
 export const patchPublisherWithUserID = async function (userFromID: users, id: number, publisherFromId: publishers) {
     try {
         let name: string;
-        
+
         if (publisherFromId.gamebananaID) {
             name = publisherFromId.name;
         }

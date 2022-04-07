@@ -1154,12 +1154,12 @@ mapsRouter.route("/:mapID")
             if (!valid || (modDifficulty && modType === "Normal") || (canonicalDifficultyName === undefined && !lengthName && description === undefined &&
                 notes === undefined && mapperUserID === undefined && !mapperNameString && !chapter && !side && !modDifficulty && overallRank === undefined
                 && !mapRemovedFromModBool && !techAny && !techFC)) {
-                
+
                 res.status(400).json("Malformed request body");
                 return;
             }
 
-            
+
             const outerRawMap = await prisma.$transaction(async () => {
                 const latestRevisionObject = await prisma.maps_details.findFirst({
                     where: { mapId: mapID },

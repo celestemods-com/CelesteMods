@@ -1,5 +1,7 @@
-import { users, publishers, golden_players, tech_list, tech_videos, difficulties, mods_ids, mods_details, mods_details_type, maps_ids, maps_details, maps_details_side,
-  map_lengths, maps_to_tech } from ".prisma/client";
+import {
+  users, publishers, golden_players, tech_list, tech_videos, difficulties, mods_ids, mods_details, mods_details_type, maps_ids, maps_details, maps_details_side,
+  map_lengths, maps_to_tech
+} from ".prisma/client";
 
 
 export interface createUserData {

@@ -23,9 +23,9 @@ publishersRouter.route("/")
                         const formattedPublisher = await formatPublisher(rawPublisher);
 
                         if (isErrorWithMessage(formattedPublisher)) throw formattedPublisher;
-                        
+
                         return formattedPublisher;
-            }));
+                    }));
 
             res.json(formattedPublishers);
         }
@@ -46,7 +46,7 @@ publishersRouter.route("/")
                 name: name,
             });
 
-            
+
             if (!valid) {
                 res.status(400).json("Malformed request body");
                 return;
@@ -154,9 +154,9 @@ publishersRouter.route("/search")
                         const formattedPublisher = await formatPublisher(rawPublisher);
 
                         if (isErrorWithMessage(formattedPublisher)) throw formattedPublisher;
-                        
+
                         return formattedPublisher;
-            }));
+                    }));
 
             res.json(formattedPublishers);
         }
@@ -195,9 +195,9 @@ publishersRouter.route("/user/:userID")
                         const formattedPublisher = await formatPublisher(rawPublisher);
 
                         if (isErrorWithMessage(formattedPublisher)) throw formattedPublisher;
-                        
+
                         return formattedPublisher;
-            }));
+                    }));
 
             res.json(formattedPublishers);
         }
@@ -281,7 +281,7 @@ publishersRouter.route("/:publisherID")
 
             if (rawMatchingPublisher) {
                 const formattedPublisher = await formatPublisher(rawMatchingPublisher);
-    
+
                 if (isErrorWithMessage(formattedPublisher)) throw formattedPublisher;
 
                 res.status(400).json(rawMatchingPublisher);
@@ -296,7 +296,7 @@ publishersRouter.route("/:publisherID")
             }
             else if (userID) {
                 const userFromID = await prisma.users.findUnique({ where: { id: userID } });
-        
+
                 if (!userFromID) {
                     res.status(404).json("userID does not exist");
                     return;

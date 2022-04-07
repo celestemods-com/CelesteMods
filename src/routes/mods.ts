@@ -83,7 +83,7 @@ modsRouter.route("/")
                         if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawmod.id}: ` + noModDetailsErrorMessage;
 
                         return formattedMod;
-            }));
+                    }));
 
 
             res.json(formattedMods);
@@ -470,7 +470,7 @@ modsRouter.route("/search")
                         if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawmod.id}: ` + noModDetailsErrorMessage;
 
                         return formattedMod;
-            }));
+                    }));
 
 
             res.json(formattedMods);
@@ -549,7 +549,7 @@ modsRouter.route("/type")
                         if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawmod.id}: ` + noModDetailsErrorMessage;
 
                         return formattedMod;
-            }));
+                    }));
 
 
             res.json(formattedMods);
@@ -733,7 +733,7 @@ modsRouter.route("/publisher/gamebanana/:gbUserID")
                         if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawmod.id}: ` + noModDetailsErrorMessage;
 
                         return formattedMod;
-            }));
+                    }));
 
 
             res.json(formattedMods);
@@ -761,7 +761,7 @@ modsRouter.route("/publisher/:publisherID")
                         if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawmod.id}: ` + noModDetailsErrorMessage;
 
                         return formattedMod;
-            }));
+                    }));
 
 
             res.json(formattedMods);
@@ -846,7 +846,7 @@ modsRouter.route("/user/:userID/publisher")
                         if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawmod.id}: ` + noModDetailsErrorMessage;
 
                         return formattedMod;
-            }));
+                    }));
 
 
             res.json(formattedMods);
@@ -919,7 +919,7 @@ modsRouter.route("/user/:userID/submitter")
                         if (formattedMod === noModDetailsErrorMessage) return `For mod ${rawmod.id}: ` + noModDetailsErrorMessage;
 
                         return formattedMod;
-            }));
+                    }));
 
 
             res.json(formattedMods);
@@ -1232,7 +1232,7 @@ modsRouter.route("/:modID")
             });
 
             if (!valid) {
-                
+
                 res.status(400).json("Malformed request body");
                 return;
             }
@@ -1447,7 +1447,7 @@ modsRouter.route("/:modID")
     })
     .all(methodNotAllowed);
 
-    
+
 
 
 modsRouter.use(noRouteError);
