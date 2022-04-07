@@ -230,7 +230,7 @@ export interface mapValidationJson {
   length?: string,
   description: string | null,
   notes: string | null,
-  mapperUserID?: number | null,
+  mapperUserID: number | null,
   mapperNameString?: string,
   chapter?: number,
   side?: maps_details_side,
