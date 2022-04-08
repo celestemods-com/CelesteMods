@@ -1508,7 +1508,7 @@ mapsRouter.use(errorHandler);
 
 
 export const mapPost = <expressRoute>async function (req, res, next) {  //called from mods.ts
-    try {
+    try {       //TODO: implement json schema and other changes from map PATCH and then test
         const modID = <number>req.id;
         const modFromID = <rawMod>req.mod;
         const modType = modFromID.mods_details[0].type;

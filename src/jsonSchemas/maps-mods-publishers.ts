@@ -91,69 +91,80 @@ const mapPostSchema = {
     },
     allOf: [
         {
-            anyOf: [
-                {
-                    properties: {
-                        mapperUserID: {
-                            type: "integer",
-                            minimum: 1,
-                        },
+            if: {
+                properties: {
+                    chapter: {
+                        type: "integer",
+                        minimum: 1,
                     },
-                    required: ["mapperUserID",]
                 },
-                {
-                    properties: {
-                        mapperNameString: {
-                            type: "string",
-                            minLength: 1,
-                            maxLength: 50,
-                        },
-                    },
-                    required: ["mapperNameString"],
-                },
-            ],
+                required: ["chapter"],
+            },
+            then: {
+                allOf: [
+                    { not: { required: ["modDifficulty"] } },
+                    { not: { required: ["overallRank"] } },
+                ],
+            },
         },
         {
-            oneOf: [
-                {
-                    properties: {
-                        chapter: {
-                            type: "integer",
-                            minimum: 1,
-                        },
-                        side: {
-                            type: "string",
-                            enum: ["A", "B", "C", "D", "E"],
-                        },
-                        modDifficulty: false,
-                        overallRank: false,
+            if: {
+                properties: {
+                    side: {
+                        type: "string",
+                        enum: ["A", "B", "C", "D", "E"],
                     },
-                    required: ["chapter", "side"],
                 },
-                {
-                    properties: {
-                        modDifficulty: {
-                            type: ["string", "array"],
-                            minLength: 1,
+                required: ["side"],
+            },
+            then: {
+                allOf: [
+                    { not: { required: ["modDifficulty"] } },
+                    { not: { required: ["overallRank"] } },
+                ],
+            },
+        },
+        {
+            if: {
+                properties: {
+                    modDifficulty: {
+                        type: ["string", "array"],
+                        minLength: 1,
 
-                            uniqueItems: false,
-                            minItems: 2,
-                            maxItems: 2,
-                            items: {
-                                type: "string",
-                                minLength: 1,
-                            },
+                        uniqueItems: false,
+                        minItems: 2,
+                        maxItems: 2,
+                        items: {
+                            type: "string",
+                            minLength: 1,
                         },
-                        overallRank: {
-                            type: "integer",
-                            minimum: 1,
-                        },
-                        chapter: false,
-                        side: false,
                     },
-                    required: ["modDifficulty"],
                 },
-            ],
+                required: ["modDifficulty"],
+            },
+            then: {
+                allOf: [
+                    { not: { required: ["chapter"] } },
+                    { not: { required: ["side"] } },
+                ]
+            },
+        },
+        {
+            if: {
+                properties: {
+                    overallRank: {
+                        type: ["integer", "null"],
+                        minimum: 1,
+                    },
+                },
+                required: ["overallRank"],
+            },
+            then: {
+                allOf: [
+                    { not: { required: ["chapter"] } },
+                    { not: { required: ["side"] } },
+                ]
+            },
         },
     ],
     required: ["name", "length"],
@@ -268,8 +279,6 @@ const mapPatchSchema = {
                 allOf: [
                     { not: { required: ["modDifficulty"] } },
                     { not: { required: ["overallRank"] } },
-                    { not: { required: ["mapperUserID"] } },
-                    { not: { required: ["mapperNameString"] } },
                 ],
             },
         },
@@ -287,8 +296,6 @@ const mapPatchSchema = {
                 allOf: [
                     { not: { required: ["modDifficulty"] } },
                     { not: { required: ["overallRank"] } },
-                    { not: { required: ["mapperUserID"] } },
-                    { not: { required: ["mapperNameString"] } },
                 ],
             },
         },
@@ -326,41 +333,6 @@ const mapPatchSchema = {
                     },
                 },
                 required: ["overallRank"],
-            },
-            then: {
-                allOf: [
-                    { not: { required: ["chapter"] } },
-                    { not: { required: ["side"] } },
-                ]
-            },
-        },
-        {
-            if: {
-                properties: {
-                    mapperUserID: {
-                        type: ["integer", "null"],
-                        minimum: 1,
-                    },
-                },
-                required: ["mapperUserID"],
-            },
-            then: {
-                allOf: [
-                    { not: { required: ["chapter"] } },
-                    { not: { required: ["side"] } },
-                ]
-            },
-        },
-        {
-            if: {
-                properties: {
-                    mapperNameString: {
-                        type: "string",
-                        minLength: 1,
-                        maxLength: 50,
-                    },
-                },
-                required: ["mapperNameString"],
             },
             then: {
                 allOf: [
