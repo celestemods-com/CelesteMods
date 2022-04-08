@@ -1102,24 +1102,24 @@ mapsRouter.route("/:mapID")
         }
     })
     .patch(async function (req, res, next) {
-        try {   //TODO: null input values are now properly handled in map PATCH but not map POST. finish testing PATCH and then make sure POST properly handles NULLs
+        try {
             const mapID = <number>req.id;
             const mapFromID = <rawMap>req.map;
             const modID = mapFromID.modID;
             const modType = <mods_details_type>mapFromID.mods_ids?.mods_details[0].type;
             const publisherName = <string>mapFromID.mods_ids?.mods_details[0].publishers.name;
-            const name: string = !req.body.name ? mapFromID.maps_details[0].name : req.body.name;
+            let name: string = req.body.name;
             const canonicalDifficultyName: string | null | undefined = req.body.canonicalDifficulty;
             const lengthName: string | undefined = req.body.length
-            const description: string | null = req.body.description === undefined ? mapFromID.maps_details[0].description : req.body.description;
-            const notes: string | null = req.body.notes === undefined ? mapFromID.maps_details[0].notes : req.body.notes;
-            let mapperUserID: number | null = req.body.mapperUserID === undefined ? mapFromID.maps_details[0].mapperUserID : req.body.mapperUserID;
+            let description: string | null = req.body.description;
+            let notes: string | null = req.body.notes;
+            let mapperUserID: number | null = req.body.mapperUserID;
             let mapperNameString: string | undefined = req.body.mapperNameString;
             const chapter: number | undefined = req.body.chapter;
             const side: maps_details_side | undefined = req.body.side;
             const modDifficulty: string | string[] | undefined = req.body.modDifficulty;
             const overallRank: number | null | undefined = req.body.overallRank;
-            const mapRemovedFromModBool: boolean = !req.body.mapRemovedFromModBool ? mapFromID.maps_details[0].mapRemovedFromModBool : req.body.mapRemovedFromModBool;
+            let mapRemovedFromModBool: boolean = req.body.mapRemovedFromModBool;
             const techAny: string[] | undefined = req.body.techAny === null ? undefined : req.body.techAny;
             const techFC: string[] | undefined = req.body.techFC === null ? undefined : req.body.techFC;
             const currentTime = getCurrentTime();
@@ -1149,15 +1149,27 @@ mapsRouter.route("/:mapID")
                 validationJson.overallRank = overallRank;
             }
 
+
             const valid = validateMapPatch(validationJson);
 
-            if (!valid || (modDifficulty && modType === "Normal") || (canonicalDifficultyName === undefined && !lengthName && description === undefined &&
+            if (!valid || (modDifficulty && modType === "Normal") || (!name && canonicalDifficultyName === undefined && !lengthName && description === undefined &&
                 notes === undefined && mapperUserID === undefined && !mapperNameString && !chapter && !side && !modDifficulty && overallRank === undefined
                 && !mapRemovedFromModBool && !techAny && !techFC)) {
 
                 res.status(400).json("Malformed request body");
                 return;
             }
+
+
+            if (!name) name = mapFromID.maps_details[0].name;
+
+            if (description === undefined) description = mapFromID.maps_details[0].description;
+
+            if (notes === undefined) notes = mapFromID.maps_details[0].notes;
+
+            if (mapperUserID === undefined) mapperUserID = mapFromID.maps_details[0].mapperUserID;
+
+            if (!mapRemovedFromModBool) mapRemovedFromModBool = mapFromID.maps_details[0].mapRemovedFromModBool;
 
 
             const outerRawMap = await prisma.$transaction(async () => {
@@ -1438,7 +1450,6 @@ mapsRouter.route("/:mapID")
                 });
 
 
-                console.log(innerRawMap)
                 return innerRawMap;
             });
 
