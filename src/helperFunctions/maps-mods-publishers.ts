@@ -232,7 +232,7 @@ export const formatMod = async function (rawMod: rawMod) {
         const rawMaps = rawMod.maps_ids;
 
 
-        const formattedMaps = await Promise.all(
+        const outerFormattedMaps = await Promise.all(
             rawMaps.map(
                 async (rawMap) => {
                     const formattedMap = await formatMap(rawMap, rawMod);
@@ -266,6 +266,15 @@ export const formatMod = async function (rawMod: rawMod) {
             const approvedBool = modDetails.timeApproved === null ? false : true;
 
 
+            const innerFormattedMaps: (string | formattedMap[])[] = [];
+            
+            outerFormattedMaps.forEach((formattedMap) => {
+                if (typeof formattedMap === "string" || formattedMap[0].minimumModRevision <= revision) {
+                    innerFormattedMaps.push(formattedMap);
+                }
+            });
+
+
             const innerFormattedMod: formattedMod = {
                 id: id,
                 revision: revision,
@@ -279,7 +288,7 @@ export const formatMod = async function (rawMod: rawMod) {
                 longDescription: longDescription,
                 gamebananaModID: gamebananaModID,
                 approved: approvedBool,
-                maps: formattedMaps,
+                maps: innerFormattedMaps,
             };
 
 
