@@ -1736,8 +1736,6 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
                     },
                 },
                 maps_details: {
-                    orderBy: { revision: "desc" },
-                    take: 1,
                     include: {
                         map_lengths: true,
                         difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
