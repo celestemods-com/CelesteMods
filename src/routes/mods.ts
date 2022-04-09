@@ -190,8 +190,6 @@ modsRouter.route("/")
                 if (res.errorSent) return;
 
 
-                console.log(`gamebananaModID = ${gamebananaModID}`)
-
                 const rawMatchingMod = await prisma.mods_ids.findFirst({
                     where: { mods_details: { some: { gamebananaModID: gamebananaModID } } },
                     include: {
@@ -241,8 +239,6 @@ modsRouter.route("/")
                     users_mods_details_submittedByTousers: { connect: { id: submittingUser.id } },
                 }
 
-                console.log(`modDetailsCreationObject = ${JSON.stringify(modDetailsCreationObject, null, 2)}`)
-
 
                 const privilegedUserBool = privilegedUser(submittingUser);
 
@@ -281,7 +277,6 @@ modsRouter.route("/")
                     },
                 });
 
-                console.log(`rawMod = ${JSON.stringify(rawMod, null, 2)}`)
 
                 return [rawMod, 201];
             });
