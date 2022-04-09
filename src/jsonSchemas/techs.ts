@@ -1,4 +1,5 @@
 import ajvModule from "ajv";
+import {intMaxSizes} from "./integerSizes";
 
 const ajv = new ajvModule({ allowUnionTypes: true });
 
@@ -31,6 +32,7 @@ const postSchema = {
         difficulty: {
             type: ["string", "integer"],
             minimum: 0,
+            maximum: intMaxSizes.smallInt.unsigned,
         },
     },
     additionalProperties: false,
@@ -66,6 +68,7 @@ const patchSchema = {
         difficulty: {
             type: ["string", "integer"],
             minimum: 0,
+            maximum: intMaxSizes.smallInt.unsigned,
         },
     },
     additionalProperties: false,

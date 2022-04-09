@@ -1,4 +1,5 @@
 import ajvModule from "ajv";
+import {intMaxSizes} from "./integerSizes";
 
 
 
@@ -15,6 +16,7 @@ const mapPostSchema = {
         minimumModRevision: {
             type: "integer",
             minimum: 0,
+            maximum: intMaxSizes.tinyInt.unsigned,
         },
         canonicalDifficulty: {
             type: "string",
@@ -58,6 +60,7 @@ const mapPostSchema = {
         mapperUserID: {
             type: "integer",
             minimum: 1,
+            maximum: intMaxSizes.smallInt.unsigned,
         },
         mapperNameString: {
             type: "string",
@@ -67,6 +70,7 @@ const mapPostSchema = {
         chapter: {
             type: "integer",
             minimum: 1,
+            maximum: intMaxSizes.tinyInt.unsigned,
         },
         side: {
             type: "string",
@@ -87,6 +91,7 @@ const mapPostSchema = {
         overallRank: {
             type: "integer",
             minimum: 1,
+            maximum: intMaxSizes.tinyInt.unsigned,
         },
     },
     allOf: [
@@ -96,6 +101,7 @@ const mapPostSchema = {
                     chapter: {
                         type: "integer",
                         minimum: 1,
+                        maximum: intMaxSizes.tinyInt.unsigned,
                     },
                 },
                 required: ["chapter"],
@@ -155,6 +161,7 @@ const mapPostSchema = {
                     overallRank: {
                         type: ["integer", "null"],
                         minimum: 1,
+                        maximum: intMaxSizes.tinyInt.unsigned,
                     },
                 },
                 required: ["overallRank"],
@@ -188,6 +195,7 @@ const mapPatchSchema = {
         minimumModRevision: {
             type: "integer",
             minimum: 1,
+            maximum: intMaxSizes.tinyInt.unsigned,
         },
         assignedDifficulty: {
             type: "string",
@@ -233,6 +241,7 @@ const mapPatchSchema = {
         chapter: {
             type: "integer",
             minimum: 1,
+            maximum: intMaxSizes.tinyInt.unsigned,
         },
         side: {
             type: "string",
@@ -241,6 +250,7 @@ const mapPatchSchema = {
         mapperUserID: {
             type: ["integer", "null"],
             minimum: 1,
+            maximum: intMaxSizes.smallInt.unsigned,
         },
         mapperNameString: {
             type: "string",
@@ -262,6 +272,7 @@ const mapPatchSchema = {
         overallRank: {
             type: ["integer", "null"],
             minimum: 1,
+            maximum: intMaxSizes.tinyInt.unsigned,
         },
     },
     allOf: [
@@ -271,6 +282,7 @@ const mapPatchSchema = {
                     chapter: {
                         type: "integer",
                         minimum: 1,
+                        maximum: intMaxSizes.tinyInt.unsigned,
                     },
                 },
                 required: ["chapter"],
@@ -330,6 +342,7 @@ const mapPatchSchema = {
                     overallRank: {
                         type: ["integer", "null"],
                         minimum: 1,
+                        maximum: intMaxSizes.tinyInt.unsigned,
                     },
                 },
                 required: ["overallRank"],
@@ -368,14 +381,17 @@ const modPostSchema = {
         publisherID: {
             type: "integer",
             minimum: 0,
+            maximum: intMaxSizes.smallInt.unsigned,
         },
         publisherGamebananaID: {
             type: "integer",
             minimum: 0,
+            maximum: intMaxSizes.mediumInt.unsigned,
         },
         userID: {
             type: "integer",
             minimum: 0,
+            maximum: intMaxSizes.smallInt.unsigned,
         },
         contentWarning: { type: "boolean" },
         notes: {
@@ -396,6 +412,7 @@ const modPostSchema = {
         gamebananaModID: {
             type: "integer",
             minimum: 0,
+            maximum: intMaxSizes.mediumInt.unsigned,
         },
         difficultyNames: {
             type: "array",
@@ -429,6 +446,48 @@ const modPostSchema = {
             items: { $ref: "mapPostSchema" },
         },
     },
+    anyOf: [
+        {
+            properties: {
+                publisherName: {
+                    type: "string",
+                    minLength: 1,
+                    maxLength: 100,
+                },
+            },
+            required: ["publisherName"],
+        },
+        {
+            properties: {
+                publisherID: {
+                    type: "integer",
+                    minimum: 0,
+                    maximum: intMaxSizes.smallInt.unsigned,
+                },
+            },
+            required: ["publisherID"],
+        },
+        {
+            properties: {
+                publisherGamebananaID: {
+                    type: "integer",
+                    minimum: 0,
+                    maximum: intMaxSizes.mediumInt.unsigned,
+                },
+            },
+            required: ["publisherGamebananaID"],
+        },
+        {
+            properties: {
+                userID: {
+                    type: "integer",
+                    minimum: 0,
+                    maximum: intMaxSizes.smallInt.unsigned,
+                },
+            },
+            required: ["userID"],
+        },
+    ],
     additionalProperties: false,
     required: ["type", "name", "contentWarning", "shortDescription", "gamebananaModID", "maps"],
 };
@@ -454,14 +513,17 @@ const modPatchSchema = {
         publisherID: {
             type: "integer",
             minimum: 0,
+            maximum: intMaxSizes.smallInt.unsigned,
         },
         publisherGamebananaID: {
             type: "integer",
             minimum: 0,
+            maximum: intMaxSizes.mediumInt.unsigned,
         },
         userID: {
             type: "integer",
             minimum: 0,
+            maximum: intMaxSizes.smallInt.unsigned,
         },
         contentWarning: { type: "boolean" },
         notes: {
@@ -482,6 +544,7 @@ const modPatchSchema = {
         gamebananaModID: {
             type: "integer",
             minimum: 0,
+            maximum: intMaxSizes.mediumInt.unsigned,
         },
     },
     additionalProperties: false,
@@ -498,6 +561,7 @@ const validatePublisherPostSchema = {
                 gamebananaID: {
                     type: "integer",
                     minimum: 1,
+                    maximum: intMaxSizes.mediumInt.unsigned,
                 },
             },
             required: ["gamebananaID"],
@@ -517,6 +581,7 @@ const validatePublisherPostSchema = {
                 userID: {
                     type: "integer",
                     minimum: 1,
+                    maximum: intMaxSizes.smallInt.unsigned,
                 },
             },
             required: ["userID"],
@@ -531,6 +596,7 @@ const validatePublisherPatchSchema = {
         gamebananaID: {
             type: "integer",
             minimum: 1,
+            maximum: intMaxSizes.mediumInt.unsigned,
         },
         name: {
             type: "string",
@@ -540,6 +606,7 @@ const validatePublisherPatchSchema = {
         userID: {
             type: "integer",
             minimum: 1,
+            maximum: intMaxSizes.smallInt.unsigned,
         }
     },
     additionalProperties: false,

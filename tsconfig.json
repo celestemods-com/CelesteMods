@@ -4,8 +4,9 @@
       "outDir": "dist",
       "rootDir": "src",
       "strict": true,
-      "lib": ["esnext"],
+      "lib": ["ES2021"],
       "esModuleInterop": true,
-      "target": "ES5",
+      "target": "ES2021",
+      "moduleResolution": "node",
     }
 }

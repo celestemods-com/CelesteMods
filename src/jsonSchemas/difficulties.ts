@@ -1,4 +1,5 @@
 import ajvModule from "ajv";
+import {intMaxSizes} from "./integerSizes";
 
 const ajv = new ajvModule();
 
@@ -19,14 +20,17 @@ const postSchema = {
         parentModID: {
             type: ["integer", "null"],
             minimum: 0,
+            maximum: intMaxSizes.smallInt.unsigned,
         },
         parentDifficultyID: {
             type: ["integer", "null"],
             minimum: 0,
+            maximum: intMaxSizes.smallInt.unsigned,
         },
         order: {
             type: "integer",
             minimum: 1,
+            maximum: intMaxSizes.tinyInt.unsigned,
         },
     },
     additionalProperties: false,
@@ -50,14 +54,17 @@ const patchSchema = {
         parentModID: {
             type: ["integer", "null"],
             minimum: 0,
+            maximum: intMaxSizes.smallInt.unsigned,
         },
         parentDifficultyID: {
             type: ["integer", "null"],
             minimum: 0,
+            maximum: intMaxSizes.smallInt.unsigned,
         },
         order: {
             type: "integer",
             minimum: 1,
+            maximum: intMaxSizes.tinyInt.unsigned,
         },
     },
     additionalProperties: false,

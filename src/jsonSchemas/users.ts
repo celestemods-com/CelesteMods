@@ -1,4 +1,5 @@
 import ajvModule from "ajv";
+import {intMaxSizes} from "./integerSizes";
 
 const ajv = new ajvModule();
 
@@ -20,12 +21,14 @@ const postSchema = {
                 anyOf: [{
                     type: "integer",
                     minimum: 0,
+                    maximum: intMaxSizes.mediumInt.unsigned,
                 }]
             },
         },
         goldenPlayerID: {
             type: "integer",
             minimum: 0,
+            maximum: intMaxSizes.smallInt.unsigned,
         },
     },
     additionalProperties: false,
@@ -49,12 +52,14 @@ const patch1Schema = {
                 anyOf: [{
                     type: "integer",
                     minimum: 0,
+                    maximum: intMaxSizes.mediumInt.unsigned,
                 }]
             },
         },
         goldenPlayerID: {
             type: "integer",
             minimum: 0,
+            maximum: intMaxSizes.smallInt.unsigned,
         },
     },
     additionalProperties: false,

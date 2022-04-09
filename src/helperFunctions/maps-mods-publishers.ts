@@ -456,9 +456,9 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
     publisherName: string, lengthObjectArray: map_lengths[], customDifficultiesArray: createParentDifficultyForMod[], defaultDifficultyObjectsArray: defaultDifficultyForMod[],
     modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean, submittingUser: submitterUser) {
 
-    const minimumModRevision = currentModRevision === 0 ? 1 : (mapObject.minimumModRevision ? mapObject.minimumModRevision : currentModRevision);
+    const minimumModRevision = currentModRevision === 0 ? 0 : (mapObject.minimumModRevision ? mapObject.minimumModRevision : currentModRevision);
     //a currentModVersion of 0 means that this method is being called from /mods POST so any set value for minimumModRevision is ignored
-    
+
     const mapName = mapObject.name;
     const lengthName = mapObject.length;
     const mapDescription = mapObject.description;
@@ -542,10 +542,10 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
         const techCreationObjectArray: mapToTechCreationObject[] = [];
 
 
+                maps_to_tech: { create: { tech_list: { connect: { name: "techName"}}}}
         if (techAny) {
             techAny.forEach((techName) => {
                 const techCreationObject = {
-                    maps_details_maps_detailsTomaps_to_tech_revision: 0,
                     tech_list: { connect: { name: techName } },
                     fullClearOnlyBool: false,
                 };
@@ -558,7 +558,6 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
         if (techFC) {
             techFC.forEach((techName) => {
                 const techCreationObject = {
-                    maps_details_maps_detailsTomaps_to_tech_revision: 0,
                     tech_list: { connect: { name: techName } },
                     fullClearOnlyBool: true,
                 };

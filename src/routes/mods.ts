@@ -105,7 +105,7 @@ modsRouter.route("/")
             const shortDescription: string = req.body.shortDescription;
             const longDescription: string | undefined = req.body.longDescription;
             const gamebananaModID: number = req.body.gamebananaModID;
-            const difficultyNames: (string | string[])[] | undefined = req.body.difficulties;
+            const difficultyNames: (string | string[])[] | undefined = req.body.difficultyNames;
             const maps: jsonCreateMapWithMod[] = req.body.maps;
             const currentTime = getCurrentTime();
 
@@ -125,6 +125,7 @@ modsRouter.route("/")
                 difficultyNames: difficultyNames,
                 maps: maps,
             });
+
 
             if (!valid || (difficultyNames && modType === "Normal")) {
                 res.status(400).json("Malformed request body");
@@ -189,6 +190,8 @@ modsRouter.route("/")
                 if (res.errorSent) return;
 
 
+                console.log(`gamebananaModID = ${gamebananaModID}`)
+
                 const rawMatchingMod = await prisma.mods_ids.findFirst({
                     where: { mods_details: { some: { gamebananaModID: gamebananaModID } } },
                     include: {
@@ -225,7 +228,7 @@ modsRouter.route("/")
 
 
                 const modDetailsCreationObject: modDetailsCreationObject = {
-                    revision: 1,
+                    revision: 0,
                     type: modType,
                     name: name,
                     publishers: publisherConnectionObject,
@@ -237,6 +240,8 @@ modsRouter.route("/")
                     timeSubmitted: currentTime,
                     users_mods_details_submittedByTousers: { connect: { id: submittingUser.id } },
                 }
+
+                console.log(`modDetailsCreationObject = ${JSON.stringify(modDetailsCreationObject, null, 2)}`)
 
 
                 const privilegedUserBool = privilegedUser(submittingUser);
@@ -258,18 +263,11 @@ modsRouter.route("/")
                     include: {
                         difficulties: true,
                         mods_details: {
-                            where: { NOT: { timeApproved: null } },
-                            orderBy: { revision: "desc" },
-                            take: 1,
                             include: { publishers: true },
                         },
                         maps_ids: {
-                            where: { maps_details: { some: { NOT: { timeApproved: null } } } },
                             include: {
                                 maps_details: {
-                                    where: { NOT: { timeApproved: null } },
-                                    orderBy: { revision: "desc" },
-                                    take: 1,
                                     include: {
                                         map_lengths: true,
                                         difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
@@ -283,9 +281,13 @@ modsRouter.route("/")
                     },
                 });
 
+                console.log(`rawMod = ${JSON.stringify(rawMod, null, 2)}`)
+
                 return [rawMod, 201];
             });
 
+
+            if (rawModAndStatus && res.errorSent) return;
 
             if (!rawModAndStatus) throw "no rawModAndStatus";
 
