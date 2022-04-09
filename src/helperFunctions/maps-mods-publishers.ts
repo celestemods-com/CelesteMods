@@ -458,6 +458,7 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
 
     const minimumModRevision = currentModRevision === 0 ? 1 : (mapObject.minimumModRevision ? mapObject.minimumModRevision : currentModRevision);
     //a currentModVersion of 0 means that this method is being called from /mods POST so any set value for minimumModRevision is ignored
+    
     const mapName = mapObject.name;
     const lengthName = mapObject.length;
     const mapDescription = mapObject.description;
