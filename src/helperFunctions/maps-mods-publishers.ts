@@ -226,10 +226,11 @@ export const getDifficultyArrays = function (difficultyNames: (string | string[]
 
 export const formatMod = async function (rawMod: rawMod) {
     try {
-        if (rawMod.mods_details.length < 1) return noModDetailsErrorMessage;
-
         const id = rawMod.id;
         const rawMaps = rawMod.maps_ids;
+
+
+        if (rawMod.mods_details.length < 1) return `For mod ${id}: ` + noModDetailsErrorMessage;
 
 
         const outerFormattedMaps = await Promise.all(
@@ -239,7 +240,7 @@ export const formatMod = async function (rawMod: rawMod) {
 
                     if (isErrorWithMessage(formattedMap)) throw formattedMap;
 
-                    if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}:` + noMapDetailsErrorMessage;
+                    if (formattedMap === noMapDetailsErrorMessage) return `For map ${rawMap.id}: ` + noMapDetailsErrorMessage;
 
                     return formattedMap;
                 }));
