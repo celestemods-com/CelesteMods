@@ -17,7 +17,10 @@ const noRouteError = function (_req: Request, res: Response, next: NextFunction)
 
 const errorHandler = function (error: Error, _req: Request, res: Response, _next: NextFunction) {
     try {
-        if (error.message) {
+        if (process.env.NODE_ENV === "dev") {
+            console.log(error);
+        }
+        else if (error.message) {
             console.log(error.message);
         }
         else {
