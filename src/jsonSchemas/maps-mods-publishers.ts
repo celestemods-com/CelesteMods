@@ -523,7 +523,7 @@ const modPatchSchema = {
         },
         contentWarning: { type: "boolean" },
         notes: {
-            type: "string",
+            type: ["string", "null"],
             minLength: 0,
             maxLength: 500,
         },
@@ -533,7 +533,7 @@ const modPatchSchema = {
             maxLength: 150,
         },
         longDescription: {
-            type: "string",
+            type: ["string", "null"],
             minLength: 0,
             maxLength: 1500,
         },

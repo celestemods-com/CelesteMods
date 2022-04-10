@@ -1209,9 +1209,9 @@ modsRouter.route("/:modID")
             const publisherGamebananaID: number | undefined = req.body.publisherGamebananaID === null ? undefined : req.body.publisherGamebananaID;
             const userID: number | undefined = req.body.userID === null ? undefined : req.body.userID;
             const contentWarning: boolean | undefined = req.body.contentWarning === null ? undefined : req.body.contentWarning;
-            const notes: string | undefined = req.body.notes === null ? undefined : req.body.notes;
+            const notes: string | null | undefined = req.body.notes;
             const shortDescription: string | undefined = req.body.shortDescription === null ? undefined : req.body.shortDescription;
-            const longDescription: string | undefined = req.body.longDescription === null ? undefined : req.body.longDescription;
+            const longDescription: string | null | undefined = req.body.longDescription;
             const gamebananaModID: number | undefined = req.body.gamebananaModID === null ? undefined : req.body.gamebananaModID;
             const currentTime = getCurrentTime();
 
@@ -1229,64 +1229,67 @@ modsRouter.route("/:modID")
                 gamebananaModID: gamebananaModID,
             });
 
-            if (!valid) {
+            if (!valid || (!name && !publisherName && !publisherID && !publisherGamebananaID && !userID && !contentWarning && notes === undefined &&
+                !shortDescription && longDescription === undefined && !gamebananaModID)) {
 
                 res.status(400).json("Malformed request body");
                 return;
             }
 
 
-            const rawMatchingMod = await prisma.mods_ids.findFirst({
-                where: {
-                    NOT: { id: req.id },
-                    mods_details: {
-                        some: {
-                            NOT: { timeApproved: null },
-                            gamebananaModID: gamebananaModID,
+            if (gamebananaModID) {
+                const rawMatchingMod = await prisma.mods_ids.findFirst({
+                    where: {
+                        NOT: { id: req.id },
+                        mods_details: {
+                            some: {
+                                NOT: { id: req.id },
+                                gamebananaModID: gamebananaModID,
+                            },
                         },
                     },
-                },
-                include: {
-                    difficulties: true,
-                    mods_details: {
-                        where: { NOT: { timeApproved: null } },
-                        orderBy: { revision: "desc" },
-                        take: 1,
-                        include: { publishers: true },
-                    },
-                    maps_ids: {
-                        where: { maps_details: { some: { NOT: { timeApproved: null } } } },
-                        include: {
-                            maps_details: {
-                                where: { NOT: { timeApproved: null } },
-                                orderBy: { revision: "desc" },
-                                take: 1,
-                                include: {
-                                    map_lengths: true,
-                                    difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
-                                    difficulties_difficultiesTomaps_details_modDifficultyID: true,
-                                    users_maps_details_mapperUserIDTousers: true,
-                                    maps_to_tech: { include: { tech_list: true } },
+                    include: {
+                        difficulties: true,
+                        mods_details: {
+                            where: { NOT: { timeApproved: null } },
+                            orderBy: { revision: "desc" },
+                            take: 1,
+                            include: { publishers: true },
+                        },
+                        maps_ids: {
+                            where: { maps_details: { some: { NOT: { timeApproved: null } } } },
+                            include: {
+                                maps_details: {
+                                    where: { NOT: { timeApproved: null } },
+                                    orderBy: { revision: "desc" },
+                                    take: 1,
+                                    include: {
+                                        map_lengths: true,
+                                        difficulties_difficultiesTomaps_details_canonicalDifficultyID: true,
+                                        difficulties_difficultiesTomaps_details_modDifficultyID: true,
+                                        users_maps_details_mapperUserIDTousers: true,
+                                        maps_to_tech: { include: { tech_list: true } },
+                                    },
                                 },
                             },
                         },
                     },
-                },
-            });
+                });
 
-            if (rawMatchingMod) {
-                const formattedMatchingMod = await formatMod(rawMatchingMod);
+                if (rawMatchingMod) {
+                    const formattedMatchingMod = await formatMod(rawMatchingMod);
 
-                if (isErrorWithMessage(formattedMatchingMod)) throw formattedMatchingMod;
+                    if (isErrorWithMessage(formattedMatchingMod)) throw formattedMatchingMod;
 
-                if (formattedMatchingMod === noModDetailsErrorMessage) {
-                    res.status(400).json(noModDetailsErrorMessage);
+                    if (formattedMatchingMod === noModDetailsErrorMessage) {
+                        res.status(400).json(noModDetailsErrorMessage);
+                        return;
+                    }
+
+                    res.status(400).json(formattedMatchingMod);
+
                     return;
                 }
-
-                res.status(400).json(formattedMatchingMod);
-
-                return;
             }
 
 

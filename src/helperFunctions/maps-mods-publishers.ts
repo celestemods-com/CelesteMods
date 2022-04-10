@@ -50,8 +50,7 @@ export const getPublisherCreateOrConnectObject = async function (res: Response, 
             }
 
             if (userFromID.publishers.length > 1) {
-                const publisherIDArray: number[] = []
-                userFromID.publishers.map((publisher) => {
+                const publisherIDArray = userFromID.publishers.map((publisher) => {
                     return publisher.id;
                 });
 
