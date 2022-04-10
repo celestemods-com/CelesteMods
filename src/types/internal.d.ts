@@ -83,9 +83,8 @@ interface rawModDetails extends mods_details {
 }
 
 
-export interface modDetailsCreationObject {
+interface modDetailsCreationObject {
   revision: number;
-  type: mods_details_type;
   name: string;
   publishers: publisherConnectionObject | publisherCreationObject;
   contentWarning: boolean;
@@ -97,6 +96,10 @@ export interface modDetailsCreationObject {
   users_mods_details_submittedByTousers: { connect: { id: number } };
   timeApproved?: number;
   users_mods_details_approvedByTousers?: { connect: { id: number } };
+}
+
+export interface modDetailsWithIdCreationObject extends modDetailsCreationObject {
+  type: mods_details_type;
 }
 
 export interface loneModDetailsCreationObject extends modDetailsCreationObject {

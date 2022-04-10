@@ -5,7 +5,7 @@ import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from
 import { mods_details_type } from ".prisma/client";
 import {
     rawMod, createParentDifficultyForMod, difficultyNamesForModArrayElement, jsonCreateMapWithMod, defaultDifficultyForMod,
-    modDetailsCreationObject, loneModDetailsCreationObject, submitterUser, publisherConnectionObject, publisherCreationObject
+    modDetailsWithIdCreationObject, loneModDetailsCreationObject, submitterUser, publisherConnectionObject, publisherCreationObject
 } from "../types/internal";
 import { formattedMod } from "../types/frontend";
 import {
@@ -17,6 +17,9 @@ import { mapPost } from "./maps";
 
 
 const modsRouter = express.Router();
+
+//TODO: Fix known bug of child difficulties submitted with a mod not having parentModID populated.
+//  can fix the object being used in the mod creation (preferable), or can fix it after the face (either here or in difficulties) (probably easier).
 
 
 
@@ -225,7 +228,7 @@ modsRouter.route("/")
                 }
 
 
-                const modDetailsCreationObject: modDetailsCreationObject = {
+                const modDetailsCreationObject: modDetailsWithIdCreationObject = {
                     revision: 0,
                     type: modType,
                     name: name,
@@ -1200,7 +1203,6 @@ modsRouter.route("/:modID")
     .patch(async function (req, res, next) {
         try {
             const id = <number>req.id;
-            const type: mods_details_type | undefined = req.body.type === null ? undefined : req.body.type;
             const name: string | undefined = req.body.name === null ? undefined : req.body.name;
             const publisherName: string | undefined = req.body.publisherName === null ? undefined : req.body.publisherName;
             const publisherID: number | undefined = req.body.publisherID === null ? undefined : req.body.publisherID;
@@ -1215,7 +1217,6 @@ modsRouter.route("/:modID")
 
 
             const valid = validateModPatch({
-                type: type,
                 name: name,
                 publisherName: publisherName,
                 publisherID: publisherID,
@@ -1354,7 +1355,6 @@ modsRouter.route("/:modID")
 
                 const modDetailsCreationObject: loneModDetailsCreationObject = {
                     revision: newRevisionNumber,
-                    type: !type ? latestValidModDetails.type : type,
                     name: !name ? latestValidModDetails.name : name,
                     publishers: publisherCreateOrConnectObject,
                     contentWarning: !contentWarning ? latestValidModDetails.contentWarning : contentWarning,

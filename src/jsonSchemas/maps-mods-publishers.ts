@@ -496,10 +496,6 @@ const modPostSchema = {
 const modPatchSchema = {
     type: "object",
     properties: {
-        type: {
-            type: "string",
-            enum: ["Normal", "Collab", "Contest", "Lobby"],
-        },
         name: {
             type: "string",
             minLength: 1,
