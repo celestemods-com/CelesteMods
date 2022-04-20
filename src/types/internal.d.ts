@@ -4,6 +4,9 @@ import {
 } from ".prisma/client";
 
 
+//TODO: remove unnecessary interfaces. use <typeof Object.arguments> instead
+
+
 export interface createUserData {
   displayName: string;
   discordID: string;

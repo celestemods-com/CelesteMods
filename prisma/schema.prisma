@@ -270,6 +270,13 @@ model reviews_maps {
   @@index([reviewID], map: "reviewID")
 }
 
+model session {
+  id        String   @id @db.VarChar(750)
+  sid       String   @unique(map: "sid") @db.VarChar(750)
+  data      String   @db.Text
+  expiresAt DateTime @db.DateTime(0)
+}
+
 model tech_list {
   id                  Int            @id @default(autoincrement()) @db.UnsignedSmallInt
   name                String         @unique(map: "name") @db.VarChar(50)

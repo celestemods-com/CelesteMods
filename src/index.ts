@@ -1,9 +1,13 @@
 import express from "express";
-import { noRouteError, errorHandler } from "./errorHandling";
+import { sessionMiddleware } from "./sessionMiddleware";
+import { noRouteError, errorHandler, toErrorWithMessage } from "./errorHandling";
 
 
 const app = express();
 app.use(express.json());
+
+const apiRouter = express.Router();
+
 
 const port = process.env.PORT || "3001";
 app.listen(port, () => {
@@ -11,7 +15,44 @@ app.listen(port, () => {
 });
 
 
-app.use( function (req, res, next) {
+if (process.env.NODE_ENV !== "dev") {
+    app.set("trust proxy", 1)   //TODO: figure out if this is needed during deployment. if express is behind a proxy this will be required to enable HTTPS.
+}
+
+app.use(sessionMiddleware);
+
+app.use(async function (req, res, next) {
+    try {       //TODO: implement actual session routes
+        if(!req.session.userID) {
+            req.session.userID = 69420;
+        }
+        else req.session.userID--;
+
+        if(req.session) res.json(req.session.cookie);
+        else res.json("no session");
+    }
+    catch ( error ) {
+        next(toErrorWithMessage(error));
+    }
+})
+
+app.use("api/v1", apiRouter);
+
+
+app.use(noRouteError);
+
+app.use(errorHandler);
+
+
+
+
+
+
+
+
+
+
+apiRouter.use( function (req, res, next) {
     try {
         let oneof = false;
         if (req.headers.origin) {
@@ -56,6 +97,7 @@ app.use( function (req, res, next) {
 });
 
 
+import { authRouter } from "./routes/authorization";
 import { difficultiesRouter } from "./routes/difficulties";
 import { goldensRouter, goldenPlayersRouter, goldenRunsRouter, goldenSubmissionsRouter } from "./routes/goldens";
 import { lengthsRouter } from "./routes/lengths";
@@ -66,21 +108,22 @@ import { reviewsRouter, ratingsRouter } from "./routes/reviews-ratings";
 import { techsRouter } from "./routes/techs";
 import { usersRouter } from "./routes/users";
 
-app.use("/difficulties", difficultiesRouter);
-app.use("/goldens", goldensRouter);
-app.use("/goldenplayers", goldenPlayersRouter);
-app.use("/goldenruns", goldenRunsRouter);
-app.use("/goldensubmissions", goldenSubmissionsRouter);
-app.use("/lengths", lengthsRouter);
-app.use("/mods", modsRouter);
-app.use("/maps", mapsRouter);
-app.use("/publishers", publishersRouter);
-app.use("/reviews", reviewsRouter);
-app.use("/ratings", ratingsRouter);
-app.use("/techs", techsRouter);
-app.use("/users", usersRouter);
+apiRouter.use("/authentication", authRouter);
+apiRouter.use("/difficulties", difficultiesRouter);
+apiRouter.use("/goldens", goldensRouter);
+apiRouter.use("/goldenplayers", goldenPlayersRouter);
+apiRouter.use("/goldenruns", goldenRunsRouter);
+apiRouter.use("/goldensubmissions", goldenSubmissionsRouter);
+apiRouter.use("/lengths", lengthsRouter);
+apiRouter.use("/mods", modsRouter);
+apiRouter.use("/maps", mapsRouter);
+apiRouter.use("/publishers", publishersRouter);
+apiRouter.use("/reviews", reviewsRouter);
+apiRouter.use("/ratings", ratingsRouter);
+apiRouter.use("/techs", techsRouter);
+apiRouter.use("/users", usersRouter);
 
 
-app.use(noRouteError);
+apiRouter.use(noRouteError);
 
-app.use(errorHandler);
+apiRouter.use(errorHandler);
