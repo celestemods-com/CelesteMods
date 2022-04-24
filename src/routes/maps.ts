@@ -8,9 +8,11 @@ import {
     mapValidationJson
 } from "../types/internal";
 import {
-    param_userID, invalidMapperUserIdErrorMessage, param_mapID, formatMap, privilegedUser, param_lengthID, param_lengthOrder,
-    param_mapRevision, getCanonicalDifficultyID, getLengthID, invalidMapDifficultyErrorMessage, lengthErrorMessage, noMapDetailsErrorMessage
+    invalidMapperUserIdErrorMessage, param_mapID, formatMap, privilegedUser, param_mapRevision, getCanonicalDifficultyID, getLengthID,
+    invalidMapDifficultyErrorMessage, lengthErrorMessage, noMapDetailsErrorMessage
 } from "../helperFunctions/maps-mods-publishers";
+import { param_userID } from "../helperFunctions/users";
+import { param_lengthID, param_lengthOrder } from "../helperFunctions/lengths";
 import { getCurrentTime } from "../helperFunctions/utils";
 import { expressRoute } from "../types/express";
 

@@ -1,8 +1,8 @@
-import { NextFunction, Response } from "express";
+import { Response } from "express";
 import { prisma } from "../prismaClient";
 import axios from "axios";
 import { expressRoute } from "../types/express";
-import { errorWithMessage, isErrorWithMessage, toErrorWithMessage } from "../errorHandling";
+import { isErrorWithMessage, toErrorWithMessage } from "../errorHandling";
 import { difficulties, map_lengths, mods_details_type, publishers, users } from ".prisma/client";
 import {
     rawMod, rawMap, createParentDifficultyForMod, createChildDifficultyForMod, jsonCreateMapWithMod, mapIdCreationObjectForMod,
@@ -894,32 +894,6 @@ export const formatMap = async function (rawMap: rawMap, rawMod?: rawMod) {
 
 
 
-export const param_userID = <expressRoute>async function (req, res, next) {
-    try {
-        const idRaw: unknown = req.params.userID;
-
-        const id = Number(idRaw);
-
-        if (isNaN(id)) {
-            res.status(400).json("userID is not a number");
-            return;
-        }
-
-        const exists = await prisma.users.findUnique({ where: { id: id } });
-
-        if (!exists) {
-            res.status(404).json("userID does not exist");
-            return;
-        }
-
-        req.id2 = id;
-        next();
-    }
-    catch (error) {
-        next(error);
-    }
-}
-
 
 export const param_modID = <expressRoute>async function (req, res, next) {
     try {
@@ -1111,62 +1085,6 @@ export const param_mapRevision = <expressRoute>async function (req, res, next) {
         next(error);
     }
 }
-
-
-export const param_lengthID = <expressRoute>async function (req, res, next) {
-    try {
-        const idRaw: unknown = req.params.lengthID;
-
-        const id = Number(idRaw);
-
-        if (isNaN(id)) {
-            res.status(400).json("lengthID is not a number");
-            return;
-        }
-
-        const exists = await prisma.map_lengths.findUnique({ where: { id: id } });
-
-        if (!exists) {
-            res.status(404).json("lengthID does not exist");
-            return;
-        }
-
-        req.id2 = id;
-        next();
-    }
-    catch (error) {
-        next(error);
-    }
-}
-
-
-export const param_lengthOrder = <expressRoute>async function (req, res, next) {
-    try {
-        const orderRaw: unknown = req.params.lengthOrder;
-
-        const order = Number(orderRaw);
-
-        if (isNaN(order)) {
-            res.status(400).json("lengthOrder is not a number");
-            return;
-        }
-
-        const lengthFromId = await prisma.map_lengths.findUnique({ where: { order: order } });
-
-        if (!lengthFromId) {
-            res.status(404).json("lengthOrder does not exist");
-            return;
-        }
-
-        req.id2 = lengthFromId.id;
-        next();
-    }
-    catch (error) {
-        next(error);
-    }
-}
-
-
 
 
 export const param_publisherID = <expressRoute>async function (req, res, next) {

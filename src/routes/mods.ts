@@ -9,9 +9,10 @@ import {
 } from "../types/internal";
 import { formattedMod } from "../types/frontend";
 import {
-    formatMod, getPublisherCreateOrConnectObject, getDifficultyArrays, getMapIDsCreationArray, param_userID, param_modID, param_modRevision,
+    formatMod, getPublisherCreateOrConnectObject, getDifficultyArrays, getMapIDsCreationArray, param_modID, param_modRevision,
     privilegedUser, noModDetailsErrorMessage
 } from "../helperFunctions/maps-mods-publishers";
+import { param_userID } from "../helperFunctions/users";
 import { getCurrentTime } from "../helperFunctions/utils";
 import { mapPost } from "./maps";
 

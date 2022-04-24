@@ -3,7 +3,11 @@ import { prisma } from "../prismaClient";
 import { validatePublisherPost, validatePublisherPatch } from "../jsonSchemas/maps-mods-publishers";
 import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed, errorWithMessage } from "../errorHandling";
 import { publishers } from ".prisma/client";
-import { param_userID, param_publisherID, getGamebananaUsernameById, formatPublisher, patchPublisherWithName, patchPublisherWithUserID, patchPublisherWithGamebananaID } from "../helperFunctions/maps-mods-publishers";
+import {
+    param_publisherID, getGamebananaUsernameById, formatPublisher, patchPublisherWithName, patchPublisherWithUserID,
+    patchPublisherWithGamebananaID
+} from "../helperFunctions/maps-mods-publishers";
+import { param_userID } from "../helperFunctions/users";
 import { rawPublisher } from "../types/internal";
 
 
