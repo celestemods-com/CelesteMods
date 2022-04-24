@@ -30,6 +30,9 @@ const postSchema = {
             minimum: 0,
             maximum: intMaxSizes.smallInt.unsigned,
         },
+        generateSessionBool: {
+            type: "boolean",
+        },
     },
     additionalProperties: false,
     required: ["discordToken", "discordTokenType", "displayName", "displayDiscord",],   //for production
