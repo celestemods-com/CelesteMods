@@ -109,7 +109,7 @@ import { reviewsRouter, ratingsRouter } from "./routes/reviews-ratings";
 import { techsRouter } from "./routes/techs";
 import { usersRouter } from "./routes/users";
 
-apiRouter.use("/authentication", authRouter);
+apiRouter.use("/sessions", authRouter);
 apiRouter.use("/difficulties", difficultiesRouter);
 apiRouter.use("/goldens", goldensRouter);
 apiRouter.use("/goldenplayers", goldenPlayersRouter);
