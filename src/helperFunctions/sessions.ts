@@ -4,7 +4,7 @@ import { toErrorWithMessage } from "../errorHandling";
 import { session } from ".prisma/client";
 import { discordUser } from "../types/discord";
 import { formattedSession } from "../types/frontend";
-import { sessionData } from "../types/internal";
+import { sessionData } from "../types/sessions";
 
 
 export const noUserWithDiscordIdErrorMessage = "No user found matching given discordUser";

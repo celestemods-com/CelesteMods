@@ -7,7 +7,6 @@ import {
     rawMod, createParentDifficultyForMod, difficultyNamesForModArrayElement, jsonCreateMapWithMod, defaultDifficultyForMod,
     modDetailsWithIdCreationObject, loneModDetailsCreationObject, submitterUser, publisherConnectionObject, publisherCreationObject
 } from "../types/internal";
-import { formattedMod } from "../types/frontend";
 import {
     formatMod, getPublisherCreateOrConnectObject, getDifficultyArrays, getMapIDsCreationArray, param_modID, param_modRevision,
     privilegedUser, noModDetailsErrorMessage

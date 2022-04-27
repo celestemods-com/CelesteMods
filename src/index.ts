@@ -1,7 +1,7 @@
 import express from "express";
 import { sessionMiddleware } from "./sessionMiddleware";
-import { noRouteError, errorHandler, toErrorWithMessage } from "./errorHandling";
-import sessionTypeExtensions from "./types/sessionMiddleware";  //need to import this here so the compiler knows about it right away
+import { noRouteError, errorHandler } from "./errorHandling";
+import sessionTypeExtensions from "./types/sessions";  //need to import this here so the compiler knows about it right away
 
 
 const app = express();

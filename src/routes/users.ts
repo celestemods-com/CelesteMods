@@ -6,7 +6,7 @@ import { validatePost, validatePatch1, validatePatch2 } from "../jsonSchemas/use
 import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { users } from ".prisma/client";
 import { formattedUser } from "../types/frontend";
-import { createUserData, updateUserData, rawUser } from "../types/internal";
+import { createUserData, updateUserData } from "../types/internal";
 import { formatPartialUser, formatFullUser } from "../helperFunctions/users";
 
 

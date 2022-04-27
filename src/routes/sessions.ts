@@ -1,5 +1,4 @@
 import express from "express";
-import axios from "axios";
 import { prisma } from "../prismaClient";
 import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { formatSession, noUserWithDiscordIdErrorMessage, regenerateSessionAsync, revokeSessionAsync, storeIdentityInSession } from "../helperFunctions/sessions";

@@ -2,7 +2,7 @@ import express, { } from "express";
 import { prisma } from "../prismaClient";
 import { validateMapPost, validateMapPatch } from "../jsonSchemas/maps-mods-publishers";
 import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
-import { mods_details_type, maps_details_side, users } from ".prisma/client";
+import { mods_details_type, maps_details_side } from ".prisma/client";
 import {
     rawMap, mapIdCreationObjectStandalone, mapToTechCreationObject, submitterUser, rawMod, mapDetailsCreationObjectStandalone,
     mapValidationJson
