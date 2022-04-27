@@ -188,7 +188,7 @@ router.route("/")
 
             if (isErrorWithMessage(rawUser)) throw rawUser;
 
-            if (typeof rawUser === "boolean") throw "authorization POST didn't update discordUser info";
+            if (rawUser === true) throw "authorization POST didn't update discordUser info";
 
             if (!req.session.userID) throw "No req.session.userID";
 

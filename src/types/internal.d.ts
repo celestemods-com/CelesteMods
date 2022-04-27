@@ -14,7 +14,7 @@ export interface createUserData {
   discordDiscrim: string;
   displayDiscord: boolean;
   timeCreated: number;
-  permissions: string;
+  permissions: permissions;
   publishers?: Object;
   golden_players?: Object;
 }
@@ -32,8 +32,10 @@ export interface rawUser extends users {
 }
 
 export interface submitterUser extends users {
-  permissionsArray: string[];
+  permissionsArray: permissions[];
 }
+
+export type permissions = "Super_Admin" | "Admin" | "Map_Moderator" | "Map_Reviewer" | "Golden_Verifier" | "";
 
 
 

@@ -1,10 +1,11 @@
 import { Request } from "express";
 import { prisma } from "../prismaClient";
-import { toErrorWithMessage } from "../errorHandling";
-import { session } from ".prisma/client";
+import { errorWithMessage, toErrorWithMessage } from "../errorHandling";
+import { session, users, golden_players, publishers } from ".prisma/client";
 import { discordUser } from "../types/discord";
 import { formattedSession } from "../types/frontend";
 import { sessionData } from "../types/sessions";
+import { permissions } from "../types/internal";
 
 
 export const noUserWithDiscordIdErrorMessage = "No user found matching given discordUser";
@@ -22,7 +23,7 @@ export const formatSession = function (rawSession: session) {
         refreshCount: sessionData.refreshCount,
         userID: sessionData.userID,
     };
-    
+
 
     return formattedSession;
 }
@@ -51,8 +52,9 @@ export const storeIdentityInSession = async function (req: Request, discordUser:
 
             await regenerateSessionAsync(req);
 
-            req.session.userID = updatedUser.id;
             req.session.refreshCount = 0;
+            req.session.userID = updatedUser.id;
+            req.session.permissions = <permissions[]>updatedUser.permissions.split(",");
 
 
             return updatedUser;
@@ -61,6 +63,11 @@ export const storeIdentityInSession = async function (req: Request, discordUser:
             const celestemodsUser = await prisma.users.findUnique({ where: { discordID: discordUser.id } });
 
             if (!celestemodsUser) throw noUserWithDiscordIdErrorMessage;
+
+
+            req.session.refreshCount = 0;
+            req.session.userID = celestemodsUser.id;
+            req.session.permissions = <permissions[]>celestemodsUser.permissions.split(",");
 
 
             return true;
