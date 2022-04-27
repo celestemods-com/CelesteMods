@@ -1,5 +1,12 @@
 import { difficulties } from ".prisma/client";
 
+export interface formattedSession {
+  sid: string;
+  sessionExpiryTime: Date;
+  refreshCount: number;
+  userID: number;
+}
+
 export interface formattedUser {
   id: number;
   displayName: string;

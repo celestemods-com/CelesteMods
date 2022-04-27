@@ -1,13 +1,33 @@
 import express, { Request, Response } from "express";
-import session from "express-session";
 import axios from "axios";
 import { prisma } from "../prismaClient";
 import { isErrorWithMessage, toErrorWithMessage } from "../errorHandling";
-import { getCurrentTime } from "../helperFunctions/utils";
+import { session } from ".prisma/client";
 import { discordUser } from "../types/discord";
+import { formattedSession } from "../types/frontend";
+import { sessionData } from "../types/internal";
 
 
 export const noUserWithDiscordIdErrorMessage = "No user found matching given discordUser";
+
+
+
+
+export const formatSession = function (rawSession: session) {
+    const sessionData: sessionData = JSON.parse(rawSession.data);
+    const sessionExpiryTime = <Date>sessionData.cookie.expires;
+
+
+    const formattedSession: formattedSession = {
+        sid: rawSession.sid,
+        sessionExpiryTime: sessionData.cookie.expires,
+        refreshCount: sessionData.refreshCount,
+        userID: sessionData.userID,
+    };
+    
+
+    return formattedSession;
+}
 
 
 

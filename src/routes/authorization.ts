@@ -2,7 +2,7 @@ import express from "express";
 import axios from "axios";
 import { prisma } from "../prismaClient";
 import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
-import { getDiscordUser, noUserWithDiscordIdErrorMessage, regenerateSessionAsync, revokeSessionAsync, storeIdentityInSession } from "../helperFunctions/authorization";
+import { formatSession, getDiscordUser, noUserWithDiscordIdErrorMessage, regenerateSessionAsync, revokeSessionAsync, storeIdentityInSession } from "../helperFunctions/authorization";
 import { formatFullUser, param_userID } from "../helperFunctions/users";
 
 
@@ -13,11 +13,11 @@ export { router as authRouter };
 
 
 router.route("/discord")
-    .get(async function (req, res, next) {
-        try{
+    .get(async function (_req, res, next) {
+        try {
             const urlRoot = "https://discord.com/api/oauth2/authorize?";
-            const discordClientID = "client_id=" + <string> process.env.DISCORD_CLIENT_ID;
-            const redirectUri = "redirect_uri=" + encodeURIComponent(<string> process.env.DISCORD_REDIRECT_URI);
+            const discordClientID = "client_id=" + <string>process.env.DISCORD_CLIENT_ID;
+            const redirectUri = "redirect_uri=" + encodeURIComponent(<string>process.env.DISCORD_REDIRECT_URI);
             const responseType = "response_type=code";
             const scope = "scope=identify";
 
@@ -38,7 +38,7 @@ router.route("/discord")
 
 router.route("/refresh")
     .post(async function (req, res, next) {
-        try{
+        try {
 
             let refreshCount = req.session.refreshCount;
 
@@ -62,25 +62,8 @@ router.route("/refresh")
                 refreshCount: refreshCount,
             };
 
-            
+
             res.status(200).json(responseObject);
-        }
-        catch (error) {
-            next(toErrorWithMessage(error));
-        }
-    })
-    .all(methodNotAllowed);
-
-
-
-
-router.route("/revoke/session")
-    .post(async function (req, res, next) {
-        try{
-            await revokeSessionAsync(req);
-
-
-            res.sendStatus(200);
         }
         catch (error) {
             next(toErrorWithMessage(error));
@@ -98,19 +81,37 @@ router.param("userID", async function (req, res, next) {
 
 router.route("/revoke/user/:userID")
     .post(async function (req, res, next) {
-        try{
-            const userID = <number>req.id2;
-
-            const sessionIDs: string[] = ["fhsdkjfhsa", "fahkjfhsdlfh"]   //TODO: implement actually getting all of the user's SIDs from the sessionStore
+        try {
+            const userID = <number>req.id2
 
 
-            await Promise.all(
-                sessionIDs.map(                 //.forEach caused an error so used .map instead
-                    async (sessionID) => {
-                        await revokeSessionAsync(req, sessionID);
-                    }
-                )
-            );
+            await prisma.session.deleteMany({ where: { data: { contains: `"userID":"${userID}"` } } });
+
+
+            res.sendStatus(200);
+        }
+        catch (error) {
+            next(toErrorWithMessage(error));
+        }
+    })
+    .all(methodNotAllowed);
+
+
+router.route("/revoke")
+    .post(async function (req, res, next) {
+        try {
+            const sessionID: string | null | undefined = req.body.sessionID;
+
+            if (!sessionID) {
+                await revokeSessionAsync(req);
+            }
+            else if (typeof sessionID !== "string" || !sessionID.length) {
+                res.status(400).json("Malformed request body");
+                return;
+            }
+            else {
+                await prisma.session.delete({ where: { sid: sessionID } });
+            }
 
 
             res.sendStatus(200);
@@ -124,64 +125,91 @@ router.route("/revoke/user/:userID")
 
 
 
-router.route("/sessions")
+router.route("/user/:userID")
     .get(async function (req, res, next) {
         try {
-            //TODO: implement this
+            const userID = <number>req.id2;
+
+
+            const rawSessions = await prisma.session.findMany({ where: { data: { contains: `"userID":"${userID}"` } } });
+
+
+            const formattedSessions = rawSessions.map((rawSession) => {
+                return formatSession(rawSession);
+            });
+
+
+            res.json(formattedSessions);
         }
         catch (error) {
             next(toErrorWithMessage(error));
         }
     })
-    .all(noRouteError);
+    .all(methodNotAllowed);
 
 
 
 
 router.route("/")
+    .get(async function (_req, res, next) {
+        try {
+            const rawSessions = await prisma.session.findMany();
+
+
+            const formattedSessions = rawSessions.map((rawSession) => {
+                return formatSession(rawSession);
+            });
+
+
+            res.json(formattedSessions);
+        }
+        catch (error) {
+            next(toErrorWithMessage(error));
+        }
+    })
     .post(async function (req, res, next) {
-        try{
-                const discordTokenType: string = req.body.discordTokenType;
-                const discordToken: string = req.body.discordToken;
+        try {
+            const discordTokenType: string = req.body.discordTokenType;
+            const discordToken: string = req.body.discordToken;
 
-                if (typeof discordToken !== "string" || typeof discordTokenType !== "string") {
-                    res.status(400).json("Malformed request body");
-                    return;
-                }
-
-
-                const discordUser = await getDiscordUser(res, discordTokenType, discordToken);
-
-                if (!discordUser) return;
-                else if (isErrorWithMessage(discordUser)) throw discordUser;
+            if (typeof discordToken !== "string" || typeof discordTokenType !== "string") {
+                res.status(400).json("Malformed request body");
+                return;
+            }
 
 
-                const rawUser = await storeIdentityInSession(req, discordUser, true);
+            const discordUser = await getDiscordUser(res, discordTokenType, discordToken);
 
-                if (isErrorWithMessage(rawUser)) throw rawUser;
-                
-                if (typeof rawUser === "boolean") throw "authorization POST didn't update discordUser info";
-
-                if (!req.session.userID) throw "No req.session.userID";
+            if (!discordUser) return;
+            else if (isErrorWithMessage(discordUser)) throw discordUser;
 
 
-                const formattedUser = formatFullUser(rawUser);
-                
-                if (isErrorWithMessage(formattedUser)) throw formattedUser;
+            const rawUser = await storeIdentityInSession(req, discordUser, true);
+
+            if (isErrorWithMessage(rawUser)) throw rawUser;
+
+            if (typeof rawUser === "boolean") throw "authorization POST didn't update discordUser info";
+
+            if (!req.session.userID) throw "No req.session.userID";
 
 
-                const sessionExpiryTime = req.session.cookie.expires;
-                const refreshCount = req.session.refreshCount ? req.session.refreshCount : 0;
+            const formattedUser = formatFullUser(rawUser);
+
+            if (isErrorWithMessage(formattedUser)) throw formattedUser;
 
 
-                const responseObject = {
-                    sessionExpiryTime: sessionExpiryTime,
-                    refreshCount: refreshCount,
-                    celestemodsUser: formattedUser,
-                };
+            const sessionExpiryTime = req.session.cookie.expires;
+            const refreshCount = req.session.refreshCount ? req.session.refreshCount : 0;
 
 
-                res.json(responseObject);
+            const responseObject = {
+                sessionExpiryTime: sessionExpiryTime,
+                refreshCount: refreshCount,
+                celestemodsUser: formattedUser,
+            };
+
+
+            res.json(responseObject);
         }
         catch (error) {
             if (isErrorWithMessage(error)) {

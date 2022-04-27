@@ -2,6 +2,7 @@ import {
   users, publishers, golden_players, tech_list, tech_videos, difficulties, mods_ids, mods_details, mods_details_type, maps_ids, maps_details, maps_details_side,
   map_lengths, maps_to_tech
 } from ".prisma/client";
+import { Cookie } from "express-session"; 
 
 
 //TODO: remove unnecessary interfaces. use <typeof Object.arguments> instead
@@ -229,7 +230,6 @@ interface modDetailsForMap extends mods_details {
 }
 
 
-
 export interface mapValidationJson {
   name: string,
   canonicalDifficulty?: string | null,
@@ -265,4 +265,13 @@ export interface publisherCreationObject {
 
 export interface rawPublisher extends publishers {
   users: users | null;
+}
+
+
+
+
+export interface sessionData {
+  cookie: Required<Cookie>;
+  refreshCount: number;
+  userID: number;
 }
