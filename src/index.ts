@@ -22,21 +22,6 @@ if (process.env.NODE_ENV !== "dev") {
 
 app.use(sessionMiddleware);
 
-app.use(async function (req, res, next) {
-    try {       //TODO: implement actual session routes
-        if(!req.session.userID) {
-            req.session.userID = 69420;
-        }
-        else req.session.userID--;
-
-        if(req.session) res.json(req.session.cookie);
-        else res.json("no session");
-    }
-    catch ( error ) {
-        next(toErrorWithMessage(error));
-    }
-})
-
 app.use("api/v1", apiRouter);
 
 
