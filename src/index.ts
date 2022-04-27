@@ -98,7 +98,7 @@ apiRouter.use( function (req, res, next) {
 });
 
 
-import { authRouter } from "./routes/authorization";
+import { sessionRouter } from "./routes/sessions";
 import { difficultiesRouter } from "./routes/difficulties";
 import { goldensRouter, goldenPlayersRouter, goldenRunsRouter, goldenSubmissionsRouter } from "./routes/goldens";
 import { lengthsRouter } from "./routes/lengths";
@@ -109,7 +109,7 @@ import { reviewsRouter, ratingsRouter } from "./routes/reviews-ratings";
 import { techsRouter } from "./routes/techs";
 import { usersRouter } from "./routes/users";
 
-apiRouter.use("/sessions", authRouter);
+apiRouter.use("/sessions", sessionRouter);
 apiRouter.use("/difficulties", difficultiesRouter);
 apiRouter.use("/goldens", goldensRouter);
 apiRouter.use("/goldenplayers", goldenPlayersRouter);

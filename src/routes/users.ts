@@ -1,6 +1,7 @@
 import express from "express";
 import { prisma } from "../prismaClient";
-import { getDiscordUser, storeIdentityInSession } from "../helperFunctions/authorization";
+import { getDiscordUser } from "../helperFunctions/discord";
+import { storeIdentityInSession } from "../helperFunctions/sessions";
 import { validatePost, validatePatch1, validatePatch2 } from "../jsonSchemas/users";
 import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { users } from ".prisma/client";

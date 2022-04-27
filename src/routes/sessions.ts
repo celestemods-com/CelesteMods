@@ -2,12 +2,13 @@ import express from "express";
 import axios from "axios";
 import { prisma } from "../prismaClient";
 import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
-import { formatSession, getDiscordUser, noUserWithDiscordIdErrorMessage, regenerateSessionAsync, revokeSessionAsync, storeIdentityInSession } from "../helperFunctions/authorization";
+import { formatSession, noUserWithDiscordIdErrorMessage, regenerateSessionAsync, revokeSessionAsync, storeIdentityInSession } from "../helperFunctions/sessions";
 import { formatFullUser, param_userID } from "../helperFunctions/users";
+import { getDiscordUser } from "../helperFunctions/discord";
 
 
 const router = express.Router();
-export { router as authRouter };
+export { router as sessionRouter };
 
 
 
