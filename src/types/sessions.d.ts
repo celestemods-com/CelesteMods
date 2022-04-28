@@ -1,5 +1,4 @@
 import { SessionData } from "express-session";  //this import is required so the typescript compiler is happy
-import { Cookie } from "express-session";
 import { permissions } from "./internal";
 
 
@@ -15,7 +14,17 @@ declare module "express-Session" {
 
 
 export interface sessionData {
-  cookie: Required<Cookie>;
+  cookie: sessionDataCookie;
   refreshCount: number;
   userID: number;
+}
+
+
+interface sessionDataCookie {
+  originalMaxAge: number;
+  expires: Date;
+  httpOnly: boolean;
+  path: string;
+  secure: boolean;
+  sameSite: "strict";
 }

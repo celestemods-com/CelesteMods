@@ -19,7 +19,7 @@ import { mapPost } from "./maps";
 const modsRouter = express.Router();
 
 //TODO: Fix known bug of child difficulties submitted with a mod not having parentModID populated.
-//  can fix the object being used in the mod creation (preferable), or can fix it after the face (either here or in difficulties) (probably easier).
+//  can fix the object being used in the mod creation (preferable), or can fix it after the fact (either here or in difficulties) (probably easier).
 
 
 
