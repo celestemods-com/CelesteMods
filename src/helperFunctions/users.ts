@@ -1,6 +1,6 @@
 import { prisma } from "../prismaClient";
 import { expressRoute } from "../types/express"; import { toErrorWithMessage } from "../errorHandling";
-import { formattedUser } from "../types/frontend";
+import { formattedUser, permissions } from "../types/frontend";
 import { rawUser } from "../types/internal";
 import { isNumberArray } from "../helperFunctions/utils";
 
@@ -86,6 +86,9 @@ export const formatFullUser = function (rawUser: rawUser) {
         }
 
 
+        const permissionsArray = <permissions[]>rawUser.permissions.split(",")
+
+
         const formattedUser: formattedUser = {
             id: rawUser.id,
             displayName: rawUser.displayName,
@@ -94,7 +97,7 @@ export const formatFullUser = function (rawUser: rawUser) {
             displayDiscord: rawUser.displayDiscord,
             timeCreated: rawUser.timeCreated,
             accountStatus: rawUser.accountStatus,
-            permissions: rawUser.permissions,
+            permissions: permissionsArray,
             goldenPlayerID: rawUser.golden_players?.id,
         };
 

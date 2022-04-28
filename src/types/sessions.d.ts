@@ -1,5 +1,5 @@
 import { SessionData } from "express-session";  //this import is required so the typescript compiler is happy
-import { permissions } from "./internal";
+import { permissions } from "./frontend";
 
 
 declare module "express-Session" {

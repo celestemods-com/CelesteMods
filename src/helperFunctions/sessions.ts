@@ -5,7 +5,7 @@ import { session, users, golden_players, publishers } from ".prisma/client";
 import { discordUser } from "../types/discord";
 import { formattedSession } from "../types/frontend";
 import { sessionData } from "../types/sessions";
-import { permissions } from "../types/internal";
+import { permissions } from "../types/frontend";
 
 
 export const noUserWithDiscordIdErrorMessage = "No user found matching given discordUser";

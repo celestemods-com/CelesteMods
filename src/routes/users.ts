@@ -2,10 +2,10 @@ import express from "express";
 import { prisma } from "../prismaClient";
 import { getDiscordUser } from "../helperFunctions/discord";
 import { storeIdentityInSession } from "../helperFunctions/sessions";
-import { validatePost, validatePatch1, validatePatch2 } from "../jsonSchemas/users";
+import { validatePost, validatePatch1, validatePatch2, validatePatch3 } from "../jsonSchemas/users";
 import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { users } from ".prisma/client";
-import { formattedUser } from "../types/frontend";
+import { formattedUser, permissions } from "../types/frontend";
 import { createUserData, updateUserData } from "../types/internal";
 import { formatPartialUser, formatFullUser } from "../helperFunctions/users";
 
@@ -718,7 +718,7 @@ router.route("/:userID/permissions")
         try {
             const userFromId = <users>await prisma.users.findUnique({ where: { id: req.id } });    //can cast as "users" because the router.param already checked that the id is valid
 
-            res.status(200).json(userFromId.permissions);
+            res.status(200).json(userFromId.permissions.split(","));
         }
         catch (error) {
             next(toErrorWithMessage(error));
@@ -726,37 +726,23 @@ router.route("/:userID/permissions")
     })
     .patch(async function (req, res, next) {
         try {
-            const permissionsArray: string[] | undefined = req.body.permissions;
+            const permissionsArray: permissions[] = req.body.permissions;
 
-            if (!permissionsArray) {
-                res.status(400).json("Must include 'permissions'");
-                return;
-            }
-            else if (permissionsArray.constructor != Array) {
-                res.status(400).json("'permissions' must be an array");
+            
+            const valid = validatePatch3({
+                permissions: permissionsArray,
+            });
+
+            if (!valid || !permissionsArray) {
+                res.status(400).json("Malformed request body");
                 return;
             }
 
 
             let permissionsString = "";
 
-            for (const element of permissionsArray) {
-                if (
-                    element === "Super_Admin" ||
-                    element === "Admin" ||
-                    element === "Map_Moderator" ||
-                    element === "Map_Reviewer" ||
-                    element === "Golden_Verifier" ||
-                    element === ""
-                ) {
-                    permissionsString += ",";
-                    permissionsString += element;
-                }
-                else {
-                    res.status(400).json(`${element} is not a valid permission`);
-                    return;
-                }
-            }
+            if (permissionsArray.length) permissionsString = permissionsArray.join(",");
+
 
             await prisma.users.update({
                 where: { id: req.id },

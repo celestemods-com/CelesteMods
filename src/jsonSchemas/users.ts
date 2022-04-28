@@ -78,9 +78,26 @@ const patch2Schema = {
 };
 
 
+const patch3Schema = {
+    type: "object",
+    properties: {
+        permissions: {
+            type: "array",
+            minItems: 0,
+            uniqueItems: true,
+            items: {
+                type: "string",
+                pattern: "(^Super_Admin$)|(^Admin$)|(^Map_Moderator$)|(^Map_Reviewer$)|(^Golden_Verifier$)",
+            }
+        }
+    }
+}
+
+
 const validatePost = ajv.compile(postSchema);
 const validatePatch1 = ajv.compile(patch1Schema);
 const validatePatch2 = ajv.compile(patch2Schema);
+const validatePatch3 = ajv.compile(patch3Schema);
 
 
-export { validatePost, validatePatch1, validatePatch2 };
+export { validatePost, validatePatch1, validatePatch2, validatePatch3 };
