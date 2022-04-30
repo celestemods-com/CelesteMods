@@ -86,7 +86,7 @@ export const formatFullUser = function (rawUser: rawUser) {
         }
 
 
-        const permissionsArray = <permissions[]>rawUser.permissions.split(",")
+        const permissionsArray = <permissions[]>rawUser.permissions.split(",");
 
 
         const formattedUser: formattedUser = {

@@ -6,6 +6,8 @@ import { discordUser } from "../types/discord";
 import { formattedSession } from "../types/frontend";
 import { sessionData } from "../types/sessions";
 import { permissions } from "../types/frontend";
+import { app } from "..";
+import { sessionMiddleware } from "../sessionMiddleware";
 
 
 export const noUserWithDiscordIdErrorMessage = "No user found matching given discordUser";
@@ -34,6 +36,9 @@ export const formatSession = function (rawSession: session) {
 
 export const storeIdentityInSession = async function (req: Request, discordUser: discordUser, updateDiscordBool: boolean) {
     try {
+        app.use(sessionMiddleware);     //if this line is reached, the user has consented to a session cookie. so, call the middleware and create one now.
+
+
         if (updateDiscordBool) {
             const updatedUser = await prisma.users.update({
                 where: { discordID: discordUser.id },
@@ -49,8 +54,6 @@ export const storeIdentityInSession = async function (req: Request, discordUser:
 
             if (!updatedUser) throw noUserWithDiscordIdErrorMessage;
 
-
-            await regenerateSessionAsync(req);
 
             req.session.refreshCount = 0;
             req.session.userID = updatedUser.id;

@@ -5,6 +5,8 @@ import { prisma } from ".//prismaClient";
 
 
 
+export const sessionCookieNameString = "celestemods.backend.sid";
+
 const sessionStoreOptions: typeof PrismaSessionStore.arguments = {
     checkPeriod: 60 * 60 * 1000,    //1h    //in milliseconds
     stale: false,   //deletes stale cookies without returning them
@@ -40,7 +42,7 @@ export const sessionOptionsObject = {
     resave: false,
     rolling: false,
     saveUninitialized: false,
-    name: "celestemods.backend.sid",
+    name: sessionCookieNameString,
     store: sessionStore,
     unset: <"destroy">"destroy",
 }

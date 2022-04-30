@@ -1,10 +1,11 @@
 import express from "express";
-import { sessionMiddleware } from "./sessionMiddleware";
+import cookieParser from "cookie-parser"
+import { sessionCookieNameString, sessionMiddleware } from "./sessionMiddleware";
 import { noRouteError, errorHandler } from "./errorHandling";
 import sessionTypeExtensions from "./types/sessions";  //need to import this here so the compiler knows about it right away
 
 
-const app = express();
+export const app = express();
 app.use(express.json());
 
 const apiRouter = express.Router();
@@ -17,10 +18,22 @@ app.listen(port, () => {
 
 
 if (process.env.NODE_ENV !== "dev") {
-    app.set("trust proxy", 1)   //TODO: figure out if this is needed during deployment. if express is behind a proxy this will be required to enable HTTPS.
+    app.set("trust proxy", 1);   //TODO: figure out if this is needed during deployment. if express is behind a proxy this will be required to enable HTTPS.
 }
 
-app.use(sessionMiddleware);
+
+app.use(cookieParser());
+
+
+app.use(function (req, _res, next) {
+    if (req.cookies[sessionCookieNameString]) {
+        app.use(sessionMiddleware);     //if session cookie already exists then run middleare to populate req.session
+    }                                   //otherwise, don't call the middleware so cookies aren't set without consent
+
+
+    next();
+});
+
 
 app.use("api/v1", apiRouter);
 
@@ -38,7 +51,7 @@ app.use(errorHandler);
 
 
 
-apiRouter.use( function (req, res, next) {
+apiRouter.use(function (req, res, next) {
     try {
         let oneof = false;
         if (req.headers.origin) {
@@ -47,9 +60,9 @@ apiRouter.use( function (req, res, next) {
             oneof = true;
 
 
-            const safeOrigin =  "https://celestemods.com";
+            const safeOrigin = "https://celestemods.com";
 
-            if(process.env.NODE_ENV === "dev" || req.headers.origin === safeOrigin) {
+            if (process.env.NODE_ENV === "dev" || req.headers.origin === safeOrigin) {
                 res.header("Access-Control-Allow-Credentials", "true");
             }
         }
@@ -65,7 +78,7 @@ apiRouter.use( function (req, res, next) {
         }
 
         if (oneof) {
-            res.header("Access-Control-Max-Age", "600" );
+            res.header("Access-Control-Max-Age", "600");
         }
 
         // intercept OPTIONS method
