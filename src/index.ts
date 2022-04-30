@@ -27,7 +27,7 @@ app.use(cookieParser());
 
 app.use(function (req, _res, next) {
     if (req.cookies[sessionCookieNameString]) {
-        app.use(sessionMiddleware);     //if session cookie already exists then run middleare to populate req.session
+        app.use(sessionMiddleware);     //if session cookie already exists then run middleware to populate req.session
     }                                   //otherwise, don't call the middleware so cookies aren't set without consent
 
 

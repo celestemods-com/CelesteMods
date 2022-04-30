@@ -1,4 +1,4 @@
-import { Request } from "express";
+import { Request, Response } from "express";
 import { prisma } from "../prismaClient";
 import { errorWithMessage, toErrorWithMessage } from "../errorHandling";
 import { session, users, golden_players, publishers } from ".prisma/client";
@@ -11,6 +11,43 @@ import { sessionMiddleware } from "../sessionMiddleware";
 
 
 export const noUserWithDiscordIdErrorMessage = "No user found matching given discordUser";
+
+
+
+
+export const adminPermsArray: permissions[] = ["Super_Admin", "Admin"];
+export const mapStaffPermsArray: permissions[] = ["Super_Admin", "Admin", "Map_Moderator"];
+export const goldenStaffPermsArray: permissions[] =  ["Super_Admin", "Admin", "Golden_Verifier"];
+
+
+export const checkPermissions = function (req: Request, res: Response, validPermissionsArray: permissions[]) {
+    const userPermissionsArray = req.session.permissions;
+
+
+    if (!req.session || userPermissionsArray === undefined) {
+        res.sendStatus(401);
+        return false;
+    }
+
+
+    let permitted = false;
+
+    if (userPermissionsArray && userPermissionsArray.length) {
+        permitted = Boolean(
+            userPermissionsArray.find(
+                (permission) => {
+                    validPermissionsArray.includes(permission);
+                }
+            )
+        );
+    }
+
+
+    if (!permitted) res.sendStatus(403);
+
+
+    return permitted;
+}
 
 
 
