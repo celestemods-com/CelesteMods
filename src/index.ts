@@ -25,6 +25,15 @@ if (process.env.NODE_ENV !== "dev") {
 app.use(cookieParser());
 
 
+// app.use(sessionMiddleware)               //for testing
+// app.use((req, res, next) => {
+//     req.session.userID = 1;
+//     res.json(`req.session.cookie.expires: ${req.session.cookie.expires}
+//     req.session.cookie.maxAge: ${req.session.cookie.maxAge}
+//     req.session.cookie.originalMaxAge: ${req.session.cookie.originalMaxAge}`)
+// })
+
+
 app.use(function (req, _res, next) {
     if (req.cookies[sessionCookieNameString]) {
         app.use(sessionMiddleware);     //if session cookie already exists then run middleware to populate req.session

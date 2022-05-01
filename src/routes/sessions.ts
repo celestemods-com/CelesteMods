@@ -1,7 +1,10 @@
 import express from "express";
 import { prisma } from "../prismaClient";
 import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
-import { formatSession, noUserWithDiscordIdErrorMessage, regenerateSessionAsync, revokeSessionAsync, storeIdentityInSession } from "../helperFunctions/sessions";
+import {
+    formatSession, noUserWithDiscordIdErrorMessage, regenerateSessionAsync, revokeSessionAsync, storeIdentityInSession, adminPermsArray,
+    mapStaffPermsArray, goldenStaffPermsArray, checkPermissions, checkSessionAge
+} from "../helperFunctions/sessions";
 import { formatFullUser, param_userID } from "../helperFunctions/users";
 import { getDiscordUser } from "../helperFunctions/discord";
 
@@ -44,7 +47,10 @@ router.route("/refresh")
 
             if (refreshCount === undefined) throw "refreshCount is undefined";
 
-            else if (refreshCount >= 20) res.status(403).json("Maximum refreshCount has been reached. Please use /authorization to generate a new session.");
+            else if (refreshCount >= 20){
+                res.status(403).json("Maximum refreshCount has been reached. Please generate a new session.");
+                return;
+            }
 
 
             await regenerateSessionAsync(req);
@@ -84,6 +90,18 @@ router.route("/revoke/user/:userID")
         try {
             const userID = <number>req.id2
 
+            
+            let permitted: boolean;
+
+            if (req.session.userID === userID) {
+                permitted = await checkSessionAge(req, res);
+            }
+            else {
+                permitted = checkPermissions(req, adminPermsArray, res);
+            }
+
+            if (!permitted) return;
+
 
             await prisma.session.deleteMany({ where: { data: { contains: `"userID":"${userID}"` } } });
 
@@ -110,6 +128,9 @@ router.route("/revoke")
                 return;
             }
             else {
+                const permitted = checkPermissions(req, adminPermsArray, res);
+                if (!permitted) return;
+
                 await prisma.session.delete({ where: { sid: sessionID } });
             }
 
@@ -129,6 +150,18 @@ router.route("/user/:userID")
     .get(async function (req, res, next) {
         try {
             const userID = <number>req.id2;
+
+            
+            let permitted: boolean;
+
+            if (req.session.userID === userID) {
+                permitted = await checkSessionAge(req, res);
+            }
+            else {
+                permitted = checkPermissions(req, adminPermsArray, res);
+            }
+
+            if (!permitted) return;
 
 
             const rawSessions = await prisma.session.findMany({ where: { data: { contains: `"userID":"${userID}"` } } });
@@ -151,8 +184,12 @@ router.route("/user/:userID")
 
 
 router.route("/")
-    .get(async function (_req, res, next) {
+    .get(async function (req, res, next) {
         try {
+            const permitted = checkPermissions(req, adminPermsArray, res);
+            if (!permitted) return;
+
+
             const rawSessions = await prisma.session.findMany();
 
 

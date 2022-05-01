@@ -17,14 +17,20 @@ export const noUserWithDiscordIdErrorMessage = "No user found matching given dis
 
 export const adminPermsArray: permissions[] = ["Super_Admin", "Admin"];
 export const mapStaffPermsArray: permissions[] = ["Super_Admin", "Admin", "Map_Moderator"];
-export const goldenStaffPermsArray: permissions[] =  ["Super_Admin", "Admin", "Golden_Verifier"];
+export const goldenStaffPermsArray: permissions[] = ["Super_Admin", "Admin", "Golden_Verifier"];
 
 
-export const checkPermissions = function (req: Request, res: Response, validPermissionsArray: permissions[]) {
+export const checkPermissions = function (req: Request, validPermissionsArray: permissions[], res?: Response) {
+    if (res && !checkSessionAge(req)) {     //the session age is checked here only if res is sent. if not, the calling function must check age itself.
+        res.sendStatus(401);
+        return false;
+    }
+
+
     const userPermissionsArray = req.session.permissions;
 
 
-    if (!req.session || userPermissionsArray === undefined) {
+    if ((!req.session || userPermissionsArray === undefined) && res) {
         res.sendStatus(401);
         return false;
     }
@@ -43,10 +49,37 @@ export const checkPermissions = function (req: Request, res: Response, validPerm
     }
 
 
-    if (!permitted) res.sendStatus(403);
+    if (!permitted && res) res.sendStatus(403);
 
 
     return permitted;
+}
+
+
+
+
+export const checkSessionAge = async function (req: Request, res?: Response) {
+    if (!req.session.cookie.maxAge || req.session.refreshCount === undefined) throw "req.session.cookie.maxAge is undefined";
+
+
+    //if cookie is more than an hour old and still refreshable, refresh it
+    if (req.session.cookie.originalMaxAge - (60 * 60 * 1000) > req.session.cookie.maxAge) {
+
+        if (req.session.refreshCount >= 20){
+            await revokeSessionAsync(req);
+            
+            if (res) res.sendStatus(401);
+            
+            return false;
+        }
+        else{
+            await regenerateSessionAsync(req);
+            req.session.refreshCount++;
+        }
+    }
+
+
+    return true;
 }
 
 
@@ -133,19 +166,12 @@ export const regenerateSessionAsync = (req: Request) => {
 }
 
 
-export const revokeSessionAsync = (req: Request, sessionId?: string) => {
-    if (sessionId) {
-        return new Promise<void>((resolve, reject) => {
-            reject("not implemented yet");      //TODO: implement destroying session based on SID
-        })
-    }
-    else {
-        return new Promise<void>((resolve, reject) => {
-            req.session.destroy((error) => {
-                if (error) return reject(error);
+export const revokeSessionAsync = (req: Request,) => {
+    return new Promise<void>((resolve, reject) => {
+        req.session.destroy((error) => {
+            if (error) return reject(error);
 
-                resolve();
-            });
+            resolve();
         });
-    }
+    });
 }
