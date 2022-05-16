@@ -1,13 +1,16 @@
 import express from "express";
 import { prisma } from "../prismaClient";
-import { getDiscordUser } from "../helperFunctions/discord";
-import { storeIdentityInSession } from "../helperFunctions/sessions";
-import { validatePost, validatePatch1, validatePatch2, validatePatch3 } from "../jsonSchemas/users";
+
 import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
+import { formatPartialUser, formatFullUser } from "../helperFunctions/users";
+import { getDiscordUser } from "../helperFunctions/discord";
+import { storeIdentityInSession, adminPermsArray, mapStaffPermsArray, checkPermissions } from "../helperFunctions/sessions";
+
+import { validatePost, validatePatch1, validatePatch2, validatePatch3 } from "../jsonSchemas/users";
+
 import { users } from ".prisma/client";
 import { formattedUser, permissions } from "../types/frontend";
 import { createUserData, updateUserData } from "../types/internal";
-import { formatPartialUser, formatFullUser } from "../helperFunctions/users";
 
 
 const router = express.Router();
@@ -363,10 +366,19 @@ router.route("/gamebanana/:gamebananaID")
 router.route("/:userID/gamebanana/:gamebananaID")
     .post(async function (req, res, next) {
         try {
+            const userID = <number>req.id;
+
+            if (req.session.userID !== userID) {
+                const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+                if (!permitted) return;
+            }
+
+
             if (!req.valid) {
                 res.status(400).json("gamebananaID already linked to another user");
                 return;
             }
+
 
             if (!req.idsMatch) {
                 const gamebananaID = <number>req.id2; //can cast as "number" because the router.param already checked that the id is valid
@@ -395,6 +407,14 @@ router.route("/:userID/gamebanana/:gamebananaID")
     })
     .delete(async function (req, res, next) {
         try {
+            const userID = <number>req.id;
+
+            if (req.session.userID !== userID) {
+                const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+                if (!permitted) return;
+            }
+
+
             if (!req.valid) {
                 res.status(400).json("gamebananaID linked to a different user");
                 return;
@@ -404,6 +424,7 @@ router.route("/:userID/gamebanana/:gamebananaID")
                 res.status(400).json("gamebananaID not linked to specified user");
                 return;
             }
+
 
             await prisma.users.update({
                 where: { id: req.id },
@@ -445,6 +466,14 @@ router.route("/:userID")
     })
     .patch(async function (req, res, next) {
         try {
+            const userID = <number>req.id;
+
+            if (req.session.userID !== userID) {
+                const permitted = checkPermissions(req, adminPermsArray, true, res);
+                if (!permitted) return;
+            }
+
+
             const displayName: string | undefined = req.body.displayName;
             const displayDiscord: boolean | undefined = req.body.displayDiscord;
             const gamebananaIDsArray: number[] | undefined = req.body.gamebananaIDs;
@@ -526,6 +555,14 @@ router.route("/:userID")
 router.route("/:userID/discord")
     .patch(async function (req, res, next) {
         try {
+            const userID = <number>req.id;
+
+            if (req.session.userID !== userID) {
+                const permitted = checkPermissions(req, adminPermsArray, true, res);
+                if (!permitted) return;
+            }
+
+            
             //for production
             const discordToken: string = req.body.discordToken;         //can't be undefined after validatePatch2
             const discordTokenType: string = req.body.discordTokenType; //can't be undefined after validatePatch2
@@ -558,7 +595,7 @@ router.route("/:userID/discord")
             const discordDiscrim = discordUser.discriminator;
 
 
-            const userFromId = <users>await prisma.users.findUnique({ where: { id: req.id } }); //can cast as "users" because the router.param already checked that the id is valid
+            const userFromId = <users>await prisma.users.findUnique({ where: { id: userID } }); //can cast as "users" because the router.param already checked that the id is valid
 
             if (userFromId.discordID != discordID && userFromId.discordID != null) {
                 res.status(400).json("The discordID assigned to the specified user does not match the ID retrieved with the provided discordToken");
@@ -572,7 +609,7 @@ router.route("/:userID/discord")
 
 
             const updatedUser = await prisma.users.update({
-                where: { id: req.id },
+                where: { id: userID },
                 data: {
                     discordUsername: discordUsername,
                     discordDiscrim: discordDiscrim,
@@ -602,7 +639,15 @@ router.route("/:userID/discord")
 router.route("/:userID/delete")
     .post(async function (req, res, next) {
         try {
-            const userFromId = <users>await prisma.users.findUnique({ where: { id: req.id } }); //can cast as "users" because the router.param already checked that the id is valid
+            const userID = <number>req.id;
+
+            if (req.session.userID !== userID) {
+                const permitted = checkPermissions(req, adminPermsArray, true, res);
+                if (!permitted) return;
+            }
+
+            
+            const userFromId = <users>await prisma.users.findUnique({ where: { id: userID } }); //can cast as "users" because the router.param already checked that the id is valid
 
             if (userFromId.accountStatus === "Banned") {
                 res.status(403).json("Banned accounts cannot be deleted");
@@ -615,7 +660,7 @@ router.route("/:userID/delete")
             }
 
             await prisma.users.update({
-                where: { id: req.id },
+                where: { id: userID },
                 data: {
                     accountStatus: "Deleted",
                     timeDeletedOrBanned: Math.floor(new Date().getTime() / 1000),
@@ -630,7 +675,15 @@ router.route("/:userID/delete")
     })
     .patch(async function (req, res, next) {
         try {
-            const userFromId = <users>await prisma.users.findUnique({ where: { id: req.id } }); //can cast as "users" because the router.param already checked that the id is valid
+            const userID = <number>req.id;
+
+            if (req.session.userID !== userID) {
+                const permitted = checkPermissions(req, adminPermsArray, true, res);
+                if (!permitted) return;
+            }
+
+            
+            const userFromId = <users>await prisma.users.findUnique({ where: { id: userID } }); //can cast as "users" because the router.param already checked that the id is valid
 
             if (userFromId.accountStatus === "Banned") {
                 res.status(403).json("Banned accounts cannot be deleted");
@@ -643,7 +696,7 @@ router.route("/:userID/delete")
             }
 
             await prisma.users.update({
-                where: { id: req.id },
+                where: { id: userID },
                 data: {
                     accountStatus: "Active",
                     timeDeletedOrBanned: null,
@@ -664,6 +717,10 @@ router.route("/:userID/delete")
 router.route("/:userID/ban")
     .post(async function (req, res, next) {
         try {
+            const permitted = checkPermissions(req, adminPermsArray, true, res);
+            if (!permitted) return;
+
+            
             const userFromId = <users>await prisma.users.findUnique({ where: { id: req.id } }); //can cast as "users" because the router.param already checked that the id is valid
 
             if (userFromId.accountStatus === "Banned") {
@@ -687,6 +744,10 @@ router.route("/:userID/ban")
     })
     .patch(async function (req, res, next) {
         try {
+            const permitted = checkPermissions(req, adminPermsArray, true, res);
+            if (!permitted) return;
+
+            
             const userFromId = <users>await prisma.users.findUnique({ where: { id: req.id } }); //can cast as "users" because the router.param already checked that the id is valid
 
             if (userFromId.accountStatus === "Active") {
@@ -716,6 +777,14 @@ router.route("/:userID/ban")
 router.route("/:userID/permissions")
     .get(async function (req, res, next) {
         try {
+            const userID = <number>req.id;
+
+            if (req.session.userID !== userID) {
+                const permitted = checkPermissions(req, adminPermsArray, true, res);
+                if (!permitted) return;
+            }
+
+            
             const userFromId = <users>await prisma.users.findUnique({ where: { id: req.id } });    //can cast as "users" because the router.param already checked that the id is valid
 
             res.status(200).json(userFromId.permissions.split(","));
@@ -726,9 +795,13 @@ router.route("/:userID/permissions")
     })
     .patch(async function (req, res, next) {
         try {
+            const permitted = checkPermissions(req, adminPermsArray, true, res);
+            if (!permitted) return;
+
+
             const permissionsArray: permissions[] = req.body.permissions;
 
-            
+
             const valid = validatePatch3({
                 permissions: permissionsArray,
             });

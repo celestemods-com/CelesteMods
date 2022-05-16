@@ -1,19 +1,22 @@
 import express from "express";
 import { prisma } from "../prismaClient";
-import { validateModPost, validateModPatch } from "../jsonSchemas/maps-mods-publishers";
+
 import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
-import { mods_details_type } from ".prisma/client";
+import { mapPost } from "./maps";
 import {
-    rawMod, createParentDifficultyForMod, difficultyNamesForModArrayElement, jsonCreateMapWithMod, defaultDifficultyForMod,
-    modDetailsWithIdCreationObject, loneModDetailsCreationObject, submitterUser, publisherConnectionObject, publisherCreationObject
-} from "../types/internal";
-import {
-    formatMod, getPublisherCreateOrConnectObject, getDifficultyArrays, getMapIDsCreationArray, param_modID, param_modRevision,
-    privilegedUser, noModDetailsErrorMessage
+    formatMod, getPublisherCreateOrConnectObject, getDifficultyArrays, getMapIDsCreationArray, param_modID, param_modRevision, noModDetailsErrorMessage
 } from "../helperFunctions/maps-mods-publishers";
 import { param_userID } from "../helperFunctions/users";
 import { getCurrentTime } from "../helperFunctions/utils";
-import { mapPost } from "./maps";
+import { mapStaffPermsArray, checkPermissions, checkSessionAge } from "../helperFunctions/sessions";
+
+import { validateModPost, validateModPatch } from "../jsonSchemas/maps-mods-publishers";
+
+import { mods_details_type } from ".prisma/client";
+import {
+    rawMod, createParentDifficultyForMod, difficultyNamesForModArrayElement, jsonCreateMapWithMod, defaultDifficultyForMod,
+    modDetailsWithIdCreationObject, loneModDetailsCreationObject, publisherConnectionObject, publisherCreationObject
+} from "../types/internal";
 
 
 const modsRouter = express.Router();
@@ -25,19 +28,19 @@ const modsRouter = express.Router();
 
 
 //comment out for production
-const submittingUser: submitterUser = {
-    id: 5,
-    displayName: "steve",
-    discordID: "5",
-    discordUsername: "steve",
-    discordDiscrim: "5555",
-    displayDiscord: false,
-    timeCreated: 1,
-    permissions: "",
-    permissionsArray: [],
-    accountStatus: "Active",
-    timeDeletedOrBanned: null,
-};
+// const submittingUser: submitterUser = {
+//     id: 5,
+//     displayName: "steve",
+//     discordID: "5",
+//     discordUsername: "steve",
+//     discordDiscrim: "5555",
+//     displayDiscord: false,
+//     timeCreated: 1,
+//     permissions: "",
+//     permissionsArray: [],
+//     accountStatus: "Active",
+//     timeDeletedOrBanned: null,
+// };
 
 
 
@@ -97,6 +100,10 @@ modsRouter.route("/")
     })
     .post(async function (req, res, next) {
         try {
+            const permission = checkPermissions(req, [], false, res);
+            if (!permission) return;
+    
+    
             const modType: mods_details_type = req.body.type;
             const name: string = req.body.name;
             const jsonPublisherName: string | undefined = req.body.publisherName;
@@ -111,6 +118,9 @@ modsRouter.route("/")
             const difficultyNames: (string | string[])[] | undefined = req.body.difficultyNames;
             const maps: jsonCreateMapWithMod[] = req.body.maps;
             const currentTime = getCurrentTime();
+
+
+            const submittingUserId = <number>req.session.userID;
 
 
             const valid = validateModPost({
@@ -188,7 +198,7 @@ modsRouter.route("/")
 
 
                 const mapsIDsCreationArray = await getMapIDsCreationArray(res, maps, 0, currentTime, modType, publisherName, lengthObjectArray,
-                    difficultiesCreationArray, defaultDifficultyObjectsArray, modHasCustomDifficultiesBool, modHasSubDifficultiesBool, submittingUser);
+                    difficultiesCreationArray, defaultDifficultyObjectsArray, modHasCustomDifficultiesBool, modHasSubDifficultiesBool, submittingUserId, req);
 
                 if (res.errorSent) return;
 
@@ -239,15 +249,15 @@ modsRouter.route("/")
                     longDescription: longDescription,
                     gamebananaModID: gamebananaModID,
                     timeSubmitted: currentTime,
-                    users_mods_details_submittedByTousers: { connect: { id: submittingUser.id } },
+                    users_mods_details_submittedByTousers: { connect: { id: submittingUserId } },
                 }
 
 
-                const privilegedUserBool = privilegedUser(submittingUser);
+                const privilegedUserBool = checkPermissions(req, mapStaffPermsArray);
 
                 if (privilegedUserBool) {
                     modDetailsCreationObject.timeApproved = currentTime;
-                    modDetailsCreationObject.users_mods_details_approvedByTousers = { connect: { id: submittingUser.id } };
+                    modDetailsCreationObject.users_mods_details_approvedByTousers = { connect: { id: submittingUserId } };
                 }
 
 
@@ -863,6 +873,18 @@ modsRouter.route("/user/:userID/submitter")
         try {
             const userID = <number>req.id2;     //can cast as number because the router.param already checked that the id is valid
 
+            
+            let permitted: boolean;
+
+            if (req.session.userID === userID) {
+                permitted = await checkSessionAge(req, res);
+            }
+            else {
+                permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            }
+
+            if (!permitted) return;
+
 
             const rawMods = await prisma.mods_ids.findMany({
                 where: {
@@ -1011,11 +1033,15 @@ modsRouter.route("/:modID/revisions")
 modsRouter.route("/:modID/revisions/:modRevision/accept")
     .post(async function (req, res, next) {
         try {
+            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            if (!permitted) return;
+
+
             const id = <number>req.id;
             const revision = <number>req.revision;
             const time = getCurrentTime();
 
-            const submitterID = submittingUser.id;  //comment out for production
+            const approverId = <number>req.session.userID;
 
             const id_revision = {
                 id: id,
@@ -1028,7 +1054,7 @@ modsRouter.route("/:modID/revisions/:modRevision/accept")
                     where: { id_revision: id_revision },
                     data: {
                         timeApproved: time,
-                        users_mods_details_approvedByTousers: { connect: { id: submitterID } },
+                        users_mods_details_approvedByTousers: { connect: { id: approverId } },
                     },
                 });
 
@@ -1087,6 +1113,10 @@ modsRouter.route("/:modID/revisions/:modRevision/accept")
 modsRouter.route("/:modID/revisions/:modRevision/reject")
     .post(async function (req, res, next) {
         try {
+            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            if (!permitted) return;
+
+
             const id = <number>req.id;
             const revision = <number>req.revision;
 
@@ -1202,6 +1232,10 @@ modsRouter.route("/:modID")
     })
     .patch(async function (req, res, next) {
         try {
+            const permission = checkPermissions(req, [], false, res);
+            if (!permission) return;
+    
+    
             const id = <number>req.id;
             const name: string | undefined = req.body.name === null ? undefined : req.body.name;
             const publisherName: string | undefined = req.body.publisherName === null ? undefined : req.body.publisherName;
@@ -1214,6 +1248,9 @@ modsRouter.route("/:modID")
             const longDescription: string | null | undefined = req.body.longDescription;
             const gamebananaModID: number | undefined = req.body.gamebananaModID === null ? undefined : req.body.gamebananaModID;
             const currentTime = getCurrentTime();
+
+
+            const submitterUserID = <number>req.session.userID;
 
 
             const valid = validateModPatch({
@@ -1366,8 +1403,16 @@ modsRouter.route("/:modID")
                     longDescription: longDescription === undefined ? latestValidModDetails.longDescription : longDescription,
                     gamebananaModID: !gamebananaModID ? latestValidModDetails.gamebananaModID : gamebananaModID,
                     timeSubmitted: currentTime,
-                    users_mods_details_submittedByTousers: { connect: { id: submittingUser.id } },
+                    users_mods_details_submittedByTousers: { connect: { id: submitterUserID } },
                     mods_ids: { connect: { id: id } },
+                }
+
+
+                const privilegedUserBool = checkPermissions(req, mapStaffPermsArray);
+
+                if (privilegedUserBool) {
+                    modDetailsCreationObject.timeApproved = currentTime;
+                    modDetailsCreationObject.users_mods_details_approvedByTousers = { connect: { id: submitterUserID } };
                 }
 
 
@@ -1427,6 +1472,10 @@ modsRouter.route("/:modID")
     })
     .delete(async function (req, res, next) {
         try {
+            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            if (!permitted) return;
+
+
             const id = <number>req.id;
 
             await prisma.mods_ids.delete({ where: { id: id } });

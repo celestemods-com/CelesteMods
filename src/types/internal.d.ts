@@ -32,10 +32,6 @@ export interface rawUser extends users {
   golden_players: golden_players | null;
 }
 
-export interface submitterUser extends users {
-  permissionsArray: permissions[];
-}
-
 
 
 

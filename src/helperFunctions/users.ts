@@ -133,3 +133,14 @@ const formatTrimmedUser = function (rawUser: rawUser) {
 
     return trimmedUser;
 }
+
+
+
+
+export const getUser = async function (submitterUserID: number) {
+    const userFromID = await prisma.users.findUnique({ where: { id: submitterUserID } });
+
+    if (!userFromID) return;
+
+    return userFromID;
+}

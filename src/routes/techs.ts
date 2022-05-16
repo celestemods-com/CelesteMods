@@ -1,7 +1,11 @@
 import express from "express";
 import { prisma } from "../prismaClient";
-import { validatePost, validatePatch } from "../jsonSchemas/techs";
+
 import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
+import { mapStaffPermsArray, checkPermissions } from "../helperFunctions/sessions";
+
+import { validatePost, validatePatch } from "../jsonSchemas/techs";
+
 import { createTechData, createTechVideosData, rawTech, updateTechData } from "../types/internal";
 import { formattedTech } from "../types/frontend";
 
@@ -35,6 +39,10 @@ router.route("/")
     })
     .post(async function (req, res, next) {
         try {
+            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            if (!permitted) return;
+
+
             const name: string = req.body.name;                         //cant be undefined after validatePost
             const description: string | undefined = req.body.description === "" ? undefined : req.body.description;
             const techVideoUrlsArray: string[] | undefined = req.body.tutorialVideos;
@@ -417,6 +425,10 @@ router.route("/:techID")
     })
     .patch(async function (req, res, next) {
         try {
+            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            if (!permitted) return;
+
+
             const id = <number>req.id;  //cant be undefined because the router.param already checked that the id is valid
             const name: string | undefined = req.body.name;
             const description: string | null | undefined = req.body.description === "" ? null : req.body.description;
@@ -531,6 +543,10 @@ router.route("/:techID")
     })
     .delete(async function (req, res, next) {
         try {
+            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            if (!permitted) return;
+
+
             await prisma.tech_list.delete({ where: { id: req.id } });
 
             res.sendStatus(204);

@@ -3,7 +3,7 @@ import { prisma } from "../prismaClient";
 import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import {
     formatSession, noUserWithDiscordIdErrorMessage, regenerateSessionAsync, revokeSessionAsync, storeIdentityInSession, adminPermsArray,
-    mapStaffPermsArray, goldenStaffPermsArray, checkPermissions, checkSessionAge
+    checkPermissions, checkSessionAge
 } from "../helperFunctions/sessions";
 import { formatFullUser, param_userID } from "../helperFunctions/users";
 import { getDiscordUser } from "../helperFunctions/discord";
@@ -97,7 +97,7 @@ router.route("/revoke/user/:userID")
                 permitted = await checkSessionAge(req, res);
             }
             else {
-                permitted = checkPermissions(req, adminPermsArray, res);
+                permitted = checkPermissions(req, adminPermsArray, true, res);
             }
 
             if (!permitted) return;
@@ -128,7 +128,7 @@ router.route("/revoke")
                 return;
             }
             else {
-                const permitted = checkPermissions(req, adminPermsArray, res);
+                const permitted = checkPermissions(req, adminPermsArray, true, res);
                 if (!permitted) return;
 
                 await prisma.session.delete({ where: { sid: sessionID } });
@@ -158,7 +158,7 @@ router.route("/user/:userID")
                 permitted = await checkSessionAge(req, res);
             }
             else {
-                permitted = checkPermissions(req, adminPermsArray, res);
+                permitted = checkPermissions(req, adminPermsArray, true, res);
             }
 
             if (!permitted) return;
@@ -186,7 +186,7 @@ router.route("/user/:userID")
 router.route("/")
     .get(async function (req, res, next) {
         try {
-            const permitted = checkPermissions(req, adminPermsArray, res);
+            const permitted = checkPermissions(req, adminPermsArray, true, res);
             if (!permitted) return;
 
 

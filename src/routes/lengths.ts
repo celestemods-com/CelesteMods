@@ -1,7 +1,11 @@
 import express from "express";
 import { prisma } from "../prismaClient";
-import { validatePost, validatePatch } from "../jsonSchemas/lengths";
+
 import { noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
+import { mapStaffPermsArray, checkPermissions } from "../helperFunctions/sessions";
+
+import { validatePost, validatePatch } from "../jsonSchemas/lengths";
+
 import { map_lengths } from "@prisma/client";
 
 
@@ -38,6 +42,10 @@ router.route("/")
         }
     })
     .post(async function (req, res, next) {
+        const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+        if (!permitted) return;
+
+
         const newLength = <map_lengths>req.length;  //none of the parameters can be undefined or null after validatePost
         const valid = validatePost(newLength);
 
@@ -124,6 +132,10 @@ router.route("/:id")
     })
     .patch(async function (req, res, next) {
         try {
+            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            if (!permitted) return;
+
+
             const reqLength = req.length;
             const valid = validatePatch(reqLength);
 
@@ -179,6 +191,10 @@ router.route("/:id")
     })
     .delete(async function (req, res, next) {
         try {
+            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            if (!permitted) return;
+
+
             await prisma.map_lengths.delete({
                 where: { id: req.id }
             });

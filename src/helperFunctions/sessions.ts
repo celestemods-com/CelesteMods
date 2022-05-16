@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../prismaClient";
-import { errorWithMessage, toErrorWithMessage } from "../errorHandling";
-import { session, users, golden_players, publishers } from ".prisma/client";
+import { toErrorWithMessage } from "../errorHandling";
+import { session } from ".prisma/client";
 import { discordUser } from "../types/discord";
 import { formattedSession } from "../types/frontend";
 import { sessionData } from "../types/sessions";
@@ -20,18 +20,32 @@ export const mapStaffPermsArray: permissions[] = ["Super_Admin", "Admin", "Map_M
 export const goldenStaffPermsArray: permissions[] = ["Super_Admin", "Admin", "Golden_Verifier"];
 
 
-export const checkPermissions = function (req: Request, validPermissionsArray: permissions[], res?: Response) {
-    if (res && !checkSessionAge(req)) {     //the session age is checked here only if res is sent. if not, the calling function must check age itself.
-        res.sendStatus(401);
+export const checkPermissions = function (req: Request, validPermissionsArray: permissions[], checkSessionAgeBool = true, res?: Response) {
+    if (!req.session) {
+        if (res) res.sendStatus(401);
+
         return false;
     }
+
+
+    if (checkSessionAgeBool && !checkSessionAge(req)) {
+        if (res) {
+            res.sendStatus(401);
+        }
+
+        return false;
+    }
+
+
+    if (validPermissionsArray && !validPermissionsArray.length && req.session.userID) return true;
 
 
     const userPermissionsArray = req.session.permissions;
 
 
-    if ((!req.session || userPermissionsArray === undefined) && res) {
-        res.sendStatus(401);
+    if (userPermissionsArray === undefined) {
+        if (res) res.sendStatus(403);
+
         return false;
     }
 

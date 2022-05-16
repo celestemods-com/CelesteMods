@@ -1,7 +1,11 @@
 import express from "express";
 import { prisma } from "../prismaClient";
-import { validatePost, validatePatch } from "../jsonSchemas/difficulties";
+
 import { noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
+import { mapStaffPermsArray, checkPermissions } from "../helperFunctions/sessions";
+
+import { validatePost, validatePatch } from "../jsonSchemas/difficulties";
+
 import { difficulties } from ".prisma/client";
 import { createDifficultyData } from "../types/internal";
 
@@ -24,6 +28,10 @@ router.route("/")
     })
     .post(async function (req, res, next) {
         try {
+            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            if (!permitted) return;
+
+
             const name: string = req.body.name;         //can't be null after validatePost call
             const description: string | null = req.body.description;
             const parentModID: number | null = req.body.parentModID === 0 ? null : req.body.parentModID;
@@ -268,6 +276,10 @@ router.route("/:diffID")
     })
     .patch(async function (req, res, next) {
         try {
+            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            if (!permitted) return;
+
+
             const difficultyFromId = <difficulties>req.difficulty;   //can cast as 'difficulties' because the router.param already checked that the id is valid
 
             const id: number = difficultyFromId.id;
@@ -323,6 +335,10 @@ router.route("/:diffID")
     })
     .delete(async function (req, res, next) {
         try {
+            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            if (!permitted) return;
+
+
             const difficultyFromId = <difficulties>req.difficulty;
 
             if (difficultyFromId.parentDifficultyID === null) {
