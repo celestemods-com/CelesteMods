@@ -50,9 +50,7 @@ app.use(function (req, res, next) {
 app.use("/api", apiRouter_parent);
 
 
-app.use((req, res, next) => {
-    noRouteError(req, res, next);
-});
+app.use(noRouteError);
 
 app.use(errorHandler);
 
