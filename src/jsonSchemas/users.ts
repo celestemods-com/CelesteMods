@@ -1,5 +1,5 @@
 import ajvModule from "ajv";
-import {intMaxSizes} from "./integerSizes";
+import { intMaxSizes } from "./integerSizes";
 
 const ajv = new ajvModule();
 
@@ -7,8 +7,7 @@ const ajv = new ajvModule();
 const postSchema = {
     type: "object",
     properties: {
-        discordToken: { type: "string" },
-        discordTokenType: { type: "string" },
+        discordCode: { type: "string" },
         displayName: {
             type: "string",
             minLength: 1,
@@ -30,9 +29,12 @@ const postSchema = {
             minimum: 0,
             maximum: intMaxSizes.smallInt.unsigned,
         },
+        generateSessionBool: {
+            type: "boolean",
+        },
     },
     additionalProperties: false,
-    required: ["discordToken", "discordTokenType", "displayName", "displayDiscord",],   //for production
+    required: ["discordCode", "displayName", "displayDiscord",],   //for production
     //required: ["displayName", "displayDiscord"],      //for testing
 };
 
@@ -69,15 +71,31 @@ const patch1Schema = {
 const patch2Schema = {
     type: "object",
     properties: {
-        discordToken: { type: "string" },
-        discordTokenType: { type: "string" },
+        discordCode: { type: "string" },
     }
 };
+
+
+const patch3Schema = {
+    type: "object",
+    properties: {
+        permissions: {
+            type: "array",
+            minItems: 0,
+            uniqueItems: true,
+            items: {
+                type: "string",
+                pattern: "(^Super_Admin$)|(^Admin$)|(^Map_Moderator$)|(^Map_Reviewer$)|(^Golden_Verifier$)",
+            }
+        }
+    }
+}
 
 
 const validatePost = ajv.compile(postSchema);
 const validatePatch1 = ajv.compile(patch1Schema);
 const validatePatch2 = ajv.compile(patch2Schema);
+const validatePatch3 = ajv.compile(patch3Schema);
 
 
-export { validatePost, validatePatch1, validatePatch2 };
+export { validatePost, validatePatch1, validatePatch2, validatePatch3 };

@@ -1,9 +1,17 @@
 import express from "express";
 import { prisma } from "../prismaClient";
-import { validatePublisherPost, validatePublisherPatch } from "../jsonSchemas/maps-mods-publishers";
+
 import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed, errorWithMessage } from "../errorHandling";
+import {
+    param_publisherID, getGamebananaUsernameById, formatPublisher, patchPublisherWithName, patchPublisherWithUserID,
+    patchPublisherWithGamebananaID
+} from "../helperFunctions/maps-mods-publishers";
+import { param_userID } from "../helperFunctions/users";
+import { mapStaffPermsArray, checkPermissions } from "../helperFunctions/sessions";
+
+import { validatePublisherPost, validatePublisherPatch } from "../jsonSchemas/maps-mods-publishers";
+
 import { publishers } from ".prisma/client";
-import { param_userID, param_publisherID, getGamebananaUsernameById, formatPublisher, patchPublisherWithName, patchPublisherWithUserID, patchPublisherWithGamebananaID } from "../helperFunctions/maps-mods-publishers";
 import { rawPublisher } from "../types/internal";
 
 
@@ -38,6 +46,29 @@ publishersRouter.route("/")
             const gamebananaID: number | undefined = req.body.gamebananaID === null ? undefined : req.body.gamebananaID;
             const userID: number | undefined = req.body.userID === null ? undefined : req.body.userID;
             const name: string | undefined = userID || req.body.name === null ? undefined : req.body.name;
+
+
+            let permitted = false;
+
+            if (req.session.userID) {
+                if (req.session.userID === userID) {
+                    permitted = true;
+                }
+                else {
+                    permitted = await checkPermissions(req, mapStaffPermsArray, true);
+                }
+            }
+            else {
+                res.sendStatus(401);
+                return;
+            }
+
+            if (!permitted) {
+                res.sendStatus(403);
+                return;
+            }
+
+
 
 
             const valid = validatePublisherPost({
@@ -245,6 +276,27 @@ publishersRouter.route("/:publisherID")
             const publisherFromId = <publishers>req.publisher;
 
 
+            let permitted = false;
+
+            if (req.session.userID) {
+                if (req.session.userID === publisherFromId.userID) {
+                    permitted = true;
+                }
+                else {
+                    permitted = await checkPermissions(req, mapStaffPermsArray, true);
+                }
+            }
+            else {
+                res.sendStatus(401);
+                return;
+            }
+
+            if (!permitted) {
+                res.sendStatus(403);
+                return;
+            }
+
+
             const valid = validatePublisherPatch({
                 gamebananaID: gamebananaID,
                 name: name,
@@ -292,9 +344,19 @@ publishersRouter.route("/:publisherID")
             let rawPublisher: rawPublisher | errorWithMessage;
 
             if (gamebananaID) {
+                if (userID) {
+                    permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
+                    if (!permitted) return;
+                }
+
+
                 rawPublisher = await patchPublisherWithGamebananaID(id, gamebananaID, userID, publisherFromId);
             }
             else if (userID) {
+                permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
+                if (!permitted) return;
+
+
                 const userFromID = await prisma.users.findUnique({ where: { id: userID } });
 
                 if (!userFromID) {
@@ -335,6 +397,10 @@ publishersRouter.route("/:publisherID")
     })
     .delete(async function (req, res, next) {
         try {
+            const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
+            if (!permitted) return;
+
+
             const id = <number>req.id;  //id has already been validated by .param
 
             await prisma.publishers.delete({ where: { id: id } });

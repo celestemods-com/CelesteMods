@@ -1,11 +1,15 @@
 import express from "express";
+import cookieParser from "cookie-parser"
+import { sessionCookieNameString, sessionMiddleware } from "./sessionMiddleware";
 import { noRouteError, errorHandler } from "./errorHandling";
+import sessionTypeExtensions from "./types/sessions";  //need to import this here so the compiler knows about it right away
 
 
-const app = express();
+export const app = express();
 app.use(express.json());
 
-const apiRouter = express.Router();
+const apiRouter_parent = express.Router();
+const apiRouter_v1 = express.Router();
 
 
 const port = process.env.PORT || "3001";
@@ -14,7 +18,36 @@ app.listen(port, () => {
 });
 
 
-app.use("api/v1", apiRouter);
+if (process.env.NODE_ENV !== "dev") {
+    app.set("trust proxy", 1);   //TODO: figure out if this is needed during deployment. if express is behind a proxy this will be required to enable HTTPS.
+}
+
+
+app.use(cookieParser());
+
+
+const cookieConsentPath1 = "/api/v1/sessions";
+const cookieConsentPath2 = "/api/v1/users";
+
+app.use(function (req, res, next) {
+    if (req.cookies[sessionCookieNameString]) {
+        return sessionMiddleware(req, res, next);      //if session cookie already exists then run middleware to populate req.session
+    }                                                   //otherwise, don't call the middleware so cookies aren't set without consent
+    else if (
+        req.method === "POST" && (
+            req.path === cookieConsentPath1 || req.path === cookieConsentPath1 + "/" ||
+            req.path === cookieConsentPath2 || req.path === cookieConsentPath2 + "/"
+        )
+    ) {
+        return sessionMiddleware(req, res, next);     //if this line is reached, the user has consented to a session cookie. so, call the middleware and create one now.
+    }
+
+
+    next();
+});
+
+
+app.use("/api", apiRouter_parent);
 
 
 app.use(noRouteError);
@@ -30,7 +63,17 @@ app.use(errorHandler);
 
 
 
-apiRouter.use( function (req, res, next) {
+apiRouter_parent.use("/v1", apiRouter_v1);
+
+
+apiRouter_parent.use(noRouteError);
+
+apiRouter_parent.use(errorHandler);
+
+
+
+
+apiRouter_v1.use(function (req, res, next) {
     try {
         let oneof = false;
         if (req.headers.origin) {
@@ -39,9 +82,9 @@ apiRouter.use( function (req, res, next) {
             oneof = true;
 
 
-            const safeOrigin =  "https://celestemods.com";
+            const safeOrigin = "https://celestemods.com";
 
-            if(process.env.NODE_ENV === "dev" || req.headers.origin === safeOrigin) {
+            if (process.env.NODE_ENV === "dev" || req.headers.origin === safeOrigin) {
                 res.header("Access-Control-Allow-Credentials", "true");
             }
         }
@@ -57,7 +100,7 @@ apiRouter.use( function (req, res, next) {
         }
 
         if (oneof) {
-            res.header("Access-Control-Max-Age", "600" );
+            res.header("Access-Control-Max-Age", "600");
         }
 
         // intercept OPTIONS method
@@ -75,7 +118,7 @@ apiRouter.use( function (req, res, next) {
 });
 
 
-import { authRouter } from "./routes/authorization";
+import { sessionRouter } from "./routes/sessions";
 import { difficultiesRouter } from "./routes/difficulties";
 import { goldensRouter, goldenPlayersRouter, goldenRunsRouter, goldenSubmissionsRouter } from "./routes/goldens";
 import { lengthsRouter } from "./routes/lengths";
@@ -86,22 +129,22 @@ import { reviewsRouter, ratingsRouter } from "./routes/reviews-ratings";
 import { techsRouter } from "./routes/techs";
 import { usersRouter } from "./routes/users";
 
-apiRouter.use("/authentication", authRouter);
-apiRouter.use("/difficulties", difficultiesRouter);
-apiRouter.use("/goldens", goldensRouter);
-apiRouter.use("/goldenplayers", goldenPlayersRouter);
-apiRouter.use("/goldenruns", goldenRunsRouter);
-apiRouter.use("/goldensubmissions", goldenSubmissionsRouter);
-apiRouter.use("/lengths", lengthsRouter);
-apiRouter.use("/mods", modsRouter);
-apiRouter.use("/maps", mapsRouter);
-apiRouter.use("/publishers", publishersRouter);
-apiRouter.use("/reviews", reviewsRouter);
-apiRouter.use("/ratings", ratingsRouter);
-apiRouter.use("/techs", techsRouter);
-apiRouter.use("/users", usersRouter);
+apiRouter_v1.use("/sessions", sessionRouter);
+apiRouter_v1.use("/difficulties", difficultiesRouter);
+apiRouter_v1.use("/goldens", goldensRouter);
+apiRouter_v1.use("/goldenplayers", goldenPlayersRouter);
+apiRouter_v1.use("/goldenruns", goldenRunsRouter);
+apiRouter_v1.use("/goldensubmissions", goldenSubmissionsRouter);
+apiRouter_v1.use("/lengths", lengthsRouter);
+apiRouter_v1.use("/mods", modsRouter);
+apiRouter_v1.use("/maps", mapsRouter);
+apiRouter_v1.use("/publishers", publishersRouter);
+apiRouter_v1.use("/reviews", reviewsRouter);
+apiRouter_v1.use("/ratings", ratingsRouter);
+apiRouter_v1.use("/techs", techsRouter);
+apiRouter_v1.use("/users", usersRouter);
 
 
-apiRouter.use(noRouteError);
+apiRouter_v1.use(noRouteError);
 
-apiRouter.use(errorHandler);
+apiRouter_v1.use(errorHandler);

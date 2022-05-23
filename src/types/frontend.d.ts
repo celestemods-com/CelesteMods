@@ -1,5 +1,12 @@
 import { difficulties } from ".prisma/client";
 
+export interface formattedSession {
+  sid: string;
+  sessionExpiryTime: Date;
+  refreshCount: number;
+  userID: number;
+}
+
 export interface formattedUser {
   id: number;
   displayName: string;
@@ -7,12 +14,14 @@ export interface formattedUser {
   discordDescrim?: string;
   displayDiscord?: boolean;
   timeCreated?: number;
-  permissions?: string;
+  permissions?: permissions[];
   accountStatus: string;
   timeDeletedOrBanned?: number;
   gamebananaIDs?: number[];
   goldenPlayerID?: number;
 }
+
+export type permissions = "Super_Admin" | "Admin" | "Map_Moderator" | "Map_Reviewer" | "Golden_Verifier";
 
 export interface formattedTech {
   id: number;

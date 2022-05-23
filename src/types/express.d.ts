@@ -3,6 +3,9 @@ import { difficulties, goldens_goldenList, ratings_quality, publishers } from '.
 import { rawTech, rawMod, rawMap } from './internal';
 
 
+//TODO: refactor to use declare module instead of declare global namespace. see sessionMiddleware.d.ts
+
+
 declare global {
   type reqDifficulty = {
     id?: number;

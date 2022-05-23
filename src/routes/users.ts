@@ -1,13 +1,16 @@
 import express from "express";
-import axios from "axios";
 import { prisma } from "../prismaClient";
-import { validatePost, validatePatch1, validatePatch2 } from "../jsonSchemas/users";
+
 import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
+import { formatPartialUser, formatFullUser } from "../helperFunctions/users";
+import { getDiscordUserFromCode } from "../helperFunctions/discord";
+import { storeIdentityInSession, adminPermsArray, mapStaffPermsArray, checkPermissions } from "../helperFunctions/sessions";
+
+import { validatePost, validatePatch1, validatePatch2, validatePatch3 } from "../jsonSchemas/users";
+
 import { users } from ".prisma/client";
-import { formattedUser } from "../types/frontend";
-import { createUserData, updateUserData, rawUser } from "../types/internal";
-import { discordUser } from "../types/discord";
-import { isNumberArray } from "../helperFunctions/utils";
+import { formattedUser, permissions } from "../types/frontend";
+import { createUserData, updateUserData } from "../types/internal";
 
 
 const router = express.Router();
@@ -100,7 +103,7 @@ router.param("gamebananaID", async function (req, res, next) {
         next();
     }
     catch (error) {
-        next(error);
+        next(toErrorWithMessage(error));
     }
 });
 
@@ -110,34 +113,46 @@ router.param("gamebananaID", async function (req, res, next) {
 router.route("/")
     .get(async function (_req, res, next) {
         try {
-            const users = await prisma.users.findMany({
+            const rawUsers = await prisma.users.findMany({
                 include: {
-                    publishers: { select: { gamebananaID: true } },
-                    golden_players: { select: { id: true } },
+                    publishers: true,
+                    golden_players: true,
                 },
             });
-            res.json(users);
+
+
+            const formattedUsers = rawUsers.map((rawUser) => {
+                const formattedUser = formatPartialUser(rawUser);
+
+                if (isErrorWithMessage(formattedUser)) return `Formatting failed for user ${rawUser.id}`;
+
+                return formattedUser;
+            })
+
+
+            res.json(formattedUsers);
         }
         catch (error) {
-            next(error);
+            next(toErrorWithMessage(error));
         }
     })
     .post(async function (req, res, next) {
         try {
-            const discordToken: string = req.body.discordToken;         //can't be null after validatePost call
-            const discordTokenType: string = req.body.discordTokenType; //can't be null after validatePost call
+            const discordCode: string = req.body.code;         //can't be null after validatePost call
             const displayName: string = req.body.displayName;           //can't be null after validatePost call
             const displayDiscord: boolean = req.body.displayDiscord;    //can't be null after validatePost call
             const gamebananaIDsArray: number[] | undefined = req.body.gamebananaIDs;
             const goldenPlayerID: number | undefined = req.body.goldenPlayerID;
+            const generateSessionBool: boolean | undefined = req.body.generateSessionBool;
+
 
             const valid = validatePost({
-                discordToken: discordToken, //comment out for testing
-                discordTokenType: discordTokenType, //comment out for testing
+                discordCode: discordCode, //comment out for testing
                 displayName: displayName,
                 displayDiscord: displayDiscord,
                 gamebananaIDs: gamebananaIDsArray,
                 goldenPlayerID: goldenPlayerID,
+                generateSessionBool: generateSessionBool,
             });
 
             if (!valid) {
@@ -147,11 +162,9 @@ router.route("/")
 
 
             //for production
-            const discordUser = await getDiscordUser(discordTokenType, discordToken);
+            const discordUser = await getDiscordUserFromCode(res, discordCode);
 
-            if (isErrorWithMessage(discordUser)) {
-                throw discordUser;
-            }
+            if (!discordUser) return;
 
             const discordID = discordUser.id;
             const discordUsername = discordUser.username;
@@ -225,7 +238,7 @@ router.route("/")
             }
 
 
-            const user = await prisma.users.create({
+            const rawUser = await prisma.users.create({
                 data: createData,
                 include: {
                     publishers: true,
@@ -234,10 +247,36 @@ router.route("/")
             });
 
 
-            res.status(201).json(user);
+            const formattedUser = formatFullUser(rawUser);
+
+            if (isErrorWithMessage(formattedUser)) throw formattedUser;
+
+
+            if (generateSessionBool) {
+                const success = await storeIdentityInSession(req, discordUser, false);
+
+                if (success !== true) throw success;
+
+
+                const sessionExpiryTime = req.session.cookie.expires;
+                const refreshCount = req.session.refreshCount ? req.session.refreshCount : 0;
+
+
+                const responseObject = {
+                    sessionExpiryTime: sessionExpiryTime,
+                    refreshCount: refreshCount,
+                    celestemodsUser: formattedUser,
+                };
+
+
+                res.status(201).json(responseObject);
+            }
+            else {
+                res.status(201).json(formattedUser);
+            }
         }
         catch (error) {
-            next(error);
+            next(toErrorWithMessage(error));
         }
     })
     .all(methodNotAllowed);
@@ -268,7 +307,7 @@ router.route("/search")
             const formattedUsers: formattedUser[] = [];
 
             for (const rawUser of rawUsers) {
-                const formattedUser = formatUser(rawUser);
+                const formattedUser = formatPartialUser(rawUser);
 
                 if (isErrorWithMessage(formattedUser)) throw formattedUser;
 
@@ -279,7 +318,7 @@ router.route("/search")
             res.json(formattedUsers);
         }
         catch (error) {
-            next(error);
+            next(toErrorWithMessage(error));
         }
     })
     .all(methodNotAllowed);
@@ -305,7 +344,7 @@ router.route("/gamebanana/:gamebananaID")
             }
 
 
-            const formattedUser = formatUser(rawUser);
+            const formattedUser = formatPartialUser(rawUser);
 
             if (isErrorWithMessage(formattedUser)) throw formattedUser;
 
@@ -313,7 +352,7 @@ router.route("/gamebanana/:gamebananaID")
             res.status(200).json(formattedUser);
         }
         catch (error) {
-            next(error);
+            next(toErrorWithMessage(error));
         }
     })
     .all(methodNotAllowed);
@@ -324,10 +363,19 @@ router.route("/gamebanana/:gamebananaID")
 router.route("/:userID/gamebanana/:gamebananaID")
     .post(async function (req, res, next) {
         try {
+            const userID = <number>req.id;
+
+            if (req.session.userID !== userID) {
+                const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
+                if (!permitted) return;
+            }
+
+
             if (!req.valid) {
                 res.status(400).json("gamebananaID already linked to another user");
                 return;
             }
+
 
             if (!req.idsMatch) {
                 const gamebananaID = <number>req.id2; //can cast as "number" because the router.param already checked that the id is valid
@@ -351,11 +399,19 @@ router.route("/:userID/gamebanana/:gamebananaID")
             res.sendStatus(204);
         }
         catch (error) {
-            next(error);
+            next(toErrorWithMessage(error));
         }
     })
     .delete(async function (req, res, next) {
         try {
+            const userID = <number>req.id;
+
+            if (req.session.userID !== userID) {
+                const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
+                if (!permitted) return;
+            }
+
+
             if (!req.valid) {
                 res.status(400).json("gamebananaID linked to a different user");
                 return;
@@ -366,6 +422,7 @@ router.route("/:userID/gamebanana/:gamebananaID")
                 return;
             }
 
+
             await prisma.users.update({
                 where: { id: req.id },
                 data: { publishers: { disconnect: { gamebananaID: req.id2 } } },
@@ -374,7 +431,7 @@ router.route("/:userID/gamebanana/:gamebananaID")
             res.sendStatus(204);
         }
         catch (error) {
-            next(error);
+            next(toErrorWithMessage(error));
         }
     })
     .all(methodNotAllowed);
@@ -394,18 +451,26 @@ router.route("/:userID")
             });
             if (!rawUser) throw "rawUser is null!";
 
-            const formattedUser = formatUser(rawUser);
+            const formattedUser = formatPartialUser(rawUser);
 
             if (isErrorWithMessage(formattedUser)) throw formattedUser;
 
             res.status(200).json(formattedUser);
         }
         catch (error) {
-            next(error);
+            next(toErrorWithMessage(error));
         }
     })
     .patch(async function (req, res, next) {
         try {
+            const userID = <number>req.id;
+
+            if (req.session.userID !== userID) {
+                const permitted = await checkPermissions(req, adminPermsArray, true, res);
+                if (!permitted) return;
+            }
+
+
             const displayName: string | undefined = req.body.displayName;
             const displayDiscord: boolean | undefined = req.body.displayDiscord;
             const gamebananaIDsArray: number[] | undefined = req.body.gamebananaIDs;
@@ -469,14 +534,14 @@ router.route("/:userID")
                 }
             });
 
-            const formattedUser = formatUser(rawUser);
+            const formattedUser = formatFullUser(rawUser);
 
             if (isErrorWithMessage(formattedUser)) throw formattedUser;
 
             res.status(200).json(formattedUser);
         }
         catch (error) {
-            next(error);
+            next(toErrorWithMessage(error));
         }
     })
     .all(methodNotAllowed);
@@ -487,13 +552,19 @@ router.route("/:userID")
 router.route("/:userID/discord")
     .patch(async function (req, res, next) {
         try {
+            const userID = <number>req.id;
+
+            if (req.session.userID !== userID) {
+                const permitted = await checkPermissions(req, adminPermsArray, true, res);
+                if (!permitted) return;
+            }
+
+
             //for production
-            const discordToken: string = req.body.discordToken;         //can't be undefined after validatePatch2
-            const discordTokenType: string = req.body.discordTokenType; //can't be undefined after validatePatch2
+            const discordCode: string = req.body.code;         //can't be undefined after validatePatch2
 
             const valid = validatePatch2({
-                discordToken: discordToken,
-                discordTokenType: discordTokenType,
+                discordCode: discordCode,
             });
 
             if (!valid) {
@@ -502,11 +573,10 @@ router.route("/:userID/discord")
             }
 
 
-            const discordUser = await getDiscordUser(discordTokenType, discordToken);
+            const discordUser = await getDiscordUserFromCode(res, discordCode);
 
-            if (isErrorWithMessage(discordUser)) {
-                throw discordUser;
-            }
+            if (!discordUser) return;
+            else if (isErrorWithMessage(discordUser)) throw discordUser;
 
             //for testing
             // const discordUser = {
@@ -520,7 +590,7 @@ router.route("/:userID/discord")
             const discordDiscrim = discordUser.discriminator;
 
 
-            const userFromId = <users>await prisma.users.findUnique({ where: { id: req.id } }); //can cast as "users" because the router.param already checked that the id is valid
+            const userFromId = <users>await prisma.users.findUnique({ where: { id: userID } }); //can cast as "users" because the router.param already checked that the id is valid
 
             if (userFromId.discordID != discordID && userFromId.discordID != null) {
                 res.status(400).json("The discordID assigned to the specified user does not match the ID retrieved with the provided discordToken");
@@ -534,7 +604,7 @@ router.route("/:userID/discord")
 
 
             const updatedUser = await prisma.users.update({
-                where: { id: req.id },
+                where: { id: userID },
                 data: {
                     discordUsername: discordUsername,
                     discordDiscrim: discordDiscrim,
@@ -546,14 +616,14 @@ router.route("/:userID/discord")
             });
 
 
-            const formattedUser = formatUser(updatedUser);
+            const formattedUser = formatFullUser(updatedUser);
 
             if (isErrorWithMessage(formattedUser)) throw formattedUser;
 
             res.status(200).json(formattedUser);
         }
         catch (error) {
-            next(error);
+            next(toErrorWithMessage(error));
         }
     })
     .all(methodNotAllowed);
@@ -564,7 +634,15 @@ router.route("/:userID/discord")
 router.route("/:userID/delete")
     .post(async function (req, res, next) {
         try {
-            const userFromId = <users>await prisma.users.findUnique({ where: { id: req.id } }); //can cast as "users" because the router.param already checked that the id is valid
+            const userID = <number>req.id;
+
+            if (req.session.userID !== userID) {
+                const permitted = await checkPermissions(req, adminPermsArray, true, res);
+                if (!permitted) return;
+            }
+
+
+            const userFromId = <users>await prisma.users.findUnique({ where: { id: userID } }); //can cast as "users" because the router.param already checked that the id is valid
 
             if (userFromId.accountStatus === "Banned") {
                 res.status(403).json("Banned accounts cannot be deleted");
@@ -577,7 +655,7 @@ router.route("/:userID/delete")
             }
 
             await prisma.users.update({
-                where: { id: req.id },
+                where: { id: userID },
                 data: {
                     accountStatus: "Deleted",
                     timeDeletedOrBanned: Math.floor(new Date().getTime() / 1000),
@@ -587,12 +665,20 @@ router.route("/:userID/delete")
             res.sendStatus(204);
         }
         catch (error) {
-            next(error);
+            next(toErrorWithMessage(error));
         }
     })
     .patch(async function (req, res, next) {
         try {
-            const userFromId = <users>await prisma.users.findUnique({ where: { id: req.id } }); //can cast as "users" because the router.param already checked that the id is valid
+            const userID = <number>req.id;
+
+            if (req.session.userID !== userID) {
+                const permitted = await checkPermissions(req, adminPermsArray, true, res);
+                if (!permitted) return;
+            }
+
+
+            const userFromId = <users>await prisma.users.findUnique({ where: { id: userID } }); //can cast as "users" because the router.param already checked that the id is valid
 
             if (userFromId.accountStatus === "Banned") {
                 res.status(403).json("Banned accounts cannot be deleted");
@@ -605,7 +691,7 @@ router.route("/:userID/delete")
             }
 
             await prisma.users.update({
-                where: { id: req.id },
+                where: { id: userID },
                 data: {
                     accountStatus: "Active",
                     timeDeletedOrBanned: null,
@@ -615,7 +701,7 @@ router.route("/:userID/delete")
             res.sendStatus(204);
         }
         catch (error) {
-            next(error);
+            next(toErrorWithMessage(error));
         }
     })
     .all(methodNotAllowed);
@@ -626,6 +712,10 @@ router.route("/:userID/delete")
 router.route("/:userID/ban")
     .post(async function (req, res, next) {
         try {
+            const permitted = await checkPermissions(req, adminPermsArray, true, res);
+            if (!permitted) return;
+
+
             const userFromId = <users>await prisma.users.findUnique({ where: { id: req.id } }); //can cast as "users" because the router.param already checked that the id is valid
 
             if (userFromId.accountStatus === "Banned") {
@@ -644,11 +734,15 @@ router.route("/:userID/ban")
             res.sendStatus(204);
         }
         catch (error) {
-            next(error);
+            next(toErrorWithMessage(error));
         }
     })
     .patch(async function (req, res, next) {
         try {
+            const permitted = await checkPermissions(req, adminPermsArray, true, res);
+            if (!permitted) return;
+
+
             const userFromId = <users>await prisma.users.findUnique({ where: { id: req.id } }); //can cast as "users" because the router.param already checked that the id is valid
 
             if (userFromId.accountStatus === "Active") {
@@ -667,7 +761,7 @@ router.route("/:userID/ban")
             res.sendStatus(204);
         }
         catch (error) {
-            next(error);
+            next(toErrorWithMessage(error));
         }
     })
     .all(methodNotAllowed);
@@ -678,47 +772,45 @@ router.route("/:userID/ban")
 router.route("/:userID/permissions")
     .get(async function (req, res, next) {
         try {
+            const userID = <number>req.id;
+
+            if (req.session.userID !== userID) {
+                const permitted = await checkPermissions(req, adminPermsArray, true, res);
+                if (!permitted) return;
+            }
+
+
             const userFromId = <users>await prisma.users.findUnique({ where: { id: req.id } });    //can cast as "users" because the router.param already checked that the id is valid
 
-            res.status(200).json(userFromId.permissions);
+            res.status(200).json(userFromId.permissions.split(","));
         }
         catch (error) {
-            next(error);
+            next(toErrorWithMessage(error));
         }
     })
     .patch(async function (req, res, next) {
         try {
-            const permissionsArray: string[] | undefined = req.body.permissions;
+            const permitted = await checkPermissions(req, adminPermsArray, true, res);
+            if (!permitted) return;
 
-            if (!permissionsArray) {
-                res.status(400).json("Must include 'permissions'");
-                return;
-            }
-            else if (permissionsArray.constructor != Array) {
-                res.status(400).json("'permissions' must be an array");
+
+            const permissionsArray: permissions[] = req.body.permissions;
+
+
+            const valid = validatePatch3({
+                permissions: permissionsArray,
+            });
+
+            if (!valid || !permissionsArray) {
+                res.status(400).json("Malformed request body");
                 return;
             }
 
 
             let permissionsString = "";
 
-            for (const element of permissionsArray) {
-                if (
-                    element === "Super_Admin" ||
-                    element === "Admin" ||
-                    element === "Map_Moderator" ||
-                    element === "Map_Reviewer" ||
-                    element === "Golden_Verifier" ||
-                    element === ""
-                ) {
-                    permissionsString += ",";
-                    permissionsString += element;
-                }
-                else {
-                    res.status(400).json(`${element} is not a valid permission`);
-                    return;
-                }
-            }
+            if (permissionsArray.length) permissionsString = permissionsArray.join(",");
+
 
             await prisma.users.update({
                 where: { id: req.id },
@@ -728,7 +820,7 @@ router.route("/:userID/permissions")
             res.sendStatus(204);
         }
         catch (error) {
-            next(error);
+            next(toErrorWithMessage(error));
         }
     })
     .all(methodNotAllowed);
@@ -743,78 +835,5 @@ router.use(errorHandler);
 
 
 
-const formatUser = function (rawUser: rawUser) {
-    try {
-        if (rawUser.accountStatus === "Deleted" || rawUser.accountStatus === "Banned") {
-            const timeDeletedOrBanned = rawUser.timeDeletedOrBanned === null ? undefined : rawUser.timeDeletedOrBanned;
 
-            const trimmedUser: formattedUser = {
-                id: rawUser.id,
-                displayName: rawUser.displayName,
-                accountStatus: rawUser.accountStatus,
-                timeDeletedOrBanned: timeDeletedOrBanned,
-            }
-            return trimmedUser;
-        }
-
-
-        const formattedUser: formattedUser = {
-            id: rawUser.id,
-            displayName: rawUser.displayName,
-            displayDiscord: rawUser.displayDiscord,
-            timeCreated: rawUser.timeCreated,
-            accountStatus: rawUser.accountStatus,
-            goldenPlayerID: rawUser.golden_players?.id,
-        };
-
-        const gamebananaIDsArray = rawUser.publishers.map((publisher) => {
-            return publisher.gamebananaID;
-        });
-
-        if (isNumberArray(gamebananaIDsArray)) {
-            formattedUser.gamebananaIDs = gamebananaIDsArray;
-        }
-
-        if (rawUser.displayDiscord) {
-            formattedUser.discordUsername = rawUser.discordUsername;
-            formattedUser.discordDescrim = rawUser.discordDiscrim;
-        }
-
-        return formattedUser;
-    }
-    catch (error) {
-        return toErrorWithMessage(error);
-    }
-}
-
-
-
-
-const getDiscordUser = async function (tokenType: String, token: String) {
-    try {
-        const options = {
-            url: "https://discord.com/api/users/@me",
-            headers: { authorization: `${tokenType} ${token}` },
-        };
-
-        const axiosResponse = await axios(options);
-
-        if (axiosResponse.status != 200) {
-            const error = new Error("Discord api not responding as expected.");
-            throw error;
-        }
-
-        const discordUser: discordUser = {
-            id: String(axiosResponse.data.id),
-            username: String(axiosResponse.data.username),
-            discriminator: String(axiosResponse.data.discriminator)
-        }
-
-        return discordUser;
-    }
-    catch (error) {
-        return toErrorWithMessage(error);
-    }
-}
-
-export { router as usersRouter, formatUser };
+export { router as usersRouter };

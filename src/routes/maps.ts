@@ -1,17 +1,23 @@
 import express, { } from "express";
 import { prisma } from "../prismaClient";
-import { validateMapPost, validateMapPatch } from "../jsonSchemas/maps-mods-publishers";
+
 import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
-import { mods_details_type, maps_details_side, users } from ".prisma/client";
 import {
-    rawMap, mapIdCreationObjectStandalone, mapToTechCreationObject, submitterUser, rawMod, mapDetailsCreationObjectStandalone,
+    invalidMapperUserIdErrorMessage, param_mapID, formatMap, param_mapRevision, getCanonicalDifficultyID, getLengthID,
+    invalidMapDifficultyErrorMessage, lengthErrorMessage, noMapDetailsErrorMessage
+} from "../helperFunctions/maps-mods-publishers";
+import { getUser, param_userID } from "../helperFunctions/users";
+import { param_lengthID, param_lengthOrder } from "../helperFunctions/lengths";
+import { getCurrentTime } from "../helperFunctions/utils";
+import { mapStaffPermsArray, checkPermissions, checkSessionAge } from "../helperFunctions/sessions";
+
+import { validateMapPost, validateMapPatch } from "../jsonSchemas/maps-mods-publishers";
+
+import { mods_details_type, maps_details_side } from ".prisma/client";
+import {
+    rawMap, mapIdCreationObjectStandalone, mapToTechCreationObject, rawMod, mapDetailsCreationObjectStandalone,
     mapValidationJson
 } from "../types/internal";
-import {
-    param_userID, invalidMapperUserIdErrorMessage, param_mapID, formatMap, privilegedUser, param_lengthID, param_lengthOrder,
-    param_mapRevision, getCanonicalDifficultyID, getLengthID, invalidMapDifficultyErrorMessage, lengthErrorMessage, noMapDetailsErrorMessage
-} from "../helperFunctions/maps-mods-publishers";
-import { getCurrentTime } from "../helperFunctions/utils";
 import { expressRoute } from "../types/express";
 
 
@@ -21,19 +27,19 @@ const mapsRouter = express.Router();
 
 
 //comment out for production
-const submittingUser: submitterUser = {
-    id: 1,
-    displayName: "steve",
-    discordID: "5",
-    discordUsername: "steve",
-    discordDiscrim: "5555",
-    displayDiscord: false,
-    timeCreated: 1,
-    permissions: "",
-    permissionsArray: [],
-    accountStatus: "Active",
-    timeDeletedOrBanned: null,
-};
+// const submittingUser: submitterUser = {
+//     id: 1,
+//     displayName: "steve",
+//     discordID: "5",
+//     discordUsername: "steve",
+//     discordDiscrim: "5555",
+//     displayDiscord: false,
+//     timeCreated: 1,
+//     permissions: "",
+//     permissionsArray: [],
+//     accountStatus: "Active",
+//     timeDeletedOrBanned: null,
+// };
 
 
 
@@ -749,6 +755,18 @@ mapsRouter.route("/user/:userID/submitter")
             const userID = <number>req.id2;
 
 
+            let permitted: boolean;
+
+            if (req.session.userID === userID) {
+                permitted = await checkSessionAge(req, res);
+            }
+            else {
+                permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
+            }
+
+            if (!permitted) return;
+
+
             const rawMaps = await prisma.maps_ids.findMany({
                 where: {
                     maps_details: {
@@ -889,10 +907,14 @@ mapsRouter.route("/:mapID/revisions")
 mapsRouter.route("/:mapID/revisions/:mapRevision/accept")
     .post(async function (req, res, next) {
         try {
+            const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
+            if (!permitted) return;
+
+
             const mapId = <number>req.id;
             const revision = <number>req.revision;
             const currentTime = getCurrentTime();
-            const submitterId = submittingUser.id;  //comment out for production
+            const submitterId = <number>req.session.userID;
 
 
             const outerRawMap = await prisma.$transaction(async () => {
@@ -961,6 +983,10 @@ mapsRouter.route("/:mapID/revisions/:mapRevision/accept")
 mapsRouter.route("/:mapID/revisions/:mapRevision/reject")
     .post(async function (req, res, next) {
         try {
+            const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
+            if (!permitted) return;
+
+
             const mapId = <number>req.id;
             const revision = <number>req.revision;
 
@@ -1103,6 +1129,10 @@ mapsRouter.route("/:mapID")
     })
     .patch(async function (req, res, next) {
         try {
+            const permission = await checkPermissions(req, [], false, res);
+            if (!permission) return;
+
+
             const mapID = <number>req.id;
             const mapFromID = <rawMap>req.map;
             const modID = mapFromID.modID;
@@ -1123,6 +1153,9 @@ mapsRouter.route("/:mapID")
             const techAny: string[] | undefined = req.body.techAny === null ? undefined : req.body.techAny;
             const techFC: string[] | undefined = req.body.techFC === null ? undefined : req.body.techFC;
             const currentTime = getCurrentTime();
+
+
+            const submittingUserId = <number>req.session.userID;
 
 
             const validationJson: mapValidationJson = {
@@ -1229,7 +1262,7 @@ mapsRouter.route("/:mapID")
                     mapperNameString: mapperNameString,
                     mapRemovedFromModBool: mapRemovedFromModBool,
                     timeSubmitted: currentTime,
-                    users_maps_details_submittedByTousers: { connect: { id: submittingUser.id } },
+                    users_maps_details_submittedByTousers: { connect: { id: submittingUserId } },
                 };
 
 
@@ -1238,13 +1271,11 @@ mapsRouter.route("/:mapID")
                 }
 
 
-                const privilegedUserBool = privilegedUser(submittingUser);
-
-                if (isErrorWithMessage(privilegedUserBool)) throw privilegedUserBool;
+                const privilegedUserBool = await checkPermissions(req, mapStaffPermsArray);
 
                 if (privilegedUserBool) {
                     mapDetailsCreationObject.timeApproved = currentTime;
-                    mapDetailsCreationObject.users_maps_details_approvedByTousers = { connect: { id: submittingUser.id } };
+                    mapDetailsCreationObject.users_maps_details_approvedByTousers = { connect: { id: submittingUserId } };
                 }
 
 
@@ -1485,6 +1516,10 @@ mapsRouter.route("/:mapID")
     })
     .delete(async function (req, res, next) {
         try {
+            const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
+            if (!permitted) return;
+
+
             const id = <number>req.id;
 
             await prisma.maps_ids.delete({ where: { id: id } });
@@ -1509,6 +1544,10 @@ mapsRouter.use(errorHandler);
 
 export const mapPost = <expressRoute>async function (req, res, next) {  //called from mods.ts
     try {
+        const permission = await checkPermissions(req, [], false, res);
+        if (!permission) return;
+
+
         const modID = <number>req.id;
         const modFromID = <rawMod>req.mod;
         const modType = modFromID.mods_details[0].type;
@@ -1529,6 +1568,9 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
         const techAny: string[] | undefined = req.body.techAny === null ? undefined : req.body.techAny;
         const techFC: string[] | undefined = req.body.techFC === null ? undefined : req.body.techFC;
         const currentTime = getCurrentTime();
+
+
+        const submitterUserID = <number>req.session.userID;
 
 
         const valid = validateMapPost({
@@ -1597,7 +1639,7 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
                     mapperNameString: mapperNameString,
                     mapRemovedFromModBool: mapRemovedFromModBool,
                     timeSubmitted: currentTime,
-                    users_maps_details_submittedByTousers: { connect: { id: submittingUser.id } }
+                    users_maps_details_submittedByTousers: { connect: { id: submitterUserID } }
                 }]
             }
         }
@@ -1608,13 +1650,13 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
         }
 
 
-        const privilegedUserBool = privilegedUser(submittingUser);
+        const privilegedUserBool = await checkPermissions(req, mapStaffPermsArray);
 
         if (isErrorWithMessage(privilegedUserBool)) throw privilegedUserBool;
 
         if (privilegedUserBool) {
             mapIdCreationObject.maps_details.create[0].timeApproved = currentTime;
-            mapIdCreationObject.maps_details.create[0].users_maps_details_approvedByTousers = { connect: { id: submittingUser.id } };
+            mapIdCreationObject.maps_details.create[0].users_maps_details_approvedByTousers = { connect: { id: submitterUserID } };
         }
 
 

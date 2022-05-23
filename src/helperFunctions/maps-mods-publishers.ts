@@ -1,14 +1,15 @@
-import { NextFunction, Response } from "express";
+import { Request, Response } from "express";
 import { prisma } from "../prismaClient";
 import axios from "axios";
 import { expressRoute } from "../types/express";
-import { errorWithMessage, isErrorWithMessage, toErrorWithMessage } from "../errorHandling";
+import { isErrorWithMessage, toErrorWithMessage } from "../errorHandling";
 import { difficulties, map_lengths, mods_details_type, publishers, users } from ".prisma/client";
 import {
     rawMod, rawMap, createParentDifficultyForMod, createChildDifficultyForMod, jsonCreateMapWithMod, mapIdCreationObjectForMod,
-    mapToTechCreationObject, defaultDifficultyForMod, submitterUser, publisherConnectionObject, publisherCreationObject, rawPublisher
+    mapToTechCreationObject, defaultDifficultyForMod, publisherConnectionObject, publisherCreationObject, rawPublisher
 } from "../types/internal";
 import { formattedMod, formattedMap, formattedPublisher } from "../types/frontend";
+import { checkPermissions, mapStaffPermsArray } from "./sessions";
 
 
 
@@ -267,7 +268,7 @@ export const formatMod = async function (rawMod: rawMod) {
 
 
             const innerFormattedMaps: (string | formattedMap[])[] = [];
-            
+
             outerFormattedMaps.forEach((formattedMap) => {
                 if (typeof formattedMap === "string" || formattedMap[0].minimumModRevision <= revision) {
                     innerFormattedMaps.push(formattedMap);
@@ -402,14 +403,14 @@ const getSortedDifficultyNames = function (difficulties: difficulties[], modID: 
 
 
 export const getMapIDsCreationArray = async function (res: Response, maps: jsonCreateMapWithMod[], currentModRevision: number, currentTime: number, modType: mods_details_type,
-    publisherName: string, lengthObjectArray: map_lengths[], difficultiesCreationArray: createParentDifficultyForMod[],
-    defaultDifficultyObjectsArray: defaultDifficultyForMod[], modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean, submittingUser: submitterUser) {
+    publisherName: string, lengthObjectArray: map_lengths[], difficultiesCreationArray: createParentDifficultyForMod[], defaultDifficultyObjectsArray:
+        defaultDifficultyForMod[], modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean, submittingUserId: number, req: Request) {
     try {
         const mapIDsCreationArray: mapIdCreationObjectForMod[] = await Promise.all(
             maps.map(
                 async (mapObject: jsonCreateMapWithMod) => {
                     const mapIdCreationObject = await getMapIdCreationObject(mapObject, currentModRevision, currentTime, modType, publisherName, lengthObjectArray,
-                        difficultiesCreationArray, defaultDifficultyObjectsArray, modHasCustomDifficultiesBool, modHasSubDifficultiesBool, submittingUser);
+                        difficultiesCreationArray, defaultDifficultyObjectsArray, modHasCustomDifficultiesBool, modHasSubDifficultiesBool, submittingUserId, req);
 
                     return mapIdCreationObject;
                 }
@@ -454,7 +455,7 @@ export const getMapIDsCreationArray = async function (res: Response, maps: jsonC
 
 const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, currentModRevision: number, currentTime: number, modType: mods_details_type,
     publisherName: string, lengthObjectArray: map_lengths[], customDifficultiesArray: createParentDifficultyForMod[], defaultDifficultyObjectsArray: defaultDifficultyForMod[],
-    modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean, submittingUser: submitterUser) {
+    modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean, submittingUserId: number, req: Request) {
 
     const minimumModRevision = currentModRevision === 0 ? 0 : (mapObject.minimumModRevision ? mapObject.minimumModRevision : currentModRevision);
     //a currentModVersion of 0 means that this method is being called from /mods POST so any set value for minimumModRevision is ignored
@@ -507,19 +508,19 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
                 mapperNameString: mapperNameString,
                 mapRemovedFromModBool: mapRemovedFromModBool,
                 timeSubmitted: currentTime,
-                users_maps_details_submittedByTousers: { connect: { id: submittingUser.id } },
+                users_maps_details_submittedByTousers: { connect: { id: submittingUserId } },
             }],
         },
     };
 
 
-    const privilegedUserBool = privilegedUser(submittingUser);
+    const privilegedUserBool = <boolean>await checkPermissions(req, mapStaffPermsArray)
 
     if (isErrorWithMessage(privilegedUserBool)) throw privilegedUserBool;
 
     if (privilegedUserBool) {
         mapIdCreationObject.maps_details.create[0].timeApproved = currentTime;
-        mapIdCreationObject.maps_details.create[0].users_maps_details_approvedByTousers = { connect: { id: submittingUser.id } };
+        mapIdCreationObject.maps_details.create[0].users_maps_details_approvedByTousers = { connect: { id: submittingUserId } };
     }
 
 
@@ -542,7 +543,7 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
         const techCreationObjectArray: mapToTechCreationObject[] = [];
 
 
-                maps_to_tech: { create: { tech_list: { connect: { name: "techName"}}}}
+        maps_to_tech: { create: { tech_list: { connect: { name: "techName" } } } }
         if (techAny) {
             techAny.forEach((techName) => {
                 const techCreationObject = {
@@ -894,32 +895,6 @@ export const formatMap = async function (rawMap: rawMap, rawMod?: rawMod) {
 
 
 
-export const param_userID = <expressRoute>async function (req, res, next) {
-    try {
-        const idRaw: unknown = req.params.userID;
-
-        const id = Number(idRaw);
-
-        if (isNaN(id)) {
-            res.status(400).json("userID is not a number");
-            return;
-        }
-
-        const exists = await prisma.users.findUnique({ where: { id: id } });
-
-        if (!exists) {
-            res.status(404).json("userID does not exist");
-            return;
-        }
-
-        req.id2 = id;
-        next();
-    }
-    catch (error) {
-        next(error);
-    }
-}
-
 
 export const param_modID = <expressRoute>async function (req, res, next) {
     try {
@@ -1113,62 +1088,6 @@ export const param_mapRevision = <expressRoute>async function (req, res, next) {
 }
 
 
-export const param_lengthID = <expressRoute>async function (req, res, next) {
-    try {
-        const idRaw: unknown = req.params.lengthID;
-
-        const id = Number(idRaw);
-
-        if (isNaN(id)) {
-            res.status(400).json("lengthID is not a number");
-            return;
-        }
-
-        const exists = await prisma.map_lengths.findUnique({ where: { id: id } });
-
-        if (!exists) {
-            res.status(404).json("lengthID does not exist");
-            return;
-        }
-
-        req.id2 = id;
-        next();
-    }
-    catch (error) {
-        next(error);
-    }
-}
-
-
-export const param_lengthOrder = <expressRoute>async function (req, res, next) {
-    try {
-        const orderRaw: unknown = req.params.lengthOrder;
-
-        const order = Number(orderRaw);
-
-        if (isNaN(order)) {
-            res.status(400).json("lengthOrder is not a number");
-            return;
-        }
-
-        const lengthFromId = await prisma.map_lengths.findUnique({ where: { order: order } });
-
-        if (!lengthFromId) {
-            res.status(404).json("lengthOrder does not exist");
-            return;
-        }
-
-        req.id2 = lengthFromId.id;
-        next();
-    }
-    catch (error) {
-        next(error);
-    }
-}
-
-
-
-
 export const param_publisherID = <expressRoute>async function (req, res, next) {
     try {
         const idRaw: unknown = req.params.publisherID;
@@ -1204,26 +1123,6 @@ export const param_publisherID = <expressRoute>async function (req, res, next) {
 
 
 
-
-
-
-
-export const privilegedUser = function (user: submitterUser) {
-    try {
-        const permArray = user.permissionsArray;
-
-        if (!permArray.length) return false;
-
-        for (const perm of permArray) {
-            if (perm === "Super_Admin" || perm === "Admin" || perm === "Map_Moderator") return true;
-        }
-
-        return false;
-    }
-    catch (error) {
-        return toErrorWithMessage(error);
-    }
-}
 
 
 

@@ -2,6 +2,10 @@ import {
   users, publishers, golden_players, tech_list, tech_videos, difficulties, mods_ids, mods_details, mods_details_type, maps_ids, maps_details, maps_details_side,
   map_lengths, maps_to_tech
 } from ".prisma/client";
+import { permissions } from "./frontend";
+
+
+//TODO: remove unnecessary interfaces. use <typeof Object.arguments> instead
 
 
 export interface createUserData {
@@ -26,10 +30,6 @@ export interface updateUserData {
 export interface rawUser extends users {
   publishers: publishers[];
   golden_players: golden_players | null;
-}
-
-export interface submitterUser extends users {
-  permissionsArray: string[];
 }
 
 
@@ -224,7 +224,6 @@ interface modIdsForMap extends mods_ids {
 interface modDetailsForMap extends mods_details {
   publishers: publishers;
 }
-
 
 
 export interface mapValidationJson {
