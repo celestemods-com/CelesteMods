@@ -125,7 +125,8 @@ import { lengthsRouter } from "./routes/lengths";
 import { modsRouter } from "./routes/mods";
 import { mapsRouter } from "./routes/maps";
 import { publishersRouter } from "./routes/publishers";
-import { reviewsRouter, ratingsRouter } from "./routes/reviews-ratings";
+import { ratingsRouter } from "./routes/ratings";
+import { reviewsRouter } from "./routes/reviews";
 import { techsRouter } from "./routes/techs";
 import { usersRouter } from "./routes/users";
 
