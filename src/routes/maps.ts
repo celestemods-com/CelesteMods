@@ -761,7 +761,7 @@ mapsRouter.route("/user/:userID/submitter")
                 permitted = await checkSessionAge(req, res);
             }
             else {
-                permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+                permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
             }
 
             if (!permitted) return;
@@ -907,7 +907,7 @@ mapsRouter.route("/:mapID/revisions")
 mapsRouter.route("/:mapID/revisions/:mapRevision/accept")
     .post(async function (req, res, next) {
         try {
-            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
             if (!permitted) return;
 
 
@@ -983,7 +983,7 @@ mapsRouter.route("/:mapID/revisions/:mapRevision/accept")
 mapsRouter.route("/:mapID/revisions/:mapRevision/reject")
     .post(async function (req, res, next) {
         try {
-            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
             if (!permitted) return;
 
 
@@ -1129,7 +1129,7 @@ mapsRouter.route("/:mapID")
     })
     .patch(async function (req, res, next) {
         try {
-            const permission = checkPermissions(req, [], false, res);
+            const permission = await checkPermissions(req, [], false, res);
             if (!permission) return;
 
 
@@ -1154,7 +1154,7 @@ mapsRouter.route("/:mapID")
             const techFC: string[] | undefined = req.body.techFC === null ? undefined : req.body.techFC;
             const currentTime = getCurrentTime();
 
-            
+
             const submittingUserId = <number>req.session.userID;
 
 
@@ -1271,7 +1271,7 @@ mapsRouter.route("/:mapID")
                 }
 
 
-                const privilegedUserBool = checkPermissions(req, mapStaffPermsArray);
+                const privilegedUserBool = await checkPermissions(req, mapStaffPermsArray);
 
                 if (privilegedUserBool) {
                     mapDetailsCreationObject.timeApproved = currentTime;
@@ -1516,7 +1516,7 @@ mapsRouter.route("/:mapID")
     })
     .delete(async function (req, res, next) {
         try {
-            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
             if (!permitted) return;
 
 
@@ -1544,7 +1544,7 @@ mapsRouter.use(errorHandler);
 
 export const mapPost = <expressRoute>async function (req, res, next) {  //called from mods.ts
     try {
-        const permission = checkPermissions(req, [], false, res);
+        const permission = await checkPermissions(req, [], false, res);
         if (!permission) return;
 
 
@@ -1650,7 +1650,7 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
         }
 
 
-        const privilegedUserBool = checkPermissions(req, mapStaffPermsArray);
+        const privilegedUserBool = await checkPermissions(req, mapStaffPermsArray);
 
         if (isErrorWithMessage(privilegedUserBool)) throw privilegedUserBool;
 

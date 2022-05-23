@@ -3,7 +3,7 @@ import { prisma } from "../prismaClient";
 
 import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { formatPartialUser, formatFullUser } from "../helperFunctions/users";
-import { getDiscordUser } from "../helperFunctions/discord";
+import { getDiscordUserFromCode } from "../helperFunctions/discord";
 import { storeIdentityInSession, adminPermsArray, mapStaffPermsArray, checkPermissions } from "../helperFunctions/sessions";
 
 import { validatePost, validatePatch1, validatePatch2, validatePatch3 } from "../jsonSchemas/users";
@@ -138,8 +138,7 @@ router.route("/")
     })
     .post(async function (req, res, next) {
         try {
-            const discordToken: string = req.body.discordToken;         //can't be null after validatePost call
-            const discordTokenType: string = req.body.discordTokenType; //can't be null after validatePost call
+            const discordCode: string = req.body.code;         //can't be null after validatePost call
             const displayName: string = req.body.displayName;           //can't be null after validatePost call
             const displayDiscord: boolean = req.body.displayDiscord;    //can't be null after validatePost call
             const gamebananaIDsArray: number[] | undefined = req.body.gamebananaIDs;
@@ -148,8 +147,7 @@ router.route("/")
 
 
             const valid = validatePost({
-                discordToken: discordToken, //comment out for testing
-                discordTokenType: discordTokenType, //comment out for testing
+                discordCode: discordCode, //comment out for testing
                 displayName: displayName,
                 displayDiscord: displayDiscord,
                 gamebananaIDs: gamebananaIDsArray,
@@ -164,10 +162,9 @@ router.route("/")
 
 
             //for production
-            const discordUser = await getDiscordUser(res, discordTokenType, discordToken);
+            const discordUser = await getDiscordUserFromCode(res, discordCode);
 
             if (!discordUser) return;
-            else if (isErrorWithMessage(discordUser)) throw discordUser;
 
             const discordID = discordUser.id;
             const discordUsername = discordUser.username;
@@ -369,7 +366,7 @@ router.route("/:userID/gamebanana/:gamebananaID")
             const userID = <number>req.id;
 
             if (req.session.userID !== userID) {
-                const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+                const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
                 if (!permitted) return;
             }
 
@@ -410,7 +407,7 @@ router.route("/:userID/gamebanana/:gamebananaID")
             const userID = <number>req.id;
 
             if (req.session.userID !== userID) {
-                const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+                const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
                 if (!permitted) return;
             }
 
@@ -469,7 +466,7 @@ router.route("/:userID")
             const userID = <number>req.id;
 
             if (req.session.userID !== userID) {
-                const permitted = checkPermissions(req, adminPermsArray, true, res);
+                const permitted = await checkPermissions(req, adminPermsArray, true, res);
                 if (!permitted) return;
             }
 
@@ -558,18 +555,16 @@ router.route("/:userID/discord")
             const userID = <number>req.id;
 
             if (req.session.userID !== userID) {
-                const permitted = checkPermissions(req, adminPermsArray, true, res);
+                const permitted = await checkPermissions(req, adminPermsArray, true, res);
                 if (!permitted) return;
             }
 
-            
+
             //for production
-            const discordToken: string = req.body.discordToken;         //can't be undefined after validatePatch2
-            const discordTokenType: string = req.body.discordTokenType; //can't be undefined after validatePatch2
+            const discordCode: string = req.body.code;         //can't be undefined after validatePatch2
 
             const valid = validatePatch2({
-                discordToken: discordToken,
-                discordTokenType: discordTokenType,
+                discordCode: discordCode,
             });
 
             if (!valid) {
@@ -578,7 +573,7 @@ router.route("/:userID/discord")
             }
 
 
-            const discordUser = await getDiscordUser(res, discordTokenType, discordToken);
+            const discordUser = await getDiscordUserFromCode(res, discordCode);
 
             if (!discordUser) return;
             else if (isErrorWithMessage(discordUser)) throw discordUser;
@@ -642,11 +637,11 @@ router.route("/:userID/delete")
             const userID = <number>req.id;
 
             if (req.session.userID !== userID) {
-                const permitted = checkPermissions(req, adminPermsArray, true, res);
+                const permitted = await checkPermissions(req, adminPermsArray, true, res);
                 if (!permitted) return;
             }
 
-            
+
             const userFromId = <users>await prisma.users.findUnique({ where: { id: userID } }); //can cast as "users" because the router.param already checked that the id is valid
 
             if (userFromId.accountStatus === "Banned") {
@@ -678,11 +673,11 @@ router.route("/:userID/delete")
             const userID = <number>req.id;
 
             if (req.session.userID !== userID) {
-                const permitted = checkPermissions(req, adminPermsArray, true, res);
+                const permitted = await checkPermissions(req, adminPermsArray, true, res);
                 if (!permitted) return;
             }
 
-            
+
             const userFromId = <users>await prisma.users.findUnique({ where: { id: userID } }); //can cast as "users" because the router.param already checked that the id is valid
 
             if (userFromId.accountStatus === "Banned") {
@@ -717,10 +712,10 @@ router.route("/:userID/delete")
 router.route("/:userID/ban")
     .post(async function (req, res, next) {
         try {
-            const permitted = checkPermissions(req, adminPermsArray, true, res);
+            const permitted = await checkPermissions(req, adminPermsArray, true, res);
             if (!permitted) return;
 
-            
+
             const userFromId = <users>await prisma.users.findUnique({ where: { id: req.id } }); //can cast as "users" because the router.param already checked that the id is valid
 
             if (userFromId.accountStatus === "Banned") {
@@ -744,10 +739,10 @@ router.route("/:userID/ban")
     })
     .patch(async function (req, res, next) {
         try {
-            const permitted = checkPermissions(req, adminPermsArray, true, res);
+            const permitted = await checkPermissions(req, adminPermsArray, true, res);
             if (!permitted) return;
 
-            
+
             const userFromId = <users>await prisma.users.findUnique({ where: { id: req.id } }); //can cast as "users" because the router.param already checked that the id is valid
 
             if (userFromId.accountStatus === "Active") {
@@ -780,11 +775,11 @@ router.route("/:userID/permissions")
             const userID = <number>req.id;
 
             if (req.session.userID !== userID) {
-                const permitted = checkPermissions(req, adminPermsArray, true, res);
+                const permitted = await checkPermissions(req, adminPermsArray, true, res);
                 if (!permitted) return;
             }
 
-            
+
             const userFromId = <users>await prisma.users.findUnique({ where: { id: req.id } });    //can cast as "users" because the router.param already checked that the id is valid
 
             res.status(200).json(userFromId.permissions.split(","));
@@ -795,7 +790,7 @@ router.route("/:userID/permissions")
     })
     .patch(async function (req, res, next) {
         try {
-            const permitted = checkPermissions(req, adminPermsArray, true, res);
+            const permitted = await checkPermissions(req, adminPermsArray, true, res);
             if (!permitted) return;
 
 

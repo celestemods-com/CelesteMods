@@ -7,7 +7,7 @@ import {
     patchPublisherWithGamebananaID
 } from "../helperFunctions/maps-mods-publishers";
 import { param_userID } from "../helperFunctions/users";
-import { adminPermsArray, mapStaffPermsArray, checkPermissions } from "../helperFunctions/sessions";
+import { mapStaffPermsArray, checkPermissions } from "../helperFunctions/sessions";
 
 import { validatePublisherPost, validatePublisherPatch } from "../jsonSchemas/maps-mods-publishers";
 
@@ -55,7 +55,7 @@ publishersRouter.route("/")
                     permitted = true;
                 }
                 else {
-                    permitted = checkPermissions(req, mapStaffPermsArray, true);
+                    permitted = await checkPermissions(req, mapStaffPermsArray, true);
                 }
             }
             else {
@@ -283,7 +283,7 @@ publishersRouter.route("/:publisherID")
                     permitted = true;
                 }
                 else {
-                    permitted = checkPermissions(req, mapStaffPermsArray, true);
+                    permitted = await checkPermissions(req, mapStaffPermsArray, true);
                 }
             }
             else {
@@ -345,15 +345,15 @@ publishersRouter.route("/:publisherID")
 
             if (gamebananaID) {
                 if (userID) {
-                    permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+                    permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
                     if (!permitted) return;
                 }
 
-                
+
                 rawPublisher = await patchPublisherWithGamebananaID(id, gamebananaID, userID, publisherFromId);
             }
             else if (userID) {
-                permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+                permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
                 if (!permitted) return;
 
 
@@ -397,10 +397,10 @@ publishersRouter.route("/:publisherID")
     })
     .delete(async function (req, res, next) {
         try {
-            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
             if (!permitted) return;
 
-            
+
             const id = <number>req.id;  //id has already been validated by .param
 
             await prisma.publishers.delete({ where: { id: id } });

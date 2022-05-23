@@ -18,7 +18,7 @@ const router = express.Router();
 router.route("/")
     .get(async function (_req, res, next) {
         try {
-            const rawTechs = await prisma.tech_list.findMany({ 
+            const rawTechs = await prisma.tech_list.findMany({
                 include: {
                     difficulties: true,
                     tech_videos: true,
@@ -39,7 +39,7 @@ router.route("/")
     })
     .post(async function (req, res, next) {
         try {
-            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
             if (!permitted) return;
 
 
@@ -76,12 +76,12 @@ router.route("/")
                 res.status(200).json(formattedMatchingTech);
                 return;
             }
-            
+
 
             const createTechVideosArray: createTechVideosData[] = [];
 
             if (techVideoUrlsArray && techVideoUrlsArray.length) {
-                techVideoUrlsArray.forEach( (url) => {
+                techVideoUrlsArray.forEach((url) => {
                     createTechVideosArray.push({ url: url });
                 });
             }
@@ -425,7 +425,7 @@ router.route("/:techID")
     })
     .patch(async function (req, res, next) {
         try {
-            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
             if (!permitted) return;
 
 
@@ -467,12 +467,12 @@ router.route("/:techID")
                     return;
                 }
             }
-            
+
 
             const createTechVideosArray: createTechVideosData[] = [];
 
             if (techVideoUrlsArray && techVideoUrlsArray.length) {
-                techVideoUrlsArray.forEach( (url) => {
+                techVideoUrlsArray.forEach((url) => {
                     createTechVideosArray.push({ url: url });
                 });
             }
@@ -543,7 +543,7 @@ router.route("/:techID")
     })
     .delete(async function (req, res, next) {
         try {
-            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
             if (!permitted) return;
 
 
@@ -574,7 +574,7 @@ const formatTech = function (rawTech: rawTech) {
         if (techVideoObjectsArray && techVideoObjectsArray.length) {
             const techVideoUrlsArray: string[] = [];
 
-            techVideoObjectsArray.forEach( (techVideo) => {
+            techVideoObjectsArray.forEach((techVideo) => {
                 techVideoUrlsArray.push(techVideo.url);
             });
 

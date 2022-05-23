@@ -268,7 +268,7 @@ export const formatMod = async function (rawMod: rawMod) {
 
 
             const innerFormattedMaps: (string | formattedMap[])[] = [];
-            
+
             outerFormattedMaps.forEach((formattedMap) => {
                 if (typeof formattedMap === "string" || formattedMap[0].minimumModRevision <= revision) {
                     innerFormattedMaps.push(formattedMap);
@@ -404,7 +404,7 @@ const getSortedDifficultyNames = function (difficulties: difficulties[], modID: 
 
 export const getMapIDsCreationArray = async function (res: Response, maps: jsonCreateMapWithMod[], currentModRevision: number, currentTime: number, modType: mods_details_type,
     publisherName: string, lengthObjectArray: map_lengths[], difficultiesCreationArray: createParentDifficultyForMod[], defaultDifficultyObjectsArray:
-    defaultDifficultyForMod[], modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean, submittingUserId: number, req: Request) {
+        defaultDifficultyForMod[], modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean, submittingUserId: number, req: Request) {
     try {
         const mapIDsCreationArray: mapIdCreationObjectForMod[] = await Promise.all(
             maps.map(
@@ -514,7 +514,7 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
     };
 
 
-    const privilegedUserBool = <boolean>checkPermissions(req, mapStaffPermsArray)
+    const privilegedUserBool = <boolean>await checkPermissions(req, mapStaffPermsArray)
 
     if (isErrorWithMessage(privilegedUserBool)) throw privilegedUserBool;
 
@@ -543,7 +543,7 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
         const techCreationObjectArray: mapToTechCreationObject[] = [];
 
 
-                maps_to_tech: { create: { tech_list: { connect: { name: "techName"}}}}
+        maps_to_tech: { create: { tech_list: { connect: { name: "techName" } } } }
         if (techAny) {
             techAny.forEach((techName) => {
                 const techCreationObject = {

@@ -42,7 +42,7 @@ router.route("/")
         }
     })
     .post(async function (req, res, next) {
-        const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+        const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
         if (!permitted) return;
 
 
@@ -132,7 +132,7 @@ router.route("/:id")
     })
     .patch(async function (req, res, next) {
         try {
-            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
             if (!permitted) return;
 
 
@@ -191,7 +191,7 @@ router.route("/:id")
     })
     .delete(async function (req, res, next) {
         try {
-            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
             if (!permitted) return;
 
 

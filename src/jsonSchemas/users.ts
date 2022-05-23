@@ -1,5 +1,5 @@
 import ajvModule from "ajv";
-import {intMaxSizes} from "./integerSizes";
+import { intMaxSizes } from "./integerSizes";
 
 const ajv = new ajvModule();
 
@@ -7,8 +7,7 @@ const ajv = new ajvModule();
 const postSchema = {
     type: "object",
     properties: {
-        discordToken: { type: "string" },
-        discordTokenType: { type: "string" },
+        discordCode: { type: "string" },
         displayName: {
             type: "string",
             minLength: 1,
@@ -35,7 +34,7 @@ const postSchema = {
         },
     },
     additionalProperties: false,
-    required: ["discordToken", "discordTokenType", "displayName", "displayDiscord",],   //for production
+    required: ["discordCode", "displayName", "displayDiscord",],   //for production
     //required: ["displayName", "displayDiscord"],      //for testing
 };
 
@@ -72,8 +71,7 @@ const patch1Schema = {
 const patch2Schema = {
     type: "object",
     properties: {
-        discordToken: { type: "string" },
-        discordTokenType: { type: "string" },
+        discordCode: { type: "string" },
     }
 };
 

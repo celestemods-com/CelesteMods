@@ -6,7 +6,8 @@ import {
     checkPermissions, checkSessionAge
 } from "../helperFunctions/sessions";
 import { formatFullUser, param_userID } from "../helperFunctions/users";
-import { getDiscordUser } from "../helperFunctions/discord";
+import { getDiscordUserFromCode } from "../helperFunctions/discord";
+import { sessionMiddleware } from "../sessionMiddleware";
 
 
 const router = express.Router();
@@ -28,7 +29,7 @@ router.route("/discord")
             const url = urlRoot + [discordClientID, redirectUri, responseType, scope].join("&");
 
 
-            res.json(url);
+            res.json({ url: url });
         }
         catch (error) {
             next(toErrorWithMessage(error));
@@ -47,7 +48,7 @@ router.route("/refresh")
 
             if (refreshCount === undefined) throw "refreshCount is undefined";
 
-            else if (refreshCount >= 20){
+            else if (refreshCount >= 20) {
                 res.status(403).json("Maximum refreshCount has been reached. Please generate a new session.");
                 return;
             }
@@ -90,20 +91,20 @@ router.route("/revoke/user/:userID")
         try {
             const userID = <number>req.id2
 
-            
+
             let permitted: boolean;
 
             if (req.session.userID === userID) {
                 permitted = await checkSessionAge(req, res);
             }
             else {
-                permitted = checkPermissions(req, adminPermsArray, true, res);
+                permitted = await checkPermissions(req, adminPermsArray, true, res);
             }
 
             if (!permitted) return;
 
 
-            await prisma.session.deleteMany({ where: { data: { contains: `"userID":"${userID}"` } } });
+            await prisma.session.deleteMany({ where: { data: { contains: `"userID":${userID}` } } });
 
 
             res.sendStatus(200);
@@ -121,6 +122,11 @@ router.route("/revoke")
             const sessionID: string | null | undefined = req.body.sessionID;
 
             if (!sessionID) {
+                if (!req.session || !req.session.userID) {
+                    res.sendStatus(401);
+                    return;
+                }
+
                 await revokeSessionAsync(req);
             }
             else if (typeof sessionID !== "string" || !sessionID.length) {
@@ -151,20 +157,20 @@ router.route("/user/:userID")
         try {
             const userID = <number>req.id2;
 
-            
+
             let permitted: boolean;
 
             if (req.session.userID === userID) {
                 permitted = await checkSessionAge(req, res);
             }
             else {
-                permitted = checkPermissions(req, adminPermsArray, true, res);
+                permitted = await checkPermissions(req, adminPermsArray, true, res);
             }
 
             if (!permitted) return;
 
 
-            const rawSessions = await prisma.session.findMany({ where: { data: { contains: `"userID":"${userID}"` } } });
+            const rawSessions = await prisma.session.findMany({ where: { data: { contains: `"userID":${userID}` } } });
 
 
             const formattedSessions = rawSessions.map((rawSession) => {
@@ -206,16 +212,15 @@ router.route("/")
     })
     .post(async function (req, res, next) {
         try {
-            const discordTokenType: string = req.body.discordTokenType;
-            const discordToken: string = req.body.discordToken;
+            const discordCode: string = req.body.code;
 
-            if (typeof discordToken !== "string" || typeof discordTokenType !== "string") {
+            if (typeof discordCode !== "string") {
                 res.status(400).json("Malformed request body");
                 return;
             }
 
 
-            const discordUser = await getDiscordUser(res, discordTokenType, discordToken);
+            const discordUser = await getDiscordUserFromCode(res, discordCode);
 
             if (!discordUser) return;
             else if (isErrorWithMessage(discordUser)) throw discordUser;
@@ -250,12 +255,11 @@ router.route("/")
         }
         catch (error) {
             if (isErrorWithMessage(error)) {
-                if (error.message = noUserWithDiscordIdErrorMessage) {
+                if (error.message === noUserWithDiscordIdErrorMessage) {
                     res.status(404).json(noUserWithDiscordIdErrorMessage);
                     return;
                 }
             }
-
 
             next(toErrorWithMessage(error));
         }

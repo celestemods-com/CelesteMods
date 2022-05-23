@@ -100,7 +100,7 @@ modsRouter.route("/")
     })
     .post(async function (req, res, next) {
         try {
-            const permission = checkPermissions(req, [], false, res);
+            const permission = await checkPermissions(req, [], false, res);
             if (!permission) return;
     
     
@@ -253,7 +253,7 @@ modsRouter.route("/")
                 }
 
 
-                const privilegedUserBool = checkPermissions(req, mapStaffPermsArray);
+                const privilegedUserBool = await checkPermissions(req, mapStaffPermsArray);
 
                 if (privilegedUserBool) {
                     modDetailsCreationObject.timeApproved = currentTime;
@@ -880,7 +880,7 @@ modsRouter.route("/user/:userID/submitter")
                 permitted = await checkSessionAge(req, res);
             }
             else {
-                permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+                permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
             }
 
             if (!permitted) return;
@@ -1033,7 +1033,7 @@ modsRouter.route("/:modID/revisions")
 modsRouter.route("/:modID/revisions/:modRevision/accept")
     .post(async function (req, res, next) {
         try {
-            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
             if (!permitted) return;
 
 
@@ -1113,7 +1113,7 @@ modsRouter.route("/:modID/revisions/:modRevision/accept")
 modsRouter.route("/:modID/revisions/:modRevision/reject")
     .post(async function (req, res, next) {
         try {
-            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
             if (!permitted) return;
 
 
@@ -1232,7 +1232,7 @@ modsRouter.route("/:modID")
     })
     .patch(async function (req, res, next) {
         try {
-            const permission = checkPermissions(req, [], false, res);
+            const permission = await checkPermissions(req, [], false, res);
             if (!permission) return;
     
     
@@ -1408,7 +1408,7 @@ modsRouter.route("/:modID")
                 }
 
 
-                const privilegedUserBool = checkPermissions(req, mapStaffPermsArray);
+                const privilegedUserBool = await checkPermissions(req, mapStaffPermsArray);
 
                 if (privilegedUserBool) {
                     modDetailsCreationObject.timeApproved = currentTime;
@@ -1472,7 +1472,7 @@ modsRouter.route("/:modID")
     })
     .delete(async function (req, res, next) {
         try {
-            const permitted = checkPermissions(req, mapStaffPermsArray, true, res);
+            const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
             if (!permitted) return;
 
 

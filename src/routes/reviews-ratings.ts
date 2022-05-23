@@ -6,4 +6,4 @@ const ratingsRouter = express.Router();
 
 reviewsRouter.route("")
 
-export {reviewsRouter, ratingsRouter};
+export { reviewsRouter, ratingsRouter };

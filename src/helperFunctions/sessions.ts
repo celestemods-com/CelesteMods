@@ -7,6 +7,7 @@ import { formattedSession } from "../types/frontend";
 import { sessionData } from "../types/sessions";
 import { permissions } from "../types/frontend";
 import { app } from "..";
+import { sessionRouter } from "../routes/sessions";
 import { sessionMiddleware } from "../sessionMiddleware";
 
 
@@ -20,20 +21,24 @@ export const mapStaffPermsArray: permissions[] = ["Super_Admin", "Admin", "Map_M
 export const goldenStaffPermsArray: permissions[] = ["Super_Admin", "Admin", "Golden_Verifier"];
 
 
-export const checkPermissions = function (req: Request, validPermissionsArray: permissions[], checkSessionAgeBool = true, res?: Response) {
-    if (!req.session) {
+export const checkPermissions = async function (req: Request, validPermissionsArray: permissions[], checkSessionAgeBool = true, res?: Response) {
+    if (!req.session || !req.session.userID) {
         if (res) res.sendStatus(401);
 
         return false;
     }
 
 
-    if (checkSessionAgeBool && !checkSessionAge(req)) {
-        if (res) {
-            res.sendStatus(401);
-        }
+    if (checkSessionAgeBool) {
+        const sessionAgeBool = await checkSessionAge(req);
 
-        return false;
+        if (!sessionAgeBool) {
+            if (res) {
+                res.sendStatus(401);
+            }
+
+            return false;
+        }
     }
 
 
@@ -53,13 +58,14 @@ export const checkPermissions = function (req: Request, validPermissionsArray: p
     let permitted = false;
 
     if (userPermissionsArray && userPermissionsArray.length) {
-        permitted = Boolean(
-            userPermissionsArray.find(
-                (permission) => {
-                    validPermissionsArray.includes(permission);
+        outerLoop: for (const userPerm of userPermissionsArray) {
+            for (const validPerm of validPermissionsArray) {
+                if (userPerm === validPerm) {
+                    permitted = true;
+                    break outerLoop;
                 }
-            )
-        );
+            }
+        }
     }
 
 
@@ -73,20 +79,20 @@ export const checkPermissions = function (req: Request, validPermissionsArray: p
 
 
 export const checkSessionAge = async function (req: Request, res?: Response) {
-    if (!req.session.cookie.maxAge || req.session.refreshCount === undefined) throw "req.session.cookie.maxAge is undefined";
+    if (!req.session || !req.session.cookie || !req.session.cookie.maxAge || req.session.refreshCount === undefined) return false;
 
 
     //if cookie is more than an hour old and still refreshable, refresh it
     if (req.session.cookie.originalMaxAge - (60 * 60 * 1000) > req.session.cookie.maxAge) {
 
-        if (req.session.refreshCount >= 20){
+        if (req.session.refreshCount >= 20) {
             await revokeSessionAsync(req);
-            
+
             if (res) res.sendStatus(401);
-            
+
             return false;
         }
-        else{
+        else {
             await regenerateSessionAsync(req);
             req.session.refreshCount++;
         }
@@ -120,7 +126,9 @@ export const formatSession = function (rawSession: session) {
 
 export const storeIdentityInSession = async function (req: Request, discordUser: discordUser, updateDiscordBool: boolean) {
     try {
-        app.use(sessionMiddleware);     //if this line is reached, the user has consented to a session cookie. so, call the middleware and create one now.
+        const celestemodsUser = await prisma.users.findUnique({ where: { discordID: discordUser.id } });
+
+        if (!celestemodsUser) throw noUserWithDiscordIdErrorMessage;
 
 
         if (updateDiscordBool) {
@@ -147,11 +155,6 @@ export const storeIdentityInSession = async function (req: Request, discordUser:
             return updatedUser;
         }
         else {
-            const celestemodsUser = await prisma.users.findUnique({ where: { discordID: discordUser.id } });
-
-            if (!celestemodsUser) throw noUserWithDiscordIdErrorMessage;
-
-
             req.session.refreshCount = 0;
             req.session.userID = celestemodsUser.id;
             req.session.permissions = <permissions[]>celestemodsUser.permissions.split(",");

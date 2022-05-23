@@ -8,7 +8,8 @@ import sessionTypeExtensions from "./types/sessions";  //need to import this her
 export const app = express();
 app.use(express.json());
 
-const apiRouter = express.Router();
+const apiRouter_parent = express.Router();
+const apiRouter_v1 = express.Router();
 
 
 const port = process.env.PORT || "3001";
@@ -25,29 +26,33 @@ if (process.env.NODE_ENV !== "dev") {
 app.use(cookieParser());
 
 
-// app.use(sessionMiddleware)               //for testing
-// app.use((req, res, next) => {
-//     req.session.userID = 1;
-//     res.json(`req.session.cookie.expires: ${req.session.cookie.expires}
-//     req.session.cookie.maxAge: ${req.session.cookie.maxAge}
-//     req.session.cookie.originalMaxAge: ${req.session.cookie.originalMaxAge}`)
-// })
+const cookieConsentPath1 = "/api/v1/sessions";
+const cookieConsentPath2 = "/api/v1/users";
 
-
-app.use(function (req, _res, next) {
+app.use(function (req, res, next) {
     if (req.cookies[sessionCookieNameString]) {
-        app.use(sessionMiddleware);     //if session cookie already exists then run middleware to populate req.session
-    }                                   //otherwise, don't call the middleware so cookies aren't set without consent
+        return sessionMiddleware(req, res, next);      //if session cookie already exists then run middleware to populate req.session
+    }                                                   //otherwise, don't call the middleware so cookies aren't set without consent
+    else if (
+        req.method === "POST" && (
+            req.path === cookieConsentPath1 || req.path === cookieConsentPath1 + "/" ||
+            req.path === cookieConsentPath2 || req.path === cookieConsentPath2 + "/"
+        )
+    ) {
+        return sessionMiddleware(req, res, next);     //if this line is reached, the user has consented to a session cookie. so, call the middleware and create one now.
+    }
 
 
     next();
 });
 
 
-app.use("api/v1", apiRouter);
+app.use("/api", apiRouter_parent);
 
 
-app.use(noRouteError);
+app.use((req, res, next) => {
+    noRouteError(req, res, next);
+});
 
 app.use(errorHandler);
 
@@ -60,7 +65,17 @@ app.use(errorHandler);
 
 
 
-apiRouter.use(function (req, res, next) {
+apiRouter_parent.use("/v1", apiRouter_v1);
+
+
+apiRouter_parent.use(noRouteError);
+
+apiRouter_parent.use(errorHandler);
+
+
+
+
+apiRouter_v1.use(function (req, res, next) {
     try {
         let oneof = false;
         if (req.headers.origin) {
@@ -116,22 +131,22 @@ import { reviewsRouter, ratingsRouter } from "./routes/reviews-ratings";
 import { techsRouter } from "./routes/techs";
 import { usersRouter } from "./routes/users";
 
-apiRouter.use("/sessions", sessionRouter);
-apiRouter.use("/difficulties", difficultiesRouter);
-apiRouter.use("/goldens", goldensRouter);
-apiRouter.use("/goldenplayers", goldenPlayersRouter);
-apiRouter.use("/goldenruns", goldenRunsRouter);
-apiRouter.use("/goldensubmissions", goldenSubmissionsRouter);
-apiRouter.use("/lengths", lengthsRouter);
-apiRouter.use("/mods", modsRouter);
-apiRouter.use("/maps", mapsRouter);
-apiRouter.use("/publishers", publishersRouter);
-apiRouter.use("/reviews", reviewsRouter);
-apiRouter.use("/ratings", ratingsRouter);
-apiRouter.use("/techs", techsRouter);
-apiRouter.use("/users", usersRouter);
+apiRouter_v1.use("/sessions", sessionRouter);
+apiRouter_v1.use("/difficulties", difficultiesRouter);
+apiRouter_v1.use("/goldens", goldensRouter);
+apiRouter_v1.use("/goldenplayers", goldenPlayersRouter);
+apiRouter_v1.use("/goldenruns", goldenRunsRouter);
+apiRouter_v1.use("/goldensubmissions", goldenSubmissionsRouter);
+apiRouter_v1.use("/lengths", lengthsRouter);
+apiRouter_v1.use("/mods", modsRouter);
+apiRouter_v1.use("/maps", mapsRouter);
+apiRouter_v1.use("/publishers", publishersRouter);
+apiRouter_v1.use("/reviews", reviewsRouter);
+apiRouter_v1.use("/ratings", ratingsRouter);
+apiRouter_v1.use("/techs", techsRouter);
+apiRouter_v1.use("/users", usersRouter);
 
 
-apiRouter.use(noRouteError);
+apiRouter_v1.use(noRouteError);
 
-apiRouter.use(errorHandler);
+apiRouter_v1.use(errorHandler);
