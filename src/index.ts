@@ -140,8 +140,8 @@ apiRouter_v1.use("/lengths", lengthsRouter);
 apiRouter_v1.use("/mods", modsRouter);
 apiRouter_v1.use("/maps", mapsRouter);
 apiRouter_v1.use("/publishers", publishersRouter);
-apiRouter_v1.use("/reviews", reviewsRouter);
 apiRouter_v1.use("/ratings", ratingsRouter);
+apiRouter_v1.use("/reviews", reviewsRouter);
 apiRouter_v1.use("/techs", techsRouter);
 apiRouter_v1.use("/users", usersRouter);
 

@@ -1,11 +1,13 @@
 import { difficulties } from ".prisma/client";
 
+
 export interface formattedSession {
   sid: string;
   sessionExpiryTime: Date;
   refreshCount: number;
   userID: number;
 }
+
 
 export interface formattedUser {
   id: number;
@@ -23,6 +25,7 @@ export interface formattedUser {
 
 export type permissions = "Super_Admin" | "Admin" | "Map_Moderator" | "Map_Reviewer" | "Golden_Verifier";
 
+
 export interface formattedTech {
   id: number;
   name: string;
@@ -30,6 +33,7 @@ export interface formattedTech {
   videos?: string[];
   difficulty: difficulties;
 }
+
 
 export interface formattedMod {
   id: number;
@@ -47,6 +51,7 @@ export interface formattedMod {
   difficulties?: (string | string[])[];
   approved: boolean;
 }
+
 
 export interface formattedMap {
   id: number;
@@ -70,9 +75,29 @@ export interface formattedMap {
   approved: boolean;
 }
 
+
 export interface formattedPublisher {
   id: number;
   name: string;
   gamebananaID?: number;
   userID?: number;
+}
+
+
+export interface formattedRating {
+  id: number;
+  mapID: number;
+  submittedBy: number;
+  timeSubmitted: number;
+  quality?: number;
+  difficulty?: number[];
+}
+
+export interface ratingsInfo {
+  averageQuality?: number;
+  averageDifficultyID?: number;
+  averageDifficultyValue?: number;
+  overallCount: number;
+  qualityCount: number;
+  difficultyCount: number;
 }
