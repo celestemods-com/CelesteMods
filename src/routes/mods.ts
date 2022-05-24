@@ -100,7 +100,7 @@ modsRouter.route("/")
     })
     .post(async function (req, res, next) {
         try {
-            const permission = await checkPermissions(req, [], false, res);
+            const permission = await checkPermissions(req, [], true, res);
             if (!permission) return;
     
     
@@ -1232,7 +1232,7 @@ modsRouter.route("/:modID")
     })
     .patch(async function (req, res, next) {
         try {
-            const permission = await checkPermissions(req, [], false, res);
+            const permission = await checkPermissions(req, [], true, res);
             if (!permission) return;
     
     
@@ -1488,7 +1488,7 @@ modsRouter.route("/:modID")
     })
     .post(async function (req, res, next) {
         try {
-            const permission = await checkPermissions(req, [], false, res);
+            const permission = await checkPermissions(req, [], true, res);
             if (!permission) return;
     
     
