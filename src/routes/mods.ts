@@ -1488,6 +1488,10 @@ modsRouter.route("/:modID")
     })
     .post(async function (req, res, next) {
         try {
+            const permission = await checkPermissions(req, [], false, res);
+            if (!permission) return;
+    
+    
             await mapPost(req, res, next);
         }
         catch (error) {
