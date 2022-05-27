@@ -20,8 +20,7 @@ model difficulties {
   other_difficulties                                            difficulties[] @relation("difficultiesTodifficulties_parentDifficultyID")
   maps_details_difficultiesTomaps_details_canonicalDifficultyID maps_details[] @relation("difficultiesTomaps_details_canonicalDifficultyID")
   maps_details_difficultiesTomaps_details_modDifficultyID       maps_details[] @relation("difficultiesTomaps_details_modDifficultyID")
-  ratings_difficultiesToratings_gameplayDefaultDifficultyID     ratings[]      @relation("difficultiesToratings_gameplayDefaultDifficultyID")
-  ratings_difficultiesToratings_techDefaultDifficultyID         ratings[]      @relation("difficultiesToratings_techDefaultDifficultyID")
+  ratings                                                       ratings[]
   tech_list                                                     tech_list[]
 
   @@unique([parentModID, parentDifficultyID, order], map: "difficultiesByMod")
@@ -155,6 +154,7 @@ model maps_ids {
   goldens            goldens[]
   maps_details       maps_details[]
   ratings            ratings[]
+  reviews_maps       reviews_maps[]
 
   @@index([modID], map: "modID")
 }
@@ -218,23 +218,20 @@ model publishers {
 }
 
 model ratings {
-  id                                                             Int              @id @default(autoincrement()) @db.UnsignedInt
-  submittedBy                                                    Int              @db.UnsignedSmallInt
-  mapID                                                          Int              @db.UnsignedMediumInt
-  timeSubmitted                                                  Int
-  quality                                                        ratings_quality?
-  techDefaultDifficultyID                                        Int?             @db.UnsignedSmallInt
-  gameplayDefaultDifficultyID                                    Int?             @db.UnsignedSmallInt
-  difficulties_difficultiesToratings_gameplayDefaultDifficultyID difficulties?    @relation("difficultiesToratings_gameplayDefaultDifficultyID", fields: [gameplayDefaultDifficultyID], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "ratings_ibfk_3")
-  maps_ids                                                       maps_ids         @relation(fields: [mapID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "ratings_ibfk_2")
-  users                                                          users            @relation(fields: [submittedBy], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "ratings_ibfk_1")
-  difficulties_difficultiesToratings_techDefaultDifficultyID     difficulties?    @relation("difficultiesToratings_techDefaultDifficultyID", fields: [techDefaultDifficultyID], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "ratings_ibfk_4")
-  reviews_maps                                                   reviews_maps?
+  id            Int           @id @default(autoincrement()) @db.UnsignedInt
+  mapID         Int           @db.UnsignedMediumInt
+  submittedBy   Int           @db.UnsignedSmallInt
+  timeSubmitted Int
+  quality       Int?          @db.UnsignedTinyInt
+  difficultyID  Int?          @db.UnsignedSmallInt
+  difficulties  difficulties? @relation(fields: [difficultyID], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "ratings_ibfk_3")
+  maps_ids      maps_ids      @relation(fields: [mapID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "ratings_ibfk_2")
+  users         users         @relation(fields: [submittedBy], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "ratings_ibfk_1")
 
-  @@index([gameplayDefaultDifficultyID], map: "gameplayDefaultDifficultyID")
+  @@unique([mapID, submittedBy], map: "mapAndUser")
+  @@index([difficultyID], map: "difficultyID")
   @@index([mapID], map: "mapID")
   @@index([submittedBy], map: "submittedBy")
-  @@index([techDefaultDifficultyID], map: "techDefaultDifficultyID")
 }
 
 model reviews {
@@ -255,18 +252,20 @@ model reviews {
 
 model reviews_maps {
   id                Int         @id @default(autoincrement()) @db.UnsignedInt
-  reviewID          Int?        @db.UnsignedMediumInt
-  ratingID          Int?        @unique(map: "ratingID") @db.UnsignedInt
-  displayRatingBool Boolean?
+  reviewID          Int         @db.UnsignedMediumInt
+  mapID             Int         @db.UnsignedMediumInt
   lengthID          Int         @db.UnsignedTinyInt
   likes             String      @db.VarChar(500)
   dislikes          String      @db.VarChar(500)
   otherComments     String      @db.VarChar(500)
+  displayRatingBool Boolean     @default(false)
   map_lengths       map_lengths @relation(fields: [lengthID], references: [id], onUpdate: Restrict, map: "reviews_maps_ibfk_2")
-  ratings           ratings?    @relation(fields: [ratingID], references: [id], onUpdate: Restrict, map: "reviews_maps_ibfk_3")
-  reviews           reviews?    @relation(fields: [reviewID], references: [id], onUpdate: Restrict, map: "reviews_maps_ibfk_1")
+  maps_ids          maps_ids    @relation(fields: [mapID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "reviews_maps_ibfk_3")
+  reviews           reviews     @relation(fields: [reviewID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "reviews_maps_ibfk_1")
 
+  @@unique([reviewID, mapID], map: "review_map")
   @@index([lengthID], map: "lengthID")
+  @@index([mapID], map: "mapID")
   @@index([reviewID], map: "reviewID")
 }
 
@@ -344,14 +343,6 @@ enum mods_details_type {
   Collab
   Contest
   Lobby
-}
-
-enum ratings_quality {
-  Amazing
-  Very_Well_Made @map("Very Well Made")
-  Recommended
-  Neutral
-  Not_Recommended @map("Not Recommended")
 }
 
 enum users_accountStatus {
