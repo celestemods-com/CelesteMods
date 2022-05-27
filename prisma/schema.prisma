@@ -154,6 +154,7 @@ model maps_ids {
   goldens            goldens[]
   maps_details       maps_details[]
   ratings            ratings[]
+  reviews_maps       reviews_maps[]
 
   @@index([modID], map: "modID")
 }
@@ -226,7 +227,6 @@ model ratings {
   difficulties  difficulties? @relation(fields: [difficultyID], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "ratings_ibfk_3")
   maps_ids      maps_ids      @relation(fields: [mapID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "ratings_ibfk_2")
   users         users         @relation(fields: [submittedBy], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "ratings_ibfk_1")
-  reviews_maps  reviews_maps?
 
   @@unique([mapID, submittedBy], map: "mapAndUser")
   @@index([difficultyID], map: "difficultyID")
@@ -252,18 +252,20 @@ model reviews {
 
 model reviews_maps {
   id                Int         @id @default(autoincrement()) @db.UnsignedInt
-  reviewID          Int?        @db.UnsignedMediumInt
-  ratingID          Int?        @unique(map: "ratingID") @db.UnsignedInt
-  displayRatingBool Boolean?
+  reviewID          Int         @db.UnsignedMediumInt
+  mapID             Int         @db.UnsignedMediumInt
   lengthID          Int         @db.UnsignedTinyInt
   likes             String      @db.VarChar(500)
   dislikes          String      @db.VarChar(500)
   otherComments     String      @db.VarChar(500)
+  displayRatingBool Boolean     @default(false)
   map_lengths       map_lengths @relation(fields: [lengthID], references: [id], onUpdate: Restrict, map: "reviews_maps_ibfk_2")
-  ratings           ratings?    @relation(fields: [ratingID], references: [id], onUpdate: Restrict, map: "reviews_maps_ibfk_3")
-  reviews           reviews?    @relation(fields: [reviewID], references: [id], onUpdate: Restrict, map: "reviews_maps_ibfk_1")
+  maps_ids          maps_ids    @relation(fields: [mapID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "reviews_maps_ibfk_3")
+  reviews           reviews     @relation(fields: [reviewID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "reviews_maps_ibfk_1")
 
+  @@unique([reviewID, mapID], map: "review_map")
   @@index([lengthID], map: "lengthID")
+  @@index([mapID], map: "mapID")
   @@index([reviewID], map: "reviewID")
 }
 
