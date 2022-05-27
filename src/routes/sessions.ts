@@ -10,6 +10,8 @@ import { formatFullUser, param_userID } from "../helperFunctions/users";
 import { getDiscordUserFromCode } from "../helperFunctions/discord";
 import { sessionMiddleware } from "../sessionMiddleware";
 
+import { permissions } from "../types/frontend";
+
 
 const router = express.Router();
 export { router as sessionRouter };
@@ -44,6 +46,12 @@ router.route("/discord")
 router.route("/refresh")
     .post(async function (req, res, next) {
         try {
+            const permitted = await checkPermissions(req, [], true, res);
+            if (!permitted) return;
+
+
+            const userID = <number>req.session.userID;
+            const permissions = <permissions[]>req.session.permissions;
 
             let refreshCount = req.session.refreshCount;
 
@@ -51,6 +59,7 @@ router.route("/refresh")
 
             else if (refreshCount >= 20) {
                 res.status(403).json("Maximum refreshCount has been reached. Please generate a new session.");
+                await revokeSessionAsync(req);
                 return;
             }
 
@@ -58,9 +67,12 @@ router.route("/refresh")
             await regenerateSessionAsync(req);
 
 
+            req.session.userID = userID;
+            req.session.permissions = permissions;
+
             refreshCount++;
             req.session.refreshCount = refreshCount;
-
+            
 
             const sessionExpiryTime = req.session.cookie.expires;
 
