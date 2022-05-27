@@ -10,7 +10,7 @@ import { validatePost } from "../jsonSchemas/ratings";
 
 import { ratings, difficulties } from ".prisma/client";
 import { formattedRating } from "../types/frontend";
-import { rawRating } from "../types/internal";
+import { rawRating, createRatingData } from "../types/internal";
 
 
 const router = express.Router();
@@ -55,7 +55,7 @@ router.route("/")
             const quality = !req.body.quality ? undefined : <number>req.body.quality;
             const difficultyID = !req.body.difficultyID ? undefined : <number>req.body.difficultyID;
             const currentTime = getCurrentTime();
-            
+
             const userID = <number>req.session.userID;  //must be defined, otherwise checkPermissions would have returned false
 
 
@@ -87,20 +87,24 @@ router.route("/")
                 if (isErrorWithMessage(formattedRatingFromID)) throw formattedRatingFromID;
 
 
-                res.status(200).json(formattedRatingFromID);
+                res.status(200).json(formattedRatingFromID);    //don't need to check for perms. the submitting user will always be the same as the matching rating's user
 
                 return;
             }
 
 
+            const createRatingObject: createRatingData = {
+                maps_ids: { connect: { id: mapID } },
+                users: { connect: { id: userID } },
+                timeSubmitted: currentTime,
+                quality: quality,
+            };
+
+            if (difficultyID) createRatingObject.difficulties = { connect: { id: difficultyID } };
+
+
             const rawRating = await prisma.ratings.create({
-                data: {
-                    maps_ids: { connect: { id: mapID } },
-                    users: { connect: { id: userID } },
-                    timeSubmitted: currentTime,
-                    quality: quality,
-                    difficulties: { connect: { id: difficultyID } },
-                },
+                data: createRatingObject,
                 include: { difficulties: true },
             });
 
@@ -122,7 +126,7 @@ router.route("/")
 
 
 router.route("/search")
-    .all(methodNotAllowed);
+    .all(noRouteError);
 
 
 router.route("/search/mod")
@@ -148,7 +152,7 @@ router.route("/search/mod")
                                 some: {
                                     AND: {
                                         NOT: { timeApproved: null },
-                                        name: { contains: query },
+                                        name: { startsWith: query },
                                     },
                                 },
                             },
@@ -193,7 +197,7 @@ router.route("/search/map")
                             some: {
                                 AND: {
                                     NOT: { timeApproved: null },
-                                    name: { contains: query },
+                                    name: { startsWith: query },
                                 },
                             },
                         },
@@ -231,7 +235,7 @@ router.route("/search/user")
 
 
             const rawRatings = await prisma.ratings.findMany({
-                where: { users: { displayName: { contains: query } } },
+                where: { users: { displayName: { startsWith: query } } },
                 include: { difficulties: true },
             });
 
@@ -526,7 +530,7 @@ router.route("/:ratingID")
         try {
             const permission = await checkPermissions(req, adminPermsArray, true, res);
             if (!permission) return;
-            
+
 
             const rawRating = <rawRating>req.rating;
 
@@ -559,7 +563,7 @@ router.route("/:ratingID")
 
             if (!permitted) return;
 
-            
+
             await prisma.ratings.delete({ where: { id: ratingID } });
 
 

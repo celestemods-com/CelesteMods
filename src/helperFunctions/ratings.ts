@@ -8,7 +8,7 @@ import { isErrorWithMessage, toErrorWithMessage } from "../errorHandling";
 
 
 
-export const formatRatings = function ( rawRatings: rawRating[]) {
+export const formatRatings = function (rawRatings: rawRating[]) {
     const formattedRatings = rawRatings.map((rawRating) => {
         const formattedRating = formatRating(rawRating);
 
@@ -87,7 +87,7 @@ export const getRatingsInfo = async function (ratings: ratings[]) {
 
         if (rating.difficultyID) {
             hasValuesBool = true;
-            
+
             const difficultyValue = difficultyValuesMap.get(rating.difficultyID);
 
             if (!difficultyValue) throw `undefined difficultyValue for difficulty ${rating.difficultyID} from rating ${rating.id}`;
@@ -100,7 +100,7 @@ export const getRatingsInfo = async function (ratings: ratings[]) {
         if (!hasValuesBool) throw `rating ${rating.id} has no values`;
     }
 
-    
+
     const overallCount = ratings.length;
     const unroundedAverageQuality = !qualityCount ? undefined : qualitySum / qualityCount;
     const unroundedAverageDifficultyValue = !difficultySum ? undefined : difficultySum / difficultyCount;
@@ -134,46 +134,32 @@ export const getRatingsInfo = async function (ratings: ratings[]) {
 
 
 const getDifficultyValuesMap = async function () {
-    const rawDifficulties = await prisma.difficulties.findMany({
+    const rawParentDifficulties = await prisma.difficulties.findMany({
         where: {
             AND: {
                 parentModID: null,
-            },
+                parentDifficultyID: null,
+            }
         },
         orderBy: [
-            { parentDifficultyID: "asc" },
             { order: "asc" },
         ],
         include: { other_difficulties: true },
     });
 
-    if (!rawDifficulties.length) throw "no child default difficulties";
-
-
-    const nestedDifficultiesArray: (difficulties & { other_difficulties: difficulties[] })[][] = [];
-
-    for (const difficulty of rawDifficulties) {
-        /*
-        all parent difficulties should be at the beginning of the array, so all child arrays in nestedDifficultiesArray 
-        should be created before encountering any child difficulties
-        */
-        if (difficulty.parentDifficultyID === null) {
-            nestedDifficultiesArray.push([difficulty]);
-            continue;
-        }
-
-        const parentDifficultyOrder = difficulty.other_difficulties[0].order;
-
-        nestedDifficultiesArray[parentDifficultyOrder].push(difficulty);
-    }
+    if (!rawParentDifficulties.length) throw "no parent default difficulties";
 
 
     const difficultyValuesMap: Map<number, number> = new Map();  //Map with difficulty IDs as the keys
 
-    for (const childDifficultiesArray of nestedDifficultiesArray) {
+    for (const parentDifficulty of rawParentDifficulties) {
+        const childDifficultiesArray = parentDifficulty.other_difficulties;
+
         //the +1 means the last child will not reach the next whole number value. this is intentional to add greater weight to going up a difficulty tier.
         const valueIncrement = 1 / (childDifficultiesArray.length + 1);
-        let difficultyValue = childDifficultiesArray[0].other_difficulties[0].order - 1;
+
+        let difficultyValue = parentDifficulty.order - 1;
+
 
         for (const childDifficulty of childDifficultiesArray) {
             difficultyValue += valueIncrement;

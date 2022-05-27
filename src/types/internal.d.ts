@@ -269,3 +269,11 @@ export interface rawPublisher extends publishers {
 export interface rawRating extends ratings {
   difficulties: difficulties | null;
 }
+
+export interface createRatingData {
+  maps_ids: { connect: { id: number } },
+  users: { connect: { id: number } },
+  timeSubmitted: number,
+  quality?: number,
+  difficulties?: { connect: { id: number } },
+}
