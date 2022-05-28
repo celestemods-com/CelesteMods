@@ -14,6 +14,17 @@ const postSchema = {
             maxLength: 50,
         },
         displayDiscord: { type: "boolean" },
+        showCompletedMaps: { type: "boolean" },
+        completedMapIDs: {
+            type: "array",
+            items: {
+                anyOf: [{
+                    type: "integer",
+                    minimum: 0,
+                    maximum: intMaxSizes.mediumInt.unsigned,
+                }],
+            },
+        },
         gamebananaIDs: {
             type: "array",
             items: {
@@ -21,7 +32,7 @@ const postSchema = {
                     type: "integer",
                     minimum: 0,
                     maximum: intMaxSizes.mediumInt.unsigned,
-                }]
+                }],
             },
         },
         goldenPlayerID: {
@@ -29,12 +40,10 @@ const postSchema = {
             minimum: 0,
             maximum: intMaxSizes.smallInt.unsigned,
         },
-        generateSessionBool: {
-            type: "boolean",
-        },
+        generateSessionBool: { type: "boolean" },
     },
     additionalProperties: false,
-    required: ["discordCode", "displayName", "displayDiscord",],   //for production
+    required: ["discordCode", "displayName", "displayDiscord", "showCompletedMaps"],   //for production
     //required: ["displayName", "displayDiscord"],      //for testing
 };
 
@@ -43,23 +52,14 @@ const patch1Schema = {
     type: "object",
     properties: {
         displayName: {
-            type: "string",
+            type: ["string", "null"],
             minLength: 1,
             maxLength: 50,
         },
-        displayDiscord: { type: "boolean" },
-        gamebananaIDs: {
-            type: "array",
-            items: {
-                anyOf: [{
-                    type: "integer",
-                    minimum: 0,
-                    maximum: intMaxSizes.mediumInt.unsigned,
-                }]
-            },
-        },
+        displayDiscord: { type: ["boolean", "null"] },
+        showCompletedMaps: { type: ["boolean", "null"] },
         goldenPlayerID: {
-            type: "integer",
+            type: ["integer", "null"],
             minimum: 0,
             maximum: intMaxSizes.smallInt.unsigned,
         },

@@ -147,14 +147,15 @@ model maps_details {
 }
 
 model maps_ids {
-  id                 Int            @id @default(autoincrement()) @db.UnsignedMediumInt
-  modID              Int            @db.UnsignedSmallInt
-  minimumModRevision Int            @db.UnsignedTinyInt
-  mods_ids           mods_ids       @relation(fields: [modID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "maps_ids_ibfk_1")
+  id                 Int             @id @default(autoincrement()) @db.UnsignedMediumInt
+  modID              Int             @db.UnsignedSmallInt
+  minimumModRevision Int             @db.UnsignedTinyInt
+  mods_ids           mods_ids        @relation(fields: [modID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "maps_ids_ibfk_1")
   goldens            goldens[]
   maps_details       maps_details[]
   ratings            ratings[]
   reviews_maps       reviews_maps[]
+  users_to_maps      users_to_maps[]
 
   @@index([modID], map: "modID")
 }
@@ -304,6 +305,7 @@ model users {
   discordUsername                                          String               @db.VarChar(32)
   discordDiscrim                                           String               @db.VarChar(4)
   displayDiscord                                           Boolean
+  showCompletedMaps                                        Boolean
   timeCreated                                              Int
   permissions                                              String
   accountStatus                                            users_accountStatus  @default(Active)
@@ -319,6 +321,17 @@ model users {
   publishers                                               publishers[]
   ratings                                                  ratings[]
   reviews                                                  reviews[]
+  users_to_maps                                            users_to_maps[]
+}
+
+model users_to_maps {
+  userID   Int      @db.UnsignedSmallInt
+  mapID    Int      @db.UnsignedMediumInt
+  maps_ids maps_ids @relation(fields: [mapID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "users_to_maps_ibfk_2")
+  users    users    @relation(fields: [userID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "users_to_maps_ibfk_1")
+
+  @@id([userID, mapID])
+  @@index([mapID], map: "mapID")
 }
 
 enum goldens_goldenList {

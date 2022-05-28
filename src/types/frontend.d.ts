@@ -19,6 +19,8 @@ export interface formattedUser {
   permissions?: permissions[];
   accountStatus: string;
   timeDeletedOrBanned?: number;
+  showCompletedMaps?: boolean;
+  completedMapIDs?: number[];
   gamebananaIDs?: number[];
   goldenPlayerID?: number;
 }
