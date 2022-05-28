@@ -4,7 +4,7 @@ import { prisma } from "../prismaClient";
 import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { formatPartialUser, formatFullUser } from "../helperFunctions/users";
 import { getDiscordUserFromCode } from "../helperFunctions/discord";
-import { storeIdentityInSession, adminPermsArray, mapStaffPermsArray, checkPermissions } from "../helperFunctions/sessions";
+import { storeIdentityInSession, adminPermsArray, mapStaffPermsArray, checkPermissions, checkSessionAge } from "../helperFunctions/sessions";
 
 import { validatePost, validatePatch1, validatePatch2, validatePatch3 } from "../jsonSchemas/users";
 
@@ -161,7 +161,6 @@ router.route("/")
             }
 
 
-            //for production
             const discordUser = await getDiscordUserFromCode(res, discordCode);
 
             if (!discordUser) return;
@@ -169,11 +168,6 @@ router.route("/")
             const discordID = discordUser.id;
             const discordUsername = discordUser.username;
             const discordDiscrim = discordUser.discriminator;
-
-            //for testing
-            // const discordID = <string>req.body.testID;
-            // const discordUsername = <string>req.body.discordUsername;
-            // const discordDiscrim = <string>req.body.discordDiscrim;
 
 
             let arrayForOR: {}[] = [];
@@ -365,10 +359,18 @@ router.route("/:userID/gamebanana/:gamebananaID")
         try {
             const userID = <number>req.id;
 
-            if (req.session.userID !== userID) {
-                const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
-                if (!permitted) return;
+
+            let permitted;
+
+            if (req.session.userID === userID) {
+                permitted = await checkSessionAge(req, res);
             }
+            else {
+                permitted = await checkPermissions(req, adminPermsArray, true, res);
+            }
+
+            if (!permitted) return;
+            
 
 
             if (!req.valid) {
@@ -406,10 +408,17 @@ router.route("/:userID/gamebanana/:gamebananaID")
         try {
             const userID = <number>req.id;
 
-            if (req.session.userID !== userID) {
-                const permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
-                if (!permitted) return;
+
+            let permitted;
+
+            if (req.session.userID === userID) {
+                permitted = await checkSessionAge(req, res);
             }
+            else {
+                permitted = await checkPermissions(req, adminPermsArray, true, res);
+            }
+
+            if (!permitted) return;
 
 
             if (!req.valid) {
@@ -442,8 +451,21 @@ router.route("/:userID/gamebanana/:gamebananaID")
 router.route("/:userID")
     .get(async function (req, res, next) {
         try {
+            const userID = <number>req.id;
+
+
+            let permitted;
+
+            if (req.session.userID === userID) {
+                permitted = await checkSessionAge(req, res);
+            }
+            else {
+                permitted = await checkPermissions(req, adminPermsArray, true, res);
+            }
+
+
             const rawUser = await prisma.users.findUnique({
-                where: { id: req.id },
+                where: { id: userID },
                 include: {
                     publishers: true,
                     golden_players: true,
@@ -451,10 +473,19 @@ router.route("/:userID")
             });
             if (!rawUser) throw "rawUser is null!";
 
-            const formattedUser = formatPartialUser(rawUser);
+
+            let formattedUser;
+
+            if (permitted) {
+                formattedUser = formatFullUser(rawUser);
+            }
+            else {
+                formattedUser = formatPartialUser(rawUser);
+            }
 
             if (isErrorWithMessage(formattedUser)) throw formattedUser;
 
+            
             res.status(200).json(formattedUser);
         }
         catch (error) {
@@ -465,10 +496,17 @@ router.route("/:userID")
         try {
             const userID = <number>req.id;
 
-            if (req.session.userID !== userID) {
-                const permitted = await checkPermissions(req, adminPermsArray, true, res);
-                if (!permitted) return;
+
+            let permitted;
+
+            if (req.session.userID === userID) {
+                permitted = await checkSessionAge(req, res);
             }
+            else {
+                permitted = await checkPermissions(req, adminPermsArray, true, res);
+            }
+
+            if (!permitted) return;
 
 
             const displayName: string | undefined = req.body.displayName;
@@ -554,10 +592,14 @@ router.route("/:userID/discord")
         try {
             const userID = <number>req.id;
 
-            if (req.session.userID !== userID) {
-                const permitted = await checkPermissions(req, adminPermsArray, true, res);
-                if (!permitted) return;
+
+            let permitted;
+
+            if (req.session.userID === userID) {
+                permitted = await checkSessionAge(req, res);
             }
+
+            if (!permitted) return;
 
 
             //for production
@@ -636,10 +678,17 @@ router.route("/:userID/delete")
         try {
             const userID = <number>req.id;
 
-            if (req.session.userID !== userID) {
-                const permitted = await checkPermissions(req, adminPermsArray, true, res);
-                if (!permitted) return;
+
+            let permitted;
+
+            if (req.session.userID === userID) {
+                permitted = await checkSessionAge(req, res);
             }
+            else {
+                permitted = await checkPermissions(req, adminPermsArray, true, res);
+            }
+
+            if (!permitted) return;
 
 
             const userFromId = <users>await prisma.users.findUnique({ where: { id: userID } }); //can cast as "users" because the router.param already checked that the id is valid
@@ -672,10 +721,17 @@ router.route("/:userID/delete")
         try {
             const userID = <number>req.id;
 
-            if (req.session.userID !== userID) {
-                const permitted = await checkPermissions(req, adminPermsArray, true, res);
-                if (!permitted) return;
+
+            let permitted;
+
+            if (req.session.userID === userID) {
+                permitted = await checkSessionAge(req, res);
             }
+            else {
+                permitted = await checkPermissions(req, adminPermsArray, true, res);
+            }
+
+            if (!permitted) return;
 
 
             const userFromId = <users>await prisma.users.findUnique({ where: { id: userID } }); //can cast as "users" because the router.param already checked that the id is valid
@@ -774,10 +830,17 @@ router.route("/:userID/permissions")
         try {
             const userID = <number>req.id;
 
-            if (req.session.userID !== userID) {
-                const permitted = await checkPermissions(req, adminPermsArray, true, res);
-                if (!permitted) return;
+
+            let permitted;
+
+            if (req.session.userID === userID) {
+                permitted = await checkSessionAge(req, res);
             }
+            else {
+                permitted = await checkPermissions(req, adminPermsArray, true, res);
+            }
+
+            if (!permitted) return;
 
 
             const userFromId = <users>await prisma.users.findUnique({ where: { id: req.id } });    //can cast as "users" because the router.param already checked that the id is valid
