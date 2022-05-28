@@ -370,7 +370,7 @@ router.route("/:userID/gamebanana/:gamebananaID")
             }
 
             if (!permitted) return;
-            
+
 
 
             if (!req.valid) {
@@ -485,7 +485,7 @@ router.route("/:userID")
 
             if (isErrorWithMessage(formattedUser)) throw formattedUser;
 
-            
+
             res.status(200).json(formattedUser);
         }
         catch (error) {
