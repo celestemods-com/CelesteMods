@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { difficulties, goldens_goldenList, ratings_quality, publishers } from '.prisma/client';
+import { difficulties, goldens_goldenList, publishers } from '.prisma/client';
 import { rawTech, rawMod, rawMap } from './internal';
 
 
@@ -69,7 +69,7 @@ declare global {
     submittedBy?: number;
     mapID?: number;
     timeSubmitted?: number;
-    quality?: ratings_quality | null;
+    quality?: number | null;
     techDefaultDifficultyID?: number | null;
     gameplayDefaultDifficultyID?: number | null;
   };
