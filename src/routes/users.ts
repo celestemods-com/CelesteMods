@@ -4,7 +4,7 @@ import { prisma } from "../prismaClient";
 import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { formatPartialUser, formatFullUser } from "../helperFunctions/users";
 import { getDiscordUserFromCode } from "../helperFunctions/discord";
-import { storeIdentityInSession, adminPermsArray, mapStaffPermsArray, checkPermissions, checkSessionAge } from "../helperFunctions/sessions";
+import { storeIdentityInSession, adminPermsArray, checkPermissions, checkSessionAge } from "../helperFunctions/sessions";
 
 import { validatePost, validatePatch1, validatePatch2, validatePatch3 } from "../jsonSchemas/users";
 
@@ -153,6 +153,8 @@ router.route("/")
                 discordCode: discordCode, //comment out for testing
                 displayName: displayName,
                 displayDiscord: displayDiscord,
+                showCompletedMaps: showCompletedMaps,
+                completedMapIDs: completedMapIDsArray,
                 gamebananaIDs: gamebananaIDsArray,
                 goldenPlayerID: goldenPlayerID,
                 generateSessionBool: generateSessionBool,
@@ -161,6 +163,38 @@ router.route("/")
             if (!valid) {
                 res.status(400).json("Malformed request body");
                 return;
+            }
+
+
+            let napsConnectArray: connectMapsData[] = [];
+            if (completedMapIDsArray && completedMapIDsArray.length) {
+                let invalidMapIDs: number[] = [];
+
+    
+                napsConnectArray = await Promise.all(
+                    completedMapIDsArray.map(
+                        async (mapID) => {
+                            const matchingMap = await prisma.maps_ids.findUnique({ where: { id: mapID } });
+
+                            if (!matchingMap) invalidMapIDs.push(mapID);
+
+                            
+                            return {
+                                maps_ids: {
+                                    connect: {
+                                        id: mapID,
+                                    }
+                                },
+                            };
+                        }
+                    )
+                )
+
+
+                if (invalidMapIDs.length) {
+                    res.status(400).json(`Invalid map ID(s): ${invalidMapIDs.join(", ")}`);
+                    return;
+                }
             }
 
 
@@ -209,17 +243,7 @@ router.route("/")
 
 
             if (completedMapIDsArray && completedMapIDsArray.length) {
-                const connectArray: connectMapsData[] = completedMapIDsArray.map((mapID) => {
-                    return {
-                        maps_ids: {
-                            connect: {
-                                id: mapID,
-                            }
-                        },
-                    };
-                });
-
-                createData.users_to_maps = { create: connectArray };
+                createData.users_to_maps = { create: napsConnectArray };
             }
 
 
@@ -386,7 +410,7 @@ router.route("/:userID/gamebanana/:gamebananaID")
 
             let permitted;
 
-            if (req.session.userID === userID) {
+            if (req.session && req.session.userID && req.session.userID === userID) {
                 permitted = await checkSessionAge(req, res);
             }
             else {
@@ -435,7 +459,7 @@ router.route("/:userID/gamebanana/:gamebananaID")
 
             let permitted;
 
-            if (req.session.userID === userID) {
+            if (req.session && req.session.userID && req.session.userID === userID) {
                 permitted = await checkSessionAge(req, res);
             }
             else {
@@ -480,11 +504,11 @@ router.route("/:userID")
 
             let permitted;
 
-            if (req.session.userID === userID) {
-                permitted = await checkSessionAge(req, res);
+            if (req.session && req.session.userID && req.session.userID === userID) {
+                permitted = await checkSessionAge(req);
             }
             else {
-                permitted = await checkPermissions(req, adminPermsArray, true, res);
+                permitted = await checkPermissions(req, adminPermsArray, true);
             }
 
 
@@ -524,7 +548,7 @@ router.route("/:userID")
 
             let permitted;
 
-            if (req.session.userID === userID) {
+            if (req.session && req.session.userID && req.session.userID === userID) {
                 permitted = await checkSessionAge(req, res);
             }
             else {
@@ -546,7 +570,7 @@ router.route("/:userID")
                 goldenPlayerID: goldenPlayerID,
             });
 
-            if (!valid || (displayName === undefined && displayDiscord === undefined && !goldenPlayerID && showCompletedMaps === undefined)) {
+            if (!valid || (displayName === undefined && displayDiscord === undefined && !goldenPlayerID && showCompletedMaps === null)) {
                 res.status(400).json("Malformed request body");
                 return;
             }
@@ -560,11 +584,11 @@ router.route("/:userID")
 
             const updateUserData: updateUserData = {};
 
-            if (displayName) updateUserData.displayName = displayName;
+            if (displayName !== null) updateUserData.displayName = displayName;
 
-            if (displayDiscord) updateUserData.displayDiscord = displayDiscord;
+            if (displayDiscord !== null) updateUserData.displayDiscord = displayDiscord;
 
-            if (showCompletedMaps) updateUserData.showCompletedMaps = showCompletedMaps;
+            if (showCompletedMaps !== null) updateUserData.showCompletedMaps = showCompletedMaps;
 
             if (goldenPlayerID) {
                 const goldenPlayer = await prisma.golden_players.findUnique({
@@ -618,7 +642,7 @@ router.route("/:userID/discord")
 
             let permitted;
 
-            if (req.session.userID === userID) {
+            if (req.session && req.session.userID && req.session.userID === userID) {
                 permitted = await checkSessionAge(req, res);
             }
 
@@ -705,7 +729,7 @@ router.route("/:userID/delete")
 
             let permitted;
 
-            if (req.session.userID === userID) {
+            if (req.session && req.session.userID && req.session.userID === userID) {
                 permitted = await checkSessionAge(req, res);
             }
             else {
@@ -748,7 +772,7 @@ router.route("/:userID/delete")
 
             let permitted;
 
-            if (req.session.userID === userID) {
+            if (req.session && req.session.userID && req.session.userID === userID) {
                 permitted = await checkSessionAge(req, res);
             }
             else {
@@ -857,7 +881,7 @@ router.route("/:userID/permissions")
 
             let permitted;
 
-            if (req.session.userID === userID) {
+            if (req.session && req.session.userID && req.session.userID === userID) {
                 permitted = await checkSessionAge(req, res);
             }
             else {
@@ -928,14 +952,24 @@ router.param("mapID", async function (req, res, next) {
 
     const mapFromID = await prisma.maps_ids.findUnique({ where: { id: id } });
 
-
     if (!mapFromID) {
         res.status(404).json("mapID does not exist");
         return;
     }
 
 
+    const idsMatch = await prisma.users_to_maps.findUnique({
+        where: {
+            userID_mapID: {
+                userID: <number>req.id,
+                mapID: id,
+            }
+        }
+    })
+
+
     req.id2 = id;
+    req.idsMatch = idsMatch ? true : false;
     next();
 });
 
@@ -949,7 +983,7 @@ router.route("/:userID/maps/:mapID")
 
             let permitted;
 
-            if (req.session.userID === userID) {
+            if (req.session && req.session.userID && req.session.userID === userID) {
                 permitted = await checkSessionAge(req, res);
             }
             else {
@@ -959,17 +993,7 @@ router.route("/:userID/maps/:mapID")
             if (!permitted) return;
 
 
-            const matchingRelationship = await prisma.users_to_maps.findUnique({
-                where: {
-                    userID_mapID: {
-                        userID: userID,
-                        mapID: mapID,
-                    }
-                }
-            });
-
-
-            if (!matchingRelationship) {
+            if (!req.idsMatch) {
                 await prisma.users_to_maps.create({
                     data: {
                         users: { connect: { id: userID } },
@@ -993,7 +1017,7 @@ router.route("/:userID/maps/:mapID")
 
             let permitted;
 
-            if (req.session.userID === userID) {
+            if (req.session && req.session.userID && req.session.userID === userID) {
                 permitted = await checkSessionAge(req, res);
             }
             else {
@@ -1003,14 +1027,16 @@ router.route("/:userID/maps/:mapID")
             if (!permitted) return;
 
 
-            await prisma.users_to_maps.delete({
-                where: {
-                    userID_mapID: {
-                        userID: userID,
-                        mapID: mapID,
+            if (req.idsMatch) {
+                await prisma.users_to_maps.delete({
+                    where: {
+                        userID_mapID: {
+                            userID: userID,
+                            mapID: mapID,
+                        }
                     }
-                }
-            });
+                });
+            }
 
 
             res.sendStatus(204);

@@ -461,7 +461,7 @@ router.route("/user/:userID/full")
 
             let permitted: boolean;
 
-            if (req.session.userID === userID) {
+            if (req.session && req.session.userID && req.session.userID === userID) {
                 permitted = await checkSessionAge(req, res);
             }
             else {
@@ -554,7 +554,7 @@ router.route("/:ratingID")
 
             let permitted: boolean;
 
-            if (req.session.userID === userID) {
+            if (req.session && req.session.userID && req.session.userID === userID) {
                 permitted = await checkSessionAge(req, res);
             }
             else {

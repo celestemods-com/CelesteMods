@@ -107,7 +107,7 @@ router.route("/revoke/user/:userID")
 
             let permitted: boolean;
 
-            if (req.session.userID === userID) {
+            if (req.session && req.session.userID && req.session.userID === userID) {
                 permitted = await checkSessionAge(req, res);
             }
             else {
@@ -173,7 +173,7 @@ router.route("/user/:userID")
 
             let permitted: boolean;
 
-            if (req.session.userID === userID) {
+            if (req.session && req.session.userID && req.session.userID === userID) {
                 permitted = await checkSessionAge(req, res);
             }
             else {

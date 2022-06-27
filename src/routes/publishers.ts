@@ -51,7 +51,7 @@ publishersRouter.route("/")
             let permitted = false;
 
             if (req.session.userID) {
-                if (req.session.userID === userID) {
+                if (req.session && req.session.userID && req.session.userID === userID) {
                     permitted = true;
                 }
                 else {
