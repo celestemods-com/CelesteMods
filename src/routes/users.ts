@@ -4,13 +4,13 @@ import { prisma } from "../prismaClient";
 import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
 import { formatPartialUser, formatFullUser } from "../helperFunctions/users";
 import { getDiscordUserFromCode } from "../helperFunctions/discord";
-import { storeIdentityInSession, adminPermsArray, mapStaffPermsArray, checkPermissions, checkSessionAge } from "../helperFunctions/sessions";
+import { storeIdentityInSession, adminPermsArray, checkPermissions, checkSessionAge } from "../helperFunctions/sessions";
 
 import { validatePost, validatePatch1, validatePatch2, validatePatch3 } from "../jsonSchemas/users";
 
 import { users } from ".prisma/client";
 import { formattedUser, permissions } from "../types/frontend";
-import { createUserData, updateUserData } from "../types/internal";
+import { connectMapsData, createUserData, updateUserData } from "../types/internal";
 
 
 const router = express.Router();
@@ -115,6 +115,7 @@ router.route("/")
         try {
             const rawUsers = await prisma.users.findMany({
                 include: {
+                    users_to_maps: true,
                     publishers: true,
                     golden_players: true,
                 },
@@ -141,6 +142,8 @@ router.route("/")
             const discordCode: string = req.body.code;         //can't be null after validatePost call
             const displayName: string = req.body.displayName;           //can't be null after validatePost call
             const displayDiscord: boolean = req.body.displayDiscord;    //can't be null after validatePost call
+            const showCompletedMaps: boolean = req.body.showCompletedMaps;  //can't be null after validatePost call
+            const completedMapIDsArray: number[] | undefined = req.body.completedMapIDs;
             const gamebananaIDsArray: number[] | undefined = req.body.gamebananaIDs;
             const goldenPlayerID: number | undefined = req.body.goldenPlayerID;
             const generateSessionBool: boolean | undefined = req.body.generateSessionBool;
@@ -150,6 +153,8 @@ router.route("/")
                 discordCode: discordCode, //comment out for testing
                 displayName: displayName,
                 displayDiscord: displayDiscord,
+                showCompletedMaps: showCompletedMaps,
+                completedMapIDs: completedMapIDsArray,
                 gamebananaIDs: gamebananaIDsArray,
                 goldenPlayerID: goldenPlayerID,
                 generateSessionBool: generateSessionBool,
@@ -158,6 +163,38 @@ router.route("/")
             if (!valid) {
                 res.status(400).json("Malformed request body");
                 return;
+            }
+
+
+            let napsConnectArray: connectMapsData[] = [];
+            if (completedMapIDsArray && completedMapIDsArray.length) {
+                let invalidMapIDs: number[] = [];
+
+    
+                napsConnectArray = await Promise.all(
+                    completedMapIDsArray.map(
+                        async (mapID) => {
+                            const matchingMap = await prisma.maps_ids.findUnique({ where: { id: mapID } });
+
+                            if (!matchingMap) invalidMapIDs.push(mapID);
+
+                            
+                            return {
+                                maps_ids: {
+                                    connect: {
+                                        id: mapID,
+                                    }
+                                },
+                            };
+                        }
+                    )
+                )
+
+
+                if (invalidMapIDs.length) {
+                    res.status(400).json(`Invalid map ID(s): ${invalidMapIDs.join(", ")}`);
+                    return;
+                }
             }
 
 
@@ -201,15 +238,23 @@ router.route("/")
                 displayDiscord: displayDiscord,
                 timeCreated: Math.floor(new Date().getTime() / 1000),
                 permissions: "",
+                showCompletedMaps: showCompletedMaps,
             }
 
+
+            if (completedMapIDsArray && completedMapIDsArray.length) {
+                createData.users_to_maps = { create: napsConnectArray };
+            }
+
+
             if (gamebananaIDsArray && gamebananaIDsArray.length) {
-                const createOrConnectArray: {}[] = gamebananaIDsArray.map((id) => {
-                    return { create: { gamebananaID: id }, where: { gamebananaID: id } };
+                const createOrConnectArray: {}[] = gamebananaIDsArray.map((gamebananaID) => {
+                    return { create: { gamebananaID: gamebananaID }, where: { gamebananaID: gamebananaID } };
                 });
 
                 createData.publishers = { connectOrCreate: createOrConnectArray };
             }
+
 
             if (goldenPlayerID) {
                 const goldenPlayer = await prisma.golden_players.findUnique({
@@ -235,6 +280,7 @@ router.route("/")
             const rawUser = await prisma.users.create({
                 data: createData,
                 include: {
+                    users_to_maps: true,
                     publishers: true,
                     golden_players: true,
                 },
@@ -292,6 +338,7 @@ router.route("/search")
             const rawUsers = await prisma.users.findMany({
                 where: { displayName: { startsWith: query } },
                 include: {
+                    users_to_maps: true,
                     publishers: true,
                     golden_players: true,
                 },
@@ -326,6 +373,7 @@ router.route("/gamebanana/:gamebananaID")
             const rawUser = await prisma.users.findFirst({
                 where: { publishers: { some: { gamebananaID: req.id2 } } },
                 include: {
+                    users_to_maps: true,
                     publishers: true,
                     golden_players: true,
                 }
@@ -362,7 +410,7 @@ router.route("/:userID/gamebanana/:gamebananaID")
 
             let permitted;
 
-            if (req.session.userID === userID) {
+            if (req.session && req.session.userID && req.session.userID === userID) {
                 permitted = await checkSessionAge(req, res);
             }
             else {
@@ -370,7 +418,7 @@ router.route("/:userID/gamebanana/:gamebananaID")
             }
 
             if (!permitted) return;
-            
+
 
 
             if (!req.valid) {
@@ -411,7 +459,7 @@ router.route("/:userID/gamebanana/:gamebananaID")
 
             let permitted;
 
-            if (req.session.userID === userID) {
+            if (req.session && req.session.userID && req.session.userID === userID) {
                 permitted = await checkSessionAge(req, res);
             }
             else {
@@ -456,17 +504,18 @@ router.route("/:userID")
 
             let permitted;
 
-            if (req.session.userID === userID) {
-                permitted = await checkSessionAge(req, res);
+            if (req.session && req.session.userID && req.session.userID === userID) {
+                permitted = await checkSessionAge(req);
             }
             else {
-                permitted = await checkPermissions(req, adminPermsArray, true, res);
+                permitted = await checkPermissions(req, adminPermsArray, true);
             }
 
 
             const rawUser = await prisma.users.findUnique({
                 where: { id: userID },
                 include: {
+                    users_to_maps: true,
                     publishers: true,
                     golden_players: true,
                 },
@@ -485,7 +534,7 @@ router.route("/:userID")
 
             if (isErrorWithMessage(formattedUser)) throw formattedUser;
 
-            
+
             res.status(200).json(formattedUser);
         }
         catch (error) {
@@ -499,7 +548,7 @@ router.route("/:userID")
 
             let permitted;
 
-            if (req.session.userID === userID) {
+            if (req.session && req.session.userID && req.session.userID === userID) {
                 permitted = await checkSessionAge(req, res);
             }
             else {
@@ -509,19 +558,19 @@ router.route("/:userID")
             if (!permitted) return;
 
 
-            const displayName: string | undefined = req.body.displayName;
-            const displayDiscord: boolean | undefined = req.body.displayDiscord;
-            const gamebananaIDsArray: number[] | undefined = req.body.gamebananaIDs;
-            const goldenPlayerID: number | undefined = req.body.goldenPlayerID;
+            const displayName: string | null = req.body.displayName === undefined ? null : req.body.displayName;
+            const displayDiscord: boolean | null = req.body.displayDiscord === undefined ? null : req.body.displayDiscord;
+            const showCompletedMaps: boolean | null = req.body.showCompletedMaps === undefined ? null : req.body.showCompletedMaps;
+            const goldenPlayerID: number | null = req.body.goldenPlayerID === undefined ? null : req.body.goldenPlayerID;
 
             const valid = validatePatch1({
                 displayName: displayName,
                 displayDiscord: displayDiscord,
-                gamebananaIDs: gamebananaIDsArray,
+                showCompletedMaps: showCompletedMaps,
                 goldenPlayerID: goldenPlayerID,
             });
 
-            if (!valid || (!displayName && !displayDiscord && !gamebananaIDsArray && !goldenPlayerID)) {
+            if (!valid || (displayName === undefined && displayDiscord === undefined && !goldenPlayerID && showCompletedMaps === null)) {
                 res.status(400).json("Malformed request body");
                 return;
             }
@@ -533,18 +582,13 @@ router.route("/:userID")
             }
 
 
-            const updateUserData: updateUserData = {
-                displayName: displayName,
-                displayDiscord: displayDiscord,
-            };
+            const updateUserData: updateUserData = {};
 
-            if (gamebananaIDsArray) {
-                const createOrConnectArray: {}[] = gamebananaIDsArray.map((id) => {
-                    return { create: { gamebananaID: id }, where: { gamebananaID: id } };
-                });
+            if (displayName !== null) updateUserData.displayName = displayName;
 
-                updateUserData.publishers = { connectOrCreate: createOrConnectArray };
-            }
+            if (displayDiscord !== null) updateUserData.displayDiscord = displayDiscord;
+
+            if (showCompletedMaps !== null) updateUserData.showCompletedMaps = showCompletedMaps;
 
             if (goldenPlayerID) {
                 const goldenPlayer = await prisma.golden_players.findUnique({
@@ -567,14 +611,17 @@ router.route("/:userID")
                 where: { id: req.id },
                 data: updateUserData,
                 include: {
+                    users_to_maps: true,
                     publishers: true,
                     golden_players: true,
                 }
             });
 
+
             const formattedUser = formatFullUser(rawUser);
 
             if (isErrorWithMessage(formattedUser)) throw formattedUser;
+
 
             res.status(200).json(formattedUser);
         }
@@ -595,7 +642,7 @@ router.route("/:userID/discord")
 
             let permitted;
 
-            if (req.session.userID === userID) {
+            if (req.session && req.session.userID && req.session.userID === userID) {
                 permitted = await checkSessionAge(req, res);
             }
 
@@ -652,6 +699,7 @@ router.route("/:userID/discord")
                     discordDiscrim: discordDiscrim,
                 },
                 include: {
+                    users_to_maps: true,
                     publishers: true,
                     golden_players: true,
                 }
@@ -681,7 +729,7 @@ router.route("/:userID/delete")
 
             let permitted;
 
-            if (req.session.userID === userID) {
+            if (req.session && req.session.userID && req.session.userID === userID) {
                 permitted = await checkSessionAge(req, res);
             }
             else {
@@ -724,7 +772,7 @@ router.route("/:userID/delete")
 
             let permitted;
 
-            if (req.session.userID === userID) {
+            if (req.session && req.session.userID && req.session.userID === userID) {
                 permitted = await checkSessionAge(req, res);
             }
             else {
@@ -833,7 +881,7 @@ router.route("/:userID/permissions")
 
             let permitted;
 
-            if (req.session.userID === userID) {
+            if (req.session && req.session.userID && req.session.userID === userID) {
                 permitted = await checkSessionAge(req, res);
             }
             else {
@@ -879,6 +927,117 @@ router.route("/:userID/permissions")
                 where: { id: req.id },
                 data: { permissions: permissionsString },
             });
+
+            res.sendStatus(204);
+        }
+        catch (error) {
+            next(toErrorWithMessage(error));
+        }
+    })
+    .all(methodNotAllowed);
+
+
+
+
+router.param("mapID", async function (req, res, next) {
+    const idRaw: unknown = req.params.mapID;
+
+    const id = Number(idRaw);
+
+    if (isNaN(id)) {
+        res.status(400).json("mapID is not a number");
+        return;
+    }
+
+
+    const mapFromID = await prisma.maps_ids.findUnique({ where: { id: id } });
+
+    if (!mapFromID) {
+        res.status(404).json("mapID does not exist");
+        return;
+    }
+
+
+    const idsMatch = await prisma.users_to_maps.findUnique({
+        where: {
+            userID_mapID: {
+                userID: <number>req.id,
+                mapID: id,
+            }
+        }
+    })
+
+
+    req.id2 = id;
+    req.idsMatch = idsMatch ? true : false;
+    next();
+});
+
+
+router.route("/:userID/maps/:mapID")
+    .post(async function (req, res, next) {
+        try {
+            const userID = <number>req.id;
+            const mapID = <number>req.id2;
+
+
+            let permitted;
+
+            if (req.session && req.session.userID && req.session.userID === userID) {
+                permitted = await checkSessionAge(req, res);
+            }
+            else {
+                permitted = await checkPermissions(req, adminPermsArray, true, res);
+            }
+
+            if (!permitted) return;
+
+
+            if (!req.idsMatch) {
+                await prisma.users_to_maps.create({
+                    data: {
+                        users: { connect: { id: userID } },
+                        maps_ids: { connect: { id: mapID } },
+                    }
+                });
+            }
+
+
+            res.sendStatus(204);
+        }
+        catch (error) {
+            next(toErrorWithMessage(error));
+        }
+    })
+    .delete(async function (req, res, next) {
+        try {
+            const userID = <number>req.id;
+            const mapID = <number>req.id2;
+
+
+            let permitted;
+
+            if (req.session && req.session.userID && req.session.userID === userID) {
+                permitted = await checkSessionAge(req, res);
+            }
+            else {
+                permitted = await checkPermissions(req, adminPermsArray, true, res);
+            }
+
+            if (!permitted) return;
+
+
+            if (req.idsMatch) {
+                await prisma.users_to_maps.delete({
+                    where: {
+                        userID_mapID: {
+                            userID: userID,
+                            mapID: mapID,
+                        }
+                    }
+                });
+            }
+
 
             res.sendStatus(204);
         }

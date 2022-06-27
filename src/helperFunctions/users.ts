@@ -53,8 +53,10 @@ export const formatPartialUser = function (rawUser: rawUser) {
             displayDiscord: rawUser.displayDiscord,
             timeCreated: rawUser.timeCreated,
             accountStatus: rawUser.accountStatus,
+            showCompletedMaps: rawUser.showCompletedMaps,
             goldenPlayerID: rawUser.golden_players?.id,
         };
+
 
         const gamebananaIDsArray = rawUser.publishers.map((publisher) => {
             return publisher.gamebananaID;
@@ -64,10 +66,23 @@ export const formatPartialUser = function (rawUser: rawUser) {
             formattedUser.gamebananaIDs = gamebananaIDsArray;
         }
 
+
         if (rawUser.displayDiscord) {
             formattedUser.discordUsername = rawUser.discordUsername;
             formattedUser.discordDescrim = rawUser.discordDiscrim;
         }
+
+
+        if (rawUser.showCompletedMaps) {
+            const mapIDsArray = rawUser.users_to_maps.map((row) => {
+                return row.mapID;
+            });
+
+            if (isNumberArray(mapIDsArray)) {
+                formattedUser.completedMapIDs = mapIDsArray;
+            }
+        }
+
 
         return formattedUser;
     }
@@ -98,6 +113,7 @@ export const formatFullUser = function (rawUser: rawUser) {
             timeCreated: rawUser.timeCreated,
             accountStatus: rawUser.accountStatus,
             permissions: permissionsArray,
+            showCompletedMaps: rawUser.showCompletedMaps,
             goldenPlayerID: rawUser.golden_players?.id,
         };
 
@@ -108,6 +124,15 @@ export const formatFullUser = function (rawUser: rawUser) {
 
         if (isNumberArray(gamebananaIDsArray)) {
             formattedUser.gamebananaIDs = gamebananaIDsArray;
+        }
+
+
+        const mapIDsArray = rawUser.users_to_maps.map((row) => {
+            return row.mapID;
+        });
+
+        if (isNumberArray(mapIDsArray)) {
+            formattedUser.completedMapIDs = mapIDsArray;
         }
 
 

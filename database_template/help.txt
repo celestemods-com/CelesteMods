@@ -1,0 +1,2 @@
+This .sql file was produced by the PHPMyAdmin plugin for XAMPP. I don't know if it will work for other SQL clients.
+To import this file, you must have an empty database called "modslist".

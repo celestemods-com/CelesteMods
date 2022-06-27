@@ -139,9 +139,10 @@ export const storeIdentityInSession = async function (req: Request, discordUser:
                     discordDiscrim: discordUser.discriminator,
                 },
                 include: {
+                    users_to_maps: true,
                     publishers: true,
                     golden_players: true,
-                }
+                },
             });
 
             if (!updatedUser) throw noUserWithDiscordIdErrorMessage;
