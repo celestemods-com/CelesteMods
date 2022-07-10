@@ -1,28 +1,35 @@
 import { Response } from "express";
-import axios from "axios";
-import { discordUser } from "../types/discord";
+import axios, { AxiosError, AxiosResponse } from "axios";
+import { discordUser, discordTokenResponse } from "../types/discord";
 import { Method } from "axios";
 
 
 
 
 export const getDiscordUserFromCode = async function (res: Response, code: string) {
-    const tokenData = await getDiscordAuthTokenFromCode(res, code);
+    try {
+        const tokenData = await getDiscordAuthTokenFromCode(res, code);
 
-    if (!tokenData) return;
+        if (!tokenData) return;
 
-    const token = tokenData.accessToken;
-    const tokenType = tokenData.tokenType;
-
-
-    const discordUser = await getDiscordUserFromToken(res, tokenType, token);
+        const token = tokenData.accessToken;
+        const tokenType = tokenData.tokenType;
 
 
-    await revokeDiscordToken(res, token);
-    if (res.errorSent) return;
+        const discordUser = await getDiscordUserFromToken(res, tokenType, token);
 
 
-    return discordUser;
+        await revokeDiscordToken(res, token);
+        if (res.errorSent) return;
+
+
+        return discordUser;
+    }
+    catch (error) {
+        res.status(500).json("Discord authentication failed.");
+        console.log(error);
+        res.errorSent = true;
+    }
 }
 
 
@@ -52,27 +59,38 @@ const getDiscordAuthTokenFromCode = async function (res: Response, code: string)
         data: data,
     };
 
-    const axiosResponse = await axios(options);
+
+    try {
+        const axiosResponse: AxiosResponse<discordTokenResponse> = await axios(options)
 
 
-    if (axiosResponse.status === 401) {
-        res.json("Code was rejected by Discord");
-        res.errorSent = true;
-        return;
+        const tokenData = {
+            accessToken: axiosResponse.data.access_token,
+            tokenType: axiosResponse.data.token_type,
+        };
+
+        return tokenData;
     }
-    else if (axiosResponse.status != 200) {
-        res.json("Discord api not responding as expected.");
-        res.errorSent = true;
-        return;
+    catch (error) {
+        if (error instanceof AxiosError) {
+            if (error.response && error.response.status === 400) {
+                if (error.response.data.error_description === 'Invalid "code" in request.') res.status(401).json("Code was rejected by Discord.");
+                else res.status(400).json("Request was rejected by Discord.");
+
+                res.errorSent = true;
+                return;
+            }
+            else {
+                res.status(500).json("Discord api not responding as expected.");
+                res.errorSent = true;
+                return;
+            }
+        }
+
+
+        console.log(error);
+        throw error;
     }
-
-
-    const tokenData = {
-        accessToken: axiosResponse.data.access_token,
-        tokenType: axiosResponse.data.token_type,
-    };
-
-    return tokenData;
 }
 
 
@@ -85,16 +103,16 @@ const getDiscordUserFromToken = async function (res: Response, discordTokenType:
     };
 
 
-    const axiosResponse = await axios(options);
+    const axiosResponse: AxiosResponse<discordUser> = await axios(options);
 
 
     if (axiosResponse.status === 401) {
-        res.json("Token and/or tokenType were rejected by Discord");
+        res.status(401).json("Token and/or tokenType were rejected by Discord.");
         res.errorSent = true;
         return;
     }
     else if (axiosResponse.status != 200) {
-        res.json("Discord api not responding as expected.");
+        res.status(500).json("Discord api not responding as expected.");
         res.errorSent = true;
         return;
     }
