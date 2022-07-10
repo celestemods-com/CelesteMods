@@ -8,7 +8,6 @@ import {
 } from "../helperFunctions/sessions";
 import { formatFullUser, param_userID } from "../helperFunctions/users";
 import { getDiscordUserFromCode } from "../helperFunctions/discord";
-import { sessionMiddleware } from "../sessionMiddleware";
 
 import { permissions } from "../types/frontend";
 

@@ -6,9 +6,6 @@ import { discordUser } from "../types/discord";
 import { formattedSession } from "../types/frontend";
 import { sessionData } from "../types/sessions";
 import { permissions } from "../types/frontend";
-import { app } from "..";
-import { sessionRouter } from "../routes/sessions";
-import { sessionMiddleware } from "../sessionMiddleware";
 
 
 export const noUserWithDiscordIdErrorMessage = "No user found matching given discordUser";
