@@ -1,8 +1,8 @@
-import { SessionData } from "express-session";  //this import is required so the typescript compiler is happy
+//import { SessionData } from "express-session";  //this import is required so the typescript compiler is happy
 import { permissions } from "./frontend";
 
 
-declare module "express-Session" {
+declare module "express-session" {
   interface SessionData {
     refreshCount?: number;
     userID?: number;
