@@ -28,7 +28,7 @@ const cookieOptionsObject: typeof session.arguments = {
 
 if (process.env.NODE_ENV === "dev") {
     cookieOptionsObject.maxAge = 30 * 1000;     //30s   //lifespan of the cookie in milliseconds
-    cookieOptionsObject.secure = true;   //makes cookies visible in postman
+    cookieOptionsObject.secure = false;   //makes cookies visible in postman
 }
 else {
     cookieOptionsObject.maxAge = 40 * 3600 * 1000;    //40h   //lifespan of the cookie in milliseconds
