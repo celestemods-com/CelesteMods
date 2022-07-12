@@ -204,7 +204,7 @@ router.route("/user/:userID")
 router.route("/")
     .get(async function (req, res, next) {
         try {
-            const permitted = checkPermissions(req, adminPermsArray, true, res);
+            const permitted = await checkPermissions(req, adminPermsArray, true, res);
             if (!permitted) return;
 
 
