@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { prisma } from "../prismaClient";
-import { toErrorWithMessage } from "../errorHandling";
+import { prisma } from "../middlewaresAndConfigs/prismaClient";
+import { toErrorWithMessage } from "./errorHandling";
 import { session } from ".prisma/client";
 import { discordUser } from "../types/discord";
 import { formattedSession } from "../types/frontend";

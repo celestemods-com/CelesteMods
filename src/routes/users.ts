@@ -1,7 +1,7 @@
 import express from "express";
-import { prisma } from "../prismaClient";
+import { prisma } from "../middlewaresAndConfigs/prismaClient";
 
-import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
+import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../helperFunctions/errorHandling";
 import { formatPartialUser, formatFullUser } from "../helperFunctions/users";
 import { getDiscordUserFromCode } from "../helperFunctions/discord";
 import { storeIdentityInSession, adminPermsArray, checkPermissions, checkSessionAge } from "../helperFunctions/sessions";

@@ -1,6 +1,6 @@
 import session from "express-session";
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
-import { prisma } from ".//prismaClient";
+import { prisma } from "./prismaClient";
 
 
 

@@ -1,7 +1,7 @@
 import express from "express";
-import cookieParser from "cookie-parser"
-import { sessionCookieNameString, sessionMiddleware } from "./sessionMiddleware";
-import { noRouteError, errorHandler } from "./errorHandling";
+import cookieParser from "cookie-parser";
+import { sessionCookieNameString, sessionMiddleware } from "./middlewaresAndConfigs/sessionMiddleware";
+import { noRouteError, errorHandler } from "./helperFunctions/errorHandling";
 
 
 export const app = express();

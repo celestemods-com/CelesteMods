@@ -1,7 +1,7 @@
 import express, { } from "express";
-import { prisma } from "../prismaClient";
+import { prisma } from "../middlewaresAndConfigs/prismaClient";
 
-import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
+import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../helperFunctions/errorHandling";
 import {
     invalidMapperUserIdErrorMessage, param_mapID, formatMap, param_mapRevision, getCanonicalDifficultyID, getLengthID,
     invalidMapDifficultyErrorMessage, lengthErrorMessage, noMapDetailsErrorMessage

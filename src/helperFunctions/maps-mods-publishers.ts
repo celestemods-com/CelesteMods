@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { prisma } from "../prismaClient";
+import { prisma } from "../middlewaresAndConfigs/prismaClient";
 import axios from "axios";
 import { expressRoute } from "../types/express";
-import { isErrorWithMessage, toErrorWithMessage } from "../errorHandling";
+import { isErrorWithMessage, toErrorWithMessage } from "./errorHandling";
 import { difficulties, map_lengths, mods_details_type, publishers, users } from ".prisma/client";
 import {
     rawMod, rawMap, createParentDifficultyForMod, createChildDifficultyForMod, jsonCreateMapWithMod, mapIdCreationObjectForMod,

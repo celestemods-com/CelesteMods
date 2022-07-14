@@ -1,4 +1,4 @@
-import { prisma } from "../prismaClient";
+import { prisma } from "../middlewaresAndConfigs/prismaClient";
 import { expressRoute } from "../types/express";
 
 
