@@ -1,10 +1,12 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import { sessionCookieNameString, sessionMiddleware } from "./middlewaresAndConfigs/sessionMiddleware";
+import { helmetMiddleware } from "./middlewaresAndConfigs/helmet";
 import { noRouteError, errorHandler } from "./helperFunctions/errorHandling";
 
 
 export const app = express();
+app.use((req, res, next) => { return helmetMiddleware(req, res, next) });
 app.use(express.json());
 
 const apiRouter_parent = express.Router();
