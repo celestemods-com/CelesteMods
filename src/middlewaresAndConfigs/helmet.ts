@@ -6,7 +6,7 @@ const helmetConfigObject: HelmetOptions = {
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: true,
     crossOriginOpenerPolicy: true,
-    crossOriginResourcePolicy: true,//{ policy: "same-site" },
+    crossOriginResourcePolicy: false,//{ policy: "same-site" },
     expectCt: true,
     referrerPolicy: true,
     hsts: {
