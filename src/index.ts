@@ -1,6 +1,5 @@
 import express from "express";
 import cookieParser from "cookie-parser";
-import { enforceSSL } from "./middlewaresAndConfigs/enforceSSL";
 import { sessionCookieNameString, sessionMiddleware } from "./middlewaresAndConfigs/sessionMiddleware";
 import { helmetMiddleware } from "./middlewaresAndConfigs/helmet";
 import { noRouteError, errorHandler } from "./helperFunctions/errorHandling";
@@ -13,11 +12,6 @@ const port = process.env.PORT || "3001";
 app.listen(port, () => {
     console.log(`Server Running at ${port}`);
 });
-
-if (process.env.NODE_ENV !== "dev") {
-    app.set("trust proxy", 1);   //TODO: figure out if this is needed during deployment. if express is behind a proxy this will be required to enable HTTPS.
-    app.use((req, res, next) => { return enforceSSL(req, res, next) });
-}
 
 app.use((req, res, next) => { return helmetMiddleware(req, res, next) });
 
