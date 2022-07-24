@@ -15,6 +15,8 @@ app.listen(port, () => {
 
 app.use((req, res, next) => { return helmetMiddleware(req, res, next) });
 
+if (process.env.NODE_ENV === "production") app.set("trust proxy", 1);
+
 
 app.use(express.json());
 app.use(cookieParser());
