@@ -45,6 +45,7 @@ export const sessionOptionsObject = {
     name: sessionCookieNameString,
     store: sessionStore,
     unset: <"destroy">"destroy",
+    proxy: process.env.NODE_ENV === "production",
 }
 
 
