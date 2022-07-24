@@ -1,14 +1,11 @@
 import express from "express";
-import cookieParser from "cookie-parser"
-import { sessionCookieNameString, sessionMiddleware } from "./sessionMiddleware";
-import { noRouteError, errorHandler } from "./errorHandling";
+import cookieParser from "cookie-parser";
+import { sessionCookieNameString, sessionMiddleware } from "./middlewaresAndConfigs/sessionMiddleware";
+import { helmetMiddleware } from "./middlewaresAndConfigs/helmet";
+import { noRouteError, errorHandler } from "./helperFunctions/errorHandling";
 
 
 export const app = express();
-app.use(express.json());
-
-const apiRouter_parent = express.Router();
-const apiRouter_v1 = express.Router();
 
 
 const port = process.env.PORT || "3001";
@@ -16,12 +13,10 @@ app.listen(port, () => {
     console.log(`Server Running at ${port}`);
 });
 
-
-if (process.env.NODE_ENV !== "dev") {
-    app.set("trust proxy", 1);   //TODO: figure out if this is needed during deployment. if express is behind a proxy this will be required to enable HTTPS.
-}
+app.use((req, res, next) => { return helmetMiddleware(req, res, next) });
 
 
+app.use(express.json());
 app.use(cookieParser());
 
 
@@ -46,6 +41,9 @@ app.use(function (req, res, next) {
 });
 
 
+
+const apiRouter_parent = express.Router();
+
 app.use("/api", apiRouter_parent);
 
 
@@ -61,6 +59,8 @@ app.use(errorHandler);
 
 
 
+
+const apiRouter_v1 = express.Router();
 
 apiRouter_parent.use("/v1", apiRouter_v1);
 

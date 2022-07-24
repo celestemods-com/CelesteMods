@@ -1,6 +1,6 @@
 node_modules
 dist
-# Keep environment variables out of version control
+certs
 .env
 workspace.code-workspace
 src/cors.ts

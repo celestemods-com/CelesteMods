@@ -113,5 +113,4 @@ declare global {
 
 
 
-type expressRoute = (req: Request, res: Response, next: NextFunction) => Promise<void>;
-export { expressRoute };
+export type expressRoute = (req: Request, res: Response, next: NextFunction) => Promise<void>;

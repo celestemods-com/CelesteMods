@@ -1,8 +1,8 @@
 import express from "express";
-import { prisma } from "../prismaClient";
+import { prisma } from "../middlewaresAndConfigs/prismaClient";
 import { mapReviewsRouter } from "./mapReviews";
 
-import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../errorHandling";
+import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../helperFunctions/errorHandling";
 
 //import { validatePost, validatePatch1, validatePatch2, validatePatch3 } from "../jsonSchemas/users";
 

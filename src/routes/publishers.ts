@@ -1,7 +1,7 @@
 import express from "express";
-import { prisma } from "../prismaClient";
+import { prisma } from "../middlewaresAndConfigs/prismaClient";
 
-import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed, errorWithMessage } from "../errorHandling";
+import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed, errorWithMessage } from "../helperFunctions/errorHandling";
 import {
     param_publisherID, getGamebananaUsernameById, formatPublisher, patchPublisherWithName, patchPublisherWithUserID,
     patchPublisherWithGamebananaID
