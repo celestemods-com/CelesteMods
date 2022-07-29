@@ -1542,7 +1542,7 @@ mapsRouter.use(errorHandler);
 
 
 
-export const mapPost = <expressRoute>async function (req, res, next) {  //called from mods.ts
+export const mapPost = <expressRoute>async function (req, res, next) {  //called from ./mods.ts
     try {
         const permission = await checkPermissions(req, [], true, res);
         if (!permission) return;
