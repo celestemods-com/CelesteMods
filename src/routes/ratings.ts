@@ -1,15 +1,13 @@
 import express from "express";
 import { prisma } from "../middlewaresAndConfigs/prismaClient";
 
-import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../helperFunctions/errorHandling";
+import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../helperFunctions/errorHandling";
 import { formatRating, formatRatings, getRatingsInfo } from "../helperFunctions/ratings";
 import { adminPermsArray, checkPermissions, checkSessionAge } from "../helperFunctions/sessions";
 import { getCurrentTime } from "../helperFunctions/utils";
 
 import { validatePost } from "../jsonSchemas/ratings";
 
-import { ratings, difficulties } from ".prisma/client";
-import { formattedRating } from "../types/frontend";
 import { rawRating, createRatingData } from "../types/internal";
 
 
