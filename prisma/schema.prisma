@@ -237,9 +237,9 @@ model ratings {
 
 model reviews {
   id            Int            @id @default(autoincrement()) @db.UnsignedMediumInt
+  modID         Int            @db.UnsignedSmallInt
   timeSubmitted Int
   submittedBy   Int            @db.UnsignedSmallInt
-  modID         Int            @db.UnsignedSmallInt
   likes         String?        @db.VarChar(1000)
   dislikes      String?        @db.VarChar(1000)
   otherComments String?        @db.VarChar(1500)

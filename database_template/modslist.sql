@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3002
--- Generation Time: Jun 27, 2022 at 09:04 AM
+-- Generation Time: Jul 30, 2022 at 01:11 AM
 -- Server version: 10.4.21-MariaDB
 -- PHP Version: 8.1.1
 
@@ -356,9 +356,9 @@ INSERT INTO `ratings` (`id`, `mapID`, `submittedBy`, `timeSubmitted`, `quality`,
 
 CREATE TABLE `reviews` (
   `id` mediumint(5) UNSIGNED NOT NULL,
+  `modID` smallint(5) UNSIGNED NOT NULL,
   `timeSubmitted` int(11) NOT NULL,
   `submittedBy` smallint(5) UNSIGNED NOT NULL,
-  `modID` smallint(5) UNSIGNED NOT NULL,
   `likes` varchar(1000) DEFAULT NULL,
   `dislikes` varchar(1000) DEFAULT NULL,
   `otherComments` varchar(1500) DEFAULT NULL
@@ -399,7 +399,15 @@ CREATE TABLE `session` (
 --
 
 INSERT INTO `session` (`id`, `sid`, `data`, `expiresAt`) VALUES
-('cl4we6oh200006ofj2k419eqy', 'BigA7dkJSAfSx8WDauTmisuB32iIH3VH', '{\"cookie\":{\"originalMaxAge\":1800000,\"expires\":\"2022-06-27T07:32:39.014Z\",\"secure\":false,\"httpOnly\":true,\"path\":\"/api\",\"sameSite\":\"strict\"},\"refreshCount\":0,\"userID\":20,\"permissions\":[\"\"]}', '2022-06-27 07:32:39');
+('cl5ep7vcg0000cwfj53cn57ib', 'jgjVyFsH1YFxZ3r-X3c2s2kEh9m9yzUn', '{\"cookie\":{\"originalMaxAge\":60000,\"expires\":\"2022-07-10T02:31:41.773Z\",\"secure\":false,\"httpOnly\":true,\"path\":\"/api\",\"sameSite\":\"strict\"},\"refreshCount\":0,\"userID\":1,\"permissions\":[\"Super_Admin\"]}', '2022-07-10 02:31:41'),
+('cl5epflah0000m4fjhfkubhxr', 'NZ5vl1ZxGgCEocEzX109S9ZDXxWL5TMf', '{\"cookie\":{\"originalMaxAge\":10000,\"expires\":\"2022-07-10T02:36:51.988Z\",\"secure\":true,\"httpOnly\":true,\"path\":\"/api\",\"sameSite\":\"strict\"},\"refreshCount\":0,\"userID\":1,\"permissions\":[\"Super_Admin\"]}', '2022-07-10 02:36:51'),
+('cl5epgaca00006wfj2srgfo08', 'TcFFjwlx0BX9G-LwpJe0EE8KwQ-ivzzR', '{\"cookie\":{\"originalMaxAge\":10000,\"expires\":\"2022-07-10T02:37:24.453Z\",\"secure\":true,\"httpOnly\":false,\"path\":\"/api\",\"sameSite\":\"strict\"},\"refreshCount\":0,\"userID\":1,\"permissions\":[\"Super_Admin\"]}', '2022-07-10 02:37:24'),
+('cl5epgta90000hcfj56d01tnf', '-OqwonqbGWC_aSXVu_rq--HlW0HyfElA', '{\"cookie\":{\"originalMaxAge\":10000,\"expires\":\"2022-07-10T02:37:49.004Z\",\"httpOnly\":false,\"path\":\"/api\",\"sameSite\":\"strict\"},\"refreshCount\":0,\"userID\":1,\"permissions\":[\"Super_Admin\"]}', '2022-07-10 02:37:49'),
+('cl5hp43bt000088fje2dy8dn4', 'jXp6PQX1mYRibcn5Zks9ScJMbjYpvZDX', '{\"cookie\":{\"originalMaxAge\":30000,\"expires\":\"2022-07-12T04:51:34.000Z\",\"secure\":true,\"httpOnly\":true,\"path\":\"/api\",\"sameSite\":\"strict\"},\"refreshCount\":0,\"userID\":1,\"permissions\":[\"Super_Admin\"]}', '2022-07-12 04:51:34'),
+('cl5hp7gfv0000bgfj6knzfv3t', 'Q6is3yK7BXhNG6YIttOLfrrUdXWN8kxP', '{\"cookie\":{\"originalMaxAge\":30000,\"expires\":\"2022-07-12T04:54:10.982Z\",\"secure\":true,\"httpOnly\":true,\"path\":\"/api\",\"sameSite\":\"strict\"},\"refreshCount\":0,\"userID\":1,\"permissions\":[\"Super_Admin\"]}', '2022-07-12 04:54:10'),
+('cl5hp997g0000twfj1budbqev', 'lTlbLCUCVoebNmEvIwm7I5pADHn6bsrY', '{\"cookie\":{\"originalMaxAge\":30000,\"expires\":\"2022-07-12T04:55:34.919Z\",\"secure\":true,\"httpOnly\":true,\"path\":\"/api\",\"sameSite\":\"strict\"},\"refreshCount\":0,\"userID\":1,\"permissions\":[\"Super_Admin\"]}', '2022-07-12 04:55:34'),
+('cl5hpa6fv0000jkfj7cm2ftb5', '_6W9MAZF2UqUkeR5LWYGoPfsfBqTLqnL', '{\"cookie\":{\"originalMaxAge\":30000,\"expires\":\"2022-07-12T04:56:17.990Z\",\"secure\":true,\"httpOnly\":true,\"path\":\"/api\",\"sameSite\":\"strict\"},\"refreshCount\":0,\"userID\":1,\"permissions\":[\"Super_Admin\"]}', '2022-07-12 04:56:17'),
+('cl5hpbc9o00009ofj1kw07g0s', 'b38S-NW4aw6ofe6l7JIuqS46-wiiRmRZ', '{\"cookie\":{\"originalMaxAge\":30000,\"expires\":\"2022-07-12T04:57:16.645Z\",\"secure\":false,\"httpOnly\":true,\"path\":\"/api\",\"sameSite\":\"strict\"},\"refreshCount\":0,\"userID\":1,\"permissions\":[\"Super_Admin\"]}', '2022-07-12 04:57:16');
 
 -- --------------------------------------------------------
 
