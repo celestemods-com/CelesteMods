@@ -1,6 +1,5 @@
 import express from "express";
 import { prisma } from "../middlewaresAndConfigs/prismaClient";
-import { mapReviewsRouter } from "./mapReviews";
 
 import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../helperFunctions/errorHandling";
 
@@ -13,8 +12,3 @@ import { reviews } from ".prisma/client";
 
 const router = express.Router();
 export { router as reviewsRouter };
-
-
-
-
-router.use("/mapreviews", mapReviewsRouter);
