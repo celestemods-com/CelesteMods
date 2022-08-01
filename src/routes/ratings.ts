@@ -2,6 +2,8 @@ import express from "express";
 import { prisma } from "../middlewaresAndConfigs/prismaClient";
 
 import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../helperFunctions/errorHandling";
+import { param_modID, param_mapID } from "../helperFunctions/maps-mods-publishers";
+import { param_userID } from "../helperFunctions/users";
 import { formatRating, formatRatings, getRatingsInfo } from "../helperFunctions/ratings";
 import { adminPermsArray, checkPermissions, checkSessionAge } from "../helperFunctions/sessions";
 import { getCurrentTime } from "../helperFunctions/utils";
@@ -253,38 +255,14 @@ router.route("/search/user")
 
 
 router.param("modID", async function (req, res, next) {
-    try {
-        const idRaw: unknown = req.params.modID;
-
-        const id = Number(idRaw);
-
-        if (isNaN(id)) {
-            res.status(400).json("modID is not a number");
-            return;
-        }
-
-
-        const modFromID = await prisma.mods_ids.findUnique({ where: { id: id } });
-
-        if (!modFromID) {
-            res.status(404).json("modID does not exist");
-            return;
-        }
-
-
-        req.id2 = id;
-        next();
-    }
-    catch (error) {
-        next(error);
-    }
+    param_modID(req, res, next);
 });
 
 
 router.route("/mod/:modID/full")
     .get(async function (req, res, next) {
         try {
-            const modID = <number>req.id2;
+            const modID = <number>req.id;
 
 
             const permission = await checkPermissions(req, adminPermsArray, true, res);
@@ -312,7 +290,7 @@ router.route("/mod/:modID/full")
 router.route("/mod/:modID")
     .get(async function (req, res, next) {
         try {
-            const modID = <number>req.id2;
+            const modID = <number>req.id;
 
 
             const ratings = await prisma.ratings.findMany({ where: { maps_ids: { modID: modID } } });
@@ -338,38 +316,14 @@ router.route("/mod/:modID")
 
 
 router.param("mapID", async function (req, res, next) {
-    try {
-        const idRaw: unknown = req.params.mapID;
-
-        const id = Number(idRaw);
-
-        if (isNaN(id)) {
-            res.status(400).json("mapID is not a number");
-            return;
-        }
-
-
-        const mapFromID = await prisma.maps_ids.findUnique({ where: { id: id } });
-
-        if (!mapFromID) {
-            res.status(404).json("mapID does not exist");
-            return;
-        }
-
-
-        req.id2 = id;
-        next();
-    }
-    catch (error) {
-        next(error);
-    }
+    param_mapID(req, res, next);
 });
 
 
 router.route("/map/:mapID/full")
     .get(async function (req, res, next) {
         try {
-            const mapID = <number>req.id2;
+            const mapID = <number>req.id;
 
 
             const permission = await checkPermissions(req, adminPermsArray, true, res);
@@ -397,7 +351,7 @@ router.route("/map/:mapID/full")
 router.route("/map/:mapID")
     .get(async function (req, res, next) {
         try {
-            const mapID = <number>req.id2;
+            const mapID = <number>req.id;
 
 
             const ratings = await prisma.ratings.findMany({ where: { mapID: mapID } });
@@ -423,31 +377,7 @@ router.route("/map/:mapID")
 
 
 router.param("userID", async function (req, res, next) {
-    try {
-        const idRaw: unknown = req.params.userID;
-
-        const id = Number(idRaw);
-
-        if (isNaN(id)) {
-            res.status(400).json("userID is not a number");
-            return;
-        }
-
-
-        const userFromID = await prisma.users.findUnique({ where: { id: id } });
-
-        if (!userFromID) {
-            res.status(404).json("userID does not exist");
-            return;
-        }
-
-
-        req.id2 = id;
-        next();
-    }
-    catch (error) {
-        next(error);
-    }
+    param_userID(req, res, next);
 });
 
 
