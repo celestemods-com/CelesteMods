@@ -1,5 +1,6 @@
 import { prisma } from "../middlewaresAndConfigs/prismaClient";
-import { expressRoute } from "../types/express"; import { toErrorWithMessage } from "./errorHandling";
+import { expressRoute } from "../types/express";
+import { toErrorWithMessage } from "./errorHandling";
 import { formattedUser, permissions } from "../types/frontend";
 import { rawUser } from "../types/internal";
 import { isNumberArray } from "../helperFunctions/utils";
