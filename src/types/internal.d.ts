@@ -1,6 +1,6 @@
 import {
   users, publishers, golden_players, tech_list, tech_videos, difficulties, mods_ids, mods_details, mods_details_type, maps_ids, maps_details, maps_details_side,
-  map_lengths, maps_to_tech, ratings, users_to_maps
+  map_lengths, maps_to_tech, ratings, reviews, reviews_maps, users_to_maps
 } from ".prisma/client";
 import { permissions } from "./frontend";
 
@@ -31,7 +31,7 @@ export interface connectMapsData {
 }
 
 interface maps_idsConnectionData {
-  
+
 }
 
 
@@ -292,4 +292,16 @@ export interface createRatingData {
   timeSubmitted: number,
   quality?: number,
   difficulties?: { connect: { id: number } },
+}
+
+
+
+
+export interface rawReview extends reviews {
+  reviews_maps: rawMapReview[];
+}
+
+export interface rawMapReview extends reviews_maps {
+  map_lengths: map_lengths;
+  reviews: { submittedBy: number };
 }
