@@ -614,15 +614,15 @@ const validatePublisherPatchSchema = {
 const ajv = new ajvModule({
     allowUnionTypes: true,
     schemas: { mapPostSchema },
-    logger: {
-        log: console.log.bind(console),
-        warn: function warn() {
-            console.warn.apply(console);
-        },
-        error: function error() {
-            console.error.apply(console);
-        },
-    }
+    // logger: {
+    //     log: console.log.bind(console),
+    //     warn: function warn() {
+    //         console.warn.apply(console);
+    //     },
+    //     error: function error() {
+    //         console.error.apply(console);
+    //     },
+    // }
 });
 
 
