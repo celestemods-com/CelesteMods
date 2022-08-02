@@ -286,6 +286,19 @@ export interface rawRating extends ratings {
   difficulties: difficulties | null;
 }
 
+interface updateRatingDataBase {
+  timeSubmitted?: number,
+  quality?: number,
+}
+
+export interface updateRatingDataConnectDifficulty extends updateRatingDataBase {
+  difficulties: { connect: { id: number } },
+}
+
+export interface updateRatingDataNullDifficulty extends updateRatingDataBase {
+  difficultyID: null,
+}
+
 export interface createRatingData {
   maps_ids: { connect: { id: number } },
   users: { connect: { id: number } },

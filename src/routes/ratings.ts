@@ -10,7 +10,7 @@ import { getCurrentTime } from "../helperFunctions/utils";
 
 import { validateRatingPost, validateRatingPatch } from "../jsonSchemas/ratings";
 
-import { rawRating, createRatingData } from "../types/internal";
+import { rawRating, createRatingData, updateRatingDataConnectDifficulty, updateRatingDataNullDifficulty } from "../types/internal";
 
 
 const router = express.Router();
@@ -444,6 +444,7 @@ router.route("/:ratingID")
             const userID = <number>req.id2;
             const quality: number | undefined = req.body.quality;
             const difficultyID: number | undefined = req.body.difficultyID;
+            const currentTime = getCurrentTime();
 
 
             const valid = validateRatingPatch({
@@ -476,12 +477,27 @@ router.route("/:ratingID")
             if (!permitted) return;
 
 
-            const rawRating = await prisma.ratings.update({
-                where: { id: ratingID },
-                data: {
+            let updateRatingDataObject: updateRatingDataConnectDifficulty | updateRatingDataNullDifficulty
+
+            if (difficultyID) {
+                updateRatingDataObject = {
+                    timeSubmitted: currentTime,
                     quality: quality,
                     difficulties: { connect: { id: difficultyID } },
-                },
+                }
+            }
+            else {
+                updateRatingDataObject = {
+                    timeSubmitted: currentTime,
+                    quality: quality,
+                    difficultyID: null,
+                }
+            }
+
+
+            const rawRating = await prisma.ratings.update({
+                where: { id: ratingID },
+                data: updateRatingDataObject,
                 include: { difficulties: true },
             });
 
@@ -538,7 +554,7 @@ export const ratingPost = async function (req: Request, res: Response, mapID: nu
     const permission = await checkPermissions(req, [], true, res);
     if (!permission) return;
 
-    
+
     const currentTime = getCurrentTime();
 
     const userID = <number>req.session.userID;  //must be defined, otherwise checkPermissions would have returned false
