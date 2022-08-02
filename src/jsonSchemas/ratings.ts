@@ -4,7 +4,7 @@ import { intMaxSizes } from "./integerSizes";
 const ajv = new ajvModule();
 
 
-const postSchema = {
+const ratingPostSchema = {
     type: "object",
     properties: {
         mapID: {
@@ -50,7 +50,23 @@ const postSchema = {
 };
 
 
-const validatePost = ajv.compile(postSchema);
+const ratingPatchSchema = {
+    type: "object",
+    properties: {
+        quality: {
+            type: "integer",
+            minimum: 1,
+            maximum: intMaxSizes.tinyInt.unsigned,
+        },
+        difficultyID: {
+            type: "integer",
+            minimum: 1,
+            maximum: intMaxSizes.smallInt.unsigned,
+        },
+    },
+    additionalProperties: false,
+};
 
 
-export { validatePost };
+export const validateRatingPost = ajv.compile(ratingPostSchema);
+export const validateRatingPatch = ajv.compile(ratingPatchSchema);
