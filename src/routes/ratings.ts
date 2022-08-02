@@ -535,6 +535,10 @@ router.use(errorHandler);
 
 
 export const ratingPost = async function (req: Request, res: Response, mapID: number, quality?: number, difficultyID?: number) {
+    const permission = await checkPermissions(req, [], true, res);
+    if (!permission) return;
+
+    
     const currentTime = getCurrentTime();
 
     const userID = <number>req.session.userID;  //must be defined, otherwise checkPermissions would have returned false
