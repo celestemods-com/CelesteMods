@@ -19,33 +19,65 @@ const mapReviewPostSchema = {
             maxLength: 20,
         },
         likes: {
-            type: "string",
+            type: ["string", "null"],
             minLength: 1,
             maxLength: 500,
         },
         dislikes: {
-            type: "string",
+            type: ["string", "null"],
             minLength: 1,
             maxLength: 500,
         },
         otherComments: {
-            type: "string",
+            type: ["string", "null"],
             minLength: 1,
             maxLength: 500,
         },
-        displayRatingBoolean: { type: "boolean" },
+        displayRating: { type: "boolean" },
         quality: {
-            type: "integer",
+            type: ["integer", "null"],
             minimum: 0,
             maximum: intMaxSizes.tinyInt.unsigned,
         },
         difficultyID: {
-            type: "integer",
+            type: ["integer", "null"],
             minimum: 0,
             maximum: intMaxSizes.tinyInt.unsigned,
         },
     },
-    required: ["mapID", "length", "displayRatingBoolean"],
+    anyOf: [
+        {
+            properties: {
+                likes: {
+                    type: "string",
+                    minLength: 1,
+                    maxLength: 500,
+                },
+            },
+            required: ["likes"],
+        },
+        {
+            properties: {
+                dislikes: {
+                    type: "string",
+                    minLength: 1,
+                    maxLength: 500,
+                },
+            },
+            required: ["dislikes"],
+        },
+        {
+            properties: {
+                otherComments: {
+                    type: "string",
+                    minLength: 1,
+                    maxLength: 500,
+                },
+            },
+            required: ["otherComments"],
+        },
+    ],
+    required: ["mapID", "length", "displayRating"],
     additionalProperties: false,
 };
 
@@ -55,26 +87,26 @@ const mapReviewPatchSchema = {
     type: "object",
     properties: {
         length: {
-            type: "string",
+            type: ["string", "null"],
             minLength: 1,
             maxLength: 20,
         },
         likes: {
-            type: "string",
+            type: ["string", "null"],
             minLength: 1,
             maxLength: 500,
         },
         dislikes: {
-            type: "string",
+            type: ["string", "null"],
             minLength: 1,
             maxLength: 500,
         },
         otherComments: {
-            type: "string",
+            type: ["string", "null"],
             minLength: 1,
             maxLength: 500,
         },
-        displayRatingBoolean: { type: "boolean" },
+        displayRating: { type: "boolean" },
     },
     additionalProperties: false,
 };
@@ -91,22 +123,22 @@ const reviewPostSchema = {
             maximum: intMaxSizes.smallInt.unsigned,
         },
         likes: {
-            type: "string",
+            type: ["string", "null"],
             minLength: 1,
             maxLength: 1000,
         },
         dislikes: {
-            type: "string",
+            type: ["string", "null"],
             minLength: 1,
             maxLength: 1000,
         },
         otherComments: {
-            type: "string",
+            type: ["string", "null"],
             minLength: 1,
             maxLength: 1500,
         },
         mapReviews: {
-            type: "array",
+            type: ["array", "null"],
             uniqueItems: true,
             minItems: 1,
             items: { $ref: "mapReviewPostSchema" },
@@ -164,17 +196,17 @@ const reviewPatchSchema = {
     type: "object",
     properties: {
         likes: {
-            type: "string",
+            type: ["string", "null"],
             minLength: 1,
             maxLength: 1000,
         },
         dislikes: {
-            type: "string",
+            type: ["string", "null"],
             minLength: 1,
             maxLength: 1000,
         },
         otherComments: {
-            type: "string",
+            type: ["string", "null"],
             minLength: 1,
             maxLength: 1500,
         },

@@ -305,3 +305,12 @@ export interface rawMapReview extends reviews_maps {
   map_lengths: map_lengths;
   reviews: { submittedBy: number };
 }
+
+export interface mapReviewPatchDataObject {
+  map_lengths?: { connect: { id: number } };
+  likes?: string | null;
+  dislikes?: string | null;
+  otherComments?: string | null;
+  displayRating?: boolean;
+  reviews: { update: { timeSubmitted: number } },
+}

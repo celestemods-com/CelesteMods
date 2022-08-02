@@ -2,16 +2,18 @@ import express from "express";
 import { prisma } from "../middlewaresAndConfigs/prismaClient";
 
 import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../helperFunctions/errorHandling";
-import { checkPermissions, checkSessionAge, adminPermsArray } from "../helperFunctions/sessions";
+import { checkPermissions, checkSessionAge, adminPermsArray, mapReviewersPermsArray, mapStaffPermsArray } from "../helperFunctions/sessions";
 import { param_modID, param_mapID } from "../helperFunctions/maps-mods-publishers";
 import { param_userID } from "../helperFunctions/users";
 import { formatMapReviews, formatMapReview, param_mapReviewID } from "../helperFunctions/reviews-mapReviews";
+import { getCurrentTime } from "../helperFunctions/utils";
+import { getLengthID, lengthErrorMessage } from "../helperFunctions/lengths";
 
-//import { validatePost, validatePatch1, validatePatch2, validatePatch3 } from "../jsonSchemas/users";
+import { validateMapReviewPost, validateMapReviewPatch } from "../jsonSchemas/reviews-mapReviews";
 
 import { reviews_maps } from ".prisma/client";
 // import { formattedUser, permissions } from "../types/frontend";
-import { rawMapReview } from "../types/internal";
+import { mapReviewPatchDataObject, rawMapReview } from "../types/internal";
 import { expressRoute } from "../types/express";
 
 
@@ -242,7 +244,88 @@ router.route("/:mapReviewID")
     })
     .patch(async function (req, res, next) {
         try {
+            const id = <number>req.id;
+            const mapReviewFromID = <rawMapReview>req.mapReview;
+            const userID = mapReviewFromID.reviews.submittedBy;
 
+
+            let permitted: boolean;
+
+            if (req.session && req.session.userID && req.session.userID === userID) {
+                permitted = await checkSessionAge(req, res);
+            }
+            else {
+                permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
+            }
+
+            if (!permitted) return;
+
+
+            const lengthName: string | undefined = req.body.length === null ? undefined : req.body.length;
+            const likes: string | null | undefined = req.body.likes;
+            const dislikes: string | null | undefined = req.body.dislikes;
+            const otherComments: string | null | undefined = req.body.otherComments
+            const displayRating: boolean | undefined = req.body.displayRating === null ? undefined : req.body.displayRating;;
+            const currentTime = getCurrentTime();
+
+
+            const valid = validateMapReviewPatch({
+                length: lengthName,
+                likes: likes,
+                dislikes: dislikes,
+                otherComments: otherComments,
+                displayRating: displayRating,
+            });
+
+            if (!valid || (!lengthName && likes === undefined && dislikes === undefined && otherComments === undefined && !displayRating)) {
+                res.status(400).json("Malformed request body");
+                return;
+            }
+
+
+
+            const patchData: mapReviewPatchDataObject = {
+                likes: likes,
+                dislikes: dislikes,
+                otherComments: otherComments,
+                displayRating: displayRating,
+                reviews: { update: { timeSubmitted: currentTime } },
+            };
+
+            if (lengthName) {
+                try {
+                    const lengthID = await getLengthID(lengthName); //could throw an error
+
+                    patchData.map_lengths = { connect: { id: lengthID } };
+                }
+                catch (error) {
+                    if (error === lengthErrorMessage) {
+                        res.status(400).json(lengthErrorMessage);
+                        return;
+                    }
+                    else {
+                        throw error;
+                    }
+                }
+            }
+
+
+            const rawMapReview = await prisma.reviews_maps.update({
+                where: { id: id },
+                data: patchData,
+                include: {
+                    map_lengths: true,
+                    reviews: { select: { submittedBy: true } },
+                },
+            });
+
+
+            const formattedMapReview = formatMapReview(rawMapReview);
+
+            if (isErrorWithMessage(formattedMapReview)) throw formattedMapReview;
+
+
+            res.status(200).json(formattedMapReview);
         }
         catch (error) {
             next(error);
