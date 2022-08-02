@@ -6,6 +6,7 @@ import { checkPermissions, checkSessionAge, adminPermsArray, mapReviewersPermsAr
 import { param_modID, param_mapID } from "../helperFunctions/maps-mods-publishers";
 import { param_userID } from "../helperFunctions/users";
 import { formatMapReviews, formatMapReview, param_mapReviewID } from "../helperFunctions/reviews-mapReviews";
+import { formatRating } from "../helperFunctions/ratings";
 import { getCurrentTime } from "../helperFunctions/utils";
 import { getLengthID, lengthErrorMessage } from "../helperFunctions/lengths";
 
@@ -13,7 +14,7 @@ import { validateMapReviewPost, validateMapReviewPatch } from "../jsonSchemas/re
 
 import { reviews_maps } from ".prisma/client";
 // import { formattedUser, permissions } from "../types/frontend";
-import { mapReviewPatchDataObject, rawMapReview } from "../types/internal";
+import { createMapReviewData, createRatingData, mapReviewPatchDataObject, rawMapReview, rawRating, updateRatingDataConnectDifficulty, updateRatingDataNullDifficulty } from "../types/internal";
 import { expressRoute } from "../types/express";
 
 
@@ -264,20 +265,20 @@ router.route("/:mapReviewID")
             const lengthName: string | undefined = req.body.length === null ? undefined : req.body.length;
             const likes: string | null | undefined = req.body.likes;
             const dislikes: string | null | undefined = req.body.dislikes;
-            const otherComments: string | null | undefined = req.body.otherComments
-            const displayRating: boolean | undefined = req.body.displayRating === null ? undefined : req.body.displayRating;;
+            const otherComments: string | null | undefined = req.body.otherComments;
+            const displayRatingBool: boolean | undefined = req.body.displayRating === null ? undefined : req.body.displayRating;
             const currentTime = getCurrentTime();
 
 
             const valid = validateMapReviewPatch({
-                length: lengthName,
+                lengthName: lengthName,
                 likes: likes,
                 dislikes: dislikes,
                 otherComments: otherComments,
-                displayRating: displayRating,
+                displayRatingBool: displayRatingBool,
             });
 
-            if (!valid || (!lengthName && likes === undefined && dislikes === undefined && otherComments === undefined && !displayRating)) {
+            if (!valid || (!lengthName && likes === undefined && dislikes === undefined && otherComments === undefined && !displayRatingBool)) {
                 res.status(400).json("Malformed request body");
                 return;
             }
@@ -288,7 +289,7 @@ router.route("/:mapReviewID")
                 likes: likes,
                 dislikes: dislikes,
                 otherComments: otherComments,
-                displayRating: displayRating,
+                displayRatingBool: displayRatingBool,
                 reviews: { update: { timeSubmitted: currentTime } },
             };
 
@@ -372,5 +373,214 @@ router.use(errorHandler);
 
 
 export const mapReviewPost = <expressRoute>async function (req, res, next) {    //called from ./reviews.ts
+    try {
+        const permission = await checkPermissions(req, [], true, res);
+        if (!permission) return;
 
+
+        const reviewID = <number>req.id;
+        const mapID = <number>req.body.mapID;
+        const lengthName: string = req.body.length;
+        const likes: string | null | undefined = req.body.likes;
+        const dislikes: string | null | undefined = req.body.dislikes;
+        const otherComments: string | null | undefined = req.body.otherComments;
+        const displayRatingBool: boolean = req.body.displayRating;
+        const quality: number | undefined = req.body.quality === null ? undefined : req.body.quality;
+        const difficultyID: number | undefined = req.body.difficultyID === null ? undefined : req.body.difficultyID;
+        const currentTime = getCurrentTime();
+
+
+        const valid = validateMapReviewPost({
+            mapID: mapID,
+            lengthName: lengthName,
+            likes: likes,
+            dislikes: dislikes,
+            otherComments: otherComments,
+            displayRatingBool: displayRatingBool,
+            quality: quality,
+            difficultyID: difficultyID,
+        });
+
+        if (!valid) {
+            res.status(400).json("Malformed request body");
+            return;
+        }
+
+
+        const rawMapReviewAndRatingAndStatus: [rawMapReview, rawRating | undefined, number] | undefined = await prisma.$transaction(async () => {
+            //check that user hasn't already submitted a mapReview for this map
+            const rawMatchingMapReview = await prisma.reviews_maps.findUnique({
+                where: {
+                    reviewID_mapID: {
+                        reviewID: reviewID,
+                        mapID: mapID,
+                    },
+                },
+                include: {
+                    map_lengths: true,
+                    reviews: { select: { submittedBy: true } },
+                },
+            });
+
+            if (rawMatchingMapReview) return <[rawMapReview, undefined, number]>[rawMatchingMapReview, undefined, 200];
+
+
+            //check that mapID is valid and that the map is part of the mod linked to the parent review
+            const reviewFromID = await prisma.reviews.findUnique({
+                where: { id: reviewID },
+                include: {
+                    mods_ids: {
+                        include: {
+                            maps_ids: true,
+                        },
+                    },
+                },
+            });
+
+            if (!reviewFromID) throw `reviewFromID is null for review ${reviewID}`;
+
+
+            let validMapID = false;
+
+            for (const map_id of reviewFromID.mods_ids.maps_ids) {
+                if (map_id.id === mapID) {
+                    validMapID = true;
+                    break;
+                }
+            }
+
+            if (!validMapID) {
+                res.status(404).json(`mapID does not match any maps in mod ${reviewFromID.modID}`);
+                res.errorSent = true;
+                return;
+            }
+
+
+            const lengthID = await getLengthID(lengthName);
+
+
+            const createMapReviewDataObject: createMapReviewData = {
+                reviews: { connect: { id: reviewID } },
+                maps_ids: { connect: { id: mapID } },
+                map_lengths: { connect: { id: lengthID } },
+                likes: likes,
+                dislikes: dislikes,
+                otherComments: otherComments,
+                displayRatingBool: displayRatingBool,
+            };
+
+            let rawMapReview: rawMapReview;
+            let rawRating: rawRating;
+
+            if (quality || difficultyID) {
+                const mapReviewFromID = <rawMapReview>req.mapReview;
+                const userID = mapReviewFromID.reviews.submittedBy;
+
+
+                const createRatingDataObject: createRatingData = {
+                    maps_ids: { connect: { id: mapID } },
+                    users: { connect: { id: userID } },
+                    timeSubmitted: currentTime,
+                    quality: quality,
+                };
+
+
+                let updateRatingDataObject: updateRatingDataConnectDifficulty | updateRatingDataNullDifficulty;
+
+                if (difficultyID) {
+                    createRatingDataObject.difficulties = { connect: { id: difficultyID } };
+
+                    updateRatingDataObject = {
+                        timeSubmitted: currentTime,
+                        quality: quality,
+                        difficulties: { connect: { id: difficultyID } },
+                    };
+                }
+                else {
+                    updateRatingDataObject = {
+                        timeSubmitted: currentTime,
+                        quality: quality,
+                        difficultyID: null,
+                    }
+                }
+
+
+                await Promise.all([
+                    rawMapReview = await prisma.reviews_maps.create({
+                        data: createMapReviewDataObject,
+                        include: {
+                            map_lengths: true,
+                            reviews: { select: { submittedBy: true } },
+                        },
+                    }),
+                    rawRating = await prisma.ratings.upsert({
+                        create: createRatingDataObject,
+                        update: updateRatingDataObject,
+                        where: {
+                            mapID_submittedBy: {
+                                mapID: mapID,
+                                submittedBy: userID,
+                            },
+                        },
+                        include: { difficulties: true },
+                    }),
+                ]);
+
+
+                return <[rawMapReview, rawRating, number]>[rawMapReview, rawRating, 201];
+            }
+            else {
+                rawMapReview = await prisma.reviews_maps.create({
+                    data: createMapReviewDataObject,
+                    include: {
+                        map_lengths: true,
+                        reviews: { select: { submittedBy: true } },
+                    },
+                });
+
+
+                return <[rawMapReview, undefined, number]>[rawMapReview, undefined, 201];
+            }
+        });
+
+
+        if (!rawMapReviewAndRatingAndStatus) {
+            if (res.errorSent) return;
+
+            throw "no outerRawMapReviewAndStatus";
+        }
+
+
+        const rawMapReview = rawMapReviewAndRatingAndStatus[0];
+        const rawRating = rawMapReviewAndRatingAndStatus[1];
+        const status = rawMapReviewAndRatingAndStatus[2];
+
+
+        const formattedMapReview = await formatMapReview(rawMapReview);
+
+        if (isErrorWithMessage(formattedMapReview)) throw formattedMapReview;
+
+
+        if (rawRating) {
+            const formattedRating = formatRating(rawRating);
+
+            if (isErrorWithMessage(formattedRating)) throw formattedRating;
+
+
+            res.status(status).json([formattedMapReview, formattedRating]);
+        }
+        else {
+            res.status(status).json([formattedMapReview]);
+        }
+    }
+    catch (error) {
+        if (error === lengthErrorMessage) {
+            res.status(400).json(lengthErrorMessage);
+            res.errorSent = true;
+            return;
+        }
+        else {
+            throw error;
+        }
+    }
 }
