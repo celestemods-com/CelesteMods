@@ -311,6 +311,16 @@ export interface mapReviewPatchDataObject {
   likes?: string | null;
   dislikes?: string | null;
   otherComments?: string | null;
-  displayRating?: boolean;
+  displayRatingBool?: boolean;
   reviews: { update: { timeSubmitted: number } },
+}
+
+export interface createMapReviewData  {
+  reviews: { connect: { id: number } },
+  maps_ids: { connect: { id: number } },
+  map_lengths: { connect: { id: number } },
+  likes?: string | null,
+  dislikes?: string | null,
+  otherComments?: string | null,
+  displayRatingBool: boolean,
 }
