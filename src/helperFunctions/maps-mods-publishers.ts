@@ -1,15 +1,18 @@
 import { Request, Response } from "express";
 import { prisma } from "../middlewaresAndConfigs/prismaClient";
 import axios from "axios";
-import { expressRoute } from "../types/express";
+
 import { isErrorWithMessage, toErrorWithMessage } from "./errorHandling";
 import { difficulties, map_lengths, mods_details_type, publishers, users } from ".prisma/client";
+import { checkPermissions, mapStaffPermsArray } from "./sessions";
+import { getLengthID, lengthErrorMessage } from "./lengths";
+
 import {
     rawMod, rawMap, createParentDifficultyForMod, createChildDifficultyForMod, jsonCreateMapWithMod, mapIdCreationObjectForMod,
     mapToTechCreationObject, defaultDifficultyForMod, publisherConnectionObject, publisherCreationObject, rawPublisher
 } from "../types/internal";
 import { formattedMod, formattedMap, formattedPublisher } from "../types/frontend";
-import { checkPermissions, mapStaffPermsArray } from "./sessions";
+import { expressRoute } from "../types/express";
 
 
 
@@ -17,7 +20,6 @@ import { checkPermissions, mapStaffPermsArray } from "./sessions";
 const canonicalDifficultyNameErrorMessage = "canonicalDifficulty does not match any default parent difficulty names";
 const techNameErrorMessage = "A tech name in techAny did not match the names of any tech in the celestemods.com database";
 const gamebananaApiError = "GameBanana api not responding as expected.";
-export const lengthErrorMessage = "length does not match the name of any map lengths in the celestemods.com database";
 export const invalidMapperUserIdErrorMessage = "No user found with ID = ";
 export const invalidMapDifficultyErrorMessage = `All maps in a non-Normal mod must be assigned a modDifficulty that matches the difficulties used by the mod (whether default or custom).
 If the mod uses sub-difficulties, modDifficulty must be given in the form [difficulty, sub-difficulty].`;
@@ -726,28 +728,6 @@ export const getCanonicalDifficultyID = async function (canonicalDifficultyName:
 
         return highestDifficultyID;
     }
-};
-
-
-
-
-export const getLengthID = async function (lengthName: string, lengthObjectArray?: map_lengths[]) {
-    if (!lengthObjectArray || !lengthObjectArray.length) {
-        lengthObjectArray = await prisma.map_lengths.findMany();
-    }
-
-    let lengthID = 0;
-
-    for (const length of lengthObjectArray) {
-        if (length.name === lengthName) {
-            lengthID = length.id;
-            break;
-        }
-    }
-
-    if (lengthID === 0) throw lengthErrorMessage;
-
-    return lengthID;
 }
 
 

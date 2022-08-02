@@ -3,11 +3,11 @@ import { prisma } from "../middlewaresAndConfigs/prismaClient";
 
 import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../helperFunctions/errorHandling";
 import {
-    invalidMapperUserIdErrorMessage, param_mapID, formatMap, param_mapRevision, getCanonicalDifficultyID, getLengthID,
-    invalidMapDifficultyErrorMessage, lengthErrorMessage, noMapDetailsErrorMessage
+    invalidMapperUserIdErrorMessage, param_mapID, formatMap, param_mapRevision, getCanonicalDifficultyID,
+    invalidMapDifficultyErrorMessage, noMapDetailsErrorMessage
 } from "../helperFunctions/maps-mods-publishers";
-import { getUser, param_userID } from "../helperFunctions/users";
-import { param_lengthID, param_lengthOrder } from "../helperFunctions/lengths";
+import { param_userID } from "../helperFunctions/users";
+import { param_lengthID, param_lengthOrder, getLengthID, lengthErrorMessage } from "../helperFunctions/lengths";
 import { getCurrentTime } from "../helperFunctions/utils";
 import { mapStaffPermsArray, checkPermissions, checkSessionAge } from "../helperFunctions/sessions";
 
@@ -15,8 +15,7 @@ import { validateMapPost, validateMapPatch } from "../jsonSchemas/maps-mods-publ
 
 import { mods_details_type, maps_details_side } from ".prisma/client";
 import {
-    rawMap, mapIdCreationObjectStandalone, mapToTechCreationObject, rawMod, mapDetailsCreationObjectStandalone,
-    mapValidationJson
+    rawMap, mapIdCreationObjectStandalone, mapToTechCreationObject, rawMod, mapDetailsCreationObjectStandalone, mapValidationJson
 } from "../types/internal";
 import { expressRoute } from "../types/express";
 
