@@ -1,8 +1,8 @@
 import express from "express";
 import { prisma } from "../middlewaresAndConfigs/prismaClient";
 
-import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../helperFunctions/errorHandling";
-import { checkPermissions, checkSessionAge, adminPermsArray, mapReviewersPermsArray, mapStaffPermsArray } from "../helperFunctions/sessions";
+import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../helperFunctions/errorHandling";
+import { checkPermissions, checkSessionAge, adminPermsArray, mapStaffPermsArray } from "../helperFunctions/sessions";
 import { param_modID, param_mapID } from "../helperFunctions/maps-mods-publishers";
 import { param_userID } from "../helperFunctions/users";
 import { formatMapReviews, formatMapReview, param_mapReviewID } from "../helperFunctions/reviews-mapReviews";
@@ -12,10 +12,10 @@ import { getLengthID, lengthErrorMessage } from "../helperFunctions/lengths";
 
 import { validateMapReviewPost, validateMapReviewPatch } from "../jsonSchemas/reviews-mapReviews";
 
-import { reviews_maps } from ".prisma/client";
-// import { formattedUser, permissions } from "../types/frontend";
-import { createMapReviewData, createRatingData, mapReviewPatchDataObject, rawMapReview, rawRating, updateRatingDataConnectDifficulty, updateRatingDataNullDifficulty } from "../types/internal";
 import { expressRoute } from "../types/express";
+import {
+    createMapReviewData, createRatingData, mapReviewPatchDataObject, rawMapReview, rawRating, updateRatingDataConnectDifficulty, updateRatingDataNullDifficulty
+} from "../types/internal";
 
 
 const router = express.Router();
