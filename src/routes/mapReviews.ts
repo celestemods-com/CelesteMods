@@ -2,7 +2,7 @@ import express from "express";
 import { prisma } from "../middlewaresAndConfigs/prismaClient";
 
 import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../helperFunctions/errorHandling";
-import { checkPermissions, checkSessionAge, adminPermsArray, mapStaffPermsArray } from "../helperFunctions/sessions";
+import { checkPermissions, checkSessionAge, mapStaffPermsArray } from "../helperFunctions/sessions";
 import { param_modID, param_mapID } from "../helperFunctions/maps-mods-publishers";
 import { param_userID } from "../helperFunctions/users";
 import { formatMapReviews, formatMapReview, param_mapReviewID } from "../helperFunctions/reviews-mapReviews";
@@ -65,7 +65,7 @@ router.route("/search/map")
 
 
             const rawMapReviews = await prisma.reviews_maps.findMany({
-                where: { maps_ids: { maps_details: { some: { name: { startsWith: query, } } } } },
+                where: { maps_ids: { maps_details: { some: { name: { startsWith: query } } } } },
                 include: {
                     map_lengths: true,
                     reviews: { select: { submittedBy: true } },
@@ -345,7 +345,7 @@ router.route("/:mapReviewID")
                 permitted = await checkSessionAge(req, res);
             }
             else {
-                permitted = await checkPermissions(req, adminPermsArray, true, res);
+                permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
             }
 
             if (!permitted) return;
