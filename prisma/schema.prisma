@@ -247,6 +247,7 @@ model reviews {
   users         users          @relation(fields: [submittedBy], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "reviews_ibfk_1")
   reviews_maps  reviews_maps[]
 
+  @@unique([modID, submittedBy], map: "modAndUser")
   @@index([modID], map: "modID")
   @@index([submittedBy], map: "submittedBy")
 }
