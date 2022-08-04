@@ -156,6 +156,50 @@ export const formatMapReview = async function (rawMapReview: rawMapReview) {
 
 
 
+export const param_reviewID = <expressRoute>async function (req, res, next) {
+    try {
+        const idRaw: unknown = req.params.reviewID;
+
+        const id = Number(idRaw);
+
+        if (isNaN(id)) {
+            res.status(400).json("reviewID is not a number");
+            return;
+        }
+
+
+        const exists = await prisma.reviews.findUnique({
+            where: { id: id },
+            include: {
+                reviews_maps: {
+                    include: {
+                        map_lengths: true,
+                        reviews: { select: { submittedBy: true } },
+                    },
+                },
+            },
+        });
+
+        if (!exists) {
+            res.status(404).json("reviewID does not exist");
+            return;
+        }
+
+        
+        req.id = id;
+        req.review = exists;
+
+        next();
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+
+
+
+
 export const param_mapReviewID = <expressRoute>async function (req, res, next) {
     try {
         const idRaw: unknown = req.params.mapReviewID;

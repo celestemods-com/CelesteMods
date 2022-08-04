@@ -14,7 +14,7 @@ import { validateMapReviewPost, validateMapReviewPatch } from "../jsonSchemas/re
 
 import { expressRoute } from "../types/express";
 import {
-    createMapReviewData, createRatingData, mapReviewPatchDataObject, rawMapReview, rawRating, updateRatingDataConnectDifficulty, updateRatingDataNullDifficulty
+    createMapReviewDataStandalone, createRatingData, mapReviewPatchDataObject, rawMapReview, rawRating, updateRatingDataConnectDifficulty, updateRatingDataNullDifficulty
 } from "../types/internal";
 
 
@@ -381,9 +381,9 @@ export const mapReviewPost = <expressRoute>async function (req, res, next) {    
         const reviewID = <number>req.id;
         const mapID = <number>req.body.mapID;
         const lengthName: string = req.body.length;
-        const likes: string | null | undefined = req.body.likes;
-        const dislikes: string | null | undefined = req.body.dislikes;
-        const otherComments: string | null | undefined = req.body.otherComments;
+        const likes: string | undefined = req.body.likes === null ? undefined : req.body.likes;
+        const dislikes: string | undefined = req.body.dislikes === null ? undefined : req.body.dislikes;
+        const otherComments: string | undefined = req.body.otherComments === null ? undefined : req.body.otherComments;
         const displayRatingBool: boolean = req.body.displayRating;
         const quality: number | undefined = req.body.quality === null ? undefined : req.body.quality;
         const difficultyID: number | undefined = req.body.difficultyID === null ? undefined : req.body.difficultyID;
@@ -459,7 +459,7 @@ export const mapReviewPost = <expressRoute>async function (req, res, next) {    
             const lengthID = await getLengthID(lengthName);
 
 
-            const createMapReviewDataObject: createMapReviewData = {
+            const createMapReviewDataObject: createMapReviewDataStandalone = {
                 reviews: { connect: { id: reviewID } },
                 maps_ids: { connect: { id: mapID } },
                 map_lengths: { connect: { id: lengthID } },
@@ -547,7 +547,7 @@ export const mapReviewPost = <expressRoute>async function (req, res, next) {    
         if (!rawMapReviewAndRatingAndStatus) {
             if (res.errorSent) return;
 
-            throw "no outerRawMapReviewAndStatus";
+            throw "no rawMapReviewAndRatingAndStatus";
         }
 
 

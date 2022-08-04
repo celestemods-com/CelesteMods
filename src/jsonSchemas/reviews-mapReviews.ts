@@ -19,28 +19,28 @@ const mapReviewPostSchema = {
             maxLength: 20,
         },
         likes: {
-            type: ["string", "null"],
+            type: "string",
             minLength: 1,
             maxLength: 500,
         },
         dislikes: {
-            type: ["string", "null"],
+            type: "string",
             minLength: 1,
             maxLength: 500,
         },
         otherComments: {
-            type: ["string", "null"],
+            type: "string",
             minLength: 1,
             maxLength: 500,
         },
         displayRatingBool: { type: "boolean" },
         quality: {
-            type: ["integer", "null"],
+            type: "integer",
             minimum: 0,
             maximum: intMaxSizes.tinyInt.unsigned,
         },
         difficultyID: {
-            type: ["integer", "null"],
+            type: "integer",
             minimum: 0,
             maximum: intMaxSizes.tinyInt.unsigned,
         },

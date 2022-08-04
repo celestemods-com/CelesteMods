@@ -314,6 +314,19 @@ export interface rawReview extends reviews {
   reviews_maps: rawMapReview[];
 }
 
+export interface createReviewData {
+  mods_ids: { connect: { id: number } };
+  timeSubmitted: number;
+  users: { connect: { id: number } },
+  likes?: string;
+  dislikes?: string;
+  otherComments?: string;
+  mapReviews?: { create: createMapReviewData[] };
+}
+
+
+
+
 export interface rawMapReview extends reviews_maps {
   map_lengths: map_lengths;
   reviews: { submittedBy: number };
@@ -325,15 +338,29 @@ export interface mapReviewPatchDataObject {
   dislikes?: string | null;
   otherComments?: string | null;
   displayRatingBool?: boolean;
-  reviews: { update: { timeSubmitted: number } },
+  reviews: { update: { timeSubmitted: number } };
 }
 
-export interface createMapReviewData  {
-  reviews: { connect: { id: number } },
-  maps_ids: { connect: { id: number } },
-  map_lengths: { connect: { id: number } },
-  likes?: string | null,
-  dislikes?: string | null,
-  otherComments?: string | null,
-  displayRatingBool: boolean,
+export interface createMapReviewData {
+  maps_ids: { connect: { id: number } };
+  map_lengths: { connect: { id: number } };
+  likes?: string | null;
+  dislikes?: string | null;
+  otherComments?: string | null;
+  displayRatingBool: boolean;
+}
+
+export interface createMapReviewDataStandalone extends createMapReviewData {
+  reviews: { connect: { id: number } };
+}
+
+export interface jsonCreateMapReviewWithReview {
+  mapID: number;
+  length: string;
+  likes?: string;
+  dislikes?: string;
+  otherComments?: string;
+  displayRating: boolean;
+  quality?: number;
+  difficultyID?: number;
 }
