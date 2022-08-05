@@ -447,6 +447,18 @@ router.route("/:ratingID")
             const currentTime = getCurrentTime();
 
 
+            let permitted: boolean;
+
+            if (req.session && req.session.userID && req.session.userID === userID) {
+                permitted = await checkSessionAge(req, res);
+            }
+            else {
+                permitted = await checkPermissions(req, adminPermsArray, true, res);
+            }
+
+            if (!permitted) return;
+
+
             const valid = validateRatingPatch({
                 ratingID: ratingID,
                 userID: userID,
@@ -463,18 +475,6 @@ router.route("/:ratingID")
                 res.status(400).json("At least one of quality and difficultyID must be set.");
                 return;
             }
-
-
-            let permitted: boolean;
-
-            if (req.session && req.session.userID && req.session.userID === userID) {
-                permitted = await checkSessionAge(req, res);
-            }
-            else {
-                permitted = await checkPermissions(req, adminPermsArray, true, res);
-            }
-
-            if (!permitted) return;
 
 
             let updateRatingDataObject: updateRatingDataConnectDifficulty | updateRatingDataNullDifficulty
