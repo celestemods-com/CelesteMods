@@ -1,5 +1,6 @@
 import ajvModule from "ajv";
 import { intMaxSizes } from "./integerSizes";
+import { maxQuality } from "./ratings";
 
 
 
@@ -35,9 +36,9 @@ const mapReviewPostSchema = {
         },
         displayRatingBool: { type: "boolean" },
         quality: {
-            type: "integer",
+            type: ["integer", "null"],
             minimum: 0,
-            maximum: intMaxSizes.tinyInt.unsigned,
+            maximum: maxQuality,
         },
         difficultyID: {
             type: "integer",

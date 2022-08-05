@@ -1,7 +1,9 @@
 import ajvModule from "ajv";
 import { intMaxSizes } from "./integerSizes";
 
-const ajv = new ajvModule();
+export const maxQuality = 5;
+
+const ajv = new ajvModule({ allowUnionTypes: true });
 
 
 const ratingPostSchema = {
@@ -13,9 +15,9 @@ const ratingPostSchema = {
             maximum: intMaxSizes.mediumInt.unsigned,
         },
         quality: {
-            type: "integer",
+            type: ["integer", "null"],
             minimum: 1,
-            maximum: intMaxSizes.tinyInt.unsigned,
+            maximum: maxQuality,
         },
         difficultyID: {
             type: "integer",
@@ -29,7 +31,7 @@ const ratingPostSchema = {
                 quality: {
                     type: "integer",
                     minimum: 1,
-                    maximum: intMaxSizes.tinyInt.unsigned,
+                    maximum: maxQuality,
                 },
             },
             required: ["quality"],
@@ -54,9 +56,9 @@ const ratingPatchSchema = {
     type: "object",
     properties: {
         quality: {
-            type: "integer",
+            type: ["integer", "null"],
             minimum: 1,
-            maximum: intMaxSizes.tinyInt.unsigned,
+            maximum: maxQuality,
         },
         difficultyID: {
             type: "integer",

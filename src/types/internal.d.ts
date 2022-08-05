@@ -288,7 +288,7 @@ export interface rawRating extends ratings {
 
 interface updateRatingDataBase {
   timeSubmitted?: number,
-  quality?: number,
+  quality: number | null,
 }
 
 export interface updateRatingDataConnectDifficulty extends updateRatingDataBase {
@@ -303,7 +303,7 @@ export interface createRatingData {
   maps_ids: { connect: { id: number } },
   users: { connect: { id: number } },
   timeSubmitted: number,
-  quality?: number,
+  quality: number | null,
   difficulties?: { connect: { id: number } },
 }
 
@@ -361,6 +361,6 @@ export interface jsonCreateMapReviewWithReview {
   dislikes?: string;
   otherComments?: string;
   displayRating: boolean;
-  quality?: number;
+  quality: number | null;
   difficultyID?: number;
 }

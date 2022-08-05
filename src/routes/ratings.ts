@@ -7,6 +7,7 @@ import { param_userID } from "../helperFunctions/users";
 import { formatRating, formatRatings, getRatingsInfo } from "../helperFunctions/ratings";
 import { adminPermsArray, checkPermissions, checkSessionAge } from "../helperFunctions/sessions";
 import { getCurrentTime } from "../helperFunctions/utils";
+import { isValidDifficultyID } from "../helperFunctions/difficulties";
 
 import { validateRatingPost, validateRatingPatch } from "../jsonSchemas/ratings";
 
@@ -52,14 +53,76 @@ router.route("/")
 
 
             const mapID = <number>req.body.mapID;
-            const quality = !req.body.quality ? undefined : <number>req.body.quality;
-            const difficultyID = !req.body.difficultyID ? undefined : <number>req.body.difficultyID;
+            const quality: number | null = req.body.quality === undefined ? null : req.body.quality;
+            const difficultyID: number | undefined = !req.body.difficultyID ? undefined : req.body.difficultyID;
+            const permission = await checkPermissions(req, [], true, res);
+            if (!permission) return;
+        
+        
+            const currentTime = getCurrentTime();
+        
+            const userID = <number>req.session.userID;  //must be defined, otherwise checkPermissions would have returned false
+        
+        
+            const valid = validateRatingPost({
+                mapID: mapID,
+                quality: quality,
+                difficultyID: difficultyID,
+            });
+        
+            if (!valid) {
+                res.errorSent = true;
+                res.status(400).json("Malformed request body");
+                return;
+            }
+        
+        
+            const rawRatingFromMapID = await prisma.ratings.findUnique({
+                where: {
+                    mapID_submittedBy: {
+                        mapID: mapID,
+                        submittedBy: userID,
+                    },
+                },
+                include: { difficulties: true },
+            });
+        
+            if (rawRatingFromMapID) {
+                const formattedRatingFromID = formatRating(rawRatingFromMapID);
+        
+                if (isErrorWithMessage(formattedRatingFromID)) throw formattedRatingFromID;
+        
+        
+                res.status(200).json(formattedRatingFromID);    //don't need to check for perms. the submitting user will always be the same as the matching rating's user
+        
+                return;
+            }
+        
+        
+            const createRatingObject: createRatingData = {
+                maps_ids: { connect: { id: mapID } },
+                users: { connect: { id: userID } },
+                timeSubmitted: currentTime,
+                quality: quality,
+            };
+        
+            if (difficultyID) {
+                const difficultyFromID = await isValidDifficultyID(difficultyID, true, true);
 
-            const rawRating = await ratingPost(req, res, mapID, quality, difficultyID);
+                if (!difficultyFromID) {
+                    res.sendStatus(404).json(`${difficultyID} is not a valid difficultyID!`);
+                    return;
+                }
 
-            if (res.errorSent) return;
 
-            if (!rawRating) throw "rawRating is undefined";
+                createRatingObject.difficulties = { connect: { id: difficultyID } };
+            }
+        
+        
+            const rawRating = await prisma.ratings.create({
+                data: createRatingObject,
+                include: { difficulties: true },
+            });
 
 
             const formattedRating = formatRating(rawRating);
@@ -442,7 +505,7 @@ router.route("/:ratingID")
         try {
             const ratingID = <number>req.id;
             const userID = <number>req.id2;
-            const quality: number | undefined = req.body.quality;
+            const quality: number | null = req.body.quality === undefined ? null : req.body.quality;
             const difficultyID: number | undefined = req.body.difficultyID;
             const currentTime = getCurrentTime();
 
@@ -460,8 +523,6 @@ router.route("/:ratingID")
 
 
             const valid = validateRatingPatch({
-                ratingID: ratingID,
-                userID: userID,
                 quality: quality,
                 difficultyID: difficultyID,
             });
@@ -471,15 +532,18 @@ router.route("/:ratingID")
                 return;
             }
 
-            if (!(quality || difficultyID)) {
-                res.status(400).json("At least one of quality and difficultyID must be set.");
-                return;
-            }
-
 
             let updateRatingDataObject: updateRatingDataConnectDifficulty | updateRatingDataNullDifficulty
 
             if (difficultyID) {
+                const difficultyFromID = await isValidDifficultyID(difficultyID, true, true);
+
+                if (!difficultyFromID) {
+                    res.status(404).json(`${difficultyID} is not a valid difficultyID!`);
+                    return;
+                }
+
+
                 updateRatingDataObject = {
                     timeSubmitted: currentTime,
                     quality: quality,
@@ -546,72 +610,3 @@ router.route("/:ratingID")
 router.use(noRouteError);
 
 router.use(errorHandler);
-
-
-
-
-export const ratingPost = async function (req: Request, res: Response, mapID: number, quality?: number, difficultyID?: number) {
-    const permission = await checkPermissions(req, [], true, res);
-    if (!permission) return;
-
-
-    const currentTime = getCurrentTime();
-
-    const userID = <number>req.session.userID;  //must be defined, otherwise checkPermissions would have returned false
-
-
-    const valid = validateRatingPost({
-        mapID: mapID,
-        quality: quality,
-        difficultyID: difficultyID,
-    });
-
-    if (!valid) {
-        res.errorSent = true;
-        res.status(400).json("Malformed request body");
-        return;
-    }
-
-
-    const rawRatingFromMapID = await prisma.ratings.findUnique({
-        where: {
-            mapID_submittedBy: {
-                mapID: mapID,
-                submittedBy: userID,
-            },
-        },
-        include: { difficulties: true },
-    });
-
-    if (rawRatingFromMapID) {
-        const formattedRatingFromID = formatRating(rawRatingFromMapID);
-
-        if (isErrorWithMessage(formattedRatingFromID)) throw formattedRatingFromID;
-
-
-        res.errorSent = true;
-
-        res.status(200).json(formattedRatingFromID);    //don't need to check for perms. the submitting user will always be the same as the matching rating's user
-
-        return;
-    }
-
-
-    const createRatingObject: createRatingData = {
-        maps_ids: { connect: { id: mapID } },
-        users: { connect: { id: userID } },
-        timeSubmitted: currentTime,
-        quality: quality,
-    };
-
-    if (difficultyID) createRatingObject.difficulties = { connect: { id: difficultyID } };
-
-
-    const rawRating = await prisma.ratings.create({
-        data: createRatingObject,
-        include: { difficulties: true },
-    });
-
-
-    return rawRating;
-};

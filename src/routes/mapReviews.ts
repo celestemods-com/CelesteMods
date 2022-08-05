@@ -385,7 +385,7 @@ export const mapReviewPost = <expressRoute>async function (req, res, next) {    
         const dislikes: string | undefined = req.body.dislikes === null ? undefined : req.body.dislikes;
         const otherComments: string | undefined = req.body.otherComments === null ? undefined : req.body.otherComments;
         const displayRatingBool: boolean = req.body.displayRating;
-        const quality: number | undefined = req.body.quality === null ? undefined : req.body.quality;
+        const quality: number | null = req.body.quality === undefined ? null : req.body.quality;
         const difficultyID: number | undefined = req.body.difficultyID === null ? undefined : req.body.difficultyID;
         const currentTime = getCurrentTime();
 
