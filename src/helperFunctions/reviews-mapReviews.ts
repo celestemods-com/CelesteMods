@@ -18,11 +18,12 @@ export const formatReviews = async function (rawReviews: rawReview[]) {
 
                 if (isErrorWithMessage(formattedReview)) return `Error encountered formatting review ${rawReview.id}`;
 
+                
                 return formattedReview;
             }
         )
     );
-
+    
 
     return formattedReviews;
 }
@@ -59,7 +60,7 @@ export const formatReview = async function (rawReview: rawReview) {
             formattedReview.mapReviews = formattedMapReviews;
         }
 
-
+        
         return formattedReview;
     }
     catch (error) {
@@ -105,7 +106,7 @@ export const formatMapReview = async function (rawMapReview: rawMapReview) {
             reviewID: reviewID,
             mapID: mapID,
             length: lengthName,
-            displayRatingBool: displayRatingBool,
+            displayRating: displayRatingBool,
         }
 
 
@@ -134,7 +135,7 @@ export const formatMapReview = async function (rawMapReview: rawMapReview) {
                 formattedMapReview.rating = formattedRating;
             }
             else {
-                formattedMapReview.displayRatingBool = false;
+                formattedMapReview.displayRating = false;
 
                 await prisma.reviews_maps.update({
                     where: { id: id },
@@ -147,7 +148,6 @@ export const formatMapReview = async function (rawMapReview: rawMapReview) {
         return formattedMapReview;
     }
     catch (error) {
-        console.log(error);
         return toErrorWithMessage(error);
     }
 }
@@ -174,7 +174,7 @@ export const param_reviewID = <expressRoute>async function (req, res, next) {
                 reviews_maps: {
                     include: {
                         map_lengths: true,
-                        reviews: { select: { submittedBy: true } },
+                        reviews: true,
                     },
                 },
             },
@@ -185,7 +185,7 @@ export const param_reviewID = <expressRoute>async function (req, res, next) {
             return;
         }
 
-        
+
         req.id = id;
         req.review = exists;
 
@@ -216,7 +216,7 @@ export const param_mapReviewID = <expressRoute>async function (req, res, next) {
             where: { id: id },
             include: {
                 map_lengths: true,
-                reviews: { select: { submittedBy: true } },
+                reviews: true,
             },
         });
 
@@ -225,7 +225,7 @@ export const param_mapReviewID = <expressRoute>async function (req, res, next) {
             return;
         }
 
-        
+
         req.id = id;
         req.mapReview = exists;
 

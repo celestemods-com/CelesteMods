@@ -2,13 +2,14 @@ import express from "express";
 import { prisma } from "../middlewaresAndConfigs/prismaClient";
 
 import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../helperFunctions/errorHandling";
+import { mapReviewPost } from "./mapReviews";
 import { formatReview, formatReviews, param_reviewID } from "../helperFunctions/reviews-mapReviews";
 import { formatRatings } from "../helperFunctions/ratings";
 import { param_modID } from "../helperFunctions/maps-mods-publishers";
-import { checkPermissions, checkSessionAge, mapStaffPermsArray } from "../helperFunctions/sessions";
+import { checkPermissions, checkSessionAge, mapReviewersPermsArray, mapStaffPermsArray } from "../helperFunctions/sessions";
 import { param_userID } from "../helperFunctions/users";
 import { getCurrentTime } from "../helperFunctions/utils";
-import { getLengthID } from "../helperFunctions/lengths";
+import { getLengthID, lengthErrorMessage } from "../helperFunctions/lengths";
 
 import { validateReviewPatch, validateReviewPost } from "../jsonSchemas/reviews-mapReviews";
 
@@ -55,7 +56,7 @@ router.route("/")
     })
     .post(async function (req, res, next) {
         try {
-            const permission = await checkPermissions(req, [], true, res);
+            const permission = await checkPermissions(req, mapReviewersPermsArray, true, res);
             if (!permission) return;
 
 
@@ -160,7 +161,21 @@ router.route("/")
                                     }
 
 
-                                    const lengthID = await getLengthID(lengthName);
+                                    let lengthID: number;
+                        
+                                    try {
+                                        lengthID = await getLengthID(lengthName);
+                                    }
+                                    catch (error) {
+                                        if (error === lengthErrorMessage) {
+                                            res.status(400).json(lengthErrorMessage);
+                                            res.errorSent = true;
+                                            throw lengthErrorMessage;
+                                        }
+                                        else {
+                                            throw error;
+                                        }
+                                    }
 
 
                                     const createMapReviewDataObject: createMapReviewData = {
@@ -213,11 +228,12 @@ router.route("/")
                     }
                     catch (error) {
                         if (error === invalidMapStringError) return;
+                        else if (error === lengthErrorMessage) return;
                         throw error;
                     }
 
 
-                    createReviewDataObject.mapReviews = { create: mapReviewsCreationArray };
+                    createReviewDataObject.reviews_maps = { create: mapReviewsCreationArray };
 
 
                     let rawRatings: rawRating[];
@@ -342,7 +358,7 @@ router.route("/search/mod")
             });
 
 
-            const formattedReviews = formatReviews(rawReviews);
+            const formattedReviews = await formatReviews(rawReviews);
 
 
             res.json(formattedReviews);
@@ -378,7 +394,7 @@ router.route("/search/user")
             });
 
 
-            const formattedReviews = formatReviews(rawReviews);
+            const formattedReviews = await formatReviews(rawReviews);
 
 
             res.json(formattedReviews);
@@ -402,7 +418,7 @@ router.param("modID", async function (req, res, next) {
 });
 
 
-router.route("/mods/:modID")
+router.route("/mod/:modID")
     .get(async function (req, res, next) {
         try {
             const modID = <number>req.id;
@@ -421,7 +437,7 @@ router.route("/mods/:modID")
             });
 
 
-            const formattedReviews = formatReviews(rawReviews);
+            const formattedReviews = await formatReviews(rawReviews);
 
 
             res.json(formattedReviews);
@@ -445,7 +461,7 @@ router.param("userID", async function (req, res, next) {
 });
 
 
-router.route("/users/:userID")
+router.route("/user/:userID")
     .get(async function (req, res, next) {
         try {
             const userID = <number>req.id2;
@@ -507,6 +523,7 @@ router.route("/:reviewID")
     })
     .patch(async function (req, res, next) {
         try {
+            console.log("entered review patch")
             const id = <number>req.id;
             const reviewFromID = <rawReview>req.review;
             const userID = reviewFromID.submittedBy;
@@ -540,6 +557,7 @@ router.route("/:reviewID")
                 res.status(400).json("Malformed request body");
                 return;
             }
+            console.log("passed json validation")
 
 
             const rawReview = await prisma.reviews.update({
@@ -599,6 +617,13 @@ router.route("/:reviewID")
         catch (error) {
             next(error);
         }
+    })
+    .post(async function (req, res, next) {
+        const permission = await checkPermissions(req, mapReviewersPermsArray, true, res);
+        if (!permission) return;
+
+
+        await mapReviewPost(req, res, next);
     })
     .all(methodNotAllowed);
 

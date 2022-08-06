@@ -14,7 +14,7 @@ const mapReviewPostSchema = {
             minimum: 0,
             maximum: intMaxSizes.mediumInt.unsigned,
         },
-        lengthName: {
+        length: {
             type: "string",
             minLength: 1,
             maxLength: 20,
@@ -34,7 +34,7 @@ const mapReviewPostSchema = {
             minLength: 1,
             maxLength: 500,
         },
-        displayRatingBool: { type: "boolean" },
+        displayRating: { type: "boolean" },
         quality: {
             type: ["integer", "null"],
             minimum: 0,
@@ -78,7 +78,7 @@ const mapReviewPostSchema = {
             required: ["otherComments"],
         },
     ],
-    required: ["mapID", "length", "displayRatingBool"],
+    required: ["mapID", "length", "displayRating"],
     additionalProperties: false,
 };
 

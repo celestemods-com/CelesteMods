@@ -124,6 +124,6 @@ export interface formattedMapReview {
   likes?: string;
   dislikes?: string;
   otherComments?: string;
-  displayRatingBool: boolean;
+  displayRating: boolean;
   rating?: formattedRating;
 }

@@ -14,7 +14,7 @@ import { validateMapReviewPost, validateMapReviewPatch } from "../jsonSchemas/re
 
 import { expressRoute } from "../types/express";
 import {
-    createMapReviewDataStandalone, createRatingData, mapReviewPatchDataObject, rawMapReview, rawRating, updateRatingDataConnectDifficulty, updateRatingDataNullDifficulty
+    createMapReviewDataStandalone, createRatingData, mapReviewPatchDataObject, rawMapReview, rawRating, rawReview, updateRatingDataConnectDifficulty, updateRatingDataNullDifficulty
 } from "../types/internal";
 
 
@@ -73,7 +73,7 @@ router.route("/search/map")
             });
 
 
-            const formattedMapReviews = formatMapReviews(rawMapReviews);
+            const formattedMapReviews = await formatMapReviews(rawMapReviews);
 
 
             res.json(formattedMapReviews);
@@ -105,7 +105,7 @@ router.route("/search/user")
             });
 
 
-            const formattedMapReviews = formatMapReviews(rawMapReviews);
+            const formattedMapReviews = await formatMapReviews(rawMapReviews);
 
 
             res.json(formattedMapReviews);
@@ -139,7 +139,7 @@ router.route("/mod/:modID")
             });
 
 
-            const formattedMapReviews = formatMapReviews(rawMapReviews);
+            const formattedMapReviews = await formatMapReviews(rawMapReviews);
 
 
             res.json(formattedMapReviews);
@@ -173,7 +173,7 @@ router.route("/map/:mapID")
             });
 
 
-            const formattedMapReviews = formatMapReviews(rawMapReviews);
+            const formattedMapReviews = await formatMapReviews(rawMapReviews);
 
 
             res.json(formattedMapReviews);
@@ -278,7 +278,7 @@ router.route("/:mapReviewID")
                 displayRatingBool: displayRatingBool,
             });
 
-            if (!valid || (!lengthName && likes === undefined && dislikes === undefined && otherComments === undefined && !displayRatingBool)) {
+            if (!valid || (!lengthName && likes === undefined && dislikes === undefined && otherComments === undefined && displayRatingBool === undefined)) {
                 res.status(400).json("Malformed request body");
                 return;
             }
@@ -321,7 +321,7 @@ router.route("/:mapReviewID")
             });
 
 
-            const formattedMapReview = formatMapReview(rawMapReview);
+            const formattedMapReview = await formatMapReview(rawMapReview);
 
             if (isErrorWithMessage(formattedMapReview)) throw formattedMapReview;
 
@@ -374,16 +374,12 @@ router.use(errorHandler);
 
 export const mapReviewPost = <expressRoute>async function (req, res, next) {    //called from ./reviews.ts
     try {
-        const permission = await checkPermissions(req, [], true, res);
-        if (!permission) return;
-
-
         const reviewID = <number>req.id;
         const mapID = <number>req.body.mapID;
         const lengthName: string = req.body.length;
-        const likes: string | undefined = req.body.likes === null ? undefined : req.body.likes;
-        const dislikes: string | undefined = req.body.dislikes === null ? undefined : req.body.dislikes;
-        const otherComments: string | undefined = req.body.otherComments === null ? undefined : req.body.otherComments;
+        const likes: string | undefined = req.body.likes;
+        const dislikes: string | undefined = req.body.dislikes;
+        const otherComments: string | undefined = req.body.otherComments;
         const displayRatingBool: boolean = req.body.displayRating;
         const quality: number | null = req.body.quality === undefined ? null : req.body.quality;
         const difficultyID: number | undefined = req.body.difficultyID === null ? undefined : req.body.difficultyID;
@@ -392,11 +388,11 @@ export const mapReviewPost = <expressRoute>async function (req, res, next) {    
 
         const valid = validateMapReviewPost({
             mapID: mapID,
-            lengthName: lengthName,
+            length: lengthName,
             likes: likes,
             dislikes: dislikes,
             otherComments: otherComments,
-            displayRatingBool: displayRatingBool,
+            displayRating: displayRatingBool,
             quality: quality,
             difficultyID: difficultyID,
         });
@@ -456,7 +452,21 @@ export const mapReviewPost = <expressRoute>async function (req, res, next) {    
             }
 
 
-            const lengthID = await getLengthID(lengthName);
+            let lengthID: number;
+
+            try {
+                lengthID = await getLengthID(lengthName);
+            }
+            catch (error) {
+                if (error === lengthErrorMessage) {
+                    res.status(400).json(lengthErrorMessage);
+                    res.errorSent = true;
+                    return;
+                }
+                else {
+                    throw error;
+                }
+            }
 
 
             const createMapReviewDataObject: createMapReviewDataStandalone = {
@@ -473,8 +483,8 @@ export const mapReviewPost = <expressRoute>async function (req, res, next) {    
             let rawRating: rawRating;
 
             if (quality || difficultyID) {
-                const mapReviewFromID = <rawMapReview>req.mapReview;
-                const userID = mapReviewFromID.reviews.submittedBy;
+                const reviewFromID = <rawReview>req.review;
+                const userID = reviewFromID.submittedBy;
 
 
                 const createRatingDataObject: createRatingData = {
@@ -574,13 +584,6 @@ export const mapReviewPost = <expressRoute>async function (req, res, next) {    
         }
     }
     catch (error) {
-        if (error === lengthErrorMessage) {
-            res.status(400).json(lengthErrorMessage);
-            res.errorSent = true;
-            return;
-        }
-        else {
-            throw error;
-        }
+        next(error);
     }
 }

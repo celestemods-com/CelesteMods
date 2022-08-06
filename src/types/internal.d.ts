@@ -321,7 +321,7 @@ export interface createReviewData {
   likes?: string;
   dislikes?: string;
   otherComments?: string;
-  mapReviews?: { create: createMapReviewData[] };
+  reviews_maps?: { create: createMapReviewData[] };
 }
 
 
