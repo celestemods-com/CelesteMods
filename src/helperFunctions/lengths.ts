@@ -1,6 +1,11 @@
 import { prisma } from "../middlewaresAndConfigs/prismaClient";
 import { expressRoute } from "../types/express";
+import { map_lengths } from "@prisma/client";
 
+
+
+
+export const lengthErrorMessage = "length does not match the name of any map lengths in the celestemods.com database";
 
 
 
@@ -56,4 +61,26 @@ export const param_lengthOrder = <expressRoute>async function (req, res, next) {
     catch (error) {
         next(error);
     }
+}
+
+
+
+
+export const getLengthID = async function (lengthName: string, lengthObjectArray?: map_lengths[]) {
+    if (!lengthObjectArray || !lengthObjectArray.length) {
+        lengthObjectArray = await prisma.map_lengths.findMany();
+    }
+
+    let lengthID = 0;
+
+    for (const length of lengthObjectArray) {
+        if (length.name === lengthName) {
+            lengthID = length.id;
+            break;
+        }
+    }
+
+    if (lengthID === 0) throw lengthErrorMessage;
+
+    return lengthID;
 }

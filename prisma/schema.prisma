@@ -237,9 +237,9 @@ model ratings {
 
 model reviews {
   id            Int            @id @default(autoincrement()) @db.UnsignedMediumInt
+  modID         Int            @db.UnsignedSmallInt
   timeSubmitted Int
   submittedBy   Int            @db.UnsignedSmallInt
-  modID         Int            @db.UnsignedSmallInt
   likes         String?        @db.VarChar(1000)
   dislikes      String?        @db.VarChar(1000)
   otherComments String?        @db.VarChar(1500)
@@ -247,6 +247,7 @@ model reviews {
   users         users          @relation(fields: [submittedBy], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "reviews_ibfk_1")
   reviews_maps  reviews_maps[]
 
+  @@unique([modID, submittedBy], map: "modAndUser")
   @@index([modID], map: "modID")
   @@index([submittedBy], map: "submittedBy")
 }
@@ -256,9 +257,9 @@ model reviews_maps {
   reviewID          Int         @db.UnsignedMediumInt
   mapID             Int         @db.UnsignedMediumInt
   lengthID          Int         @db.UnsignedTinyInt
-  likes             String      @db.VarChar(500)
-  dislikes          String      @db.VarChar(500)
-  otherComments     String      @db.VarChar(500)
+  likes             String?     @db.VarChar(500)
+  dislikes          String?     @db.VarChar(500)
+  otherComments     String?     @db.VarChar(500)
   displayRatingBool Boolean     @default(false)
   map_lengths       map_lengths @relation(fields: [lengthID], references: [id], onUpdate: Restrict, map: "reviews_maps_ibfk_2")
   maps_ids          maps_ids    @relation(fields: [mapID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "reviews_maps_ibfk_3")

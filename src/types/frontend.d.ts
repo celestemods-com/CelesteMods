@@ -103,3 +103,27 @@ export interface ratingsInfo {
   qualityCount: number;
   difficultyCount: number;
 }
+
+
+export interface formattedReview {
+  id: number;
+  modID: number;
+  submittedBy: number;
+  timeSubmitted: number;
+  likes?: string;
+  dislikes?: string;
+  otherComments?: string;
+  mapReviews?: (formattedMapReview | string)[];
+}
+
+export interface formattedMapReview {
+  id: number;
+  reviewID: number;
+  mapID: number;
+  length: string;
+  likes?: string;
+  dislikes?: string;
+  otherComments?: string;
+  displayRating: boolean;
+  rating?: formattedRating;
+}

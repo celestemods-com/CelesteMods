@@ -1,6 +1,6 @@
 import { prisma } from "../middlewaresAndConfigs/prismaClient";
 
-import { ratings, difficulties } from "@prisma/client";
+import { ratings } from "@prisma/client";
 import { rawRating } from "../types/internal";
 import { formattedRating, ratingsInfo } from "../types/frontend";
 import { isErrorWithMessage, toErrorWithMessage } from "./errorHandling";

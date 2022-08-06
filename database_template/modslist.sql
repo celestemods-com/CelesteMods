@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3002
--- Generation Time: Jun 27, 2022 at 09:04 AM
+-- Generation Time: Aug 06, 2022 at 09:23 PM
 -- Server version: 10.4.21-MariaDB
 -- PHP Version: 8.1.1
 
@@ -343,10 +343,11 @@ CREATE TABLE `ratings` (
 --
 
 INSERT INTO `ratings` (`id`, `mapID`, `submittedBy`, `timeSubmitted`, `quality`, `difficultyID`) VALUES
-(1, 1, 1, 1637616115, 2, 2),
+(1, 1, 1, 1659741293, 2, NULL),
 (2, 1, 5, 1645996515, 4, NULL),
 (3, 34, 1, 1646518420, NULL, 2),
-(7, 1, 2, 1638503655, NULL, 12);
+(7, 1, 2, 1638503655, NULL, 12),
+(8, 2, 1, 1659813745, 4, NULL);
 
 -- --------------------------------------------------------
 
@@ -356,13 +357,22 @@ INSERT INTO `ratings` (`id`, `mapID`, `submittedBy`, `timeSubmitted`, `quality`,
 
 CREATE TABLE `reviews` (
   `id` mediumint(5) UNSIGNED NOT NULL,
+  `modID` smallint(5) UNSIGNED NOT NULL,
   `timeSubmitted` int(11) NOT NULL,
   `submittedBy` smallint(5) UNSIGNED NOT NULL,
-  `modID` smallint(5) UNSIGNED NOT NULL,
   `likes` varchar(1000) DEFAULT NULL,
   `dislikes` varchar(1000) DEFAULT NULL,
   `otherComments` varchar(1500) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `reviews`
+--
+
+INSERT INTO `reviews` (`id`, `modID`, `timeSubmitted`, `submittedBy`, `likes`, `dislikes`, `otherComments`) VALUES
+(1, 1, 1659735160, 5, 'dgadsg awg agsadf dsf sd fwaefadfsafdsafwef f', NULL, 'fdhjksahfkj ashkj fhksdh fkhweioufhiouahfuisdfkjhawekfhiuawefisdaoifjsaiodfijasehfiawe fawej'),
+(2, 1, 1659739566, 1, NULL, NULL, NULL),
+(5, 2, 1659813745, 1, NULL, NULL, 'test');
 
 -- --------------------------------------------------------
 
@@ -375,11 +385,19 @@ CREATE TABLE `reviews_maps` (
   `reviewID` mediumint(5) UNSIGNED NOT NULL,
   `mapID` mediumint(5) UNSIGNED NOT NULL,
   `lengthID` tinyint(5) UNSIGNED NOT NULL,
-  `likes` varchar(500) NOT NULL,
-  `dislikes` varchar(500) NOT NULL,
-  `otherComments` varchar(500) NOT NULL,
+  `likes` varchar(500) DEFAULT NULL,
+  `dislikes` varchar(500) DEFAULT NULL,
+  `otherComments` varchar(500) DEFAULT NULL,
   `displayRatingBool` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `reviews_maps`
+--
+
+INSERT INTO `reviews_maps` (`id`, `reviewID`, `mapID`, `lengthID`, `likes`, `dislikes`, `otherComments`, `displayRatingBool`) VALUES
+(2, 2, 1, 4, NULL, NULL, 'dfjkahdsjkfhakwejhfiouaehoiufhdsaifn usidfah uiwaeiuf auiof ioudh iuofhiowuae hefiuo hiaousfh aweuih fui huif hiaw', 0),
+(3, 5, 2, 3, NULL, NULL, 'dfjkahdsjkfhakwejhfiouaehoiufhdsaifn usidfah uiwaeiuf auiof ioudh iuofhiowuae hefiuo hiaousfh aweuih fui huif hiaw', 0);
 
 -- --------------------------------------------------------
 
@@ -399,7 +417,8 @@ CREATE TABLE `session` (
 --
 
 INSERT INTO `session` (`id`, `sid`, `data`, `expiresAt`) VALUES
-('cl4we6oh200006ofj2k419eqy', 'BigA7dkJSAfSx8WDauTmisuB32iIH3VH', '{\"cookie\":{\"originalMaxAge\":1800000,\"expires\":\"2022-06-27T07:32:39.014Z\",\"secure\":false,\"httpOnly\":true,\"path\":\"/api\",\"sameSite\":\"strict\"},\"refreshCount\":0,\"userID\":20,\"permissions\":[\"\"]}', '2022-06-27 07:32:39');
+('cl6h1v3d60000msfjbko3c537', '9NJW4IU2hvGFrcgpsvJobMFyNw8RxTjK', '{\"cookie\":{\"originalMaxAge\":3000000,\"expires\":\"2022-08-06T00:04:53.698Z\",\"secure\":false,\"httpOnly\":true,\"path\":\"/api\",\"sameSite\":\"strict\"},\"refreshCount\":0,\"userID\":1,\"permissions\":[\"Super_Admin\"]}', '2022-08-06 00:04:53'),
+('cl6i9aguq0000qofj7y19gsva', 'VbuN0GKr2Co_wIDse82eL6JszCsJulcG', '{\"cookie\":{\"originalMaxAge\":3000000,\"expires\":\"2022-08-06T20:12:33.803Z\",\"secure\":false,\"httpOnly\":true,\"path\":\"/api\",\"sameSite\":\"strict\"},\"refreshCount\":0,\"userID\":1,\"permissions\":[\"Super_Admin\"]}', '2022-08-06 20:12:33');
 
 -- --------------------------------------------------------
 
@@ -461,7 +480,7 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `displayName`, `discordID`, `discordUsername`, `discordDiscrim`, `displayDiscord`, `showCompletedMaps`, `timeCreated`, `permissions`, `accountStatus`, `timeDeletedOrBanned`) VALUES
 (1, 'otobot1', '215360124053618688', 'otobot1', '1564', 1, 1, 1636963200, 'Super_Admin', 'Active', NULL),
 (2, 'testName', '9', 'steve', '4675', 1, 0, 1637441076, '', 'Active', NULL),
-(5, 'steve', '5', 'steve', '5555', 0, 0, 1, '', 'Active', NULL),
+(5, 'steve', '5', 'steve', '5555', 0, 0, 1, 'Map_Reviewer', 'Active', NULL),
 (14, 'user14huehuehue', '99', 'steve jobs', '6996', 1, 0, 1637594908, 'Map_Moderator,Golden_Verifier', 'Active', NULL);
 
 -- --------------------------------------------------------
@@ -614,6 +633,7 @@ ALTER TABLE `ratings`
 --
 ALTER TABLE `reviews`
   ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `modAndUser` (`modID`,`submittedBy`),
   ADD KEY `submittedBy` (`submittedBy`),
   ADD KEY `modID` (`modID`);
 
@@ -725,19 +745,19 @@ ALTER TABLE `publishers`
 -- AUTO_INCREMENT for table `ratings`
 --
 ALTER TABLE `ratings`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `reviews`
 --
 ALTER TABLE `reviews`
-  MODIFY `id` mediumint(5) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` mediumint(5) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `reviews_maps`
 --
 ALTER TABLE `reviews_maps`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `tech_list`
