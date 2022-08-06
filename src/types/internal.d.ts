@@ -1,6 +1,6 @@
 import {
   users, publishers, golden_players, tech_list, tech_videos, difficulties, mods_ids, mods_details, mods_details_type, maps_ids, maps_details, maps_details_side,
-  map_lengths, maps_to_tech, ratings, users_to_maps
+  map_lengths, maps_to_tech, ratings, reviews, reviews_maps, users_to_maps
 } from ".prisma/client";
 import { permissions } from "./frontend";
 
@@ -31,7 +31,7 @@ export interface connectMapsData {
 }
 
 interface maps_idsConnectionData {
-  
+
 }
 
 
@@ -286,10 +286,81 @@ export interface rawRating extends ratings {
   difficulties: difficulties | null;
 }
 
+interface updateRatingDataBase {
+  timeSubmitted?: number,
+  quality: number | null,
+}
+
+export interface updateRatingDataConnectDifficulty extends updateRatingDataBase {
+  difficulties: { connect: { id: number } },
+}
+
+export interface updateRatingDataNullDifficulty extends updateRatingDataBase {
+  difficultyID: null,
+}
+
 export interface createRatingData {
   maps_ids: { connect: { id: number } },
   users: { connect: { id: number } },
   timeSubmitted: number,
-  quality?: number,
+  quality: number | null,
   difficulties?: { connect: { id: number } },
+}
+
+
+
+
+export interface rawReview extends reviews {
+  reviews_maps: rawMapReview[];
+}
+
+export interface createReviewData {
+  mods_ids: { connect: { id: number } };
+  timeSubmitted: number;
+  users: { connect: { id: number } },
+  likes?: string;
+  dislikes?: string;
+  otherComments?: string;
+  reviews_maps?: { create: createMapReviewData[] };
+}
+
+
+
+
+export interface rawMapReview extends reviews_maps {
+  map_lengths: map_lengths;
+  reviews: { submittedBy: number };
+}
+
+export interface mapReviewPatchDataObject {
+  map_lengths?: { connect: { id: number } };
+  likes?: string | null;
+  dislikes?: string | null;
+  otherComments?: string | null;
+  displayRatingBool?: boolean;
+  reviews: { update: { timeSubmitted: number } };
+}
+
+export interface createMapReviewData {
+  maps_ids: { connect: { id: number } };
+  map_lengths: { connect: { id: number } };
+  likes?: string | null;
+  dislikes?: string | null;
+  otherComments?: string | null;
+  displayRatingBool: boolean;
+}
+
+export interface createMapReviewDataStandalone extends createMapReviewData {
+  reviews: { connect: { id: number } };
+}
+
+export interface jsonCreateMapReviewWithReview {
+  mapID: number;
+  length: string;
+  likes?: string;
+  dislikes?: string;
+  otherComments?: string;
+  displayRating: boolean;
+  quality: number | null;
+  difficultyID?: number;
 }

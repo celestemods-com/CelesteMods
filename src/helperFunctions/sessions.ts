@@ -15,6 +15,7 @@ export const noUserWithDiscordIdErrorMessage = "No user found matching given dis
 
 export const adminPermsArray: permissions[] = ["Super_Admin", "Admin"];
 export const mapStaffPermsArray: permissions[] = ["Super_Admin", "Admin", "Map_Moderator"];
+export const mapReviewersPermsArray: permissions[] = ["Super_Admin", "Admin", "Map_Moderator", "Map_Reviewer"];
 export const goldenStaffPermsArray: permissions[] = ["Super_Admin", "Admin", "Golden_Verifier"];
 
 
