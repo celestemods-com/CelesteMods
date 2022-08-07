@@ -76,14 +76,14 @@ apiRouter_parent.use(errorHandler);
 
 apiRouter_v1.use(function (req, res, next) {
     try {
+        const safeOrigin = "https://celestemods.com";
         let oneof = false;
+
+
         if (req.headers.origin) {
-            res.header("Access-Control-Allow-Origin", req.headers.origin);
+            res.header("Access-Control-Allow-Origin", safeOrigin);
 
             oneof = true;
-
-
-            const safeOrigin = "https://celestemods.com";
 
             if (process.env.NODE_ENV === "dev" || req.headers.origin === safeOrigin) {
                 res.header("Access-Control-Allow-Credentials", "true");
