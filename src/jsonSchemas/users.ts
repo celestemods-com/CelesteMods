@@ -17,6 +17,8 @@ const postSchema = {
         showCompletedMaps: { type: "boolean" },
         completedMapIDs: {
             type: "array",
+            minItems: 1,
+            maxItems: 100000,
             items: {
                 anyOf: [{
                     type: "integer",

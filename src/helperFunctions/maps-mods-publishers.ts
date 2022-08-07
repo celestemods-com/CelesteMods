@@ -7,6 +7,8 @@ import { difficulties, map_lengths, mods_details_type, publishers, users } from 
 import { checkPermissions, mapStaffPermsArray } from "./sessions";
 import { getLengthID, lengthErrorMessage } from "./lengths";
 
+import { maxParentDifficultiesPerMod } from "../jsonSchemas/maps-mods-publishers";
+
 import {
     rawMod, rawMap, createParentDifficultyForMod, createChildDifficultyForMod, jsonCreateMapWithMod, mapIdCreationObjectForMod,
     mapToTechCreationObject, defaultDifficultyForMod, publisherConnectionObject, publisherCreationObject, rawPublisher
@@ -154,7 +156,7 @@ export const getPublisherCreateOrConnectObject = async function (res: Response, 
 
 
 
-export const getDifficultyArrays = function (difficultyNames: (string | string[])[], highestCurrentDifficultyID: number) {
+export const getDifficultyArrays = function (res: Response, difficultyNames: (string | string[])[], highestCurrentDifficultyID: number) {
     try {
         let difficultyNamesArray: { name: string }[] = [];
         let difficultiesDataArray: createParentDifficultyForMod[] = [];
@@ -164,6 +166,7 @@ export const getDifficultyArrays = function (difficultyNames: (string | string[]
 
         for (let parentDifficultyIndex = 0; parentDifficultyIndex < difficultyNames.length; parentDifficultyIndex++) {
             const parentDifficultyStringOrArray = difficultyNames[parentDifficultyIndex];
+
 
             if (typeof parentDifficultyStringOrArray === "string") {
                 highestCurrentDifficultyID++;
@@ -181,10 +184,18 @@ export const getDifficultyArrays = function (difficultyNames: (string | string[]
                 continue;
             }
 
+
             modHasSubDifficultiesBool = true;
             const childDifficultyArray: createChildDifficultyForMod[] = [];
 
-            for (let childDifficultyIndex = 1; childDifficultyIndex < parentDifficultyStringOrArray.length; childDifficultyIndex++) {
+            const parentDifficultyArrayLength = parentDifficultyStringOrArray.length;
+            if (parentDifficultyArrayLength > maxParentDifficultiesPerMod) {
+                res.status(400).json(`The maximum allowed number of parent difficulties in a single mod is ${maxParentDifficultiesPerMod}.`);
+                res.errorSent = true;
+                return;
+            }
+
+            for (let childDifficultyIndex = 1; childDifficultyIndex < parentDifficultyArrayLength; childDifficultyIndex++) {
                 const childDifficultyName = parentDifficultyStringOrArray[childDifficultyIndex];
                 highestCurrentDifficultyID++;
 
@@ -212,6 +223,7 @@ export const getDifficultyArrays = function (difficultyNames: (string | string[]
 
             difficultyNamesArray.push({ name: parentDifficultyStringOrArray[0] });
         }
+
 
         const returnArray: ({ name: string }[] | createParentDifficultyForMod[] | boolean | number[])[]
             = [difficultyNamesArray, difficultiesDataArray, modHasSubDifficultiesBool, modDifficultyIDsArray];

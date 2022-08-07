@@ -174,9 +174,12 @@ modsRouter.route("/")
                     });
 
 
-                    const difficultyArrays = getDifficultyArrays(difficultyNames, difficultyWithHighestID[0].id);
+                    const difficultyArrays = getDifficultyArrays(res, difficultyNames, difficultyWithHighestID[0].id);
 
                     if (isErrorWithMessage(difficultyArrays)) throw difficultyArrays;
+                    if (res.errorSent) return;
+                    if (!difficultyArrays) throw "difficultyArrays is undefined";
+                    
 
                     difficultyNamesArray = <difficultyNamesForModArrayElement[]>difficultyArrays[0];
                     difficultiesCreationArray = <createParentDifficultyForMod[]>difficultyArrays[1];
@@ -295,7 +298,7 @@ modsRouter.route("/")
             });
 
 
-            if (rawModAndStatus && res.errorSent) return;
+            if (res.errorSent) return;
 
             if (!rawModAndStatus) throw "no rawModAndStatus";
 

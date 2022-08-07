@@ -20,7 +20,8 @@ const postSchema = {
         videos: {
             type: "array",
             uniqueItems: true,
-            minItems: 0,
+            minItems: 1,
+            maxItems: 10,
             items: {
                 anyOf: [{
                     type: "string",
@@ -57,6 +58,7 @@ const patchSchema = {
             type: "array",
             uniqueItems: true,
             minItems: 0,
+            maxItems: 10,
             items: {
                 anyOf: [{
                     type: "string",

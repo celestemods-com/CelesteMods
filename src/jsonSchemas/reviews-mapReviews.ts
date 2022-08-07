@@ -1,5 +1,6 @@
 import ajvModule from "ajv";
 import { intMaxSizes } from "./integerSizes";
+import { maxMapsPerMod } from "./maps-mods-publishers";
 import { maxQuality } from "./ratings";
 
 
@@ -182,6 +183,7 @@ const reviewPostSchema = {
                     type: "array",
                     uniqueItems: true,
                     minItems: 1,
+                    maxItems: maxMapsPerMod,
                     items: { $ref: "mapReviewPostSchema" },
                 },
             },

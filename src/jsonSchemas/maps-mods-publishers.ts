@@ -3,6 +3,12 @@ import { intMaxSizes } from "./integerSizes";
 
 
 
+export const maxMapsPerMod = 100;
+export const maxParentDifficultiesPerMod = 15;
+export const maxChildDifficultiesPerParentDifficulty = 10;
+
+
+
 
 const mapPostSchema = {
     $id: "mapPostSchema",
@@ -42,6 +48,8 @@ const mapPostSchema = {
         techAny: {
             type: "array",
             uniqueItems: true,
+            minItems: 1,
+            maxItems: 500,
             items: {
                 type: "string",
                 minLength: 1,
@@ -51,6 +59,8 @@ const mapPostSchema = {
         techFC: {
             type: "array",
             uniqueItems: true,
+            minItems: 1,
+            maxItems: 500,
             items: {
                 type: "string",
                 minLength: 1,
@@ -220,6 +230,8 @@ const mapPatchSchema = {
         techAny: {
             type: "array",
             uniqueItems: true,
+            minItems: 1,
+            maxItems: 500,
             items: {
                 type: "string",
                 minLength: 1,
@@ -229,6 +241,8 @@ const mapPatchSchema = {
         techFC: {
             type: "array",
             uniqueItems: true,
+            minItems: 1,
+            maxItems: 500,
             items: {
                 type: "string",
                 minLength: 1,
@@ -417,6 +431,8 @@ const modPostSchema = {
         difficultyNames: {
             type: "array",
             uniqueItems: true,
+            minItems: 1,
+            maxItems: maxParentDifficultiesPerMod,
             items: {
                 anyOf: [
                     {
@@ -428,6 +444,7 @@ const modPostSchema = {
                         type: "array",
                         uniqueItems: true,
                         minItems: 1,
+                        maxItems: maxChildDifficultiesPerParentDifficulty,
                         items: {
                             anyOf: [{
                                 type: "string",
@@ -443,6 +460,7 @@ const modPostSchema = {
             type: "array",
             uniqueItems: true,
             minItems: 1,
+            maxItems: maxMapsPerMod,
             items: { $ref: "mapPostSchema" },
         },
     },
