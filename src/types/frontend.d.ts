@@ -1,4 +1,5 @@
 import { difficulties } from ".prisma/client";
+import { mods_details_type } from ".prisma/client";
 
 
 export interface formattedSession {
@@ -40,7 +41,7 @@ export interface formattedTech {
 export interface formattedMod {
   id: number;
   revision: number;
-  type: string;
+  type: mods_details_type;
   name: string;
   publisherID: number;
   publisherGamebananaID?: number;
