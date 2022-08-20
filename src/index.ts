@@ -77,17 +77,20 @@ apiRouter_parent.use(errorHandler);
 apiRouter_v1.use(function (req, res, next) {
     try {
         const safeOrigin = "https://celestemods.com";
+        const originHeader = req.headers.origin;
         let oneof = false;
 
 
-        if (req.headers.origin) {
-            res.header("Access-Control-Allow-Origin", safeOrigin);
-
-            oneof = true;
-
-            if (process.env.NODE_ENV === "dev" || req.headers.origin === safeOrigin) {
+        if (originHeader) {
+            if (process.env.NODE_ENV === "dev" || originHeader === safeOrigin) {
+                res.header("Access-Control-Allow-Origin", originHeader);
                 res.header("Access-Control-Allow-Credentials", "true");
             }
+            else {
+                res.header("Access-Control-Allow-Origin", safeOrigin);
+            }
+
+            oneof = true;
         }
         if (req.headers["access-control-request-method"]) {
             res.header("Access-Control-Allow-Methods", req.headers["access-control-request-method"]);
@@ -109,7 +112,6 @@ apiRouter_v1.use(function (req, res, next) {
             res.sendStatus(200);
         }
         else {
-            //req.openCors = true;
             next();
         }
     }
