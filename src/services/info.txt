@@ -1,0 +1,2 @@
+This directory is for API slices defined using Redux Toolkit's Query API.
+This API wasn't a good fit for consuming the main celestemods.com API, but it may be useful for consuming others.

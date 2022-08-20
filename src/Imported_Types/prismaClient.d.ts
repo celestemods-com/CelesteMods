@@ -1,0 +1,1 @@
+export type mods_details_type = "Normal" | "Collab" | "Contest" | "Lobby"
