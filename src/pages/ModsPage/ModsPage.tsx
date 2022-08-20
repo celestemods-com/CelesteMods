@@ -1,4 +1,5 @@
 import React from "react";
+import "./ModsPage";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchMods, isModForTable__singleEntry, selectModsForTable } from "../../features/mods/modsSlice";
 //import { formattedMod } from "../../Imported_Types/frontend";
