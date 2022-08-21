@@ -121,7 +121,7 @@ const selectModsState = (state: RootState) => {
 
 
 
-interface modForTable {
+export interface modForTable {
     id: number;
     entries: (modForTable__singleEntry | modForTable__nestedEntry)[];
 }
