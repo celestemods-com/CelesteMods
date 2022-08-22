@@ -1,1 +1,1 @@
-export const cmlBaseUri = "http://127.0.0.1:3001/api/v1"//"https://celestemods.com/api/v1";
+export const cmlBaseUri = process.env.NODE_ENV === "development" ? "http://127.0.0.1:3001/api/v1" : "https://celestemods.com/api/v1";

@@ -1,29 +1,10 @@
-import { useEffect, useState } from "react";
 import "./ModsPage.scss";
-import { useSelector, useDispatch } from "react-redux";
-import { fetchMods, selectModsForTable } from "../../features/mods/modsSlice";
-import ModsTable from "./components/ModsTable";
+import ModsTable from "./ModsTable/ModsTable";
 
 
 
 
 export default function ModsPage() {
-    const storedModsForTable = useSelector(selectModsForTable);
-    const [modsForTable, setModsForTable] = useState(storedModsForTable ? storedModsForTable : null);
-
-    useEffect(() => {
-        setModsForTable(storedModsForTable);
-    }, [storedModsForTable]);
-
-
-    const dispatch = useDispatch();
-
-    useEffect(() => {//@ts-ignore
-        dispatch(fetchMods());
-    }, [dispatch]);
-
-
-
     try {
         return (
             <div>
@@ -40,7 +21,7 @@ export default function ModsPage() {
                         </p>
                     </div>
                 </header>
-                {ModsTable(modsForTable)}
+                <ModsTable />
             </div>
         );
     }
