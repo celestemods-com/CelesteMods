@@ -10,23 +10,29 @@ export default function ModsTableHeader() {
             {modTableColumnNames.map((entry) => {
                 if (isModTableColumnNameObjectsType__singleEntry(entry)) {
                     return (
-                        <h2 key={entry.cssName} className={`table__header-item mod-column__${entry.cssName}`}>
-                            {entry.headerName}
-                        </h2>
+                        <div key={entry.cssName} className={`table__header-item table-item__flex mod-column__${entry.cssName}`}>
+                            <h3 className="table-item__flex-child">
+                                {entry.headerName}
+                            </h3>
+                        </div>
                     );
                 }
                 else {
                     return (
                         <div key={entry.name} className="table__multi-column">
-                            <h2 className="table__header-item table__multi-column-title">
-                                {entry.name}
-                            </h2>
+                            <div className="table__header-item table-item__flex table__multi-column__title">
+                                <h2 className=" table-item__flex-child">
+                                    {entry.name}
+                                </h2>
+                            </div>
                             <div className="table__multi-column__columns">
                                 {entry.entries.map((entry_inner) => {
                                     return (
-                                        <h3 key={entry_inner.cssName} className={`table__header-item table__multi-column__columns-title mod-column__${entry_inner.cssName}`}>
-                                            {entry_inner.headerName}
-                                        </h3>
+                                        <div key={entry_inner.cssName} className={`table__header-item table-item__flex table__multi-column__columns-title mod-column__${entry_inner.cssName}`}>
+                                            <h3 className="table-item__flex-child">
+                                                {entry_inner.headerName}
+                                            </h3>
+                                        </div>
                                     );
                                 })}
                             </div>

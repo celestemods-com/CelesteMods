@@ -1,0 +1,102 @@
+.page-header {
+    position: relative;
+
+    .header__column {
+        text-align: center;
+        padding: 50px 0;
+        height: 45px;
+    }
+}
+
+.header__column-right {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+
+.table, .table__multi-column, .table__items {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+}
+
+.table {
+    overflow-x: auto;
+}
+
+.table__header, .table__item, .table__multi-column__columns {
+    display: flex;
+}
+
+.table-item-child {
+    text-align: center;
+}
+
+.table-item__flex {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.mod-column__mod-name {
+    $width: 250px;
+    
+    width: $width;
+    min-width: $width;
+}
+
+.mod-column__map-count {
+    $width: 70px;
+    
+    width: $width;
+    min-width: $width;
+}
+
+.mod-column__mod-type {
+    $width: 80px;
+    
+    width: $width;
+    min-width: $width;
+}
+
+.mod-column__quality {
+    margin: 0 0 0 10px;
+    
+    $width: 100px;
+    
+    width: $width;
+    min-width: $width;
+}
+
+.mod-column__community-difficulty {
+    margin: 0 10px 0 0;
+
+    $width: 115px;
+    
+    width: $width;
+    min-width: $width;
+}
+
+.mod-column__tech {
+    $width: 200px;
+    
+    width: $width;
+    min-width: $width;
+}
+
+.mod-column__cml-difficulty {
+    $width: 140px;
+
+    width: $width;
+    min-width: $width;
+}
+
+.mod-column__reviews {
+    position: relative;
+    width: 100%;
+    min-width: 140px;
+}

@@ -8,17 +8,16 @@ export default function ModsPage() {
     try {
         return (
             <div>
-                <header className="header">
-                    <div className="header__column  header__column-left" />
+                <header className="page-header">
                     <div className="header__column  header__column-center">
                         <h1 className="page__title">
                             Mods
                         </h1>
                     </div>
                     <div className="header__column header__column-right">
-                        <p className="search">
+                        <div className="search">
                             Search for mods
-                        </p>
+                        </div>
                     </div>
                 </header>
                 <ModsTable />

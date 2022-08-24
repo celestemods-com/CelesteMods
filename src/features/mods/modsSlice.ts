@@ -368,7 +368,7 @@ export const modTableColumnNames = [
         cssName: modTableColumnCssNames[5],
     },
     {
-        headerName: "CML/SC2020 Difficulty",
+        headerName: "CML Difficulty",
         cssName: modTableColumnCssNames[6],
     },
     {
