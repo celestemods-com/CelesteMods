@@ -1,4 +1,3 @@
-import "../../ModsPage.scss";
 import { isModTableColumnNameObjectsType__singleEntry, modTableColumnNames } from "../../../../features/mods/modsSlice";
 
 

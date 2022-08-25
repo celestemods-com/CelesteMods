@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import "../ModsPage.scss";
 import { selectModsForTable, fetchMods } from "../../../features/mods/modsSlice";
 import { useSelector, useDispatch } from "react-redux";
 import ModsTableHeader from "./components/ModsTableHeader";

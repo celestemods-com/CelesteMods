@@ -1,4 +1,3 @@
-import "../../ModsPage.scss";
 import { isModForTable__singleEntry, modForTable, modForTable__entry, modsSlice, selectModsForTable, selectModTableItemExpanded } from "../../../../features/mods/modsSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../reduxApp/store";
