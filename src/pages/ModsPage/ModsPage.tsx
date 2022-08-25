@@ -7,7 +7,7 @@ import ModsTable from "./ModsTable/ModsTable";
 export default function ModsPage() {
     try {
         return (
-            <div>
+            <div className="page">
                 <header className="page-header">
                     <div className="header__column  header__column-center">
                         <h1 className="page__title">

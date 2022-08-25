@@ -1,3 +1,8 @@
+.page {
+    padding: 0 0 0 200px;
+}
+
+
 .page-header {
     position: relative;
 
@@ -17,7 +22,9 @@
 }
 
 
-.table, .table__multi-column, .table__items {
+.table,
+.table__multi-column,
+.table__items {
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
@@ -25,65 +32,87 @@
 
 .table {
     overflow-x: auto;
+
+    border-width: 1px;
+    border-style: solid;
+    border-color: black;
 }
 
-.table__header, .table__item, .table__multi-column__columns {
+.table__header,
+.table__item,
+.table__multi-column__columns {
     display: flex;
 }
 
-.table-item-child {
-    text-align: center;
+.table__header {
+    h2, h3 {
+        padding: 5px 0;
+    }
 }
 
-.table-item__flex {
+.table__item p {
+    padding: 10px 0;
+}
+
+.table__item-child {
+    padding: 0 5px;
+}
+
+.table__header .table__item__flex {
+    padding: 0 5px;
+}
+
+.table__item__flex {
     display: flex;
     justify-content: center;
     align-items: center;
+
+    $top-bottom-border-width: 1px;
+    $side-border-width: 1px;
+    border-width: $top-bottom-border-width $side-border-width;
+    border-style: solid;
+    border-color: black;
 }
 
 
 .mod-column__mod-name {
     $width: 250px;
-    
+
     width: $width;
     min-width: $width;
 }
 
 .mod-column__map-count {
     $width: 70px;
-    
+
     width: $width;
     min-width: $width;
 }
 
 .mod-column__mod-type {
     $width: 80px;
-    
+
     width: $width;
     min-width: $width;
 }
 
 .mod-column__quality {
-    margin: 0 0 0 10px;
-    
     $width: 100px;
-    
+
     width: $width;
     min-width: $width;
 }
 
 .mod-column__community-difficulty {
-    margin: 0 10px 0 0;
-
     $width: 115px;
-    
+
     width: $width;
     min-width: $width;
 }
 
 .mod-column__tech {
     $width: 200px;
-    
+
     width: $width;
     min-width: $width;
 }
