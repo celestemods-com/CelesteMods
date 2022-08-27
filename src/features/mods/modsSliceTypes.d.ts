@@ -1,6 +1,6 @@
 import { mods_details_type } from "../../Imported_Types/prismaClient";
 
-export type requestStatus = "idle" | "loading" | "rejected";
+export type requestStatus = "notLoaded" | "loading" | "loaded" | "rejected";
 
 
 export interface modState {

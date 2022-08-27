@@ -11,14 +11,13 @@ import {
 import { formattedMod } from "../../Imported_Types/frontend";
 
 //TODO: memoize selectors with createSelector() from RTK
-//TODO: resolve the //@ts-ignore
 //TODO: refactor selectModsState so it accepts other selectors as a parameter
 
 
 
 
 const initialState: modsState = {
-    status: "idle",
+    status: "notLoaded",
     sortColumn: "mod-name",
     sortDirection: "Desc",
     entities: {},
@@ -44,7 +43,7 @@ export const modsSlice = createSlice({
             state.entities[id].modTable.expanded = !state.entities[id].modTable.expanded;
         },
         setModTableItemExpanded(state, action: setModTableItemBoolActions) {
-            const {id, bool} = action.payload;
+            const { id, bool } = action.payload;
             state.entities[id].modTable.expanded = bool;
         },
         toggleModTableItemHidden(state, action: toggleModTableItemBoolActions) {
@@ -52,7 +51,7 @@ export const modsSlice = createSlice({
             state.entities[id].modTable.hidden = !state.entities[id].modTable.hidden;
         },
         setModTableItemHidden(state, action: setModTableItemBoolActions) {
-            const {id, bool} = action.payload;
+            const { id, bool } = action.payload;
             state.entities[id].modTable.hidden = bool;
         },
     },
@@ -94,7 +93,7 @@ export const modsSlice = createSlice({
 
 
                 state.entities = newEntities;
-                state.status = "idle";
+                state.status = "loaded";
             })
             .addCase(fetchMods.rejected, (state, _action) => {
                 state.status = "rejected";
@@ -105,18 +104,28 @@ export const modsSlice = createSlice({
 
 
 
-export const fetchMods = createAsyncThunk("mods", async () => {
-    const url = `${cmlBaseUri}/mods`;
+export const fetchMods = createAsyncThunk("mods",
+    async () => {
+        const url = `${cmlBaseUri}/mods`;
 
-    const response: AxiosResponse<formattedMod[][]> = await axios.get(url);
+        const response: AxiosResponse<formattedMod[][]> = await axios.get(url);
 
-    return response.data;
-})
+        return response.data;
+    },
+    {
+        condition: (_args, { getState }) => {
+            const { mods } = getState() as RootState;
+            const fetchStatus = mods.status;
+
+            if (fetchStatus === "loading") return false;  //if a request has already been dispatched, abort the thunk before execution
+        }
+    }
+)
 
 
 
 
-export const selectModsState = (state: RootState) => {
+export const selectModsEntitiesState = (state: RootState) => {
     return state.mods.entities;
 }
 
@@ -124,7 +133,7 @@ export const selectModsState = (state: RootState) => {
 
 
 export const selectModTableItemExpanded = (rootState: RootState, id: number) => {
-    const state = selectModsState(rootState);
+    const state = selectModsEntitiesState(rootState);
 
     return state[id].modTable.expanded;
 }
@@ -133,7 +142,7 @@ export const selectModTableItemExpanded = (rootState: RootState, id: number) => 
 
 
 export const selectModsForTable = (rootState: RootState) => {
-    const state = selectModsState(rootState);
+    const state = selectModsEntitiesState(rootState);
 
     return Object.entries(state).map(([_idString, mod]) => getModStateForTable(mod));
 }
@@ -142,7 +151,7 @@ export const selectModsForTable = (rootState: RootState) => {
 
 
 export const selectModForTable = (rootState: RootState, id: number) => {
-    const state = selectModsState(rootState);
+    const state = selectModsEntitiesState(rootState);
     const mod = state[id];
 
     return getModStateForTable(mod);

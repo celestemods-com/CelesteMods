@@ -15,7 +15,7 @@ export function ModsTable() {
     const dispatch = useAppDispatch();
 
 
-    useEffect(() => {//@ts-ignore
+    useEffect(() => {
         dispatch(fetchMods());
     }, [dispatch]);
 
