@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../reduxApp/store";
 import axios, { AxiosResponse } from "axios";
 
-import { getModState, getModStateForTable } from "./modsSliceHelpers";
+import { getModStateForTable } from "./modsSliceHelpers";
 import { getCurrentTime } from "../../utils/utils";
 import { cmlBaseUri } from "../../constants";
 
@@ -10,6 +10,7 @@ import {
     modsState, setModTableSortColumnAction, setModTableSortDirectionAction, toggleModTableItemBoolActions, setModTableItemBoolActions, modEntities, modTableItemState
 } from "./modsSliceTypes";
 import { formattedMod } from "../../Imported_Types/frontend";
+import { mapsSlice } from "../maps/mapsSlice";
 
 //TODO: memoize selectors with createSelector() from RTK
 //TODO: refactor selectModsState so it accepts other selectors as a parameter
@@ -62,7 +63,7 @@ export const modsSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            .addCase(fetchMods.pending, (state, _action) => {
+            .addCase(fetchMods.pending, (state) => {
                 state.status.fetchStatus = "loading";
             })
             .addCase(fetchMods.fulfilled, (state, action) => {
@@ -80,9 +81,6 @@ export const modsSlice = createSlice({
                     const id = fetchedMod.id;
 
 
-                    const modState = getModState(fetchedMod);
-
-
                     let modTableState: modTableItemState;
 
                     if (oldEntities.hasOwnProperty(id.toString())) {
@@ -97,7 +95,7 @@ export const modsSlice = createSlice({
 
 
                     newEntities[id] = {
-                        modState: modState,
+                        modState: fetchedMod,
                         modTable: modTableState,
                     }
                 });
@@ -107,7 +105,7 @@ export const modsSlice = createSlice({
                 state.status.fetchStatus = "loaded";
                 state.status.timeFetched = currentTime;
             })
-            .addCase(fetchMods.rejected, (state, _action) => {
+            .addCase(fetchMods.rejected, (state) => {
                 state.status.fetchStatus = "rejected";
             });
     },
@@ -117,12 +115,27 @@ export const modsSlice = createSlice({
 
 
 export const fetchMods = createAsyncThunk("mods",
-    async () => {
-        const url = `${cmlBaseUri}/mods`;
+    async (_isInitialLoad: boolean, { dispatch }) => {
+        const mapsSliceActions = mapsSlice.actions;
+        try {
+            dispatch(mapsSliceActions.setSliceFetch_loading);
 
-        const response: AxiosResponse<formattedMod[][]> = await axios.get(url);
 
-        return response.data;
+            const url = `${cmlBaseUri}/mods`;
+
+            const response: AxiosResponse<formattedMod[][]> = await axios.get(url);
+
+            const data = response.data;
+
+
+            dispatch(mapsSliceActions.setSliceFetch_fulfilledByMods(data));
+
+            return data;
+        }
+        catch (error) {
+            dispatch(mapsSliceActions.setSliceFetch_rejected);
+            throw error;
+        }
     },
     {
         condition: (isInitialLoad: boolean, { getState }) => {

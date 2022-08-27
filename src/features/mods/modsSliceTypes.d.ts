@@ -1,27 +1,19 @@
 import { mods_details_type } from "../../Imported_Types/prismaClient";
-
-export type fetchStatus = "notLoaded" | "loading" | "loaded" | "rejected";
-
-interface status {
-    fetchStatus: fetchStatus,
-    timeFetched: number,
-}
-
-type requestStatuses = { [key: number]: status };
+import { sliceStatus, requestStatuses } from "../../utils/commonTypes";
 
 
 export interface modState {
-    id: number,
-    revision: number,
-    type: mods_details_type,
-    name: string,
-    publisherID: number,
-    contentWarning: boolean,
-    notes?: string,
-    shortDescription: string,
-    longDescription?: string,
-    gamebananaModID?: number,
-    approved: boolean,
+    id: number;
+    revision: number;
+    type: mods_details_type;
+    name: string;
+    publisherID: number;
+    contentWarning: boolean;
+    notes?: string;
+    shortDescription: string;
+    longDescription?: string;
+    gamebananaModID?: number;
+    approved: boolean;
     /*timeSubmitted: number;
     submittedBy: number;
     timeApproved: number;
@@ -29,8 +21,8 @@ export interface modState {
 }
 
 export type modTableItemState = {
-    expanded: boolean,
-    hidden: boolean,
+    expanded: boolean;
+    hidden: boolean;
 }
 
 export type mod = {
@@ -42,16 +34,16 @@ export type modEntities = {
     [key: number]: mod,
 }
 
+export interface modsState {
+    status: sliceStatus;
+    requests: requestStatuses;
+    sortColumn: modTableColumnCssNamesType;
+    sortDirection: modTableSortDirection;
+    entities: modEntities;
+}
+
 
 export type modTableSortDirection = "Asc" | "Desc";
-
-export interface modsState {
-    status: status,
-    requests: requestStatuses,
-    sortColumn: modTableColumnCssNamesType,
-    sortDirection: modTableSortDirection,
-    entities: modEntities,
-}
 
 export interface setModTableSortColumnAction {
     payload: modTableColumnCssNamesType;

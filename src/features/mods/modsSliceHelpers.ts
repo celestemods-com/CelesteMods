@@ -1,29 +1,10 @@
 import { modTableColumnNames } from "./modsSliceConstants";
+
 import {
-    modState, mod, modForTable, modForTable__singleEntry, modForTable__entry, modTableColumnNameObjectsType, modTableColumnNameObjectsType__singleEntry
+    mod, modForTable, modForTable__singleEntry, modForTable__entry, modTableColumnNameObjectsType, modTableColumnNameObjectsType__singleEntry
 } from "./modsSliceTypes";
-import { formattedMod } from "../../Imported_Types/frontend";
 
 
-
-
-export const getModState = (mod: formattedMod): modState => {
-    const modState: modState = {
-        id: mod.id,
-        revision: mod.revision,
-        type: mod.type,
-        name: mod.name,
-        publisherID: mod.publisherID,
-        contentWarning: mod.contentWarning,
-        notes: mod.notes,
-        shortDescription: mod.shortDescription,
-        longDescription: mod.longDescription,
-        gamebananaModID: mod.gamebananaModID,
-        approved: mod.approved,
-    };
-
-    return modState;
-}
 
 
 export const getModStateForTable = (mod: mod) => {
