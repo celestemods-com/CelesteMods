@@ -1,4 +1,4 @@
-import { useDispatch, useSelector } from "react-redux";
+import { useAppDispatch, useAppSelector } from "../../../../reduxApp/hooks";
 import { RootState } from "../../../../reduxApp/store";
 
 import { modsSlice, selectModsForTable, selectModTableItemExpanded } from "../../../../features/mods/modsSlice";
@@ -10,7 +10,7 @@ import { modForTable, modForTable__entry } from "../../../../features/mods/modsS
 
 
 export function ModTableItems() {
-    const modStates = useSelector(selectModsForTable);
+    const modStates = useAppSelector(selectModsForTable);
 
 
     return (
@@ -24,9 +24,9 @@ export function ModTableItems() {
 
 
 const ModItem = (modState: modForTable) => {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const id = modState.id;
-    const isExpanded = useSelector((rootState: RootState) => selectModTableItemExpanded(rootState, id))
+    const isExpanded = useAppSelector((rootState: RootState) => selectModTableItemExpanded(rootState, id))
 
 
     const toggleExpanded = () => dispatch(modsSlice.actions.toggleModTableItemExpanded(id));

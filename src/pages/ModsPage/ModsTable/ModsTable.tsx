@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useAppSelector, useAppDispatch } from "../../../reduxApp/hooks";
 
 import { selectModsForTable, fetchMods } from "../../../features/mods/modsSlice";
 
@@ -12,7 +12,7 @@ import { ModTableItems } from "./components/ModTableItems";
 
 
 export function ModsTable() {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
 
 
     useEffect(() => {//@ts-ignore
@@ -21,7 +21,7 @@ export function ModsTable() {
 
 
 
-    const modStates = useSelector(selectModsForTable);
+    const modStates = useAppSelector(selectModsForTable);
 
 
     if (!modStates || !modStates.length) {
