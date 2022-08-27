@@ -3,6 +3,7 @@ import { RootState } from "../../reduxApp/store";
 import axios, { AxiosResponse } from "axios";
 
 import { getModState, getModStateForTable } from "./modsSliceHelpers";
+import { getCurrentTime } from "../../utils/utils";
 import { cmlBaseUri } from "../../constants";
 
 import {
@@ -17,7 +18,11 @@ import { formattedMod } from "../../Imported_Types/frontend";
 
 
 const initialState: modsState = {
-    status: "notLoaded",
+    status: {
+        fetchStatus: "notLoaded",
+        timeFetched: 0,
+    },
+    requests: {},
     sortColumn: "mod-name",
     sortDirection: "Desc",
     entities: {},
@@ -58,11 +63,17 @@ export const modsSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(fetchMods.pending, (state, _action) => {
-                state.status = "loading";
+                state.status.fetchStatus = "loading";
             })
             .addCase(fetchMods.fulfilled, (state, action) => {
                 const oldEntities = state.entities;
                 const newEntities: modEntities = {};
+                const lastFetchTime = state.status.timeFetched;
+                const currentTime = getCurrentTime();
+
+
+                if (lastFetchTime >= currentTime - 500) return;  //if fetched in the last 500ms, don't update state
+
 
                 action.payload.forEach(modArray => {
                     const fetchedMod = modArray[0];
@@ -93,10 +104,11 @@ export const modsSlice = createSlice({
 
 
                 state.entities = newEntities;
-                state.status = "loaded";
+                state.status.fetchStatus = "loaded";
+                state.status.timeFetched = currentTime;
             })
             .addCase(fetchMods.rejected, (state, _action) => {
-                state.status = "rejected";
+                state.status.fetchStatus = "rejected";
             });
     },
 })
@@ -115,7 +127,7 @@ export const fetchMods = createAsyncThunk("mods",
     {
         condition: (_args, { getState }) => {
             const { mods } = getState() as RootState;
-            const fetchStatus = mods.status;
+            const fetchStatus = mods.status.fetchStatus;
 
             if (fetchStatus === "loading") return false;  //if a request has already been dispatched, abort the thunk before execution
         }

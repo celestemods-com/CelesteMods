@@ -1,6 +1,13 @@
 import { mods_details_type } from "../../Imported_Types/prismaClient";
 
-export type requestStatus = "notLoaded" | "loading" | "loaded" | "rejected";
+export type fetchStatus = "notLoaded" | "loading" | "loaded" | "rejected";
+
+interface status {
+    fetchStatus: fetchStatus,
+    timeFetched: number,
+}
+
+type requestStatuses = { [key: number]: status };
 
 
 export interface modState {
@@ -39,7 +46,8 @@ export type modEntities = {
 export type modTableSortDirection = "Asc" | "Desc";
 
 export interface modsState {
-    status: requestStatus,
+    status: status,
+    requests: requestStatuses,
     sortColumn: modTableColumnCssNamesType,
     sortDirection: modTableSortDirection,
     entities: modEntities,
