@@ -125,11 +125,11 @@ export const fetchMods = createAsyncThunk("mods",
         return response.data;
     },
     {
-        condition: (_args, { getState }) => {
+        condition: (isInitialLoad: boolean, { getState }) => {
             const { mods } = getState() as RootState;
             const fetchStatus = mods.status.fetchStatus;
 
-            if (fetchStatus === "loading") return false;  //if a request has already been dispatched, abort the thunk before execution
+            if (fetchStatus === "loading" || (isInitialLoad && fetchStatus !== "notLoaded")) return false;
         }
     }
 )
@@ -137,33 +137,31 @@ export const fetchMods = createAsyncThunk("mods",
 
 
 
-export const selectModsEntitiesState = (state: RootState) => {
-    return state.mods.entities;
+export const selectModsState = (state: RootState) => {
+    return state.mods;
 }
 
 
 
 
-export const selectModTableItemExpanded = (rootState: RootState, id: number) => {
-    const state = selectModsEntitiesState(rootState);
+export const selectModsSliceStatus = (rootState: RootState) => {
+    const state = selectModsState(rootState);
 
-    return state[id].modTable.expanded;
+    return state.status;
 }
 
 
 
 
 export const selectModsForTable = (rootState: RootState) => {
-    const state = selectModsEntitiesState(rootState);
+    const state = selectModsState(rootState).entities;
 
     return Object.entries(state).map(([_idString, mod]) => getModStateForTable(mod));
 }
 
 
-
-
 export const selectModForTable = (rootState: RootState, id: number) => {
-    const state = selectModsEntitiesState(rootState);
+    const state = selectModsState(rootState).entities;
     const mod = state[id];
 
     return getModStateForTable(mod);
@@ -171,3 +169,9 @@ export const selectModForTable = (rootState: RootState, id: number) => {
 
 
 
+
+export const selectModTableItemExpanded = (rootState: RootState, id: number) => {
+    const state = selectModsState(rootState).entities;
+
+    return state[id].modTable.expanded;
+}

@@ -1,7 +1,7 @@
-import { useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../reduxApp/hooks";
 
 import { selectModsForTable, fetchMods } from "../../../features/mods/modsSlice";
+import { useEffect } from "react";
 
 import { ModsTableHeader } from "./components/ModsTableHeader";
 import { ModTableItems } from "./components/ModTableItems";
@@ -16,8 +16,21 @@ export function ModsTable() {
 
 
     useEffect(() => {
-        dispatch(fetchMods());
+        dispatch(fetchMods(true));
     }, [dispatch]);
+
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            dispatch(fetchMods(false));
+        }, 10 * 60 * 1000);     //refresh the mods state every 10 minutes
+
+        return () => clearInterval(interval);
+
+
+        //TODO: figure out if adding dispatch as a dependency really matters, and, if it does, find out if it could cause memory leaks here
+        // eslint-disable-next-line
+    }, []);
 
 
 
