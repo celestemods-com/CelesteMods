@@ -1,10 +1,10 @@
 import "./ModsPage.scss";
-import ModsTable from "./ModsTable/ModsTable";
+import { ModsTable } from "./ModsTable/ModsTable";
 
 
 
 
-export default function ModsPage() {
+export function ModsPage() {
     try {
         return (
             <div className="page">

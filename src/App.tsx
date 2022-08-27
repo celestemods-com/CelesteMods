@@ -1,11 +1,11 @@
 import React from "react";
 import "./App.scss";
-import ModsPage from "./pages/ModsPage/ModsPage";
+import { ModsPage } from "./pages/ModsPage/ModsPage";
 
 
 
 
-class App extends React.Component {
+export default class App extends React.Component {
   render() {
     return (
       <div className="App">
@@ -14,8 +14,3 @@ class App extends React.Component {
     );
   };
 }
-
-
-
-
-export default App;

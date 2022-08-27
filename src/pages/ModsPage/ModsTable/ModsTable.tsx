@@ -1,15 +1,17 @@
 import { useEffect } from "react";
-import { selectModsForTable, fetchMods } from "../../../features/mods/modsSlice";
 import { useSelector, useDispatch } from "react-redux";
-import ModsTableHeader from "./components/ModsTableHeader";
-import ModTableItems from "./components/ModTableItems";
+
+import { selectModsForTable, fetchMods } from "../../../features/mods/modsSlice";
+
+import { ModsTableHeader } from "./components/ModsTableHeader";
+import { ModTableItems } from "./components/ModTableItems";
 
 //TODO: implement sorting by column
 
 
 
 
-export default function ModsTable() {
+export function ModsTable() {
     const dispatch = useDispatch();
 
 

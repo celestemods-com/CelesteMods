@@ -2,7 +2,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import { store } from "./reduxApp/store";
-import App from "./App";
+import App from "./App";  //this breaks for some reason when not a default export
 //import reportWebVitals from "./reportWebVitals";
 import "./index.scss";
 

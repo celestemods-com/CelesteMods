@@ -1,9 +1,10 @@
-import { isModTableColumnNameObjectsType__singleEntry, modTableColumnNames } from "../../../../features/mods/modsSlice";
+import { isModTableColumnNameObjectsType__singleEntry } from "../../../../features/mods/modsSliceHelpers";
+import { modTableColumnNames } from "../../../../features/mods/modsSliceConstants";
 
 
 
 
-export default function ModsTableHeader() {
+export function ModsTableHeader() {
     return (
         <div className="table__header">
             {modTableColumnNames.map((entry) => {
