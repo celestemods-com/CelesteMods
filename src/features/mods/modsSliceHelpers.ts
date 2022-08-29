@@ -1,15 +1,45 @@
 import { modTableColumnNames } from "./modsSliceConstants";
+import { qualities } from "../../constants";
 
 import {
-    mod, modForTable, modForTable__singleEntry, modForTable__entry, modTableColumnNameObjectsType, modTableColumnNameObjectsType__singleEntry
+    mod, modForTable, modForTable__singleEntry, modForTable__entry, modTableColumnNameObjectsType, modTableColumnNameObjectsType__singleEntry, modState
 } from "./modsSliceTypes";
+import { formattedMod } from "../../Imported_Types/frontend";
+
+
+
+
+export const getModState = (mod: formattedMod): modState => {
+    const mapIDs = mod.maps.map((mapArray) => {
+        return typeof mapArray === "string" ? mapArray : mapArray[0].id;
+    });
+
+
+    return {
+        id: mod.id,
+        revision: mod.revision,
+        type: mod.type,
+        name: mod.name,
+        publisherID: mod.publisherID,
+        contentWarning: mod.contentWarning,
+        notes: mod.notes,
+        shortDescription: mod.shortDescription,
+        longDescription: mod.longDescription,
+        gamebananaModID: mod.gamebananaModID,
+        approved: mod.approved,
+        maps: mapIDs,
+        difficulties: mod.difficulties,
+    }
+}
 
 
 
 
 export const getModStateForTable = (mod: mod) => {
     const modState = Array.isArray(mod.modState) ? mod.modState[0] : mod.modState;
-    const mapCount = 5;
+    const mapCount = modState.maps.length;
+
+    
     const quality = 3;
     const communityDifficulty = "hArD i GuEsS";
     const tech = "Wavedashes";
@@ -37,7 +67,7 @@ export const getModStateForTable = (mod: mod) => {
                 entries: [
                     {
                         cssName: modTableColumnNames[3].entries[0].cssName,
-                        value: quality,
+                        value: qualities[quality],
                     },
                     {
                         cssName: modTableColumnNames[3].entries[1].cssName,

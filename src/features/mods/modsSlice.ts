@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../reduxApp/store";
 import axios, { AxiosResponse } from "axios";
 
-import { getModStateForTable } from "./modsSliceHelpers";
+import { getModState, getModStateForTable } from "./modsSliceHelpers";
 import { getCurrentTime } from "../../utils/utils";
 import { cmlBaseUri } from "../../constants";
 
@@ -95,7 +95,7 @@ export const modsSlice = createSlice({
 
 
                     newEntities[id] = {
-                        modState: fetchedMod,
+                        modState: getModState(fetchedMod),
                         modTable: modTableState,
                     }
                 });

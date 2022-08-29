@@ -14,6 +14,8 @@ export interface modState {
     longDescription?: string;
     gamebananaModID?: number;
     approved: boolean;
+    maps: (string | number)[];
+    difficulties?: (string | string[])[];//number[];
     /*timeSubmitted: number;
     submittedBy: number;
     timeApproved: number;
