@@ -1243,7 +1243,6 @@ modsRouter.route("/:modID")
             const name: string | undefined = req.body.name === null ? undefined : req.body.name;
             const publisherName: string | undefined = req.body.publisherName === null ? undefined : req.body.publisherName;
             const publisherID: number | undefined = req.body.publisherID === null ? undefined : req.body.publisherID;
-            const publisherGamebananaID: number | undefined = req.body.publisherGamebananaID === null ? undefined : req.body.publisherGamebananaID;
             const userID: number | undefined = req.body.userID === null ? undefined : req.body.userID;
             const contentWarning: boolean | undefined = req.body.contentWarning === null ? undefined : req.body.contentWarning;
             const notes: string | null | undefined = req.body.notes;
@@ -1260,7 +1259,6 @@ modsRouter.route("/:modID")
                 name: name,
                 publisherName: publisherName,
                 publisherID: publisherID,
-                publisherGamebananaID: publisherGamebananaID,
                 userID: userID,
                 contentWarning: contentWarning,
                 notes: notes,
@@ -1269,7 +1267,7 @@ modsRouter.route("/:modID")
                 gamebananaModID: gamebananaModID,
             });
 
-            if (!valid || (!name && !publisherName && !publisherID && !publisherGamebananaID && !userID && !contentWarning && notes === undefined &&
+            if (!valid || (!name && !publisherName && !publisherID && !userID && !contentWarning && notes === undefined &&
                 !shortDescription && longDescription === undefined && !gamebananaModID)) {
 
                 res.status(400).json("Malformed request body");
@@ -1369,8 +1367,8 @@ modsRouter.route("/:modID")
 
                 let publisherCreateOrConnectObject: publisherConnectionObject | publisherCreationObject | undefined = undefined;
 
-                if (publisherGamebananaID || publisherID || publisherName || userID) {
-                    const publisherConnectionReturnedArray = await getPublisherCreateOrConnectObject(res, userID, publisherGamebananaID, publisherID, publisherName);
+                if (publisherID || publisherName || userID) {
+                    const publisherConnectionReturnedArray = await getPublisherCreateOrConnectObject(res, userID, undefined, publisherID, publisherName);
 
                     if (res.errorSent) return;
 

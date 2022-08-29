@@ -44,7 +44,6 @@ export interface formattedMod {
   type: mods_details_type;
   name: string;
   publisherID: number;
-  publisherGamebananaID?: number;
   contentWarning: boolean;
   notes?: string;
   shortDescription: string;

@@ -272,7 +272,6 @@ export const formatMod = async function (rawMod: rawMod) {
             const innerType = modDetails.type;
             const name = modDetails.name;
             const publisherID = modDetails.publisherID;
-            const publisherGamebananaID = modDetails.publishers.gamebananaID === null ? undefined : modDetails.publishers.gamebananaID;
             const contentWarning = modDetails.contentWarning;
             const notes = modDetails.notes === null ? undefined : modDetails.notes;
             const shortDescription = modDetails.shortDescription;
@@ -296,7 +295,6 @@ export const formatMod = async function (rawMod: rawMod) {
                 type: innerType,
                 name: name,
                 publisherID: publisherID,
-                publisherGamebananaID: publisherGamebananaID,
                 contentWarning: contentWarning,
                 notes: notes,
                 shortDescription: shortDescription,

@@ -529,11 +529,6 @@ const modPatchSchema = {
             minimum: 0,
             maximum: intMaxSizes.smallInt.unsigned,
         },
-        publisherGamebananaID: {
-            type: "integer",
-            minimum: 0,
-            maximum: intMaxSizes.mediumInt.unsigned,
-        },
         userID: {
             type: "integer",
             minimum: 0,
