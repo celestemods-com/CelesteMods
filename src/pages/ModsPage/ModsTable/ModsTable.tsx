@@ -1,7 +1,9 @@
 import { useAppSelector, useAppDispatch } from "../../../reduxApp/hooks";
 
-import { selectModsForTable, fetchMods } from "../../../features/mods/modsSlice";
 import { useEffect } from "react";
+import { selectModsForTable, fetchMods } from "../../../features/mods/modsSlice";
+import { fetchDifficulties } from "../../../features/difficulties/difficultiesSlice";
+import { fetchTechs } from "../../../features/techs/techsSlice";
 
 import { ModsTableHeader } from "./components/ModsTableHeader";
 import { ModTableItems } from "./components/ModTableItems";
@@ -17,6 +19,8 @@ export function ModsTable() {
 
     useEffect(() => {
         dispatch(fetchMods(true));
+        dispatch(fetchDifficulties(true));
+        dispatch(fetchTechs(true));
     }, [dispatch]);
 
 
