@@ -7,7 +7,7 @@ import { cmlBaseUri } from "../../constants";
 import { getCurrentTime } from "../../utils/utils";
 
 import { mapEntities, mapsState, setSliceFetch_fulfilledByModsActions } from "./mapsSliceTypes";
-import { formattedMap, formattedMod } from "../../Imported_Types/frontend";
+import { formattedMap } from "../../Imported_Types/frontend";
 
 
 
@@ -128,4 +128,14 @@ export const fetchMaps = createAsyncThunk("maps",
 
 export const selectMapsState = (state: RootState) => {
     return state.maps;
+}
+
+
+
+
+export const selectMapByID = (rootState: RootState, id: number) => {
+    const state = selectMapsState(rootState);
+    const map = state.entities[id];
+
+    return map;
 }
