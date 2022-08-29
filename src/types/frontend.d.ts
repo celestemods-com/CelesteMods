@@ -1,4 +1,3 @@
-import { difficulties } from ".prisma/client";
 import { mods_details_type } from ".prisma/client";
 
 
@@ -34,7 +33,7 @@ export interface formattedTech {
   name: string;
   description?: string;
   videos?: string[];
-  difficulty: difficulties;
+  difficulty: number;
 }
 
 

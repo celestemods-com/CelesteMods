@@ -1,7 +1,8 @@
 import express from "express";
 import { prisma } from "../middlewaresAndConfigs/prismaClient";
 
-import { isErrorWithMessage, toErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../helperFunctions/errorHandling";
+import { formatTech } from "../helperFunctions/techs";
+import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../helperFunctions/errorHandling";
 import { mapStaffPermsArray, checkPermissions } from "../helperFunctions/sessions";
 
 import { validatePost, validatePatch } from "../jsonSchemas/techs";
@@ -560,50 +561,9 @@ router.route("/:techID")
 
 
 
-const formatTech = function (rawTech: rawTech) {
-    try {
-        const id = rawTech.id;
-        const name = rawTech.name;
-        const description = rawTech.description === null ? undefined : rawTech.description;
-        const techVideoObjectsArray = rawTech.techVideos === null ? undefined : rawTech.techVideos;
-        const difficulty = rawTech.difficulties;
-
-
-        let videoUrlsArray;
-
-        if (techVideoObjectsArray && techVideoObjectsArray.length) {
-            const techVideoUrlsArray: string[] = [];
-
-            techVideoObjectsArray.forEach((techVideo) => {
-                techVideoUrlsArray.push(techVideo.url);
-            });
-
-            videoUrlsArray = techVideoUrlsArray;
-        }
-
-
-        const formattedTech: formattedTech = {
-            id: id,
-            name: name,
-            description: description,
-            videos: videoUrlsArray,
-            difficulty: difficulty,
-        };
-
-
-        return formattedTech;
-    }
-    catch (error) {
-        return toErrorWithMessage(error);
-    }
-}
-
-
-
-
 router.use(noRouteError);
 
 router.use(errorHandler);
 
 
-export { router as techsRouter, formatTech };
+export { router as techsRouter };
