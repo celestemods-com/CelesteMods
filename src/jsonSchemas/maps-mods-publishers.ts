@@ -1,5 +1,5 @@
 import ajvModule from "ajv";
-import { intMaxSizes } from "./integerSizes";
+import { intMaxSizes } from "../constants/integerSizes";
 
 
 
