@@ -109,7 +109,7 @@ export interface ratingsInfo {
 export interface formattedReview {
   id: number;
   modID: number;
-  submittedBy: number;
+  reviewCollectionID: number;
   timeSubmitted: number;
   likes?: string;
   dislikes?: string;
