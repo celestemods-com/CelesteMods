@@ -5,12 +5,12 @@ import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from
 import { checkPermissions, checkSessionAge, mapStaffPermsArray } from "../helperFunctions/sessions";
 import { param_modID, param_mapID } from "../helperFunctions/maps-mods-publishers";
 import { param_userID } from "../helperFunctions/users";
-import { formatMapReviews, formatMapReview, param_mapReviewID } from "../helperFunctions/reviews-mapReviews";
+import { formatMapReviews, formatMapReview, param_mapReviewID } from "../helperFunctions/reviewCollections-reviews-mapReviews";
 import { formatRating } from "../helperFunctions/ratings";
 import { getCurrentTime } from "../helperFunctions/utils";
 import { getLengthID, lengthErrorMessage } from "../helperFunctions/lengths";
 
-import { validateMapReviewPost, validateMapReviewPatch } from "../jsonSchemas/reviews-mapReviews";
+import { validateMapReviewPost, validateMapReviewPatch } from "../jsonSchemas/reviewCollections-reviews-mapReviews";
 
 import { expressRoute } from "../types/express";
 import {
@@ -30,7 +30,7 @@ router.route("/")
             const rawMapReviews = await prisma.reviews_maps.findMany({
                 include: {
                     map_lengths: true,
-                    reviews: { select: { submittedBy: true } },
+                    reviews: { select: { review_collections: { select: { userID: true } } } },
                 }
             });
 
@@ -68,7 +68,7 @@ router.route("/search/map")
                 where: { maps_ids: { maps_details: { some: { name: { startsWith: query } } } } },
                 include: {
                     map_lengths: true,
-                    reviews: { select: { submittedBy: true } },
+                    reviews: { select: { review_collections: { select: { userID: true } } } },
                 },
             });
 
@@ -97,10 +97,10 @@ router.route("/search/user")
 
 
             const rawMapReviews = await prisma.reviews_maps.findMany({
-                where: { reviews: { users: { displayName: { startsWith: query } } } },
+                where: { reviews: { review_collections: { users: { displayName: { startsWith: query } } } } },
                 include: {
                     map_lengths: true,
-                    reviews: { select: { submittedBy: true } },
+                    reviews: { select: { review_collections: { select: { userID: true } } } },
                 },
             });
 
@@ -134,7 +134,7 @@ router.route("/mod/:modID")
                 where: { reviews: { modID: modID } },
                 include: {
                     map_lengths: true,
-                    reviews: { select: { submittedBy: true } },
+                    reviews: { select: { review_collections: { select: { userID: true } } } },
                 },
             });
 
@@ -168,7 +168,7 @@ router.route("/map/:mapID")
                 where: { mapID: mapID },
                 include: {
                     map_lengths: true,
-                    reviews: { select: { submittedBy: true } },
+                    reviews: { select: { review_collections: { select: { userID: true } } } },
                 },
             });
 
@@ -199,10 +199,10 @@ router.route("/user/:userID")
 
 
             const rawMapReviews = await prisma.reviews_maps.findMany({
-                where: { reviews: { submittedBy: userID } },
+                where: { reviews: { review_collections: { userID: userID } } },
                 include: {
                     map_lengths: true,
-                    reviews: { select: { submittedBy: true } },
+                    reviews: { select: { review_collections: { select: { userID: true } } } },
                 },
             });
 
@@ -247,7 +247,7 @@ router.route("/:mapReviewID")
         try {
             const id = <number>req.id;
             const mapReviewFromID = <rawMapReview>req.mapReview;
-            const userID = mapReviewFromID.reviews.submittedBy;
+            const userID = mapReviewFromID.reviews.review_collections.userID;
 
 
             let permitted: boolean;
@@ -316,7 +316,7 @@ router.route("/:mapReviewID")
                 data: patchData,
                 include: {
                     map_lengths: true,
-                    reviews: { select: { submittedBy: true } },
+                    reviews: { select: { review_collections: { select: { userID: true } } } },
                 },
             });
 
@@ -336,7 +336,7 @@ router.route("/:mapReviewID")
         try {
             const id = <number>req.id;
             const rawMapReview = <rawMapReview>req.mapReview;
-            const userID = rawMapReview.reviews.submittedBy;
+            const userID = rawMapReview.reviews.review_collections.userID;
 
 
             let permitted: boolean;
@@ -414,7 +414,7 @@ export const mapReviewPost = <expressRoute>async function (req, res, next) {    
                 },
                 include: {
                     map_lengths: true,
-                    reviews: { select: { submittedBy: true } },
+                    reviews: { select: { review_collections: { select: { userID: true } } } },
                 },
             });
 
@@ -484,7 +484,7 @@ export const mapReviewPost = <expressRoute>async function (req, res, next) {    
 
             if (quality || difficultyID) {
                 const reviewFromID = <rawReview>req.review;
-                const userID = reviewFromID.submittedBy;
+                const userID = reviewFromID.review_collections.userID;
 
 
                 const createRatingDataObject: createRatingData = {
@@ -520,7 +520,7 @@ export const mapReviewPost = <expressRoute>async function (req, res, next) {    
                         data: createMapReviewDataObject,
                         include: {
                             map_lengths: true,
-                            reviews: { select: { submittedBy: true } },
+                            reviews: { select: { review_collections: { select: { userID: true } } } },
                         },
                     }),
                     rawRating = await prisma.ratings.upsert({
@@ -544,7 +544,7 @@ export const mapReviewPost = <expressRoute>async function (req, res, next) {    
                     data: createMapReviewDataObject,
                     include: {
                         map_lengths: true,
-                        reviews: { select: { submittedBy: true } },
+                        reviews: { select: { review_collections: { select: { userID: true } } } },
                     },
                 });
 

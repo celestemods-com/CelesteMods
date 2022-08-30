@@ -18,12 +18,12 @@ export const formatReviews = async function (rawReviews: rawReview[]) {
 
                 if (isErrorWithMessage(formattedReview)) return `Error encountered formatting review ${rawReview.id}`;
 
-                
+
                 return formattedReview;
             }
         )
     );
-    
+
 
     return formattedReviews;
 }
@@ -33,7 +33,7 @@ export const formatReview = async function (rawReview: rawReview) {
     try {
         const id = rawReview.id;
         const modID = rawReview.modID;
-        const submittedBy = rawReview.submittedBy;
+        const reviewCollectionID = rawReview.reviewCollectionID;
         const timeSubmitted = rawReview.timeSubmitted;
         const likes = rawReview.likes;
         const dislikes = rawReview.dislikes;
@@ -44,7 +44,7 @@ export const formatReview = async function (rawReview: rawReview) {
         const formattedReview: formattedReview = {
             id: id,
             modID: modID,
-            submittedBy: submittedBy,
+            reviewCollectionID: reviewCollectionID,
             timeSubmitted: timeSubmitted,
         }
 
@@ -60,7 +60,7 @@ export const formatReview = async function (rawReview: rawReview) {
             formattedReview.mapReviews = formattedMapReviews;
         }
 
-        
+
         return formattedReview;
     }
     catch (error) {
@@ -120,7 +120,7 @@ export const formatMapReview = async function (rawMapReview: rawMapReview) {
                 where: {
                     mapID_submittedBy: {
                         mapID: mapID,
-                        submittedBy: rawMapReview.reviews.submittedBy,
+                        submittedBy: rawMapReview.reviews.review_collections.userID,
                     }
                 },
                 include: { difficulties: true },
@@ -171,10 +171,11 @@ export const param_reviewID = <expressRoute>async function (req, res, next) {
         const exists = await prisma.reviews.findUnique({
             where: { id: id },
             include: {
+                review_collections: { select: { userID: true } },
                 reviews_maps: {
                     include: {
                         map_lengths: true,
-                        reviews: true,
+                        reviews: { select: { review_collections: { select: { userID: true } } } },
                     },
                 },
             },
@@ -216,7 +217,7 @@ export const param_mapReviewID = <expressRoute>async function (req, res, next) {
             where: { id: id },
             include: {
                 map_lengths: true,
-                reviews: true,
+                reviews: { select: { review_collections: { select: { userID: true } } } },
             },
         });
 

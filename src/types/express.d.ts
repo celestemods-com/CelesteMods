@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { difficulties, goldens_goldenList, publishers } from '.prisma/client';
+import { difficulties, goldens_goldenList, publishers, review_collections } from '.prisma/client';
 import { rawTech, rawMod, rawMap, rawReview, rawMapReview } from './internal';
 
 
@@ -99,6 +99,7 @@ declare global {
       mods?: rawMod[];
       map?: rawMap;
       publisher?: publishers;
+      reviewCollection?: review_collections;
       review?: rawReview;
       mapReview?: rawMapReview;
       rating?: reqRating;

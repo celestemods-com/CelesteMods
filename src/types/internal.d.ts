@@ -311,13 +311,14 @@ export interface createRatingData {
 
 
 export interface rawReview extends reviews {
+  review_collections: { userID: number };
   reviews_maps: rawMapReview[];
 }
 
 export interface createReviewData {
   mods_ids: { connect: { id: number } };
   timeSubmitted: number;
-  users: { connect: { id: number } },
+  review_collections: { connect: { id: number } },
   likes?: string;
   dislikes?: string;
   otherComments?: string;
@@ -329,7 +330,7 @@ export interface createReviewData {
 
 export interface rawMapReview extends reviews_maps {
   map_lengths: map_lengths;
-  reviews: { submittedBy: number };
+  reviews: { review_collections: { userID: number } };
 }
 
 export interface mapReviewPatchDataObject {

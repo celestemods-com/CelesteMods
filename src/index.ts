@@ -128,6 +128,7 @@ import { lengthsRouter } from "./routes/lengths";
 import { modsRouter } from "./routes/mods";
 import { mapsRouter } from "./routes/maps";
 import { publishersRouter } from "./routes/publishers";
+import { reviewCollectionsRouter } from "./routes/reviewCollections";
 import { ratingsRouter } from "./routes/ratings";
 import { reviewsRouter } from "./routes/reviews";
 import { mapReviewsRouter } from "./routes/mapReviews";
@@ -145,6 +146,7 @@ apiRouter_v1.use("/mods", modsRouter);
 apiRouter_v1.use("/maps", mapsRouter);
 apiRouter_v1.use("/publishers", publishersRouter);
 apiRouter_v1.use("/ratings", ratingsRouter);
+apiRouter_v1.use("reviewcollections", reviewCollectionsRouter)
 apiRouter_v1.use("/reviews", reviewsRouter);
 apiRouter_v1.use("/mapreviews", mapReviewsRouter);
 apiRouter_v1.use("/techs", techsRouter);
