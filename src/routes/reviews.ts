@@ -50,7 +50,7 @@ router.route("/")
             const formattedReviews = await formatReviews(rawReviews);
 
 
-            res.json(formattedReviews);
+            res.status(200).json(formattedReviews);
         }
         catch (error) {
             next(error);
@@ -93,7 +93,7 @@ router.route("/search/mod")
             const formattedReviews = await formatReviews(rawReviews);
 
 
-            res.json(formattedReviews);
+            res.status(200).json(formattedReviews);
         }
         catch (error) {
             next(error);
@@ -130,7 +130,7 @@ router.route("/search/user")
             const formattedReviews = await formatReviews(rawReviews);
 
 
-            res.json(formattedReviews);
+            res.status(200).json(formattedReviews);
         }
         catch (error) {
             next(error);
@@ -174,7 +174,7 @@ router.route("/mod/:modID")
             const formattedReviews = await formatReviews(rawReviews);
 
 
-            res.json(formattedReviews);
+            res.status(200).json(formattedReviews);
         }
         catch (error) {
             next(error);
@@ -218,7 +218,7 @@ router.route("/user/:userID")
             const formattedReviews = await formatReviews(rawReviews);
 
 
-            res.json(formattedReviews);
+            res.status(200).json(formattedReviews);
         }
         catch (error) {
             next(error);
