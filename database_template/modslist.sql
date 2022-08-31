@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3002
--- Generation Time: Aug 30, 2022 at 04:32 AM
+-- Generation Time: Aug 31, 2022 at 06:03 AM
 -- Server version: 10.4.21-MariaDB
 -- PHP Version: 8.1.1
 
@@ -365,6 +365,13 @@ CREATE TABLE `reviews` (
   `otherComments` varchar(1500) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Dumping data for table `reviews`
+--
+
+INSERT INTO `reviews` (`id`, `modID`, `reviewCollectionID`, `timeSubmitted`, `likes`, `dislikes`, `otherComments`) VALUES
+(1, 1, 1, 1, 'fsadf awef sdafeaf sadf awef', 'sdf awe fasdfsda faew fae geragfaefw', 'fsdmaf kjwaeh fiwehgahwegi aweiog jlkjdghjklashfbv,mbcxm,bgojiewanfiphjepio jpiof joipsa fo ');
+
 -- --------------------------------------------------------
 
 --
@@ -387,8 +394,7 @@ CREATE TABLE `reviews_maps` (
 --
 
 INSERT INTO `reviews_maps` (`id`, `reviewID`, `mapID`, `lengthID`, `likes`, `dislikes`, `otherComments`, `displayRatingBool`) VALUES
-(2, 2, 1, 4, NULL, NULL, 'dfjkahdsjkfhakwejhfiouaehoiufhdsaifn usidfah uiwaeiuf auiof ioudh iuofhiowuae hefiuo hiaousfh aweuih fui huif hiaw', 0),
-(3, 5, 2, 3, NULL, NULL, 'dfjkahdsjkfhakwejhfiouaehoiufhdsaifn usidfah uiwaeiuf auiof ioudh iuofhiowuae hefiuo hiaousfh aweuih fui huif hiaw', 0);
+(4, 1, 1, 2, 'dshkjfdhlkjsdahfkljsh fih iwea ', 'fdsahwekjahfjksdahfjkshd kufhkjs hfkje hfkaj hkl hkl', 'njegfigoijhsd iofhaweui hfiuah iufh euifh iuseh iuoa', 1);
 
 -- --------------------------------------------------------
 
@@ -403,6 +409,14 @@ CREATE TABLE `review_collections` (
   `description` varchar(500) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Dumping data for table `review_collections`
+--
+
+INSERT INTO `review_collections` (`id`, `userID`, `name`, `description`) VALUES
+(1, 1, 'jfhkdsjhfk afjkldsh fiauw hfiauh fkjaf kjlawef', 'fioweafjioaj fjd iojfaweio jfowaei jfio joifawej fjaio fjopi jfaweoi jfawioe fawjfoiwaj foipaw jfoiaw jfoij ewaoifj wopif jawiojfawiugaiepuhgaw'),
+(3, 5, 'fksdajfklasdjf;lksdajfjksa kl', 'fdsfnaskfhsdajkfhkjsadhfkjsadhflkjsdah');
+
 -- --------------------------------------------------------
 
 --
@@ -415,6 +429,14 @@ CREATE TABLE `session` (
   `data` text NOT NULL,
   `expiresAt` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `session`
+--
+
+INSERT INTO `session` (`id`, `sid`, `data`, `expiresAt`) VALUES
+('cl7h0nf5o0000qofjdb9c7rkn', 'FVaKjoFcRbWriixSrrqOC2_Ybop769hV', '{\"cookie\":{\"originalMaxAge\":2999999,\"expires\":\"2022-08-31T04:24:12.142Z\",\"secure\":false,\"httpOnly\":true,\"path\":\"/api\",\"sameSite\":\"strict\"},\"refreshCount\":0,\"userID\":1,\"permissions\":[\"Super_Admin\"]}', '2022-08-31 04:24:12'),
+('cl7h33dwu0000u4fjaexv3013', 'NAQdB9okw4YOaRq25JfGa1zSftU-Dzfr', '{\"cookie\":{\"originalMaxAge\":3000000,\"expires\":\"2022-08-31T04:51:29.706Z\",\"secure\":false,\"httpOnly\":true,\"path\":\"/api\",\"sameSite\":\"strict\"},\"refreshCount\":0,\"userID\":1,\"permissions\":[\"Super_Admin\"]}', '2022-08-31 04:51:29');
 
 -- --------------------------------------------------------
 
@@ -754,19 +776,19 @@ ALTER TABLE `ratings`
 -- AUTO_INCREMENT for table `reviews`
 --
 ALTER TABLE `reviews`
-  MODIFY `id` mediumint(5) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` mediumint(5) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `reviews_maps`
 --
 ALTER TABLE `reviews_maps`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `review_collections`
 --
 ALTER TABLE `review_collections`
-  MODIFY `id` smallint(5) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` smallint(5) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `tech_list`
