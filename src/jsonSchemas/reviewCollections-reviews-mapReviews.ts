@@ -239,7 +239,7 @@ const reviewCollectionPostSchema = {
             maxLength: 500,
         },
     },
-    required: ["userID", "name", "description"],
+    required: ["name", "description"],
     additionalProperties: false,
 };
 
