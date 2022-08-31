@@ -23,7 +23,7 @@ const initialState: reviewCollectionsState = {
 
 
 export const reviewCollectionsSlice = createSlice({
-    name: "reviewCollection",
+    name: "reviewCollections",
     initialState,
     reducers: {},
     extraReducers: (builder) => {
