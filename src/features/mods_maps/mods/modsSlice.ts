@@ -1,15 +1,15 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { RootState } from "../../reduxApp/store";
+import { RootState } from "../../../reduxApp/store";
 import axios, { AxiosResponse } from "axios";
 
 import { getModState, getModStateForTable } from "./modsSliceHelpers";
-import { getCurrentTime } from "../../utils/utils";
-import { cmlBaseUri } from "../../constants";
+import { getCurrentTime } from "../../../utils/utils";
+import { cmlBaseUri } from "../../../constants";
 
 import {
     modsState, setModTableSortColumnAction, setModTableSortDirectionAction, toggleModTableItemBoolActions, setModTableItemBoolActions, modEntities, modTableItemState
 } from "./modsSliceTypes";
-import { formattedMod } from "../../Imported_Types/frontend";
+import { formattedMod } from "../../../Imported_Types/frontend";
 import { mapsSlice } from "../maps/mapsSlice";
 
 //TODO: memoize selectors with createSelector() from RTK

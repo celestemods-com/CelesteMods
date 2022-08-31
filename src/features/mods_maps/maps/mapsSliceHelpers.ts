@@ -1,4 +1,4 @@
-import { formattedMap } from "../../Imported_Types/frontend";
+import { formattedMap } from "../../../Imported_Types/frontend";
 import { mapState } from "./mapsSliceTypes";
 
 

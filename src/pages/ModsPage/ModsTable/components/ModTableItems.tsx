@@ -1,10 +1,10 @@
 import { useAppDispatch, useAppSelector } from "../../../../reduxApp/hooks";
 import { RootState } from "../../../../reduxApp/store";
 
-import { modsSlice, selectModsForTable, selectModTableItemExpanded } from "../../../../features/mods/modsSlice";
-import { isModForTable__singleEntry } from "../../../../features/mods/modsSliceHelpers";
+import { modsSlice, selectModsForTable, selectModTableItemExpanded } from "../../../../features/mods_maps/mods/modsSlice";
+import { isModForTable__singleEntry } from "../../../../features/mods_maps/mods/modsSliceHelpers";
 
-import { modForTable, modForTable__entry } from "../../../../features/mods/modsSliceTypes";
+import { modForTable, modForTable__entry } from "../../../../features/mods_maps/mods/modsSliceTypes";
 
 
 

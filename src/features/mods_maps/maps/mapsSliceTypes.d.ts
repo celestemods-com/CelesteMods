@@ -1,5 +1,5 @@
-import { formattedMod } from "../../Imported_Types/frontend";
-import { sliceStatus, requestStatuses } from "../../utils/commonTypes";
+import { formattedMod } from "../../../Imported_Types/frontend";
+import { sliceStatus, requestStatuses } from "../../../utils/commonTypes";
 
 
 export interface mapState {

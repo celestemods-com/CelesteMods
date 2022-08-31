@@ -1,7 +1,7 @@
 import { useAppSelector, useAppDispatch } from "../../../reduxApp/hooks";
 
 import { useEffect } from "react";
-import { selectModsForTable, fetchMods } from "../../../features/mods/modsSlice";
+import { selectModsForTable, fetchMods } from "../../../features/mods_maps/mods/modsSlice";
 import { fetchDifficulties } from "../../../features/difficulties/difficultiesSlice";
 import { fetchTechs } from "../../../features/techs/techsSlice";
 

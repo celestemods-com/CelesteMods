@@ -1,13 +1,13 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { RootState } from "../../reduxApp/store";
+import { RootState } from "../../../reduxApp/store";
 import axios, { AxiosResponse } from "axios";
 
 import { getMapState } from "./mapsSliceHelpers";
-import { cmlBaseUri } from "../../constants";
-import { getCurrentTime } from "../../utils/utils";
+import { cmlBaseUri } from "../../../constants";
+import { getCurrentTime } from "../../../utils/utils";
 
 import { mapEntities, mapsState, setSliceFetch_fulfilledByModsActions } from "./mapsSliceTypes";
-import { formattedMap } from "../../Imported_Types/frontend";
+import { formattedMap } from "../../../Imported_Types/frontend";
 
 
 

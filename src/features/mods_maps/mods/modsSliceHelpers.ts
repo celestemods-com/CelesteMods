@@ -1,10 +1,10 @@
 import { modTableColumnNames } from "./modsSliceConstants";
-import { qualities } from "../../constants";
+import { qualities } from "../../../constants";
 
 import {
     mod, modForTable, modForTable__singleEntry, modForTable__entry, modTableColumnNameObjectsType, modTableColumnNameObjectsType__singleEntry, modState
 } from "./modsSliceTypes";
-import { formattedMod } from "../../Imported_Types/frontend";
+import { formattedMod } from "../../../Imported_Types/frontend";
 
 
 

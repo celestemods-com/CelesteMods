@@ -1,5 +1,5 @@
-import { isModTableColumnNameObjectsType__singleEntry } from "../../../../features/mods/modsSliceHelpers";
-import { modTableColumnNames } from "../../../../features/mods/modsSliceConstants";
+import { isModTableColumnNameObjectsType__singleEntry } from "../../../../features/mods_maps/mods/modsSliceHelpers";
+import { modTableColumnNames } from "../../../../features/mods_maps/mods/modsSliceConstants";
 
 
 

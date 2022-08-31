@@ -1,5 +1,5 @@
-import { mods_details_type } from "../../Imported_Types/prismaClient";
-import { sliceStatus, requestStatuses } from "../../utils/commonTypes";
+import { mods_details_type } from "../../../Imported_Types/prismaClient";
+import { sliceStatus, requestStatuses } from "../../../utils/commonTypes";
 
 
 export interface modState {

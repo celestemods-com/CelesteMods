@@ -1,7 +1,7 @@
 import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit";
 import counterReducer from "../features/counter/counterSlice";
-import { modsSlice } from "../features/mods/modsSlice";
-import { mapsSlice } from "../features/maps/mapsSlice";
+import { modsSlice } from "../features/mods_maps/mods/modsSlice";
+import { mapsSlice } from "../features/mods_maps/maps/mapsSlice";
 import { difficultiesSlice } from "../features/difficulties/difficultiesSlice";
 import { techsSlice } from "../features/techs/techsSlice";
 
