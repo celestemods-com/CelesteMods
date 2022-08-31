@@ -258,7 +258,6 @@ router.route("/:reviewID")
     })
     .patch(async function (req, res, next) {
         try {
-            console.log("entered review patch")
             const id = <number>req.id;
             const reviewFromID = <rawReview>req.review;
             const userID = reviewFromID.review_collections.userID;
