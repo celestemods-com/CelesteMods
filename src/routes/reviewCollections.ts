@@ -1,9 +1,9 @@
 import express from "express";
 import { prisma } from "../middlewaresAndConfigs/prismaClient";
 
-import { noRouteError, methodNotAllowed } from "../helperFunctions/errorHandling";
+import { noRouteError, methodNotAllowed, errorHandler } from "../helperFunctions/errorHandling";
 import { reviewPost } from "./reviews";
-import { param_reviewCollectionID } from "../helperFunctions/reviewCollections-reviews-mapReviews";
+import { formatReviewCollection, formatReviewCollections, param_reviewCollectionID } from "../helperFunctions/reviewCollections-reviews-mapReviews";
 import { adminPermsArray, checkPermissions, checkSessionAge, mapReviewersPermsArray, mapStaffPermsArray } from "../helperFunctions/sessions";
 import { param_userID } from "../helperFunctions/users";
 
@@ -20,10 +20,27 @@ export { router as reviewCollectionsRouter };
 router.route("/")
     .get(async function (_req, res, next) {
         try {
-            const reviewCollections = await prisma.review_collections.findMany();
+            const rawReviewCollections = await prisma.review_collections.findMany({
+                include: {
+                    reviews: {
+                        include: {
+                            review_collections: { select: { userID: true } },
+                            reviews_maps: {
+                                include: {
+                                    map_lengths: true,
+                                    reviews: { select: { review_collections: { select: { userID: true } } } },
+                                },
+                            },
+                        },
+                    },
+                },
+            });
 
 
-            res.status(200).json(reviewCollections);
+            const formattedReviewCollections = await formatReviewCollections(rawReviewCollections);
+
+
+            res.status(200).json(formattedReviewCollections);
         }
         catch (error) {
             next(error);
@@ -57,16 +74,32 @@ router.route("/")
             }
 
 
-            const reviewCollection = await prisma.review_collections.create({
+            const rawReviewCollection = await prisma.review_collections.create({
                 data: {
                     userID: userID,
                     name: name,
                     description: description,
                 },
+                include: {
+                    reviews: {
+                        include: {
+                            review_collections: { select: { userID: true } },
+                            reviews_maps: {
+                                include: {
+                                    map_lengths: true,
+                                    reviews: { select: { review_collections: { select: { userID: true } } } },
+                                },
+                            },
+                        },
+                    },
+                },
             });
 
 
-            res.status(201).json(reviewCollection);
+            const formattedReviewCollection = await formatReviewCollection(rawReviewCollection);
+
+
+            res.status(201).json(formattedReviewCollection);
         }
         catch (error) {
             next(error);
@@ -88,10 +121,28 @@ router.route("/search")
             }
 
 
-            const reviewCollections = await prisma.review_collections.findMany({ where: { name: { startsWith: query } } });
+            const rawReviewCollections = await prisma.review_collections.findMany({
+                where: { name: { startsWith: query } },
+                include: {
+                    reviews: {
+                        include: {
+                            review_collections: { select: { userID: true } },
+                            reviews_maps: {
+                                include: {
+                                    map_lengths: true,
+                                    reviews: { select: { review_collections: { select: { userID: true } } } },
+                                },
+                            },
+                        },
+                    },
+                },
+            });
 
 
-            res.json(reviewCollections);
+            const formattedReviewCollections = await formatReviewCollections(rawReviewCollections);
+
+
+            res.status(200).json(formattedReviewCollections);
         }
         catch (error) {
             next(error);
@@ -112,10 +163,28 @@ router.route("/search/user")
             }
 
 
-            const reviewCollections = await prisma.review_collections.findMany({ where: { users: { displayName: { startsWith: query } } } });
+            const rawReviewCollections = await prisma.review_collections.findMany({
+                where: { users: { displayName: { startsWith: query } } },
+                include: {
+                    reviews: {
+                        include: {
+                            review_collections: { select: { userID: true } },
+                            reviews_maps: {
+                                include: {
+                                    map_lengths: true,
+                                    reviews: { select: { review_collections: { select: { userID: true } } } },
+                                },
+                            },
+                        },
+                    },
+                },
+            });
 
 
-            res.json(reviewCollections);
+            const formattedReviewCollections = await formatReviewCollections(rawReviewCollections);
+
+
+            res.status(200).json(formattedReviewCollections);
         }
         catch (error) {
             next(error);
@@ -142,10 +211,28 @@ router.route("/users/:userID")
             const userID = req.id2!;
 
 
-            const reviewCollections = await prisma.review_collections.findMany({ where: { userID: userID } });
+            const rawReviewCollections = await prisma.review_collections.findMany({
+                where: { userID: userID },
+                include: {
+                    reviews: {
+                        include: {
+                            review_collections: { select: { userID: true } },
+                            reviews_maps: {
+                                include: {
+                                    map_lengths: true,
+                                    reviews: { select: { review_collections: { select: { userID: true } } } },
+                                },
+                            },
+                        },
+                    },
+                },
+            });
 
 
-            res.json(reviewCollections);
+            const formattedReviewCollections = await formatReviewCollections(rawReviewCollections);
+
+
+            res.status(200).json(formattedReviewCollections);
         }
         catch (error) {
             next(error);
@@ -169,10 +256,13 @@ router.param("reviewCollectionID", async function (req, res, next) {
 router.route("/:reviewCollectionID")
     .get(async function (req, res, next) {
         try {
-            const reviewCollection = req.reviewCollection!;
+            const rawReviewCollection = req.reviewCollection!;
 
 
-            res.status(200).json(reviewCollection);
+            const formattedReviewCollection = await formatReviewCollection(rawReviewCollection);
+
+
+            res.status(200).json(formattedReviewCollection);
         }
         catch (error) {
             next(error);
@@ -217,17 +307,33 @@ router.route("/:reviewCollectionID")
             }
 
 
-            const reviewCollection = await prisma.review_collections.update({
+            const rawReviewCollection = await prisma.review_collections.update({
                 where: { id: id },
                 data: {
                     userID: userID,
                     name: name,
                     description: description,
                 },
+                include: {
+                    reviews: {
+                        include: {
+                            review_collections: { select: { userID: true } },
+                            reviews_maps: {
+                                include: {
+                                    map_lengths: true,
+                                    reviews: { select: { review_collections: { select: { userID: true } } } },
+                                },
+                            },
+                        },
+                    },
+                },
             });
 
 
-            res.status(200).json(reviewCollection);
+            const formattedReviewCollection = await formatReviewCollection(rawReviewCollection);
+
+
+            res.status(200).json(formattedReviewCollection);
         }
         catch (error) {
             next(error);
@@ -274,3 +380,10 @@ router.route("/:reviewCollectionID")
         }
     })
     .all(methodNotAllowed);
+
+
+
+
+    router.use(noRouteError);
+    
+    router.use(errorHandler);

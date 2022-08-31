@@ -1,6 +1,6 @@
 import {
   users, publishers, golden_players, tech_list, tech_videos, difficulties, mods_ids, mods_details, mods_details_type, maps_ids, maps_details, maps_details_side,
-  map_lengths, maps_to_tech, ratings, reviews, reviews_maps, users_to_maps
+  map_lengths, maps_to_tech, ratings, reviews, reviews_maps, users_to_maps, review_collections
 } from ".prisma/client";
 import { permissions } from "./frontend";
 
@@ -305,6 +305,13 @@ export interface createRatingData {
   timeSubmitted: number,
   quality: number | null,
   difficulties?: { connect: { id: number } },
+}
+
+
+
+
+export interface rawReviewCollection extends review_collections {
+  reviews: rawReview[];
 }
 
 
