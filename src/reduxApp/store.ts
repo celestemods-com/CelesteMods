@@ -4,6 +4,7 @@ import { modsSlice } from "../features/mods_maps/mods/modsSlice";
 import { mapsSlice } from "../features/mods_maps/maps/mapsSlice";
 import { difficultiesSlice } from "../features/difficulties/difficultiesSlice";
 import { techsSlice } from "../features/techs/techsSlice";
+import { reviewCollectionsSlice } from "../features/reviewCollections_reviews_mapReviews/reviewCollections/reviewCollectionsSlice";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     maps: mapsSlice.reducer,
     difficulties: difficultiesSlice.reducer,
     techs: techsSlice.reducer,
+    reviewCollections: reviewCollectionsSlice.reducer,
   },
 });
 

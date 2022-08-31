@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { selectModsForTable, fetchMods } from "../../../features/mods_maps/mods/modsSlice";
 import { fetchDifficulties } from "../../../features/difficulties/difficultiesSlice";
 import { fetchTechs } from "../../../features/techs/techsSlice";
+import { fetchReviewCollections } from "../../../features/reviewCollections_reviews_mapReviews/reviewCollections/reviewCollectionsSlice";
 
 import { ModsTableHeader } from "./components/ModsTableHeader";
 import { ModTableItems } from "./components/ModTableItems";
@@ -21,6 +22,7 @@ export function ModsTable() {
         dispatch(fetchMods(true));
         dispatch(fetchDifficulties(true));
         dispatch(fetchTechs(true));
+        dispatch(fetchReviewCollections(true));
     }, [dispatch]);
 
 
