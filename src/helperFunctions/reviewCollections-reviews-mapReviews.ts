@@ -3,9 +3,57 @@ import { prisma } from "../middlewaresAndConfigs/prismaClient";
 import { isErrorWithMessage, toErrorWithMessage } from "./errorHandling";
 import { formatRating } from "./ratings";
 
-import { rawReview, rawMapReview } from "../types/internal";
-import { formattedReview, formattedMapReview } from "../types/frontend";
+import { rawReviewCollection, rawReview, rawMapReview } from "../types/internal";
+import { formattedReview, formattedMapReview, formattedReviewCollection } from "../types/frontend";
 import { expressRoute } from "../types/express";
+
+
+
+
+export const formatReviewCollections = async function (rawReviewCollections: rawReviewCollection[]) {
+    const formattedReviewCollections = await Promise.all(
+        rawReviewCollections.map(
+            async (rawReviewCollection) => {
+                const formattedReviewCollection = await formatReviewCollection(rawReviewCollection);
+
+                if (isErrorWithMessage(formattedReviewCollection)) return `Error encountered formatting reviewCollection ${rawReviewCollection.id}`;
+
+
+                return formattedReviewCollection;
+            }
+        )
+    );
+
+
+    return formattedReviewCollections;
+}
+
+
+export const formatReviewCollection = async function (rawReviewCollection: rawReviewCollection) {
+    const id = rawReviewCollection.id;
+    const userID = rawReviewCollection.userID;
+    const name = rawReviewCollection.name;
+    const description = rawReviewCollection.description;
+    const rawReviews = rawReviewCollection.reviews;
+
+
+    const formattedReviewCollection: formattedReviewCollection = {
+        id: id,
+        userID: userID,
+        name: name,
+        description: description,
+    }
+
+
+    if (rawReviews.length) {
+        const formattedReviews = await formatReviews(rawReviews);
+
+        formattedReviewCollection.reviews = formattedReviews;
+    }
+
+
+    return formattedReviewCollection;
+}
 
 
 
@@ -38,7 +86,7 @@ export const formatReview = async function (rawReview: rawReview) {
         const likes = rawReview.likes;
         const dislikes = rawReview.dislikes;
         const otherComments = rawReview.otherComments;
-        const mapReviews = rawReview.reviews_maps;
+        const rawMapReviews = rawReview.reviews_maps;
 
 
         const formattedReview: formattedReview = {
@@ -54,8 +102,8 @@ export const formatReview = async function (rawReview: rawReview) {
         if (otherComments) formattedReview.otherComments = otherComments;
 
 
-        if (mapReviews.length) {
-            const formattedMapReviews = await formatMapReviews(mapReviews);
+        if (rawMapReviews.length) {
+            const formattedMapReviews = await formatMapReviews(rawMapReviews);
 
             formattedReview.mapReviews = formattedMapReviews;
         }
@@ -167,7 +215,22 @@ export const param_reviewCollectionID = <expressRoute>async function (req, res, 
         }
 
 
-        const exists = await prisma.review_collections.findUnique({ where: { id: id } });
+        const exists = await prisma.review_collections.findUnique({
+            where: { id: id },
+            include: {
+                reviews: {
+                    include: {
+                        review_collections: { select: { userID: true } },
+                        reviews_maps: {
+                            include: {
+                                map_lengths: true,
+                                reviews: { select: { review_collections: { select: { userID: true } } } },
+                            },
+                        },
+                    },
+                },
+            },
+        });
 
         if (!exists) {
             res.status(404).json("reviewCollectionID does not exist");

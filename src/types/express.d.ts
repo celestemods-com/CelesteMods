@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { difficulties, goldens_goldenList, publishers, review_collections } from '.prisma/client';
-import { rawTech, rawMod, rawMap, rawReview, rawMapReview } from './internal';
+import { difficulties, goldens_goldenList, publishers } from '.prisma/client';
+import { rawTech, rawMod, rawMap, rawReview, rawMapReview, rawReviewCollection } from './internal';
 
 
 //TODO: refactor to use declare module instead of declare global namespace. see sessionMiddleware.d.ts
@@ -99,7 +99,7 @@ declare global {
       mods?: rawMod[];
       map?: rawMap;
       publisher?: publishers;
-      reviewCollection?: review_collections;
+      reviewCollection?: rawReviewCollection;
       review?: rawReview;
       mapReview?: rawMapReview;
       rating?: reqRating;

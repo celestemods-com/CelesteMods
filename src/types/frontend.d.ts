@@ -104,6 +104,14 @@ export interface ratingsInfo {
 }
 
 
+export interface formattedReviewCollection {
+  id: number;
+  userID: number;
+  name: string;
+  description: string;
+  reviews?: (formattedReview | string)[];
+}
+
 export interface formattedReview {
   id: number;
   modID: number;
