@@ -291,7 +291,6 @@ router.route("/:reviewID")
                 res.status(400).json("Malformed request body");
                 return;
             }
-            console.log("passed json validation")
 
 
             const rawReview = await prisma.reviews.update({
