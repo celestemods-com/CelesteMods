@@ -5,12 +5,10 @@ import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from
 import { mapReviewPost } from "./mapReviews";
 import { formatReview, formatReviews, param_reviewCollectionID, param_reviewID } from "../helperFunctions/reviewCollections-reviews-mapReviews";
 import { formatRatings } from "../helperFunctions/ratings";
-import { checkPermissions, checkSessionAge, mapReviewersPermsArray, mapStaffPermsArray } from "../helperFunctions/sessions";
+import { adminPermsArray, checkPermissions, checkSessionAge, mapReviewersPermsArray, mapStaffPermsArray } from "../helperFunctions/sessions";
 import { param_userID } from "../helperFunctions/users";
-import { getCurrentTime } from "../helperFunctions/utils";
-import { getLengthID, lengthErrorMessage } from "../helperFunctions/lengths";
 
-import { validateReviewPatch, validateReviewPost } from "../jsonSchemas/reviewCollections-reviews-mapReviews";
+import { validateReviewCollectionPatch, validateReviewCollectionPost } from "../jsonSchemas/reviewCollections-reviews-mapReviews";
 
 import {
     createMapReviewData, createRatingData, createReviewData, jsonCreateMapReviewWithReview, rawRating, rawReview, updateRatingDataConnectDifficulty,
@@ -40,7 +38,40 @@ router.route("/")
     })
     .post(async function (req, res, next) {
         try {
+            const permission = await checkPermissions(req, mapReviewersPermsArray, true, res);
+            if (!permission) return;
 
+            
+            const isAdmin = await checkPermissions(req, adminPermsArray, true);
+
+
+            const userID: number = isAdmin ? req.body.userID : req.session.userID;
+            const name: string = req.body.name;
+            const description: string = req.body.description;
+
+
+            const valid = validateReviewCollectionPost({
+                userID: userID,
+                name: name,
+                description: description,
+            });
+    
+            if (!valid) {
+                res.status(400).json("Malformed request body");
+                return;
+            }
+
+
+            const reviewCollection = await prisma.review_collections.create({
+                data: {
+                    userID: userID,
+                    name: name,
+                    description: description,
+                },
+            });
+
+
+            res.status(201).json(reviewCollection);
         }
         catch (error) {
             next(error);
@@ -94,7 +125,7 @@ router.param("userID", async function (req, res, next) {
 router.route("/users/:userID")
     .get(async function (req, res, next) {
         try {
-            const userID = <number>req.id2;
+            const userID = req.id2!;
 
 
             const reviewCollections = prisma.review_collections.findMany({ where: { userID: userID } });
@@ -135,7 +166,54 @@ router.route("/:reviewCollectionID")
     })
     .patch(async function (req, res, next) {
         try {
+            const id = req.id!;
+            const reviewCollectionFromID = req.reviewCollection!;
+            const userIdFromReviewCollection = reviewCollectionFromID.userID;
 
+
+            let permitted: boolean;
+
+            if (req?.session?.userID === userIdFromReviewCollection) {
+                permitted = await checkSessionAge(req, res);
+            }
+            else {
+                permitted = await checkPermissions(req, mapStaffPermsArray, true, res);
+            }
+
+            if (!permitted) return;
+
+            
+            const isAdmin = await checkPermissions(req, adminPermsArray, true);
+
+
+            const userID: number | undefined = isAdmin ? req.body.userID : undefined;
+            const name: string | undefined = req.body.name;
+            const description: string | undefined = req.body.description;
+
+
+            const valid = validateReviewCollectionPatch({
+                userID: userID,
+                name: name,
+                description: description,
+            });
+
+            if (!valid || (userID === undefined && name === undefined && description === undefined)) {
+                res.status(400).json("Malformed request body");
+                return;
+            }
+
+
+            const reviewCollection = await prisma.review_collections.update({
+                where: { id: id },
+                data: {
+                    userID: userID,
+                    name: name,
+                    description: description,
+                },
+            });
+
+
+            res.status(200).json(reviewCollection);
         }
         catch (error) {
             next(error);
