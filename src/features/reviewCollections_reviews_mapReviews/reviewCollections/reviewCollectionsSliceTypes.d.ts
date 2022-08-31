@@ -1,4 +1,3 @@
-import { formattedReviewCollection } from "../../Imported_Types/frontend";
 import { sliceStatus, requestStatuses } from "../../utils/commonTypes";
 
 
