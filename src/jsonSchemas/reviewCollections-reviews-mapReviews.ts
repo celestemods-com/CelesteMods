@@ -1,5 +1,5 @@
 import ajvModule from "ajv";
-import { intMaxSizes } from "./integerSizes";
+import { intMaxSizes } from "../constants/integerSizes";
 import { maxMapsPerMod } from "./maps-mods-publishers";
 import { maxQuality } from "./ratings";
 
@@ -220,6 +220,55 @@ const reviewPatchSchema = {
 
 
 
+const reviewCollectionPostSchema = {
+    type: "object",
+    properties: {
+        userID: {
+            type: "number",
+            minimum: 0,
+            maximum: intMaxSizes.smallInt.unsigned,
+        },
+        name: {
+            type: "string",
+            minLength: 1,
+            maxLength: 100,
+        },
+        description: {
+            type: "string",
+            minLength: 1,
+            maxLength: 500,
+        },
+    },
+    required: ["name", "description"],
+    additionalProperties: false,
+};
+
+
+const reviewCollectionPatchSchema = {
+    type: "object",
+    properties: {
+        userID: {
+            type: "number",
+            minimum: 0,
+            maximum: intMaxSizes.smallInt.unsigned,
+        },
+        name: {
+            type: "string",
+            minLength: 1,
+            maxLength: 100,
+        },
+        description: {
+            type: "string",
+            minLength: 1,
+            maxLength: 500,
+        },
+    },
+    additionalProperties: false,
+};
+
+
+
+
 const ajv = new ajvModule({
     allowUnionTypes: true,
     schemas: { mapReviewPostSchema },
@@ -241,3 +290,5 @@ export const validateMapReviewPost = ajv.compile(mapReviewPostSchema);
 export const validateMapReviewPatch = ajv.compile(mapReviewPatchSchema);
 export const validateReviewPost = ajv.compile(reviewPostSchema);
 export const validateReviewPatch = ajv.compile(reviewPatchSchema);
+export const validateReviewCollectionPost = ajv.compile(reviewCollectionPostSchema);
+export const validateReviewCollectionPatch = ajv.compile(reviewCollectionPatchSchema);

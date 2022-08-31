@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3002
--- Generation Time: Aug 06, 2022 at 09:23 PM
+-- Generation Time: Aug 31, 2022 at 06:03 AM
 -- Server version: 10.4.21-MariaDB
 -- PHP Version: 8.1.1
 
@@ -358,8 +358,8 @@ INSERT INTO `ratings` (`id`, `mapID`, `submittedBy`, `timeSubmitted`, `quality`,
 CREATE TABLE `reviews` (
   `id` mediumint(5) UNSIGNED NOT NULL,
   `modID` smallint(5) UNSIGNED NOT NULL,
+  `reviewCollectionID` smallint(5) UNSIGNED NOT NULL,
   `timeSubmitted` int(11) NOT NULL,
-  `submittedBy` smallint(5) UNSIGNED NOT NULL,
   `likes` varchar(1000) DEFAULT NULL,
   `dislikes` varchar(1000) DEFAULT NULL,
   `otherComments` varchar(1500) DEFAULT NULL
@@ -369,10 +369,8 @@ CREATE TABLE `reviews` (
 -- Dumping data for table `reviews`
 --
 
-INSERT INTO `reviews` (`id`, `modID`, `timeSubmitted`, `submittedBy`, `likes`, `dislikes`, `otherComments`) VALUES
-(1, 1, 1659735160, 5, 'dgadsg awg agsadf dsf sd fwaefadfsafdsafwef f', NULL, 'fdhjksahfkj ashkj fhksdh fkhweioufhiouahfuisdfkjhawekfhiuawefisdaoifjsaiodfijasehfiawe fawej'),
-(2, 1, 1659739566, 1, NULL, NULL, NULL),
-(5, 2, 1659813745, 1, NULL, NULL, 'test');
+INSERT INTO `reviews` (`id`, `modID`, `reviewCollectionID`, `timeSubmitted`, `likes`, `dislikes`, `otherComments`) VALUES
+(1, 1, 1, 1, 'fsadf awef sdafeaf sadf awef', 'sdf awe fasdfsda faew fae geragfaefw', 'fsdmaf kjwaeh fiwehgahwegi aweiog jlkjdghjklashfbv,mbcxm,bgojiewanfiphjepio jpiof joipsa fo ');
 
 -- --------------------------------------------------------
 
@@ -396,8 +394,28 @@ CREATE TABLE `reviews_maps` (
 --
 
 INSERT INTO `reviews_maps` (`id`, `reviewID`, `mapID`, `lengthID`, `likes`, `dislikes`, `otherComments`, `displayRatingBool`) VALUES
-(2, 2, 1, 4, NULL, NULL, 'dfjkahdsjkfhakwejhfiouaehoiufhdsaifn usidfah uiwaeiuf auiof ioudh iuofhiowuae hefiuo hiaousfh aweuih fui huif hiaw', 0),
-(3, 5, 2, 3, NULL, NULL, 'dfjkahdsjkfhakwejhfiouaehoiufhdsaifn usidfah uiwaeiuf auiof ioudh iuofhiowuae hefiuo hiaousfh aweuih fui huif hiaw', 0);
+(4, 1, 1, 2, 'dshkjfdhlkjsdahfkljsh fih iwea ', 'fdsahwekjahfjksdahfjkshd kufhkjs hfkje hfkaj hkl hkl', 'njegfigoijhsd iofhaweui hfiuah iufh euifh iuseh iuoa', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `review_collections`
+--
+
+CREATE TABLE `review_collections` (
+  `id` smallint(5) UNSIGNED NOT NULL,
+  `userID` smallint(5) UNSIGNED NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `description` varchar(500) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `review_collections`
+--
+
+INSERT INTO `review_collections` (`id`, `userID`, `name`, `description`) VALUES
+(1, 1, 'jfhkdsjhfk afjkldsh fiauw hfiauh fkjaf kjlawef', 'fioweafjioaj fjd iojfaweio jfowaei jfio joifawej fjaio fjopi jfaweoi jfawioe fawjfoiwaj foipaw jfoiaw jfoij ewaoifj wopif jawiojfawiugaiepuhgaw'),
+(3, 5, 'fksdajfklasdjf;lksdajfjksa kl', 'fdsfnaskfhsdajkfhkjsadhfkjsadhflkjsdah');
 
 -- --------------------------------------------------------
 
@@ -417,8 +435,8 @@ CREATE TABLE `session` (
 --
 
 INSERT INTO `session` (`id`, `sid`, `data`, `expiresAt`) VALUES
-('cl6h1v3d60000msfjbko3c537', '9NJW4IU2hvGFrcgpsvJobMFyNw8RxTjK', '{\"cookie\":{\"originalMaxAge\":3000000,\"expires\":\"2022-08-06T00:04:53.698Z\",\"secure\":false,\"httpOnly\":true,\"path\":\"/api\",\"sameSite\":\"strict\"},\"refreshCount\":0,\"userID\":1,\"permissions\":[\"Super_Admin\"]}', '2022-08-06 00:04:53'),
-('cl6i9aguq0000qofj7y19gsva', 'VbuN0GKr2Co_wIDse82eL6JszCsJulcG', '{\"cookie\":{\"originalMaxAge\":3000000,\"expires\":\"2022-08-06T20:12:33.803Z\",\"secure\":false,\"httpOnly\":true,\"path\":\"/api\",\"sameSite\":\"strict\"},\"refreshCount\":0,\"userID\":1,\"permissions\":[\"Super_Admin\"]}', '2022-08-06 20:12:33');
+('cl7h0nf5o0000qofjdb9c7rkn', 'FVaKjoFcRbWriixSrrqOC2_Ybop769hV', '{\"cookie\":{\"originalMaxAge\":2999999,\"expires\":\"2022-08-31T04:24:12.142Z\",\"secure\":false,\"httpOnly\":true,\"path\":\"/api\",\"sameSite\":\"strict\"},\"refreshCount\":0,\"userID\":1,\"permissions\":[\"Super_Admin\"]}', '2022-08-31 04:24:12'),
+('cl7h33dwu0000u4fjaexv3013', 'NAQdB9okw4YOaRq25JfGa1zSftU-Dzfr', '{\"cookie\":{\"originalMaxAge\":3000000,\"expires\":\"2022-08-31T04:51:29.706Z\",\"secure\":false,\"httpOnly\":true,\"path\":\"/api\",\"sameSite\":\"strict\"},\"refreshCount\":0,\"userID\":1,\"permissions\":[\"Super_Admin\"]}', '2022-08-31 04:51:29');
 
 -- --------------------------------------------------------
 
@@ -633,9 +651,9 @@ ALTER TABLE `ratings`
 --
 ALTER TABLE `reviews`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `modAndUser` (`modID`,`submittedBy`),
-  ADD KEY `submittedBy` (`submittedBy`),
-  ADD KEY `modID` (`modID`);
+  ADD UNIQUE KEY `modAndReviewCollection` (`modID`,`reviewCollectionID`),
+  ADD KEY `modID` (`modID`),
+  ADD KEY `reviewCollectionID` (`reviewCollectionID`);
 
 --
 -- Indexes for table `reviews_maps`
@@ -646,6 +664,13 @@ ALTER TABLE `reviews_maps`
   ADD KEY `reviewID` (`reviewID`) USING BTREE,
   ADD KEY `lengthID` (`lengthID`) USING BTREE,
   ADD KEY `mapID` (`mapID`);
+
+--
+-- Indexes for table `review_collections`
+--
+ALTER TABLE `review_collections`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `userID` (`userID`);
 
 --
 -- Indexes for table `session`
@@ -751,13 +776,19 @@ ALTER TABLE `ratings`
 -- AUTO_INCREMENT for table `reviews`
 --
 ALTER TABLE `reviews`
-  MODIFY `id` mediumint(5) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` mediumint(5) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `reviews_maps`
 --
 ALTER TABLE `reviews_maps`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `review_collections`
+--
+ALTER TABLE `review_collections`
+  MODIFY `id` smallint(5) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `tech_list`
@@ -880,7 +911,7 @@ ALTER TABLE `ratings`
 -- Constraints for table `reviews`
 --
 ALTER TABLE `reviews`
-  ADD CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`submittedBy`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`reviewCollectionID`) REFERENCES `review_collections` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`modID`) REFERENCES `mods_ids` (`id`) ON DELETE CASCADE;
 
 --
@@ -890,6 +921,12 @@ ALTER TABLE `reviews_maps`
   ADD CONSTRAINT `reviews_maps_ibfk_1` FOREIGN KEY (`reviewID`) REFERENCES `reviews` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `reviews_maps_ibfk_2` FOREIGN KEY (`lengthID`) REFERENCES `map_lengths` (`id`),
   ADD CONSTRAINT `reviews_maps_ibfk_3` FOREIGN KEY (`mapID`) REFERENCES `maps_ids` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `review_collections`
+--
+ALTER TABLE `review_collections`
+  ADD CONSTRAINT `review_collections_ibfk_1` FOREIGN KEY (`userID`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `tech_list`
