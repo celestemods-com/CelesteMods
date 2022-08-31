@@ -18,7 +18,7 @@ const helmetConfigObject: HelmetOptions = {
     originAgentCluster: true,
     dnsPrefetchControl: { allow: true },
     ieNoOpen: true,
-    frameguard: { action: "SAMEORIGIN" },
+    frameguard: { action: "sameorigin" },
     permittedCrossDomainPolicies: false,
     hidePoweredBy: true,
     xssFilter: true,
