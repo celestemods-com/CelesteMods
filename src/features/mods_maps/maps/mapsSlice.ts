@@ -5,6 +5,7 @@ import axios, { AxiosResponse } from "axios";
 import { getMapState } from "./mapsSliceHelpers";
 import { cmlBaseUri } from "../../../constants";
 import { getCurrentTime } from "../../../utils/utils";
+import { setSliceFetch_loading, setSliceFetch_rejected } from "../../../utils/reduxHelpers";
 
 import { mapEntities, mapsState, setSliceFetch_fulfilledByModsActions } from "./mapsSliceTypes";
 import { formattedMap } from "../../../Imported_Types/frontend";
@@ -26,12 +27,8 @@ export const mapsSlice = createSlice({
     name: "maps",
     initialState,
     reducers: {
-        setSliceFetch_loading(state) {
-            state.status.fetchStatus = "loading";
-        },
-        setSliceFetch_rejected(state) {
-            state.status.fetchStatus = "rejected";
-        },
+        setSliceFetch_loading,
+        setSliceFetch_rejected,
         setSliceFetch_fulfilledByMods(state, action: setSliceFetch_fulfilledByModsActions) {
             const newEntities: mapEntities = {};
             const lastFetchTime = state.status.timeFetched;

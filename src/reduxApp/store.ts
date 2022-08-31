@@ -5,6 +5,7 @@ import { mapsSlice } from "../features/mods_maps/maps/mapsSlice";
 import { difficultiesSlice } from "../features/difficulties/difficultiesSlice";
 import { techsSlice } from "../features/techs/techsSlice";
 import { reviewCollectionsSlice } from "../features/reviewCollections_reviews_mapReviews/reviewCollections/reviewCollectionsSlice";
+import { reviewsSlice } from "../features/reviewCollections_reviews_mapReviews/reviews/reviewsSlice";
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     difficulties: difficultiesSlice.reducer,
     techs: techsSlice.reducer,
     reviewCollections: reviewCollectionsSlice.reducer,
+    reviews: reviewsSlice.reducer,
   },
 });
 
@@ -25,3 +27,9 @@ export type AppThunk<ReturnType = void> = ThunkAction<
   unknown,
   Action<string>
 >;
+
+// type Values<T> = T[keyof T];
+
+// type State = ReturnType<typeof store.getState>;
+
+// export type States = Values<State>
