@@ -48,11 +48,9 @@ export const mapsSlice = createSlice({
                     const map = mapArrayOrString[0];
 
                     const id = map.id;
-                    const mapState = getMapState(map);
-
 
                     newEntities[id] = {
-                        mapState: mapState,
+                        mapState: getMapState(map),
                     }
                 });
             });
