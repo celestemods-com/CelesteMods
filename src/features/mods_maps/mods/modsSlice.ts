@@ -5,12 +5,12 @@ import axios, { AxiosResponse } from "axios";
 import { getModState, getModStateForTable } from "./modsSliceHelpers";
 import { getCurrentTime } from "../../../utils/utils";
 import { cmlBaseUri } from "../../../constants";
+import { mapsSlice } from "../maps/mapsSlice";
 
 import {
     modsState, setModTableSortColumnAction, setModTableSortDirectionAction, toggleModTableItemBoolActions, setModTableItemBoolActions, modEntities, modTableItemState
 } from "./modsSliceTypes";
 import { formattedMod } from "../../../Imported_Types/frontend";
-import { mapsSlice } from "../maps/mapsSlice";
 
 //TODO: memoize selectors with createSelector() from RTK
 //TODO: refactor selectModsState so it accepts other selectors as a parameter
