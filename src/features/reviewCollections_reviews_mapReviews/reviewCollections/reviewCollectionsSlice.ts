@@ -2,9 +2,11 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../../reduxApp/store";
 import axios, { AxiosResponse } from "axios";
 
-import { getReviewCollectionState } from "./reviewCollectionHelpers";
+import { getReviewCollectionState } from "./reviewCollectionSliceHelpers";
 import { cmlBaseUri } from "../../../constants";
 import { getCurrentTime } from "../../../utils/utils";
+import { reviewsSlice } from "../reviews/reviewsSlice";
+import { mapReviewsSlice } from "../mapReviews/mapReviewSlice";
 
 import { reviewCollectionEntities, reviewCollectionsState } from "./reviewCollectionsSliceTypes";
 import { formattedReviewCollection } from "../../../Imported_Types/frontend";
@@ -62,12 +64,32 @@ export const reviewCollectionsSlice = createSlice({
 
 
 export const fetchReviewCollections = createAsyncThunk("reviewCollections",
-    async () => {
-        const url = `${cmlBaseUri}/reviewcollections`;
+    async (_isInitialLoad: boolean, { dispatch }) => {
+        const reviewsSliceActions = reviewsSlice.actions;
+        const mapReviewsSliceActions = mapReviewsSlice.actions;
 
-        const response: AxiosResponse<formattedReviewCollection[]> = await axios.get(url);
+        try {
+            dispatch(reviewsSliceActions.setSliceFetch_loading);
+            dispatch(mapReviewsSliceActions.setSliceFetch_loading);
 
-        return response.data;
+
+            const url = `${cmlBaseUri}/reviewcollections`;
+
+            const response: AxiosResponse<formattedReviewCollection[]> = await axios.get(url);
+
+            const data = response.data;
+
+
+            dispatch(reviewsSliceActions.setSliceFetch_fulfilledByReviewCollections(data));
+            dispatch(mapReviewsSliceActions.setSliceFetch_fulfilledByReviewCollections(data));
+
+            return data;
+        }
+        catch (error) {
+            dispatch(reviewsSliceActions.setSliceFetch_rejected);
+            dispatch(mapReviewsSliceActions.setSliceFetch_rejected);
+            throw error;
+        }
     },
     {
         condition: (isInitialLoad: boolean, { getState }) => {

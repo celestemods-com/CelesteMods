@@ -9,6 +9,7 @@ import { setSliceFetch_loading, setSliceFetch_rejected } from "../../../utils/re
 
 import { reviewEntities, reviewsState, setSliceFetch_fulfilledByReviewCollectionsActions } from "./reviewsSliceTypes";
 import { formattedReview } from "../../../Imported_Types/frontend";
+import { mapReviewsSlice } from "../mapReviews/mapReviewSlice";
 
 
 
@@ -29,8 +30,34 @@ export const reviewsSlice = createSlice({
     reducers: {
         setSliceFetch_loading,
         setSliceFetch_rejected,
-        setSliceFetch_fulfilledByReviewCollections (state, action: setSliceFetch_fulfilledByReviewCollectionsActions) {
-            
+        setSliceFetch_fulfilledByReviewCollections(state, action: setSliceFetch_fulfilledByReviewCollectionsActions) {
+            const newEntities: reviewEntities = {};
+            const lastFetchTime = state.status.timeFetched;
+            const currentTime = getCurrentTime();
+
+
+            if (lastFetchTime >= currentTime - 500) return;  //if fetched in the last 500ms, don't update state
+
+
+            action.payload.forEach(reviewCollection => {
+                const reviews = reviewCollection.reviews;
+
+                if (!reviews || !reviews.length) return;
+
+
+                reviews.forEach((reviewOrString) => {
+                    if (typeof reviewOrString === "string") return;
+
+                    const id = reviewOrString.id;
+
+                    newEntities[id] = getReviewState(reviewOrString);
+                });
+            });
+
+
+            state.entities = newEntities;
+            state.status.fetchStatus = "loaded";
+            state.status.timeFetched = currentTime;
         },
     },
     extraReducers: (builder) => {
@@ -69,12 +96,28 @@ export const reviewsSlice = createSlice({
 
 
 export const fetchReviews = createAsyncThunk("reviews",
-    async () => {
-        const url = `${cmlBaseUri}/reviews`;
+    async (_isInitialLoad: boolean, { dispatch }) => {
+        const mapReviewsSliceActions = mapReviewsSlice.actions;
 
-        const response: AxiosResponse<formattedReview[]> = await axios.get(url);
+        try {
+            dispatch(mapReviewsSliceActions.setSliceFetch_loading);
 
-        return response.data;
+
+            const url = `${cmlBaseUri}/reviews`;
+
+            const response: AxiosResponse<formattedReview[]> = await axios.get(url);
+
+            const data = response.data;
+
+
+            dispatch(mapReviewsSliceActions.setSliceFetch_fulfilledByReviews(data));
+
+            return data;
+        }
+        catch (error) {
+            dispatch(mapReviewsSliceActions.setSliceFetch_rejected);
+            throw error;
+        }
     },
     {
         condition: (isInitialLoad: boolean, { getState }) => {
