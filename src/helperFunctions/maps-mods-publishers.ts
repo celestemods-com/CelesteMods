@@ -259,13 +259,6 @@ export const formatMod = async function (rawMod: rawMod) {
                 }));
 
 
-        let formattedDifficultiesArray: (number | number[])[];
-
-        if (rawMod.difficulties) {
-            formattedDifficultiesArray = getSortedDifficultyIDs(rawMod.difficulties, id);
-        }
-
-
         const outerFormattedMod = rawMod.mods_details.map((modDetails) => {
             const revision = modDetails.revision;
             const innerType = modDetails.type;
@@ -305,7 +298,7 @@ export const formatMod = async function (rawMod: rawMod) {
 
 
             if (rawMod.difficulties) {
-                innerFormattedMod.difficulties = formattedDifficultiesArray;
+                innerFormattedMod.difficulties = getSortedDifficultyIDs(rawMod.difficulties, id);;
             }
 
 
