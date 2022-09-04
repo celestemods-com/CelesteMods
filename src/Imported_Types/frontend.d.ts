@@ -114,6 +114,10 @@ export interface ratingInfo {
   difficultyCount: number;
 }
 
+export interface ratingsInfosTreeObjectType {
+  [key: number]: ratingInfo
+}
+
 
 export interface formattedReviewCollection {
   id: number;
