@@ -4,14 +4,16 @@ import { prisma } from "../middlewaresAndConfigs/prismaClient";
 import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../helperFunctions/errorHandling";
 import { param_modID, param_mapID } from "../helperFunctions/maps-mods-publishers";
 import { param_userID } from "../helperFunctions/users";
-import { formatRating, formatRatings, getRatingsInfo } from "../helperFunctions/ratings";
+import { formatRating, formatRatings, getRatingInfo, getRatingInfoTreeObject } from "../helperFunctions/ratings";
 import { adminPermsArray, checkPermissions, checkSessionAge } from "../helperFunctions/sessions";
 import { getCurrentTime } from "../helperFunctions/utils";
 import { isValidDifficultyID } from "../helperFunctions/difficulties";
 
 import { validateRatingPost, validateRatingPatch } from "../jsonSchemas/ratings";
 
-import { rawRating, createRatingData, updateRatingDataConnectDifficulty, updateRatingDataNullDifficulty } from "../types/internal";
+import {
+    rawRating, createRatingData, updateRatingDataConnectDifficulty, updateRatingDataNullDifficulty, ratingsTreeObjectType, ratingsInfosTreeObjectType
+} from "../types/internal";
 
 
 const router = express.Router();
@@ -57,26 +59,26 @@ router.route("/")
             const difficultyID: number | undefined = !req.body.difficultyID ? undefined : req.body.difficultyID;
             const permission = await checkPermissions(req, [], true, res);
             if (!permission) return;
-        
-        
+
+
             const currentTime = getCurrentTime();
-        
+
             const userID = <number>req.session.userID;  //must be defined, otherwise checkPermissions would have returned false
-        
-        
+
+
             const valid = validateRatingPost({
                 mapID: mapID,
                 quality: quality,
                 difficultyID: difficultyID,
             });
-        
+
             if (!valid) {
                 res.errorSent = true;
                 res.status(400).json("Malformed request body");
                 return;
             }
-        
-        
+
+
             const rawRatingFromMapID = await prisma.ratings.findUnique({
                 where: {
                     mapID_submittedBy: {
@@ -86,26 +88,26 @@ router.route("/")
                 },
                 include: { difficulties: true },
             });
-        
+
             if (rawRatingFromMapID) {
                 const formattedRatingFromID = formatRating(rawRatingFromMapID);
-        
+
                 if (isErrorWithMessage(formattedRatingFromID)) throw formattedRatingFromID;
-        
-        
+
+
                 res.status(200).json(formattedRatingFromID);    //don't need to check for perms. the submitting user will always be the same as the matching rating's user
-        
+
                 return;
             }
-        
-        
+
+
             const createRatingObject: createRatingData = {
                 maps_ids: { connect: { id: mapID } },
                 users: { connect: { id: userID } },
                 timeSubmitted: currentTime,
                 quality: quality,
             };
-        
+
             if (difficultyID) {
                 const difficultyFromID = await isValidDifficultyID(difficultyID, true, true);
 
@@ -117,8 +119,8 @@ router.route("/")
 
                 createRatingObject.difficulties = { connect: { id: difficultyID } };
             }
-        
-        
+
+
             const rawRating = await prisma.ratings.create({
                 data: createRatingObject,
                 include: { difficulties: true },
@@ -317,10 +319,44 @@ router.route("/mods/:modID")
             }
 
 
-            const ratingsInfo = await getRatingsInfo(ratings);
+            const ratingsInfo = await getRatingInfo(ratings);
 
 
             res.json(ratingsInfo);
+        }
+        catch (error) {
+            next(error);
+        }
+    })
+    .all(methodNotAllowed);
+
+
+router.route("/mods")
+    .get(async function (_req, res, next) {
+        try {
+            const ratings = await prisma.ratings.findMany({ include: { maps_ids: { select: { modID: true } } } });
+
+            if (!ratings.length) {
+                res.json(0);
+                return;
+            }
+
+
+            let ratingsTreeObject: ratingsTreeObjectType = {};
+
+            for (const rating of ratings) {
+                const modID = rating.maps_ids.modID;
+
+
+                if (ratingsTreeObject[modID]) ratingsTreeObject[modID].push(rating);
+                else ratingsTreeObject[modID] = [rating];
+            }
+
+
+            const ratingsInfosTreeObject = await getRatingInfoTreeObject(ratingsTreeObject);
+
+
+            res.json(ratingsInfosTreeObject);
         }
         catch (error) {
             next(error);
@@ -378,10 +414,44 @@ router.route("/maps/:mapID")
             }
 
 
-            const ratingsInfo = await getRatingsInfo(ratings);
+            const ratingsInfo = await getRatingInfo(ratings);
 
 
             res.json(ratingsInfo);
+        }
+        catch (error) {
+            next(error);
+        }
+    })
+    .all(methodNotAllowed);
+
+
+router.route("/maps")
+    .get(async function (_req, res, next) {
+        try {
+            const ratings = await prisma.ratings.findMany({ include: { maps_ids: true } });
+
+            if (!ratings.length) {
+                res.json(0);
+                return;
+            }
+
+
+            let ratingsTreeObject: ratingsTreeObjectType = {};
+
+            for (const rating of ratings) {
+                const mapID = rating.mapID;
+
+                
+                if (ratingsTreeObject[mapID]) ratingsTreeObject[mapID].push(rating);
+                else ratingsTreeObject[mapID] = [rating];
+            }
+
+
+            const ratingsInfosTreeObject = await getRatingInfoTreeObject(ratingsTreeObject);
+
+
+            res.json(ratingsInfosTreeObject);
         }
         catch (error) {
             next(error);

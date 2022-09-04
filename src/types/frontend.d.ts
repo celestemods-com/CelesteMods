@@ -105,7 +105,7 @@ export interface formattedRating {
   difficulty?: number[];
 }
 
-export interface ratingsInfo {
+export interface ratingInfo {
   averageQuality?: number;
   averageDifficultyID?: number;
   averageDifficultyValue?: number;

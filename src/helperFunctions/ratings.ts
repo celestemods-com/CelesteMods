@@ -1,8 +1,8 @@
 import { prisma } from "../middlewaresAndConfigs/prismaClient";
 
 import { ratings } from "@prisma/client";
-import { rawRating } from "../types/internal";
-import { formattedRating, ratingsInfo } from "../types/frontend";
+import { ratingsInfosTreeObjectType, ratingsTreeObjectType, rawRating } from "../types/internal";
+import { formattedRating, ratingInfo } from "../types/frontend";
 import { isErrorWithMessage, toErrorWithMessage } from "./errorHandling";
 
 
@@ -63,8 +63,30 @@ export const formatRating = function (rawRating: rawRating) {
 
 
 
-export const getRatingsInfo = async function (ratings: ratings[]) {
+export const getRatingInfoTreeObject = async function (ratingsTreeObject: ratingsTreeObjectType) {
     const difficultyValuesMap = await getDifficultyValuesMap();
+
+
+    let ratingsInfosTreeObject: ratingsInfosTreeObjectType = {};
+
+    for (const [modIDString, ratingsForMod] of Object.entries(ratingsTreeObject)) {
+        const modID = Number(modIDString);
+        if (isNaN(modID)) throw `modIDString ${modIDString} is NaN`;
+
+
+        const ratingInfo = await getRatingInfo(ratingsForMod, difficultyValuesMap);
+
+
+        ratingsInfosTreeObject[modID] = ratingInfo;
+    }
+
+
+    return ratingsInfosTreeObject;
+}
+
+
+export const getRatingInfo = async function (ratings: ratings[], difficultyValuesMap?: Map<number, number>) {
+    difficultyValuesMap ??= await getDifficultyValuesMap();
 
 
     let qualityCount = 0;
@@ -119,7 +141,7 @@ export const getRatingsInfo = async function (ratings: ratings[]) {
     }
 
 
-    const ratingsInfo: ratingsInfo = {
+    const ratingsInfo: ratingInfo = {
         averageQuality: roundedAverageQuality,
         averageDifficultyID: averageDifficultyID,
         averageDifficultyValue: roundedAverageDifficultyValue,
