@@ -6,10 +6,11 @@ import { fetchDifficulties } from "../../../features/difficulties/difficultiesSl
 import { fetchTechs } from "../../../features/techs/techsSlice";
 import { fetchReviewCollections } from "../../../features/reviewCollections_reviews_mapReviews/reviewCollections/reviewCollectionsSlice";
 import { fetchPublishers } from "../../../features/mods_maps_publishers/publishers/publishersSlice";
+import { fetchRatingInfos } from "../../../features/ratings_ratingInfos/ratingInfos/ratingInfosSlice";
+import { fetchRatings } from "../../../features/ratings_ratingInfos/ratings/ratingsSlice";
 
 import { ModsTableHeader } from "./components/ModsTableHeader";
 import { ModTableItems } from "./components/ModTableItems";
-import { fetchRatingInfos } from "../../../features/ratings_ratingInfos/ratingInfos/ratingInfosSlice";
 
 //TODO: implement sorting by column
 
@@ -28,6 +29,7 @@ export function ModsTable() {
         dispatch(fetchPublishers(true));
         dispatch(fetchRatingInfos({ isInitialLoad: true, type: "mods" }));
         dispatch(fetchRatingInfos({ isInitialLoad: true, type: "maps" }));
+        dispatch(fetchRatings(true));
     }, [dispatch]);
 
 
