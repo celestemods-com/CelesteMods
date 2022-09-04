@@ -6,7 +6,7 @@ import { getReviewCollectionState } from "./reviewCollectionsSliceHelpers";
 import { cmlBaseUri } from "../../../constants";
 import { getCurrentTime } from "../../../utils/utils";
 import { reviewsSlice } from "../reviews/reviewsSlice";
-import { mapReviewsSlice } from "../mapReviews/mapReviewSlice";
+import { mapReviewsSlice } from "../mapReviews/mapReviewsSlice";
 
 import { reviewCollectionEntities, reviewCollectionsState } from "./reviewCollectionsSliceTypes";
 import { formattedReviewCollection } from "../../../Imported_Types/frontend";

@@ -1,4 +1,4 @@
-import { mapReviewState } from "./mapReviewSliceTypes";
+import { mapReviewState } from "./mapReviewsSliceTypes";
 import { formattedMapReview } from "../../../Imported_Types/frontend";
 
 

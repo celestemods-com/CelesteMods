@@ -6,7 +6,7 @@ import { difficultiesSlice } from "../features/difficulties/difficultiesSlice";
 import { techsSlice } from "../features/techs/techsSlice";
 import { reviewCollectionsSlice } from "../features/reviewCollections_reviews_mapReviews/reviewCollections/reviewCollectionsSlice";
 import { reviewsSlice } from "../features/reviewCollections_reviews_mapReviews/reviews/reviewsSlice";
-import { mapReviewsSlice } from "../features/reviewCollections_reviews_mapReviews/mapReviews/mapReviewSlice";
+import { mapReviewsSlice } from "../features/reviewCollections_reviews_mapReviews/mapReviews/mapReviewsSlice";
 
 
 export const store = configureStore({

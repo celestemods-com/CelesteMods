@@ -9,7 +9,7 @@ import { setSliceFetch_loading, setSliceFetch_rejected } from "../../../utils/re
 
 import { reviewEntities, reviewsState, setSliceFetch_fulfilledByReviewCollectionsActions } from "./reviewsSliceTypes";
 import { formattedReview } from "../../../Imported_Types/frontend";
-import { mapReviewsSlice } from "../mapReviews/mapReviewSlice";
+import { mapReviewsSlice } from "../mapReviews/mapReviewsSlice";
 
 
 

@@ -2,12 +2,12 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../../reduxApp/store";
 import axios, { AxiosResponse } from "axios";
 
-import { getMapReviewState } from "./mapReviewHelpers";
+import { getMapReviewState } from "./mapReviewsSliceHelpers";
 import { cmlBaseUri } from "../../../constants";
 import { getCurrentTime } from "../../../utils/utils";
 import { setSliceFetch_loading, setSliceFetch_rejected } from "../../../utils/reduxHelpers";
 
-import { mapReviewEntities, mapReviewsState, setSliceFetch_fulfilledByReviewCollectionsActions, setSliceFetch_fulfilledByReviewsActions } from "./mapReviewSliceTypes";
+import { mapReviewEntities, mapReviewsState, setSliceFetch_fulfilledByReviewCollectionsActions, setSliceFetch_fulfilledByReviewsActions } from "./mapReviewsSliceTypes";
 import { formattedMapReview } from "../../../Imported_Types/frontend";
 
 
