@@ -8,6 +8,7 @@ import { reviewCollectionsSlice } from "../features/reviewCollections_reviews_ma
 import { reviewsSlice } from "../features/reviewCollections_reviews_mapReviews/reviews/reviewsSlice";
 import { mapReviewsSlice } from "../features/reviewCollections_reviews_mapReviews/mapReviews/mapReviewsSlice";
 import { publishersSlice } from "../features/mods_maps_publishers/publishers/publishersSlice";
+import { ratingInfosSlice } from "../features/ratings_ratingInfos/ratingInfos/ratingInfosSlice";
 
 
 export const store = configureStore({
@@ -21,6 +22,7 @@ export const store = configureStore({
     reviews: reviewsSlice.reducer,
     mapReviews: mapReviewsSlice.reducer,
     publishers: publishersSlice.reducer,
+    ratingInfos: ratingInfosSlice.reducer,
   },
 });
 

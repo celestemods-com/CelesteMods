@@ -9,6 +9,7 @@ import { fetchPublishers } from "../../../features/mods_maps_publishers/publishe
 
 import { ModsTableHeader } from "./components/ModsTableHeader";
 import { ModTableItems } from "./components/ModTableItems";
+import { fetchRatingInfos } from "../../../features/ratings_ratingInfos/ratingInfos/ratingInfosSlice";
 
 //TODO: implement sorting by column
 
@@ -25,6 +26,8 @@ export function ModsTable() {
         dispatch(fetchTechs(true));
         dispatch(fetchReviewCollections(true));
         dispatch(fetchPublishers(true));
+        dispatch(fetchRatingInfos({ isInitialLoad: true, type: "mods" }));
+        dispatch(fetchRatingInfos({ isInitialLoad: true, type: "maps" }));
     }, [dispatch]);
 
 
