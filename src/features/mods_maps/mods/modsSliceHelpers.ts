@@ -39,7 +39,7 @@ export const getModStateForTable = (mod: mod) => {
     const modState = Array.isArray(mod.modState) ? mod.modState[0] : mod.modState;
     const mapCount = modState.maps.length;
 
-    
+
     const quality = 3;
     const communityDifficulty = "hArD i GuEsS";
     const tech = "Wavedashes";
@@ -99,6 +99,6 @@ export const isModForTable__singleEntry = (entry: modForTable__entry): entry is 
 }
 
 
-export function isModTableColumnNameObjectsType__singleEntry(modTableColumnNameObject: modTableColumnNameObjectsType): modTableColumnNameObject is modTableColumnNameObjectsType__singleEntry {
+export const isModTableColumnNameObjectsType__singleEntry = (modTableColumnNameObject: modTableColumnNameObjectsType): modTableColumnNameObject is modTableColumnNameObjectsType__singleEntry => {
     return (modTableColumnNameObject as modTableColumnNameObjectsType__singleEntry).headerName !== undefined;
 }
