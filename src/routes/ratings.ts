@@ -275,7 +275,7 @@ router.param("modID", async function (req, res, next) {
 });
 
 
-router.route("/mod/:modID/full")
+router.route("/mods/:modID/full")
     .get(async function (req, res, next) {
         try {
             const modID = <number>req.id;
@@ -303,7 +303,7 @@ router.route("/mod/:modID/full")
     .all(methodNotAllowed);
 
 
-router.route("/mod/:modID")
+router.route("/mods/:modID")
     .get(async function (req, res, next) {
         try {
             const modID = <number>req.id;
@@ -336,7 +336,7 @@ router.param("mapID", async function (req, res, next) {
 });
 
 
-router.route("/map/:mapID/full")
+router.route("/maps/:mapID/full")
     .get(async function (req, res, next) {
         try {
             const mapID = <number>req.id;
@@ -364,7 +364,7 @@ router.route("/map/:mapID/full")
     .all(methodNotAllowed);
 
 
-router.route("/map/:mapID")
+router.route("/maps/:mapID")
     .get(async function (req, res, next) {
         try {
             const mapID = <number>req.id;
@@ -397,7 +397,7 @@ router.param("userID", async function (req, res, next) {
 });
 
 
-router.route("/user/:userID/full")
+router.route("/users/:userID/full")
     .get(async function (req, res, next) {
         try {
             const userID = <number>req.id2;
