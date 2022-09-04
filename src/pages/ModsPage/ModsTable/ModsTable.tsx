@@ -5,6 +5,7 @@ import { selectModsForTable, fetchMods } from "../../../features/mods_maps_publi
 import { fetchDifficulties } from "../../../features/difficulties/difficultiesSlice";
 import { fetchTechs } from "../../../features/techs/techsSlice";
 import { fetchReviewCollections } from "../../../features/reviewCollections_reviews_mapReviews/reviewCollections/reviewCollectionsSlice";
+import { fetchPublishers } from "../../../features/mods_maps_publishers/publishers/publishersSlice";
 
 import { ModsTableHeader } from "./components/ModsTableHeader";
 import { ModTableItems } from "./components/ModTableItems";
@@ -23,6 +24,7 @@ export function ModsTable() {
         dispatch(fetchDifficulties(true));
         dispatch(fetchTechs(true));
         dispatch(fetchReviewCollections(true));
+        dispatch(fetchPublishers(true));
     }, [dispatch]);
 
 
