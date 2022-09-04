@@ -115,7 +115,7 @@ export interface ratingInfo {
 }
 
 export interface ratingsInfosTreeObjectType {
-  [key: number]: ratingInfo
+  [key: number]: ratingInfo;
 }
 
 
