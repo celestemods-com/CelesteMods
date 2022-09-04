@@ -1,8 +1,8 @@
 import { prisma } from "../middlewaresAndConfigs/prismaClient";
 
 import { ratings } from "@prisma/client";
-import { ratingsInfosTreeObjectType, ratingsTreeObjectType, rawRating } from "../types/internal";
-import { formattedRating, ratingInfo } from "../types/frontend";
+import { ratingsTreeObjectType, rawRating } from "../types/internal";
+import { formattedRating, ratingInfo, ratingsInfosTreeObjectType } from "../types/frontend";
 import { isErrorWithMessage, toErrorWithMessage } from "./errorHandling";
 
 

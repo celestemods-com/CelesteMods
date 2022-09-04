@@ -12,8 +12,9 @@ import { isValidDifficultyID } from "../helperFunctions/difficulties";
 import { validateRatingPost, validateRatingPatch } from "../jsonSchemas/ratings";
 
 import {
-    rawRating, createRatingData, updateRatingDataConnectDifficulty, updateRatingDataNullDifficulty, ratingsTreeObjectType, ratingsInfosTreeObjectType
+    rawRating, createRatingData, updateRatingDataConnectDifficulty, updateRatingDataNullDifficulty, ratingsTreeObjectType
 } from "../types/internal";
+import { ratingsInfosTreeObjectType } from "../types/frontend";
 
 
 const router = express.Router();
@@ -442,7 +443,7 @@ router.route("/maps")
             for (const rating of ratings) {
                 const mapID = rating.mapID;
 
-                
+
                 if (ratingsTreeObject[mapID]) ratingsTreeObject[mapID].push(rating);
                 else ratingsTreeObject[mapID] = [rating];
             }

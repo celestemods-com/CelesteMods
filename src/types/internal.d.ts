@@ -2,7 +2,6 @@ import {
   users, publishers, golden_players, tech_list, tech_videos, difficulties, mods_ids, mods_details, mods_details_type, maps_ids, maps_details, maps_details_side,
   map_lengths, maps_to_tech, ratings, reviews, reviews_maps, users_to_maps, review_collections
 } from ".prisma/client";
-import { permissions, ratingInfo } from "./frontend";
 
 
 //TODO: remove unnecessary interfaces. use <typeof Object.arguments> instead
@@ -313,10 +312,6 @@ export interface ratingForInfo extends ratings {
 
 export interface ratingsTreeObjectType {
   [key: number]: ratingForInfo[]
-}
-
-export interface ratingsInfosTreeObjectType {
-  [key: number]: ratingInfo
 }
 
 
