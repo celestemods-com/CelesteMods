@@ -95,10 +95,10 @@ export const getModStateForTable = (mod: mod) => {
 
 
 export const isModForTable__singleEntry = (entry: modForTable__entry): entry is modForTable__singleEntry => {
-    return Object.keys(entry).includes("value");
+    return (entry as modForTable__singleEntry).value !== undefined;
 }
 
 
 export function isModTableColumnNameObjectsType__singleEntry(modTableColumnNameObject: modTableColumnNameObjectsType): modTableColumnNameObject is modTableColumnNameObjectsType__singleEntry {
-    return Object.keys(modTableColumnNameObject).includes("headerName");
+    return (modTableColumnNameObject as modTableColumnNameObjectsType__singleEntry).headerName !== undefined;
 }
