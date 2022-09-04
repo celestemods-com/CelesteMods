@@ -71,7 +71,7 @@ router.route("/refresh")
 
             refreshCount++;
             req.session.refreshCount = refreshCount;
-            
+
 
             const sessionExpiryTime = req.session.cookie.expires;
 
@@ -86,6 +86,57 @@ router.route("/refresh")
         }
         catch (error) {
             next(toErrorWithMessage(error));
+        }
+    })
+    .all(methodNotAllowed);
+
+
+
+
+router.route("/self")
+    .get(async function (req, res, next) {
+        try {
+            const isLoggedIn = await checkPermissions(req, [], true, res);
+
+            if (!isLoggedIn) return;
+
+
+            const userID = req.session.userID!;
+            const rawUser = await prisma.users.findUnique({
+                where: { id: userID },
+                include: {
+                    users_to_maps: true,
+                    publishers: true,
+                    golden_players: true,
+                }
+            });
+
+            if (!rawUser) {
+                res.sendStatus(401);
+                return;
+            }
+
+
+            const formattedUser = formatFullUser(rawUser);
+
+            if (isErrorWithMessage(formattedUser)) throw formattedUser;
+
+
+            const sessionExpiryTime = req.session.cookie.expires;
+            const refreshCount = req.session.refreshCount ? req.session.refreshCount : 0;
+
+
+            const responseObject = {
+                sessionExpiryTime: sessionExpiryTime,
+                refreshCount: refreshCount,
+                celestemodsUser: formattedUser,
+            };
+
+
+            res.json(responseObject);
+        }
+        catch (error) {
+            next(error);
         }
     })
     .all(methodNotAllowed);
