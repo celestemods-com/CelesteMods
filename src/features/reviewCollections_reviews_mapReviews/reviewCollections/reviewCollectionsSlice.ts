@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../../reduxApp/store";
 import axios, { AxiosResponse } from "axios";
 
-import { getReviewCollectionState } from "./reviewCollectionSliceHelpers";
+import { getReviewCollectionState } from "./reviewCollectionsSliceHelpers";
 import { cmlBaseUri } from "../../../constants";
 import { getCurrentTime } from "../../../utils/utils";
 import { reviewsSlice } from "../reviews/reviewsSlice";
