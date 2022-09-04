@@ -25,14 +25,14 @@ const mapPostSchema = {
             maximum: intMaxSizes.tinyInt.unsigned,
         },
         canonicalDifficulty: {
-            type: "string",
-            minLength: 1,
-            maxLength: 50,
+            type: "integer",
+            minimum: 0,
+            maximum: intMaxSizes.smallInt.unsigned,
         },
-        length: {
-            type: "string",
-            minLength: 1,
-            maxLength: 20,
+        lengthID: {
+            type: "integer",
+            minimum: 0,
+            maximum: intMaxSizes.tinyInt.unsigned,
         },
         description: {
             type: "string",
@@ -51,9 +51,9 @@ const mapPostSchema = {
             minItems: 1,
             maxItems: 500,
             items: {
-                type: "string",
-                minLength: 1,
-                maxLength: 50,
+                type: "integer",
+                minimum: 0,
+                maximum: intMaxSizes.smallInt.unsigned,
             },
         },
         techFC: {
@@ -62,9 +62,9 @@ const mapPostSchema = {
             minItems: 1,
             maxItems: 500,
             items: {
-                type: "string",
-                minLength: 1,
-                maxLength: 50,
+                type: "integer",
+                minimum: 0,
+                maximum: intMaxSizes.smallInt.unsigned,
             },
         },
         mapperUserID: {
@@ -87,16 +87,9 @@ const mapPostSchema = {
             enum: ["A", "B", "C", "D", "E"],
         },
         modDifficulty: {
-            type: ["string", "array"],
-            minLength: 1,
-
-            uniqueItems: false,
-            minItems: 2,
-            maxItems: 2,
-            items: {
-                type: "string",
-                minLength: 1,
-            },
+            type: "integer",
+            minimum: 0,
+            maximum: intMaxSizes.smallInt.unsigned,
         },
         overallRank: {
             type: "integer",
@@ -144,16 +137,9 @@ const mapPostSchema = {
             if: {
                 properties: {
                     modDifficulty: {
-                        type: ["string", "array"],
-                        minLength: 1,
-
-                        uniqueItems: false,
-                        minItems: 2,
-                        maxItems: 2,
-                        items: {
-                            type: "string",
-                            minLength: 1,
-                        },
+                        type: "integer",
+                        minimum: 0,
+                        maximum: intMaxSizes.smallInt.unsigned,
                     },
                 },
                 required: ["modDifficulty"],
@@ -184,7 +170,7 @@ const mapPostSchema = {
             },
         },
     ],
-    required: ["name", "length"],
+    required: ["name", "lengthID"],
     additionalProperties: false,
 };
 
@@ -198,9 +184,9 @@ const mapPatchSchema = {
             maxLength: 200,
         },
         canonicalDifficulty: {
-            type: ["string", "null"],
-            minLength: 0,
-            maxLength: 50,
+            type: "integer",
+            minimum: 0,
+            maximum: intMaxSizes.smallInt.unsigned,
         },
         minimumModRevision: {
             type: "integer",
@@ -213,9 +199,9 @@ const mapPatchSchema = {
             maxLength: 50,
         },
         length: {
-            type: "string",
-            minLength: 1,
-            maxLength: 20,
+            type: "integer",
+            minimum: 0,
+            maximum: intMaxSizes.tinyInt.unsigned,
         },
         description: {
             type: ["string", "null"],
@@ -233,9 +219,9 @@ const mapPatchSchema = {
             minItems: 1,
             maxItems: 500,
             items: {
-                type: "string",
-                minLength: 1,
-                maxLength: 50,
+                type: "integer",
+                minimum: 0,
+                maximum: intMaxSizes.smallInt.unsigned,
             },
         },
         techFC: {
@@ -244,9 +230,9 @@ const mapPatchSchema = {
             minItems: 1,
             maxItems: 500,
             items: {
-                type: "string",
-                minLength: 1,
-                maxLength: 50,
+                type: "integer",
+                minimum: 0,
+                maximum: intMaxSizes.smallInt.unsigned,
             },
         },
         mapRemovedFromModBool: {
@@ -272,16 +258,9 @@ const mapPatchSchema = {
             maxLength: 50,
         },
         modDifficulty: {
-            type: ["string", "array"],
-            minLength: 1,
-
-            uniqueItems: false,
-            minItems: 2,
-            maxItems: 2,
-            items: {
-                type: "string",
-                minLength: 1,
-            },
+            type: "integer",
+            minimum: 0,
+            maximum: intMaxSizes.smallInt.unsigned,
         },
         overallRank: {
             type: ["integer", "null"],
@@ -329,16 +308,9 @@ const mapPatchSchema = {
             if: {
                 properties: {
                     modDifficulty: {
-                        type: ["string", "array"],
-                        minLength: 1,
-
-                        uniqueItems: false,
-                        minItems: 2,
-                        maxItems: 2,
-                        items: {
-                            type: "string",
-                            minLength: 1,
-                        },
+                        type: "integer",
+                        minimum: 0,
+                        maximum: intMaxSizes.smallInt.unsigned,
                     },
                 },
                 required: ["modDifficulty"],

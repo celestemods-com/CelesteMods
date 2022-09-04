@@ -2,14 +2,13 @@ import express from "express";
 import { prisma } from "../middlewaresAndConfigs/prismaClient";
 
 import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../helperFunctions/errorHandling";
-import { mapReviewPost } from "./mapReviews";
+import { mapReviewPost, invalidMapIDError, invalidLengthIDError } from "./mapReviews";
 import { formatReview, formatReviews, param_reviewID } from "../helperFunctions/reviewCollections-reviews-mapReviews";
 import { formatRatings } from "../helperFunctions/ratings";
 import { param_modID } from "../helperFunctions/maps-mods-publishers";
 import { checkPermissions, checkSessionAge, mapReviewersPermsArray, mapStaffPermsArray } from "../helperFunctions/sessions";
 import { param_userID } from "../helperFunctions/users";
 import { getCurrentTime } from "../helperFunctions/utils";
-import { getLengthID, lengthErrorMessage } from "../helperFunctions/lengths";
 
 import { validateReviewPatch, validateReviewPost } from "../jsonSchemas/reviewCollections-reviews-mapReviews";
 
@@ -22,11 +21,6 @@ import { expressRoute } from "../types/express";
 
 const router = express.Router();
 export { router as reviewsRouter };
-
-
-
-
-const invalidMapStringError = "invalid mapID";
 
 
 
@@ -455,7 +449,7 @@ export const reviewPost = <expressRoute>async function (req, res, next) {   //ca
                         jsonMapReviews.map(
                             async (jsonMapReview) => {
                                 const mapID = jsonMapReview.mapID;
-                                const lengthName = jsonMapReview.length;
+                                const lengthID = jsonMapReview.lengthID;
                                 const likes = jsonMapReview.likes;
                                 const dislikes = jsonMapReview.dislikes;
                                 const otherComments = jsonMapReview.otherComments;
@@ -476,24 +470,16 @@ export const reviewPost = <expressRoute>async function (req, res, next) {   //ca
                                 if (!validMapID) {
                                     res.status(404).json(`mapID ${mapID} does not match any maps in mod ${modID}`);
                                     res.errorSent = true;
-                                    throw invalidMapStringError;
+                                    throw invalidMapIDError;
                                 }
 
+                                
+                                const lengthFromID = await prisma.map_lengths.findUnique({ where: { id: lengthID } });
 
-                                let lengthID: number;
-
-                                try {
-                                    lengthID = await getLengthID(lengthName);
-                                }
-                                catch (error) {
-                                    if (error === lengthErrorMessage) {
-                                        res.status(400).json(lengthErrorMessage);
-                                        res.errorSent = true;
-                                        throw lengthErrorMessage;
-                                    }
-                                    else {
-                                        throw error;
-                                    }
+                                if (!lengthFromID) {
+                                    res.status(404).json(`lengthID ${lengthID} does not match any lengths in the database`);
+                                    res.errorSent = true;
+                                    throw invalidLengthIDError;
                                 }
 
 
@@ -546,8 +532,7 @@ export const reviewPost = <expressRoute>async function (req, res, next) {   //ca
                     );
                 }
                 catch (error) {
-                    if (error === invalidMapStringError) return;
-                    else if (error === lengthErrorMessage) return;
+                    if (res.errorSent) return;
                     throw error;
                 }
 

@@ -5,7 +5,7 @@ import axios from "axios";
 import { isErrorWithMessage, toErrorWithMessage } from "./errorHandling";
 import { difficulties, map_lengths, mods_details_type, publishers, users } from ".prisma/client";
 import { checkPermissions, mapStaffPermsArray } from "./sessions";
-import { getLengthID, lengthErrorMessage } from "./lengths";
+import { checkLengthID, lengthErrorMessage } from "./lengths";
 
 import { maxParentDifficultiesPerMod } from "../jsonSchemas/maps-mods-publishers";
 
@@ -13,14 +13,13 @@ import {
     rawMod, rawMap, createParentDifficultyForMod, createChildDifficultyForMod, jsonCreateMapWithMod, mapIdCreationObjectForMod,
     mapToTechCreationObject, defaultDifficultyForMod, publisherConnectionObject, publisherCreationObject, rawPublisher
 } from "../types/internal";
-import { formattedMod, formattedMap, formattedPublisher } from "../types/frontend";
+import { formattedMod, formattedMap, formattedPublisher, formattedMap_normal, formattedMap_collabOrLobby, formattedMap_contest } from "../types/frontend";
 import { expressRoute } from "../types/express";
 
 
 
 
-const canonicalDifficultyNameErrorMessage = "canonicalDifficulty does not match any default parent difficulty names";
-const techNameErrorMessage = "A tech name in techAny did not match the names of any tech in the celestemods.com database";
+const techIDErrorMessage = "A techID in techAny did not match any tech in the celestemods.com database";
 const gamebananaApiError = "GameBanana api not responding as expected.";
 export const invalidMapperUserIdErrorMessage = "No user found with ID = ";
 export const invalidMapDifficultyErrorMessage = `All maps in a non-Normal mod must be assigned a modDifficulty that matches the difficulties used by the mod (whether default or custom).
@@ -260,10 +259,10 @@ export const formatMod = async function (rawMod: rawMod) {
                 }));
 
 
-        let formattedDifficultiesArray: (string | string[])[];
+        let formattedDifficultiesArray: (number | number[])[];
 
         if (rawMod.difficulties) {
-            formattedDifficultiesArray = getSortedDifficultyNames(rawMod.difficulties, id);
+            formattedDifficultiesArray = getSortedDifficultyIDs(rawMod.difficulties, id);
         }
 
 
@@ -324,7 +323,7 @@ export const formatMod = async function (rawMod: rawMod) {
 
 
 
-const getSortedDifficultyNames = function (difficulties: difficulties[], modID: number) {
+const getSortedDifficultyIDs = function (difficulties: difficulties[], modID: number) {
     const parentDifficultyArray: difficulties[] = [];
     const subDifficultiesArray: difficulties[][] = [];
 
@@ -353,29 +352,27 @@ const getSortedDifficultyNames = function (difficulties: difficulties[], modID: 
     }
 
 
-    const formattedArray: (string | string[])[] = [];   //the array that will be added to formattedMod
+    const formattedArray: (number | number[])[] = [];   //the array that will be added to formattedMod
 
     for (let parentOrder = 1; parentOrder <= parentDifficultyArray.length; parentOrder++) {   //iterate through all parent difficulties
         let parentId = NaN;
-        let parentName = "";
         let hasChildren = false;
 
         for (const difficulty of parentDifficultyArray) {   //find the parent difficulty that matches the current value of parentOrder
             if (difficulty.order === parentOrder) {
                 parentId = difficulty.id;
-                parentName = difficulty.name;
                 break;
             }
         }
 
         for (const siblingArray of subDifficultiesArray) {      //check any of the sibling arrays contain children of the current parent difficulty
             if (siblingArray[0].parentDifficultyID === parentId) {
-                const parentAndChildrenArray = [parentName];    //the parent does have children, so create an array with the parent's name as element 0
+                const parentAndChildrenArray = [parentId];    //the parent does have children, so create an array with the parent's name as element 0
 
                 for (let siblingOrder = 1; siblingOrder <= siblingArray.length; siblingOrder++) {   //iterate through the parent's children
                     for (const sibling of siblingArray) {       //find the sibling difficulty that matches the current value of siblingOrder
                         if (sibling.order === siblingOrder) {
-                            parentAndChildrenArray.push(sibling.name);  //add the matching sibling's name to the array
+                            parentAndChildrenArray.push(sibling.id);  //add the matching sibling's name to the array
                             break;
                         }
                     }
@@ -388,19 +385,19 @@ const getSortedDifficultyNames = function (difficulties: difficulties[], modID: 
         }
 
         if (!hasChildren) {     //the parent does not have children, so add it to formattedArray as a string
-            formattedArray.push(parentName);
+            formattedArray.push(parentId);
         }
     }
 
 
     formattedArray.forEach((parentDifficulty) => {      //check that all orders are continuous
-        if (parentDifficulty === "") {
+        if (!Array.isArray(parentDifficulty) && isNaN(parentDifficulty)) {
             throw `Parent difficulty orders for mod ${modID} are not continuous`;
         }
 
         if (parentDifficulty instanceof Array) {
             parentDifficulty.forEach((childDifficulty) => {
-                if (childDifficulty === "") {
+                if (isNaN(childDifficulty)) {
                     throw `Child difficulty orders for parent difficulty ${parentDifficulty[0]} in mod ${modID} are not continuous`;
                 }
             });
@@ -414,15 +411,16 @@ const getSortedDifficultyNames = function (difficulties: difficulties[], modID: 
 
 
 
-export const getMapIDsCreationArray = async function (res: Response, maps: jsonCreateMapWithMod[], currentModRevision: number, currentTime: number, modType: mods_details_type,
-    publisherName: string, lengthObjectArray: map_lengths[], difficultiesCreationArray: createParentDifficultyForMod[], defaultDifficultyObjectsArray:
-        defaultDifficultyForMod[], modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean, submittingUserId: number, req: Request) {
+export const getMapIDsCreationArray = async function (res: Response, maps: jsonCreateMapWithMod[], currentModRevision: number, currentTime: number,
+    modType: mods_details_type, publisherName: string, lengthObjectArray: map_lengths[], difficultiesCreationArray: createParentDifficultyForMod[],
+    defaultDifficultyObjectsArray: defaultDifficultyForMod[], modHasCustomDifficultiesBool: boolean, submittingUserId: number,
+    req: Request) {
     try {
         const mapIDsCreationArray: mapIdCreationObjectForMod[] = await Promise.all(
             maps.map(
                 async (mapObject: jsonCreateMapWithMod) => {
                     const mapIdCreationObject = await getMapIdCreationObject(mapObject, currentModRevision, currentTime, modType, publisherName, lengthObjectArray,
-                        difficultiesCreationArray, defaultDifficultyObjectsArray, modHasCustomDifficultiesBool, modHasSubDifficultiesBool, submittingUserId, req);
+                        difficultiesCreationArray, defaultDifficultyObjectsArray, modHasCustomDifficultiesBool, submittingUserId, req);
 
                     return mapIdCreationObject;
                 }
@@ -432,13 +430,8 @@ export const getMapIDsCreationArray = async function (res: Response, maps: jsonC
         return mapIDsCreationArray;
     }
     catch (error) {
-        if (error === canonicalDifficultyNameErrorMessage) {
-            res.status(404).json(canonicalDifficultyNameErrorMessage);
-            res.errorSent = true;
-            return;
-        }
-        if (error === techNameErrorMessage) {
-            res.status(404).json(techNameErrorMessage);
+        if (error === techIDErrorMessage) {
+            res.status(404).json(techIDErrorMessage);
             res.errorSent = true;
             return;
         }
@@ -466,20 +459,21 @@ export const getMapIDsCreationArray = async function (res: Response, maps: jsonC
 
 
 const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, currentModRevision: number, currentTime: number, modType: mods_details_type,
-    publisherName: string, lengthObjectArray: map_lengths[], customDifficultiesArray: createParentDifficultyForMod[], defaultDifficultyObjectsArray: defaultDifficultyForMod[],
-    modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean, submittingUserId: number, req: Request) {
+    publisherName: string, lengthObjectArray: map_lengths[], customDifficultiesArray: createParentDifficultyForMod[],
+    defaultDifficultyObjectsArray: defaultDifficultyForMod[], modHasCustomDifficultiesBool: boolean, submittingUserId: number,
+    req: Request) {
 
     const minimumModRevision = currentModRevision === 0 ? 0 : (mapObject.minimumModRevision ? mapObject.minimumModRevision : currentModRevision);
     //a currentModVersion of 0 means that this method is being called from /mods POST so any set value for minimumModRevision is ignored
 
     const mapName = mapObject.name;
-    const lengthName = mapObject.length;
+    const lengthID = mapObject.lengthID;
     const mapDescription = mapObject.description;
     const mapNotes = mapObject.notes;
     const mapRemovedFromModBool = mapObject.mapRemovedFromModBool;
     const techAny = mapObject.techAny;
     const techFC = mapObject.techFC;
-    const canonicalDifficultyName = mapObject.canonicalDifficulty;
+    const canonicalDifficulty = mapObject.canonicalDifficulty;
     const mapperUserID = mapObject.mapperUserID;
     let mapperNameString = mapObject.mapperNameString;
     const chapter = mapObject.chapter;
@@ -488,9 +482,12 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
     const overallRank = mapObject.overallRank;
 
 
-    const canonicalDifficultyID = await getCanonicalDifficultyID(canonicalDifficultyName, techAny);
+    const privilegedUserBool = await checkPermissions(req, mapStaffPermsArray);
 
-    const lengthID = await getLengthID(lengthName, lengthObjectArray);
+
+    const canonicalDifficultyID = await getCanonicalDifficultyID(canonicalDifficulty, techAny, privilegedUserBool);
+
+    await checkLengthID(lengthID, lengthObjectArray);
 
 
     if (mapperUserID) {
@@ -526,10 +523,6 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
     };
 
 
-    const privilegedUserBool = <boolean>await checkPermissions(req, mapStaffPermsArray)
-
-    if (isErrorWithMessage(privilegedUserBool)) throw privilegedUserBool;
-
     if (privilegedUserBool) {
         mapIdCreationObject.maps_details.create[0].timeApproved = currentTime;
         mapIdCreationObject.maps_details.create[0].users_maps_details_approvedByTousers = { connect: { id: submittingUserId } };
@@ -547,7 +540,7 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
     }
     else {
         handleNonNormalMods(mapIdCreationObject, modType, overallRank, modDifficulty, customDifficultiesArray,
-            defaultDifficultyObjectsArray, modHasCustomDifficultiesBool, modHasSubDifficultiesBool);
+            defaultDifficultyObjectsArray, modHasCustomDifficultiesBool);
     }
 
 
@@ -555,11 +548,10 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
         const techCreationObjectArray: mapToTechCreationObject[] = [];
 
 
-        maps_to_tech: { create: { tech_list: { connect: { name: "techName" } } } }
         if (techAny) {
-            techAny.forEach((techName) => {
+            techAny.forEach((techID) => {
                 const techCreationObject = {
-                    tech_list: { connect: { name: techName } },
+                    tech_list: { connect: { id: techID } },
                     fullClearOnlyBool: false,
                 };
 
@@ -569,9 +561,9 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
 
 
         if (techFC) {
-            techFC.forEach((techName) => {
+            techFC.forEach((techID) => {
                 const techCreationObject = {
-                    tech_list: { connect: { name: techName } },
+                    tech_list: { connect: { id: techID } },
                     fullClearOnlyBool: true,
                 };
 
@@ -591,45 +583,28 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
 
 
 const handleNonNormalMods = function (mapIdCreationObject: mapIdCreationObjectForMod, modType: mods_details_type,
-    overallRank: number | undefined, modDifficulty: string | string[] | undefined, customDifficultiesArray: createParentDifficultyForMod[],
-    defaultDifficultyObjectsArray: defaultDifficultyForMod[], modHasCustomDifficultiesBool: boolean, modHasSubDifficultiesBool: boolean) {
+    overallRank: number | undefined, modDifficultyID: number | undefined, customDifficultiesArray: createParentDifficultyForMod[],
+    defaultDifficultyObjectsArray: defaultDifficultyForMod[], modHasCustomDifficultiesBool: boolean) {
 
     if (modType === "Contest") {
         mapIdCreationObject.maps_details.create[0].overallRank = overallRank;
     }
 
-    if (!modDifficulty) throw invalidMapDifficultyErrorMessage;
+    if (!modDifficultyID) throw invalidMapDifficultyErrorMessage;
 
     let validModDifficultyBool = false;
 
     if (modHasCustomDifficultiesBool) {
         if (!customDifficultiesArray.length) throw "customDifficultiesArray is empty";
 
-        if (typeof modDifficulty === "string") {
-            for (const difficulty of customDifficultiesArray) {
-                if (typeof modDifficulty !== "string") throw invalidMapDifficultyErrorMessage;
+        outerLoop: for (const difficulty of customDifficultiesArray) {
+            if (!difficulty.other_difficulties) continue;
 
-                if (difficulty.name === modDifficulty) {
-                    mapIdCreationObject.maps_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: difficulty.id } };
+            for (const childDifficulty of difficulty.other_difficulties.create) {
+                if (childDifficulty.id === modDifficultyID) {
+                    mapIdCreationObject.maps_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: childDifficulty.id } };
                     validModDifficultyBool = true;
-                    break;
-                }
-            }
-        }
-        else {
-            for (const difficulty of customDifficultiesArray) {
-                if (!difficulty.other_difficulties) continue;
-
-                if (difficulty.name === modDifficulty[0]) {
-                    for (const childDifficulty of difficulty.other_difficulties.create) {
-                        if (childDifficulty.name === modDifficulty[1]) {
-                            mapIdCreationObject.maps_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: childDifficulty.id } };
-                            validModDifficultyBool = true;
-                            break;
-                        }
-                    }
-
-                    break;
+                    break outerLoop;
                 }
             }
         }
@@ -637,21 +612,22 @@ const handleNonNormalMods = function (mapIdCreationObject: mapIdCreationObjectFo
     else {
         if (!defaultDifficultyObjectsArray.length) throw "defaultDifficultyObjectsArray is empty";
 
-        if (!(modDifficulty instanceof Array)) throw invalidMapDifficultyErrorMessage;
+        outerLoop: for (const difficulty of defaultDifficultyObjectsArray) {
+            if (!difficulty.other_difficulties?.length) continue;
 
-        for (const difficulty of defaultDifficultyObjectsArray) {
-            if (!difficulty.other_difficulties || !difficulty.other_difficulties.length) continue;
-
-            if (difficulty.name === modDifficulty[0]) {
-                for (const childDifficulty of difficulty.other_difficulties) {
-                    if (childDifficulty.name === modDifficulty[1]) {
-                        validModDifficultyBool = true;
-                        mapIdCreationObject.maps_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: childDifficulty.id } };
-                        break;
-                    }
-                }
-
+            if (difficulty.id === modDifficultyID) {
+                validModDifficultyBool = true;
+                mapIdCreationObject.maps_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: difficulty.id } };
                 break;
+            }
+
+
+            for (const childDifficulty of difficulty.other_difficulties) {
+                if (childDifficulty.id === modDifficultyID) {
+                    validModDifficultyBool = true;
+                    mapIdCreationObject.maps_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: childDifficulty.id } };
+                    break outerLoop;
+                }
             }
         }
     }
@@ -662,7 +638,7 @@ const handleNonNormalMods = function (mapIdCreationObject: mapIdCreationObjectFo
 
 
 
-export const getCanonicalDifficultyID = async function (canonicalDifficultyName: string | null | undefined, techAny: string[] | undefined) {
+export const getCanonicalDifficultyID = async function (canonicalDifficulty: number | null | undefined, techAny: number[] | undefined, privilegedUserBool: boolean) {
     const parentDefaultDifficultyObjectsArray = await prisma.difficulties.findMany({
         where: {
             parentModID: null,
@@ -671,14 +647,8 @@ export const getCanonicalDifficultyID = async function (canonicalDifficultyName:
     });
 
 
-    if (canonicalDifficultyName) {
-        for (const parentDifficulty of parentDefaultDifficultyObjectsArray) {
-            if (parentDifficulty.name === canonicalDifficultyName) {
-                return parentDifficulty.id;
-            }
-        }
-
-        throw canonicalDifficultyNameErrorMessage;
+    if (canonicalDifficulty && privilegedUserBool) {
+        return canonicalDifficulty;
     }
     else {
         if (!techAny) {
@@ -706,11 +676,11 @@ export const getCanonicalDifficultyID = async function (canonicalDifficultyName:
         let highestDifficultyID = 0;
         let highestDifficultyOrder = 0;
 
-        for (const techName of techAny) {
+        for (const techID of techAny) {
             let validTechName = false;
 
             for (const techObject of techObjectsWithDifficultyObjectsArray) {
-                if (techObject.name === techName) {
+                if (techObject.id === techID) {
                     const difficultyOrder = techObject.difficulties.order;
                     validTechName = true;
 
@@ -728,7 +698,7 @@ export const getCanonicalDifficultyID = async function (canonicalDifficultyName:
             }
 
             if (!validTechName) {
-                throw techNameErrorMessage;
+                throw techIDErrorMessage;
             }
         }
 
@@ -771,8 +741,8 @@ export const formatMap = async function (rawMap: rawMap, rawMod?: rawMod) {
                 async (mapDetails) => {
                     const revision = mapDetails.revision;
                     const name = mapDetails.name;
-                    const canonicalDifficulty = mapDetails.difficulties_difficultiesTomaps_details_canonicalDifficultyID.name;
-                    const length = mapDetails.map_lengths.name;
+                    const canonicalDifficulty = mapDetails.canonicalDifficultyID;
+                    const lengthID = mapDetails.map_lengths.id;
                     const description = mapDetails.description === null ? undefined : mapDetails.description;
                     const notes = mapDetails.notes === null ? undefined : mapDetails.notes;
                     const mapRemovedFromModBool = mapDetails.mapRemovedFromModBool;
@@ -811,33 +781,30 @@ export const formatMap = async function (rawMap: rawMap, rawMod?: rawMod) {
                     }
 
 
-                    const innerFormattedMap: formattedMap = {
+                    let innerFormattedMap: formattedMap = {
                         id: id,
                         revision: revision,
                         modID: modID,
                         minimumModRevision: minimumModRevision,
                         name: name,
                         canonicalDifficulty: canonicalDifficulty,
-                        length: length,
+                        lengthID: lengthID,
                         description: description,
                         notes: notes,
-                        mapperUserID: mapperUserID,
-                        mapperNameString: mapperNameString,
                         mapRemovedFromModBool: mapRemovedFromModBool,
                         approved: approvedBool,
                     }
 
-
-                    const techAny: string[] = [];
-                    const techFC: string[] = [];
+                    const techAny: number[] = [];
+                    const techFC: number[] = [];
 
                     if (mapDetails.maps_to_tech) {
                         for (const tech of mapDetails.maps_to_tech) {
                             if (tech.fullClearOnlyBool) {
-                                techFC.push(tech.tech_list.name);
+                                techFC.push(tech.techID);
                             }
                             else {
-                                techAny.push(tech.tech_list.name);
+                                techAny.push(tech.techID);
                             }
                         }
 
@@ -856,7 +823,14 @@ export const formatMap = async function (rawMap: rawMap, rawMod?: rawMod) {
                         innerFormattedMap.side = side;
                     }
                     else {
-                        const modDifficulty = mapDetails.difficulties_difficultiesTomaps_details_modDifficultyID?.name;
+                        innerFormattedMap = {
+                            ...innerFormattedMap,
+                            mapperUserID: mapperUserID,
+                            mapperNameString: mapperNameString,
+                        }
+
+
+                        const modDifficulty = mapDetails.modDifficultyID;
 
                         if (!modDifficulty) throw `modDifficulty is undefined in non-Normal map ${id}`;
 
@@ -866,7 +840,10 @@ export const formatMap = async function (rawMap: rawMap, rawMod?: rawMod) {
                         if (modType === "Contest") {
                             const overallRank = mapDetails.overallRank === null ? undefined : mapDetails.overallRank;
 
-                            innerFormattedMap.overallRank = overallRank;
+                            innerFormattedMap = {
+                                ...innerFormattedMap,
+                                overallRank: overallRank,
+                            }
                         }
                     }
 

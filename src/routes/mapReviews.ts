@@ -24,6 +24,12 @@ export { router as mapReviewsRouter };
 
 
 
+export const invalidMapIDError = "Invalid mapID";
+export const invalidLengthIDError = "Invalid lengthID";
+
+
+
+
 router.route("/")
     .get(async function (_req, res, next) {
         try {
@@ -374,9 +380,9 @@ router.use(errorHandler);
 
 export const mapReviewPost = <expressRoute>async function (req, res, next) {    //called from ./reviews.ts
     try {
-        const reviewID = <number>req.id;
-        const mapID = <number>req.body.mapID;
-        const lengthName: string = req.body.length;
+        const reviewID = req.id!;
+        const mapID: number = req.body.mapID;
+        const lengthID: number = req.body.lengthID;
         const likes: string | undefined = req.body.likes;
         const dislikes: string | undefined = req.body.dislikes;
         const otherComments: string | undefined = req.body.otherComments;
@@ -388,7 +394,7 @@ export const mapReviewPost = <expressRoute>async function (req, res, next) {    
 
         const valid = validateMapReviewPost({
             mapID: mapID,
-            length: lengthName,
+            lengthID: lengthID,
             likes: likes,
             dislikes: dislikes,
             otherComments: otherComments,
@@ -448,24 +454,16 @@ export const mapReviewPost = <expressRoute>async function (req, res, next) {    
             if (!validMapID) {
                 res.status(404).json(`mapID does not match any maps in mod ${reviewFromID.modID}`);
                 res.errorSent = true;
-                return;
+                throw invalidMapIDError;
             }
 
+                                
+            const lengthFromID = await prisma.map_lengths.findUnique({ where: { id: lengthID } });
 
-            let lengthID: number;
-
-            try {
-                lengthID = await getLengthID(lengthName);
-            }
-            catch (error) {
-                if (error === lengthErrorMessage) {
-                    res.status(400).json(lengthErrorMessage);
-                    res.errorSent = true;
-                    return;
-                }
-                else {
-                    throw error;
-                }
+            if (!lengthFromID) {
+                res.status(404).json(`lengthID ${lengthID} does not match any lengths in the database`);
+                res.errorSent = true;
+                throw invalidLengthIDError;
             }
 
 
@@ -584,6 +582,7 @@ export const mapReviewPost = <expressRoute>async function (req, res, next) {    
         }
     }
     catch (error) {
+        if (res.errorSent) return;
         next(error);
     }
 }

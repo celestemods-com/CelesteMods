@@ -84,3 +84,27 @@ export const getLengthID = async function (lengthName: string, lengthObjectArray
 
     return lengthID;
 }
+
+
+
+
+export const checkLengthID = async function (lengthID: number, lengthObjectArray?: map_lengths[]) {
+    if (!lengthObjectArray || !lengthObjectArray.length) {
+        lengthObjectArray = await prisma.map_lengths.findMany();
+    }
+
+
+    let validID = false;
+
+    for (const length of lengthObjectArray) {
+        if (length.id === lengthID) {
+            validID = true;
+            break;
+        }
+    }
+
+    if (validID === false) throw lengthErrorMessage;
+
+    
+    return lengthID;
+}

@@ -142,7 +142,7 @@ export const formatMapReview = async function (rawMapReview: rawMapReview) {
         const id = rawMapReview.id;
         const reviewID = rawMapReview.reviewID;
         const mapID = rawMapReview.mapID;
-        const lengthName = rawMapReview.map_lengths.name;
+        const lengthID = rawMapReview.map_lengths.id;
         const displayRatingBool = rawMapReview.displayRatingBool;
         const likes = rawMapReview.likes;
         const dislikes = rawMapReview.dislikes;
@@ -153,7 +153,7 @@ export const formatMapReview = async function (rawMapReview: rawMapReview) {
             id: id,
             reviewID: reviewID,
             mapID: mapID,
-            length: lengthName,
+            lengthID: lengthID,
             displayRating: displayRatingBool,
         }
 

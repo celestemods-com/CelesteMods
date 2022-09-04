@@ -201,7 +201,7 @@ modsRouter.route("/")
 
 
                 const mapsIDsCreationArray = await getMapIDsCreationArray(res, maps, 0, currentTime, modType, publisherName, lengthObjectArray,
-                    difficultiesCreationArray, defaultDifficultyObjectsArray, modHasCustomDifficultiesBool, modHasSubDifficultiesBool, submittingUserId, req);
+                    difficultiesCreationArray, defaultDifficultyObjectsArray, modHasCustomDifficultiesBool, submittingUserId, req);
 
                 if (res.errorSent) return;
 

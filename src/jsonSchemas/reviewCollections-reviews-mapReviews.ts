@@ -15,10 +15,10 @@ const mapReviewPostSchema = {
             minimum: 0,
             maximum: intMaxSizes.mediumInt.unsigned,
         },
-        length: {
+        lengthID: {
             type: "string",
-            minLength: 1,
-            maxLength: 20,
+            minimum: 0,
+            maximum: intMaxSizes.tinyInt.unsigned,
         },
         likes: {
             type: "string",
@@ -79,7 +79,7 @@ const mapReviewPostSchema = {
             required: ["otherComments"],
         },
     ],
-    required: ["mapID", "length", "displayRating"],
+    required: ["mapID", "lengthID", "displayRating"],
     additionalProperties: false,
 };
 
@@ -88,10 +88,10 @@ const mapReviewPatchSchema = {
     $id: "mapReviewPatchSchema",
     type: "object",
     properties: {
-        lengthName: {
-            type: ["string", "null"],
-            minLength: 1,
-            maxLength: 20,
+        lengthID: {
+            type: "string",
+            minimum: 0,
+            maximum: intMaxSizes.tinyInt.unsigned,
         },
         likes: {
             type: ["string", "null"],

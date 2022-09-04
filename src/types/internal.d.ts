@@ -148,19 +148,19 @@ export interface defaultDifficultyForMod extends difficulties {
 export interface jsonCreateMapWithMod {
   name: string;
   minimumModRevision: number;
-  canonicalDifficulty?: string | null;
-  length: string;
+  canonicalDifficulty?: number | null;
+  lengthID: number;
   description?: string;
   notes?: string;
   mapperUserID?: number;
   mapperNameString: string;
   chapter?: number;
   side?: maps_details_side;
-  modDifficulty?: string | string[];
+  modDifficulty?: number;
   overallRank?: number;
   mapRemovedFromModBool: boolean;
-  techAny?: string[];
-  techFC?: string[];
+  techAny?: number[];
+  techFC?: number[];
 }
 
 
@@ -209,7 +209,7 @@ export interface mapDetailsCreationObjectStandalone extends mapDetailsCreationOb
 }
 
 export interface mapToTechCreationObject {
-  tech_list: { connect: { id: number } | { name: string } },
+  tech_list: { connect: { id: number } },
   fullClearOnlyBool: boolean;
 }
 
@@ -244,19 +244,19 @@ interface modDetailsForMap extends mods_details {
 
 export interface mapValidationJson {
   name: string,
-  canonicalDifficulty?: string | null,
-  length?: string,
+  canonicalDifficulty?: number | null,
+  lengthID?: number,
   description: string | null,
   notes: string | null,
   mapperUserID: number | null,
   mapperNameString?: string,
   chapter?: number,
   side?: maps_details_side,
-  modDifficulty?: string | string[],
+  modDifficulty?: number,
   overallRank?: number | null,
   mapRemovedFromModBool: boolean,
-  techAny: string[] | undefined,
-  techFC: string[] | undefined,
+  techAny: number[] | undefined,
+  techFC: number[] | undefined,
 }
 
 
@@ -364,7 +364,7 @@ export interface createMapReviewDataStandalone extends createMapReviewData {
 
 export interface jsonCreateMapReviewWithReview {
   mapID: number;
-  length: string;
+  lengthID: number;
   likes?: string;
   dislikes?: string;
   otherComments?: string;

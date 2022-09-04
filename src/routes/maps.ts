@@ -3,20 +3,17 @@ import { prisma } from "../middlewaresAndConfigs/prismaClient";
 
 import { isErrorWithMessage, noRouteError, errorHandler, methodNotAllowed } from "../helperFunctions/errorHandling";
 import {
-    invalidMapperUserIdErrorMessage, param_mapID, formatMap, param_mapRevision, getCanonicalDifficultyID,
-    invalidMapDifficultyErrorMessage, noMapDetailsErrorMessage
+    invalidMapperUserIdErrorMessage, param_mapID, formatMap, param_mapRevision, getCanonicalDifficultyID, invalidMapDifficultyErrorMessage, noMapDetailsErrorMessage
 } from "../helperFunctions/maps-mods-publishers";
 import { param_userID } from "../helperFunctions/users";
-import { param_lengthID, param_lengthOrder, getLengthID, lengthErrorMessage } from "../helperFunctions/lengths";
+import { param_lengthID, param_lengthOrder, checkLengthID, lengthErrorMessage } from "../helperFunctions/lengths";
 import { getCurrentTime } from "../helperFunctions/utils";
 import { mapStaffPermsArray, checkPermissions, checkSessionAge } from "../helperFunctions/sessions";
 
 import { validateMapPost, validateMapPatch } from "../jsonSchemas/maps-mods-publishers";
 
 import { mods_details_type, maps_details_side } from ".prisma/client";
-import {
-    rawMap, mapIdCreationObjectStandalone, mapToTechCreationObject, rawMod, mapDetailsCreationObjectStandalone, mapValidationJson
-} from "../types/internal";
+import { rawMap, mapIdCreationObjectStandalone, mapToTechCreationObject, rawMod, mapDetailsCreationObjectStandalone, mapValidationJson } from "../types/internal";
 import { expressRoute } from "../types/express";
 
 
@@ -1132,35 +1129,35 @@ mapsRouter.route("/:mapID")
             if (!permission) return;
 
 
-            const mapID = <number>req.id;
-            const mapFromID = <rawMap>req.map;
+            const mapID = req.id!;
+            const mapFromID = req.map!;
             const modID = mapFromID.modID;
-            const modType = <mods_details_type>mapFromID.mods_ids?.mods_details[0].type;
+            const modType = mapFromID.mods_ids?.mods_details[0].type!;
             const publisherName = <string>mapFromID.mods_ids?.mods_details[0].publishers.name;
             let name: string = req.body.name;
-            const canonicalDifficultyName: string | null | undefined = req.body.canonicalDifficulty;
-            const lengthName: string | undefined = req.body.length
+            const canonicalDifficulty: number | null | undefined = req.body.canonicalDifficulty;
+            let lengthID: number | undefined = req.body.length
             let description: string | null = req.body.description;
             let notes: string | null = req.body.notes;
             let mapperUserID: number | null = req.body.mapperUserID;
             let mapperNameString: string | undefined = req.body.mapperNameString;
             const chapter: number | undefined = req.body.chapter;
             const side: maps_details_side | undefined = req.body.side;
-            const modDifficulty: string | string[] | undefined = req.body.modDifficulty;
+            const modDifficulty: number | undefined = req.body.modDifficulty;
             const overallRank: number | null | undefined = req.body.overallRank;
             let mapRemovedFromModBool: boolean = req.body.mapRemovedFromModBool;
-            const techAny: string[] | undefined = req.body.techAny === null ? undefined : req.body.techAny;
-            const techFC: string[] | undefined = req.body.techFC === null ? undefined : req.body.techFC;
+            const techAny: number[] | undefined = req.body.techAny === null ? undefined : req.body.techAny;
+            const techFC: number[] | undefined = req.body.techFC === null ? undefined : req.body.techFC;
             const currentTime = getCurrentTime();
 
 
-            const submittingUserId = <number>req.session.userID;
+            const submittingUserId = req.session.userID!;
 
 
             const validationJson: mapValidationJson = {
                 name: name,
-                canonicalDifficulty: canonicalDifficultyName,
-                length: lengthName,
+                canonicalDifficulty: canonicalDifficulty,
+                lengthID: lengthID,
                 description: description,
                 notes: notes,
                 mapperUserID: mapperUserID,
@@ -1184,7 +1181,7 @@ mapsRouter.route("/:mapID")
 
             const valid = validateMapPatch(validationJson);
 
-            if (!valid || (modDifficulty && modType === "Normal") || (!name && canonicalDifficultyName === undefined && !lengthName && description === undefined &&
+            if (!valid || (modDifficulty && modType === "Normal") || (!name && canonicalDifficulty === undefined && !lengthID && description === undefined &&
                 notes === undefined && mapperUserID === undefined && !mapperNameString && !chapter && !side && !modDifficulty && overallRank === undefined
                 && !mapRemovedFromModBool && !techAny && !techFC)) {
 
@@ -1216,18 +1213,20 @@ mapsRouter.route("/:mapID")
                 const newRevisionNumber = latestRevisionObject.revision + 1;
 
 
+                const privilegedUserBool = await checkPermissions(req, mapStaffPermsArray);
+
+
                 let canonicalDifficultyID: number;
-                if (canonicalDifficultyName === undefined) {
+                if (canonicalDifficulty === undefined) {
                     canonicalDifficultyID = mapFromID.maps_details[0].canonicalDifficultyID;
                 }
                 else {
-                    canonicalDifficultyID = await getCanonicalDifficultyID(canonicalDifficultyName, techAny);
+                    canonicalDifficultyID = await getCanonicalDifficultyID(canonicalDifficulty, techAny, privilegedUserBool);
                 }
 
 
-                let lengthID: number;
-                if (lengthName) {
-                    lengthID = await getLengthID(lengthName);
+                if (lengthID) {
+                    await checkLengthID(lengthID);
                 }
                 else {
                     lengthID = mapFromID.maps_details[0].lengthID;
@@ -1269,8 +1268,6 @@ mapsRouter.route("/:mapID")
                     mapDetailsCreationObject.users_maps_details_mapperUserIDTousers = { connect: { id: mapperUserID } };
                 }
 
-
-                const privilegedUserBool = await checkPermissions(req, mapStaffPermsArray);
 
                 if (privilegedUserBool) {
                     mapDetailsCreationObject.timeApproved = currentTime;
@@ -1342,32 +1339,31 @@ mapsRouter.route("/:mapID")
                         }
 
 
-                        if (!modDifficulty || (modHasSubDifficultiesBool && (!(modDifficulty instanceof Array) || modDifficulty.length !== 2))) throw invalidMapDifficultyErrorMessage;
+                        if (!modDifficulty) throw invalidMapDifficultyErrorMessage;
 
 
                         if (modHasSubDifficultiesBool) {
-                            const parentDifficultyName = modDifficulty[0];
-                            const childDifficultyName = modDifficulty[1];
-
-                            for (const parentDifficulty of modDifficultiesArray) {
-                                if (parentDifficulty.name === parentDifficultyName) {
-                                    for (const childDifficulty of parentDifficulty.other_difficulties) {
-                                        if (childDifficulty.name === childDifficultyName) {
-                                            mapDetailsCreationObject.difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: childDifficulty.id } };
-                                            validModDifficultyBool = true;
-                                            break;
-                                        }
-                                    }
-
+                            outerLoop: for (const parentDifficulty of modDifficultiesArray) {
+                                if (parentDifficulty.id === modDifficulty) {
+                                    mapDetailsCreationObject.difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: modDifficulty } };
+                                    validModDifficultyBool = true;
                                     break;
+                                }
+
+
+                                for (const childDifficulty of parentDifficulty.other_difficulties) {
+                                    if (childDifficulty.id === modDifficulty) {
+                                        mapDetailsCreationObject.difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: modDifficulty } };
+                                        validModDifficultyBool = true;
+                                        break outerLoop;
+                                    }
                                 }
                             }
                         }
                         else {
-                            const difficultyName = <string>modDifficulty;
                             for (const difficulty of modDifficultiesArray) {
-                                if (difficulty.name === difficultyName) {
-                                    mapDetailsCreationObject.difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: difficulty.id } };
+                                if (difficulty.id === modDifficulty) {
+                                    mapDetailsCreationObject.difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: modDifficulty } };
                                     validModDifficultyBool = true;
                                     break;
                                 }
@@ -1399,9 +1395,9 @@ mapsRouter.route("/:mapID")
                 if (techAny) {
                     techsExistBoolean = true;
 
-                    techAny.forEach((techName) => {
+                    techAny.forEach((techID) => {
                         const techCreationObject = {
-                            tech_list: { connect: { name: techName } },
+                            tech_list: { connect: { id: techID } },
                             fullClearOnlyBool: false,
                         };
 
@@ -1412,9 +1408,9 @@ mapsRouter.route("/:mapID")
                 if (techFC) {
                     techsExistBoolean = true;
 
-                    techFC.forEach((techName) => {
+                    techFC.forEach((techID) => {
                         const techCreationObject = {
-                            tech_list: { connect: { name: techName } },
+                            tech_list: { connect: { id: techID } },
                             fullClearOnlyBool: true,
                         };
 
@@ -1553,19 +1549,19 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
         const publisherName: string = modFromID.mods_details[0].publishers.name;
         const name: string = req.body.name;
         const minimumModRevision: number = !req.body.minimumModRevision ? modFromID.mods_details[0].revision : req.body.minimumModRevision;
-        const canonicalDifficultyName: string | undefined = req.body.canonicalDifficulty === null ? undefined : req.body.canonicalDifficulty;
-        const lengthName: string = req.body.length;
+        const canonicalDifficulty: number | undefined = req.body.canonicalDifficulty === null ? undefined : req.body.canonicalDifficulty;
+        const lengthID: number = req.body.length;
         const description: string | undefined = req.body.description === null ? undefined : req.body.description;
         const notes: string | undefined = req.body.notes === null ? undefined : req.body.notes;
         const mapperUserID: number | undefined = req.body.mapperUserID === null ? undefined : req.body.mapperUserID;
         let mapperNameString: string | undefined = req.body.mapperNameString;
         const chapter: number | undefined = req.body.chapter === null ? undefined : req.body.chapter;
         const side: maps_details_side | undefined = req.body.side === null ? undefined : req.body.side;
-        const modDifficulty: string | string[] | undefined = req.body.modDifficulty === null ? undefined : req.body.modDifficulty;
+        const modDifficulty: number | undefined = req.body.modDifficulty === null ? undefined : req.body.modDifficulty;
         const overallRank: number | null | undefined = req.body.overallRank;
         const mapRemovedFromModBool: boolean = !req.body.mapRemovedFromModBool ? false : req.body.mapRemovedFromModBool;
-        const techAny: string[] | undefined = req.body.techAny === null ? undefined : req.body.techAny;
-        const techFC: string[] | undefined = req.body.techFC === null ? undefined : req.body.techFC;
+        const techAny: number[] | undefined = req.body.techAny === null ? undefined : req.body.techAny;
+        const techFC: number[] | undefined = req.body.techFC === null ? undefined : req.body.techFC;
         const currentTime = getCurrentTime();
 
 
@@ -1575,8 +1571,8 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
         const valid = validateMapPost({
             name: name,
             minimumModRevision: minimumModRevision,
-            canonicalDifficulty: canonicalDifficultyName,
-            length: lengthName,
+            canonicalDifficulty: canonicalDifficulty,
+            length: lengthID,
             description: description,
             notes: notes,
             mapperUserID: mapperUserID,
@@ -1606,8 +1602,12 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
         }
 
 
-        const canonicalDifficultyID = await getCanonicalDifficultyID(canonicalDifficultyName, techAny);
-        const lengthID = await getLengthID(lengthName);
+        const privilegedUserBool = await checkPermissions(req, mapStaffPermsArray);
+
+        if (isErrorWithMessage(privilegedUserBool)) throw privilegedUserBool;
+
+
+        const canonicalDifficultyID = await getCanonicalDifficultyID(canonicalDifficulty, techAny, privilegedUserBool);
 
 
         if (mapperUserID) {
@@ -1648,10 +1648,6 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
             mapIdCreationObject.maps_details.create[0].users_maps_details_mapperUserIDTousers = { connect: { id: mapperUserID } };
         }
 
-
-        const privilegedUserBool = await checkPermissions(req, mapStaffPermsArray);
-
-        if (isErrorWithMessage(privilegedUserBool)) throw privilegedUserBool;
 
         if (privilegedUserBool) {
             mapIdCreationObject.maps_details.create[0].timeApproved = currentTime;
@@ -1694,32 +1690,31 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
             }
 
 
-            if (!modDifficulty || (modHasSubDifficultiesBool && (!(modDifficulty instanceof Array) || modDifficulty.length !== 2))) throw invalidMapDifficultyErrorMessage;
+            if (!modDifficulty) throw invalidMapDifficultyErrorMessage;
 
 
             if (modHasSubDifficultiesBool) {
-                const parentDifficultyName = modDifficulty[0];
-                const childDifficultyName = modDifficulty[1];
-
-                for (const parentDifficulty of modDifficultiesArray) {
-                    if (parentDifficulty.name === parentDifficultyName) {
-                        for (const childDifficulty of parentDifficulty.other_difficulties) {
-                            if (childDifficulty.name === childDifficultyName) {
-                                mapIdCreationObject.maps_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: childDifficulty.id } };
-                                validModDifficultyBool = true;
-                                break;
-                            }
-                        }
-
+                outerLoop: for (const parentDifficulty of modDifficultiesArray) {
+                    if (parentDifficulty.id === modDifficulty) {
+                        mapIdCreationObject.maps_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: modDifficulty } };
+                        validModDifficultyBool = true;
                         break;
+                    }
+
+
+                    for (const childDifficulty of parentDifficulty.other_difficulties) {
+                        if (childDifficulty.id === modDifficulty) {
+                            mapIdCreationObject.maps_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: modDifficulty } };
+                            validModDifficultyBool = true;
+                            break outerLoop;
+                        }
                     }
                 }
             }
             else {
-                const difficultyName = <string>modDifficulty;
                 for (const difficulty of modDifficultiesArray) {
-                    if (difficulty.name === difficultyName) {
-                        mapIdCreationObject.maps_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: difficulty.id } };
+                    if (difficulty.id === modDifficulty) {
+                        mapIdCreationObject.maps_details.create[0].difficulties_difficultiesTomaps_details_modDifficultyID = { connect: { id: modDifficulty } };
                         validModDifficultyBool = true;
                         break;
                     }
@@ -1736,9 +1731,9 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
 
 
             if (techAny) {
-                techAny.forEach((techName) => {
+                techAny.forEach((techID) => {
                     const techCreationObject = {
-                        tech_list: { connect: { name: techName } },
+                        tech_list: { connect: { id: techID } },
                         fullClearOnlyBool: false,
                     };
 
@@ -1748,9 +1743,9 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
 
 
             if (techFC) {
-                techFC.forEach((techName) => {
+                techFC.forEach((techID) => {
                     const techCreationObject = {
-                        tech_list: { connect: { name: techName } },
+                        tech_list: { connect: { id: techID } },
                         fullClearOnlyBool: true,
                     };
 
