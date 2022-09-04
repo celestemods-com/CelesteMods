@@ -1,4 +1,4 @@
-import { sliceStatus, requestStatuses } from "../../utils/commonTypes";
+import { sliceStatus, requestStatuses } from "../../../utils/commonTypes";
 
 
 export interface reviewCollectionState {

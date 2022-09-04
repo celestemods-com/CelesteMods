@@ -1,5 +1,5 @@
 import { formattedRating } from "../../../Imported_Types/frontend";
-import { sliceStatus, requestStatuses } from "../../utils/commonTypes";
+import { sliceStatus, requestStatuses } from "../../../utils/commonTypes";
 
 
 export type ratingEntities = {
