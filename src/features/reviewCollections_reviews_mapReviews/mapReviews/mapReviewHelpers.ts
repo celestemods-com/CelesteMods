@@ -9,7 +9,7 @@ export const getMapReviewState = (mapReview: formattedMapReview): mapReviewState
         id: mapReview.id,
         reviewID: mapReview.reviewID,
         mapID: mapReview.mapID,
-        length: mapReview.length,
+        lengthID: mapReview.lengthID,
         likes: mapReview.likes,
         dislikes: mapReview.dislikes,
         otherComments: mapReview.otherComments,

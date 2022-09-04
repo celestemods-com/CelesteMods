@@ -6,7 +6,7 @@ export interface mapReviewState {
     id: number;
     reviewID: number;
     mapID: number;
-    length: string;//number;
+    lengthID: number;
     likes?: string;
     dislikes?: string;
     otherComments?: string;

@@ -1,5 +1,4 @@
-import { difficulties } from ".prisma/client";
-import { mods_details_type } from "./prismaClient";
+import { mods_details_type } from ".prisma/client";
 
 
 export interface formattedSession {
@@ -34,7 +33,7 @@ export interface formattedTech {
   name: string;
   description?: string;
   videos?: string[];
-  difficulty: difficulties;
+  difficulty: number;
 }
 
 
@@ -44,39 +43,49 @@ export interface formattedMod {
   type: mods_details_type;
   name: string;
   publisherID: number;
-  publisherGamebananaID?: number;
   contentWarning: boolean;
   notes?: string;
   shortDescription: string;
   longDescription?: string;
   gamebananaModID?: number;
   maps: (formattedMap[] | string)[];
-  difficulties?: (string | string[])[];
+  difficulties?: (number | number[])[];
   approved: boolean;
 }
 
 
-export interface formattedMap {
+interface formattedMap_base {
   id: number;
   revision: number;
   modID: number;
   minimumModRevision: number;
   name: string;
-  canonicalDifficulty: string;
-  length: string;
+  canonicalDifficulty: number;
+  lengthID: number;
   description?: string;
   notes?: string;
-  mapperUserID?: number;
-  mapperNameString: string;
-  chapter?: number;
-  side?: string;
-  modDifficulty?: string | string[];
-  overallRank?: number;
   mapRemovedFromModBool: boolean;
-  techAny?: string[];
-  techFC?: string[];
+  techAny?: number[];
+  techFC?: number[];
   approved: boolean;
 }
+
+export interface formattedMap_normal extends formattedMap_base {
+  chapter?: number;
+  side?: string;
+}
+
+export interface formattedMap_collabOrLobby extends formattedMap_base {
+  mapperUserID?: number;
+  mapperNameString: string;
+  modDifficulty?: number | number[];
+}
+
+export interface formattedMap_contest extends formattedMap_collabOrLobby {
+  overallRank?: number;
+}
+
+export type formattedMap = formattedMap_normal | formattedMap_collabOrLobby | formattedMap_contest;
 
 
 export interface formattedPublisher {
@@ -129,7 +138,7 @@ export interface formattedMapReview {
   id: number;
   reviewID: number;
   mapID: number;
-  length: string;
+  lengthID: number;
   likes?: string;
   dislikes?: string;
   otherComments?: string;
