@@ -16,7 +16,7 @@ const mapReviewPostSchema = {
             maximum: intMaxSizes.mediumInt.unsigned,
         },
         lengthID: {
-            type: "string",
+            type: "integer",
             minimum: 0,
             maximum: intMaxSizes.tinyInt.unsigned,
         },
@@ -89,7 +89,7 @@ const mapReviewPatchSchema = {
     type: "object",
     properties: {
         lengthID: {
-            type: "string",
+            type: "integer",
             minimum: 0,
             maximum: intMaxSizes.tinyInt.unsigned,
         },
