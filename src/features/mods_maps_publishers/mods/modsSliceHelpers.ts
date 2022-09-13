@@ -57,5 +57,5 @@ export const getModStateForTable = (mod: mod) => {
         tech: tech,
         cmlDifficulty: maxDifficulty ? `${minDifficulty} - ${maxDifficulty}` : minDifficulty,
         reviews: reviews.join(", "),
-    }// as modForTable;
+    } as modForTable;
 }

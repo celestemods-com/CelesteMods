@@ -71,9 +71,20 @@ export interface setModTableItemBoolActions {
 
 
 export interface modForTable {
-    [key: modTableColumnNamesType[number]]: string | number;
+    id: number,
+    [modTableColumnNames[0].jsName]: string,
+    [modTableColumnNames[1].jsName]: number,
+    [modTableColumnNames[2].jsName]: string,
+    [modTableColumnNames[3].jsName]: {
+        [modTableColumnNames[3].entries[0].jsName]: string,
+        [modTableColumnNames[3].entries[1].jsName]: string,
+    },
+    [modTableColumnNames[4].jsName]: string,
+    [modTableColumnNames[5].jsName]: string,
+    [modTableColumnNames[6].jsName]: string,
 }
 
+type test = modTableColumnNamesType[number];
 
 export type modTableColumnNameObjectsType = modTableColumnNameObjectsType__singleEntry | modTableColumnNameObjectsType__nestedEntry;
 
@@ -85,5 +96,3 @@ export interface modTableColumnNameObjectsType__nestedEntry {
     name: string;
     entries: readonly modTableColumnNameObjectsType__singleEntry[];
 }
-
-export type modTableColumnNamesType = typeof modTableColumnNames[number];

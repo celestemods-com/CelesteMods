@@ -64,20 +64,41 @@ export function ModsPage() {
             borderRadius={"sm"}
             striped
             withColumnBorders
-            highlightOnHover
+            highlightOnHover    //@ts-ignore
             records={modStates}
             columns={[
-                { accessor: modTableColumnNames[0].headerName },
                 {
-                    accessor: modTableColumnNames[1].headerName,
+                    accessor: modTableColumnNames[0].jsName,
+                    title: modTableColumnNames[0].headerName,
+                },
+                {
+                    accessor: modTableColumnNames[1].jsName,
                     title: modTableColumnNames[1].headerName,
                 },
-                { accessor: modTableColumnNames[2].headerName },
-                { accessor: modTableColumnNames[3].entries[0].headerName },
-                { accessor: modTableColumnNames[3].entries[1].headerName },
-                { accessor: modTableColumnNames[4].headerName },
-                { accessor: modTableColumnNames[5].headerName },
-                { accessor: modTableColumnNames[6].headerName },
+                {
+                    accessor: modTableColumnNames[2].jsName,
+                    title: modTableColumnNames[2].headerName,
+                },
+                {
+                    accessor: `${modTableColumnNames[3].jsName}.${modTableColumnNames[3].entries[0].jsName}`,
+                    title: modTableColumnNames[3].entries[0].headerName,
+                },
+                {
+                    accessor: `${modTableColumnNames[3].jsName}.${modTableColumnNames[3].entries[1].jsName}`,
+                    title: modTableColumnNames[3].entries[1].headerName,
+                },
+                {
+                    accessor: modTableColumnNames[4].jsName,
+                    title: modTableColumnNames[4].headerName,
+                },
+                {
+                    accessor: modTableColumnNames[5].jsName,
+                    title: modTableColumnNames[5].headerName,
+                },
+                {
+                    accessor: modTableColumnNames[6].jsName,
+                    title: modTableColumnNames[6].headerName,
+                },
             ]}
         />
     );
