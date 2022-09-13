@@ -1,5 +1,7 @@
+import { modTableColumnCssNames, modTableColumnNames } from "./modsSliceConstants";
 import { mods_details_type } from "../../../Imported_Types/prismaClient";
 import { sliceStatus, requestStatuses } from "../../../utils/commonTypes";
+import { Record } from "mantine-datatable";
 
 
 export interface modState {
@@ -44,9 +46,6 @@ export interface modsState {
     entities: modEntities;
 }
 
-
-export type modTableSortDirection = "Asc" | "Desc";
-
 export interface setModTableSortColumnAction {
     payload: modTableColumnCssNamesType;
     type: string;
@@ -72,27 +71,14 @@ export interface setModTableItemBoolActions {
 
 
 export interface modForTable {
-    id: number;
-    entries: modForTable__entry[];
-}
-
-export type modForTable__entry = modForTable__singleEntry | modForTable__nestedEntry;
-
-export interface modForTable__singleEntry {
-    cssName: string;
-    value: string | number;
-}
-
-export interface modForTable__nestedEntry {
-    entries: modForTable__singleEntry[];
+    [key: modTableColumnNamesType[number]]: string | number;
 }
 
 
 export type modTableColumnNameObjectsType = modTableColumnNameObjectsType__singleEntry | modTableColumnNameObjectsType__nestedEntry;
 
 export interface modTableColumnNameObjectsType__singleEntry {
-    headerName: string;
-    cssName: string;
+    headerName: modTableColumnNamesType;
 }
 
 export interface modTableColumnNameObjectsType__nestedEntry {
@@ -100,4 +86,4 @@ export interface modTableColumnNameObjectsType__nestedEntry {
     entries: readonly modTableColumnNameObjectsType__singleEntry[];
 }
 
-export type modTableColumnCssNamesType = typeof modTableColumnCssNames[number];
+export type modTableColumnNamesType = typeof modTableColumnNames[number];

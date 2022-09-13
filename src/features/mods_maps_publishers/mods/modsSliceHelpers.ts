@@ -1,9 +1,6 @@
-import { modTableColumnNames } from "./modsSliceConstants";
 import { qualities } from "../../../constants";
 
-import {
-    mod, modForTable, modForTable__singleEntry, modForTable__entry, modTableColumnNameObjectsType, modTableColumnNameObjectsType__singleEntry, modState
-} from "./modsSliceTypes";
+import { mod, modForTable, modState } from "./modsSliceTypes";
 import { formattedMod } from "../../../Imported_Types/frontend";
 
 
@@ -50,55 +47,15 @@ export const getModStateForTable = (mod: mod) => {
 
     return {
         id: modState.id,
-        entries: [
-            {
-                cssName: modTableColumnNames[0].cssName,
-                value: modState.name,
-            },
-            {
-                cssName: modTableColumnNames[1].cssName,
-                value: mapCount,
-            },
-            {
-                cssName: modTableColumnNames[2].cssName,
-                value: modState.type,
-            },
-            {
-                entries: [
-                    {
-                        cssName: modTableColumnNames[3].entries[0].cssName,
-                        value: qualities[quality],
-                    },
-                    {
-                        cssName: modTableColumnNames[3].entries[1].cssName,
-                        value: communityDifficulty,
-                    },
-                ],
-            },
-            {
-                cssName: modTableColumnNames[4].cssName,
-                value: tech,
-            },
-            {
-                cssName: modTableColumnNames[5].cssName,
-                value: maxDifficulty ? `${minDifficulty} - ${maxDifficulty}` : minDifficulty,
-            },
-            {
-                cssName: modTableColumnNames[6].cssName,
-                value: reviews.join(", "),
-            },
-        ],
-    } as modForTable;
-}
-
-
-
-
-export const isModForTable__singleEntry = (entry: modForTable__entry): entry is modForTable__singleEntry => {
-    return (entry as modForTable__singleEntry).value !== undefined;
-}
-
-
-export const isModTableColumnNameObjectsType__singleEntry = (modTableColumnNameObject: modTableColumnNameObjectsType): modTableColumnNameObject is modTableColumnNameObjectsType__singleEntry => {
-    return (modTableColumnNameObject as modTableColumnNameObjectsType__singleEntry).headerName !== undefined;
+        name: modState.name,
+        mapCount: mapCount,
+        type: modState.type,
+        communityRatings: {
+            quality: qualities[quality],
+            difficulty: communityDifficulty,
+        },
+        tech: tech,
+        cmlDifficulty: maxDifficulty ? `${minDifficulty} - ${maxDifficulty}` : minDifficulty,
+        reviews: reviews.join(", "),
+    }// as modForTable;
 }
