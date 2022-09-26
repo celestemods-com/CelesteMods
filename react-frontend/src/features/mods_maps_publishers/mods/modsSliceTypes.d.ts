@@ -1,5 +1,5 @@
 import { modTableColumnCssNames, modTableColumnNames } from "./modsSliceConstants";
-import { mods_details_type } from "../../../Imported_Types/prismaClient";
+import { mods_details_type } from ".prisma/client";
 import { sliceStatus, requestStatuses } from "../../../utils/commonTypes";
 import { Record } from "mantine-datatable";
 

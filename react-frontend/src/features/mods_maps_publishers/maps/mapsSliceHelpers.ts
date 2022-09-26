@@ -1,4 +1,4 @@
-import { formattedMap, formattedMap_collabOrLobby, formattedMap_contest, formattedMap_normal } from "../../../Imported_Types/frontend";
+import { formattedMap, formattedMap_collabOrLobby, formattedMap_contest, formattedMap_normal } from "../../../../../express-backend/src/types/frontend";
 import { mapState } from "./mapsSliceTypes";
 
 

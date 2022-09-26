@@ -6,7 +6,7 @@ import { cmlBaseUri } from "../../../constants";
 import { getCurrentTime } from "../../../utils/utils";
 
 import { ratingInfoEntities, ratingInfosState, ratingInfoTypes } from "./ratingInfosSliceTypes";
-import { ratingInfo, ratingsInfosTreeObjectType } from "../../../Imported_Types/frontend";
+import { ratingInfo, ratingsInfosTreeObjectType } from "../../../../../express-backend/src/types/frontend";
 
 
 

@@ -1,4 +1,4 @@
-import { formattedRating } from "../../../Imported_Types/frontend";
+import { formattedRating } from "../../../../../express-backend/src/types/frontend";
 import { sliceStatus, requestStatuses } from "../../../utils/commonTypes";
 
 

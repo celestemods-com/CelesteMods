@@ -8,7 +8,7 @@ import { getCurrentTime } from "../../../utils/utils";
 import { setSliceFetch_loading, setSliceFetch_rejected } from "../../../utils/reduxHelpers";
 
 import { mapEntities, mapsState, setSliceFetch_fulfilledByModsActions } from "./mapsSliceTypes";
-import { formattedMap } from "../../../Imported_Types/frontend";
+import { formattedMap } from "../../../../../express-backend/src/types/frontend";
 
 
 

@@ -6,7 +6,7 @@ import { cmlBaseUri } from "../../../constants";
 import { getCurrentTime } from "../../../utils/utils";
 
 import { publisherEntities, publishersState } from "./publishersSliceTypes";
-import { formattedPublisher } from "../../../Imported_Types/frontend";
+import { formattedPublisher } from "../../../../../express-backend/src/types/frontend";
 
 
 

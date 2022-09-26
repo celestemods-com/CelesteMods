@@ -10,7 +10,7 @@ import { mapsSlice } from "../maps/mapsSlice";
 import {
     modsState, setModTableSortColumnAction, setModTableSortDirectionAction, toggleModTableItemBoolActions, setModTableItemBoolActions, modEntities, modTableItemState
 } from "./modsSliceTypes";
-import { formattedMod } from "../../../Imported_Types/frontend";
+import { formattedMod } from "../../../../../express-backend/src/types/frontend";
 
 //TODO: memoize selectors with createSelector() from RTK
 //TODO: refactor selectModsState so it accepts other selectors as a parameter

@@ -1,5 +1,5 @@
 import { reviewState } from "./reviewsSliceTypes";
-import { formattedReview } from "../../../Imported_Types/frontend";
+import { formattedReview } from "../../../../../express-backend/src/types/frontend";
 
 
 

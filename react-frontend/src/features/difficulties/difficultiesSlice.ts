@@ -6,7 +6,7 @@ import { cmlBaseUri } from "../../constants";
 import { getCurrentTime } from "../../utils/utils";
 
 import { difficultyEntities, difficultiesState } from "./difficultiesSliceTypes";
-import { difficulties } from "../../Imported_Types/prismaClient";
+import { difficulties } from ".prisma/client";
 
 
 

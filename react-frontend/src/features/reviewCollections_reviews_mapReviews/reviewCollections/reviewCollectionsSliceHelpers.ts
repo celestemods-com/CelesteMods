@@ -1,5 +1,5 @@
 import { reviewCollectionState } from "./reviewCollectionsSliceTypes";
-import { formattedReviewCollection } from "../../../Imported_Types/frontend";
+import { formattedReviewCollection } from "../../../../../express-backend/src/types/frontend";
 
 
 

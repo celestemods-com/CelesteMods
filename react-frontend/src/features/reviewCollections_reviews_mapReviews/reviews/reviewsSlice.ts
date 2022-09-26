@@ -8,7 +8,7 @@ import { getCurrentTime } from "../../../utils/utils";
 import { setSliceFetch_loading, setSliceFetch_rejected } from "../../../utils/reduxHelpers";
 
 import { reviewEntities, reviewsState, setSliceFetch_fulfilledByReviewCollectionsActions } from "./reviewsSliceTypes";
-import { formattedReview } from "../../../Imported_Types/frontend";
+import { formattedReview } from "../../../../../express-backend/src/types/frontend";
 import { mapReviewsSlice } from "../mapReviews/mapReviewsSlice";
 
 

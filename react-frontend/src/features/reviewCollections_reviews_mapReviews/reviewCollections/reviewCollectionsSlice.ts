@@ -9,7 +9,7 @@ import { reviewsSlice } from "../reviews/reviewsSlice";
 import { mapReviewsSlice } from "../mapReviews/mapReviewsSlice";
 
 import { reviewCollectionEntities, reviewCollectionsState } from "./reviewCollectionsSliceTypes";
-import { formattedReviewCollection } from "../../../Imported_Types/frontend";
+import { formattedReviewCollection } from "../../../../../express-backend/src/types/frontend";
 
 
 

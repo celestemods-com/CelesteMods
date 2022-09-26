@@ -1,4 +1,4 @@
-import { ratingInfo } from "../../../Imported_Types/frontend";
+import { ratingInfo } from "../../../../../express-backend/src/types/frontend";
 import { sliceStatus, requestStatuses } from "../../../utils/commonTypes";
 
 

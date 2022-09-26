@@ -1,4 +1,4 @@
-import { difficulties } from "../../Imported_Types/prismaClient";
+import { difficulties } from ".prisma/client";
 import { sliceStatus, requestStatuses } from "../../utils/commonTypes";
 
 

@@ -1,4 +1,4 @@
-import { formattedTech } from "../../Imported_Types/frontend";
+import { formattedTech } from "../../../../express-backend/src/types/frontend";
 import { sliceStatus, requestStatuses } from "../../utils/commonTypes";
 
 

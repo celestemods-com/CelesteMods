@@ -1,4 +1,4 @@
-import { formattedPublisher } from "../../../Imported_Types/frontend";
+import { formattedPublisher } from "../../../../../express-backend/src/types/frontend";
 import { sliceStatus, requestStatuses } from "../../../utils/commonTypes";
 
 

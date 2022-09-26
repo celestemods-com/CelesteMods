@@ -6,7 +6,7 @@ import { cmlBaseUri } from "../../constants";
 import { getCurrentTime } from "../../utils/utils";
 
 import { userEntities, usersState } from "./usersSliceTypes";
-import { formattedUser } from "../../Imported_Types/frontend";
+import { formattedUser } from "../../../../express-backend/src/types/frontend";
 
 
 

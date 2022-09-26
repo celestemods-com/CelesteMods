@@ -1,4 +1,4 @@
-import { formattedMod } from "../../../Imported_Types/frontend";
+import { formattedMod } from "../../../../../express-backend/src/types/frontend";
 import { sliceStatus, requestStatuses } from "../../../utils/commonTypes";
 
 

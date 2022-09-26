@@ -6,7 +6,7 @@ import { cmlBaseUri } from "../../constants";
 import { getCurrentTime } from "../../utils/utils";
 
 import { techEntities, techsState } from "./techsSliceTypes";
-import { formattedTech } from "../../Imported_Types/frontend";
+import { formattedTech } from "../../../../express-backend/src/types/frontend";
 
 
 

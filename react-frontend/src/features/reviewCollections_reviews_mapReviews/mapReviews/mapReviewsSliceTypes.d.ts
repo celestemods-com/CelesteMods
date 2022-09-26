@@ -1,4 +1,4 @@
-import { formattedReviewCollection, formattedReview } from "../../../Imported_Types/frontend";
+import { formattedReviewCollection, formattedReview } from "../../../../../express-backend/src/types/frontend";
 import { sliceStatus, requestStatuses } from "../../../utils/commonTypes";
 
 

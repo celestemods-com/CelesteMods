@@ -1,5 +1,5 @@
 import { mapReviewState } from "./mapReviewsSliceTypes";
-import { formattedMapReview } from "../../../Imported_Types/frontend";
+import { formattedMapReview } from "../../../../../express-backend/src/types/frontend";
 
 
 

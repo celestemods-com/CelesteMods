@@ -1,7 +1,7 @@
 import { qualities } from "../../../constants";
 
 import { mod, modForTable, modState } from "./modsSliceTypes";
-import { formattedMod } from "../../../Imported_Types/frontend";
+import { formattedMod } from "../../../../../express-backend/src/types/frontend";
 
 
 
