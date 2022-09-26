@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "sourceMap": false,
+    "strict": true,
+    "lib": ["ESNext"],
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+  },
+  "paths": {
+    "@cml/express-backend": ["./express-backend/src"],
+    "@cml/react-frontend": ["./react-frontend/src"]
+  }
+}

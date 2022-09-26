@@ -1,12 +1,11 @@
 {
+    "extends": "../tsconfig.json",
     "compilerOptions": {
-      "sourceMap": false,
       "outDir": "dist",
       "rootDir": "src",
-      "strict": true,
-      "lib": ["ES2021"],
-      "esModuleInterop": true,
       "target": "ES2021",
-      "moduleResolution": "node",
-    }
+    },
+    "include": [
+      "src"
+    ]
 }
