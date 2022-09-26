@@ -1,16 +1,14 @@
 {
-  "name": "celestemods",
+  "name": "@cml/express-backend",
   "version": "0.6.1",
-  "description": "",
+  "private": true,
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --watch src/ --watch node_modules/.prisma --ext ts,js,json,node,prisma --ignore prisma/ ./src/index.ts",
     "start": "ts-node ./src/index.ts",
-    "startjs": "node ./dist/index.js"
+    "build": "npx tsc",
+    "start-prod": "npm build && node ./dist/index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@prisma/client": "^4.3.1",
     "@quixo3/prisma-session-store": "^3.1.9",

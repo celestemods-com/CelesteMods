@@ -1,5 +1,5 @@
 {
-  "name": "cml-frontend",
+  "name": "@cml/react-frontend",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -33,6 +33,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "dev": "react-scripts start",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
