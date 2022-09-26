@@ -10,7 +10,8 @@
     "dev": "npm run dev --workspaces",
     "start": "npm start --workspaces",
     "build": "npm run build --workspaces",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "postinstall": "cd express-backend && npx prisma generate"
   },
   "devDependencies": {
     "typescript": "^4.8.2"
