@@ -30,7 +30,7 @@
     "react-scripts": "5.0.1",
     "sass": "^1.54.4",
     "typescript": "^4.7.4",
-    "web-vitals": "^2.1.4",
+    "web-vitals": "^3.0.2",
     "@cml/express-backend": "^0.6.1"
   },
   "scripts": {
