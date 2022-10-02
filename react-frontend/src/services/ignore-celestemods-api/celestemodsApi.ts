@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { formattedMod } from "../../Imported_Types/frontend";
+import { formattedMod } from "../../../../express-backend/src/types/frontend";
 
 
 export const celestemodsApi = createApi({
