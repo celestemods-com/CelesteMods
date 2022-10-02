@@ -8,7 +8,11 @@
   ],
   "scripts": {
     "dev": "npm run dev --workspaces",
+    "dev-express": "npm run dev --workspace=express-backend",
+    "dev-react": "npm run dev --workspace=react-frontend",
     "start": "npm start --workspaces",
+    "start-express": "npm start --workspace=express-backend",
+    "start-react": "npm start --workspace=react-frontend",
     "build": "npm run build --workspaces",
     "test": "npm run test --workspaces --if-present",
     "postinstall": "cd express-backend && npx prisma generate"
