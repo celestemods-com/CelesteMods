@@ -18,6 +18,6 @@
     "postinstall": "cd express-backend && npx prisma generate"
   },
   "devDependencies": {
-    "typescript": "^4.8.2"
+    "typescript": "^4.8.4"
   }
 }
