@@ -13,7 +13,7 @@ import { fetchUsers } from "../../features/users/usersSlice";
 
 
 
-export function ModsPage() {
+export const ModsPage = () => {
     const dispatch = useAppDispatch();
 
 
