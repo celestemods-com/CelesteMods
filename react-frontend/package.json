@@ -9,7 +9,7 @@
     "@mantine/dates": "^5.5.4",
     "@mantine/form": "^5.5.4",
     "@mantine/hooks": "^5.3.0",
-    "@mantine/modals": "^5.3.0",
+    "@mantine/modals": "^5.5.4",
     "@mantine/notifications": "^5.3.0",
     "@mantine/nprogress": "^5.5.4",
     "@reduxjs/toolkit": "^1.8.4",
