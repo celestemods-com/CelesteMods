@@ -1,6 +1,9 @@
-import { Container, AppShell, Header, Navbar, Footer, Aside, MantineProvider, Text } from "@mantine/core";
+import { Container, AppShell, MantineProvider } from "@mantine/core";
 import { useState } from "react";
 import { theme } from "./mantine/theme";
+import { AppHeader } from "./otherComponents/header";
+import { AppFooter } from "./otherComponents/footer";
+import { AppNavbar } from "./otherComponents/navbar";
 import { ModsPage } from "./pages/ModsPage/ModsPage";
 
 
@@ -12,46 +15,12 @@ export default function App() {
 
   return (
     <MantineProvider withGlobalStyles withNormalizeCSS theme={theme}>
-      <AppShell header={getHeader(title)} footer={getFooter()}>
+      <AppShell header={AppHeader(title)} footer={AppFooter()}>
         <Container>
           <ModsPage />
+          <AppNavbar title={title} />
         </Container>
       </AppShell>
     </MantineProvider>
   );
-}
-
-
-
-
-const getHeader = (title: string) => {
-  return (
-    <Header height={100}>
-      <Text>
-        {title}
-      </Text>
-    </Header>
-  )
-}
-
-
-const getAside = (title: string) => {
-  return (
-    <Aside>
-      <Text>
-        Currently on {title} page.
-      </Text>
-    </Aside>
-  )
-}
-
-
-const getFooter = () => {
-  return (
-    <Footer height={50}>
-      <Text>
-        This is a footer.
-      </Text>
-    </Footer>
-  )
 }
