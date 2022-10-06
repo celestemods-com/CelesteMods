@@ -18,7 +18,6 @@ export default function App() {
       <AppShell header={AppHeader(title)} footer={AppFooter()}>
         <Container>
           <ModsPage />
-          <AppNavbar title={title} />
         </Container>
       </AppShell>
     </MantineProvider>
