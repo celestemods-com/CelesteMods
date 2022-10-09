@@ -1,8 +1,10 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
+import { MantineProvider } from "@mantine/core";
+import { theme } from "./mantine/theme";
 import { Provider } from "react-redux";
 import { store } from "./reduxApp/store";
-import App from "./App";  //this breaks for some reason when not a default export
+import App from "./App"; //this breaks for some reason when not a default export
 //import reportWebVitals from "./reportWebVitals";
 import "./index.scss";
 
@@ -12,7 +14,9 @@ const root = createRoot(container);
 root.render(
   <React.StrictMode>
     <Provider store={store}>
+      <MantineProvider withGlobalStyles withNormalizeCSS theme={theme}>
         <App />
+      </MantineProvider>
     </Provider>
   </React.StrictMode>
 );
