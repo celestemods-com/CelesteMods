@@ -14,7 +14,7 @@ export const AppHeader = (title: string) => {
       <nav>
         <ul>
           {routes[0].children.map((pageRoot) => {
-            return <li key={pageRoot.path}><NavLink to={pageRoot.path} style={({ isActive }) => isActive ? { fontWeight: 2 } : undefined}>{pageRoot.key}</NavLink></li>;
+            return <li key={pageRoot.path}><NavLink to={pageRoot.path} style={({ isActive }) => isActive ? { fontWeight: 2 } : undefined}>{pageRoot.pathname}</NavLink></li>;
           })}
         </ul>
       </nav>

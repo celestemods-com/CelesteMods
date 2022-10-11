@@ -10,11 +10,13 @@ import { fetchPublishers } from "../../features/mods_maps_publishers/publishers/
 import { fetchRatingInfos } from "../../features/ratings_ratingInfos/ratingInfos/ratingInfosSlice";
 import { fetchRatings } from "../../features/ratings_ratingInfos/ratings/ratingsSlice";
 import { fetchUsers } from "../../features/users/usersSlice";
+import { Navigate, Outlet, useNavigate } from "react-router-dom";
 
 
 
 export const ModsPage = () => {
     const dispatch = useAppDispatch();
+    const navigate = useNavigate();
 
 
     useEffect(() => {
@@ -64,42 +66,64 @@ export const ModsPage = () => {
             borderRadius={"sm"}
             striped
             withColumnBorders
-            highlightOnHover    //@ts-ignore
+            highlightOnHover
             records={modStates}
             columns={[
                 {
                     accessor: modTableColumnNames[0].jsName,
                     title: modTableColumnNames[0].headerName,
+                    sortable: true,
                 },
                 {
                     accessor: modTableColumnNames[1].jsName,
                     title: modTableColumnNames[1].headerName,
+                    sortable: true,
                 },
                 {
                     accessor: modTableColumnNames[2].jsName,
                     title: modTableColumnNames[2].headerName,
+                    sortable: true,
                 },
                 {
                     accessor: `${modTableColumnNames[3].jsName}.${modTableColumnNames[3].entries[0].jsName}`,
                     title: modTableColumnNames[3].entries[0].headerName,
+                    sortable: true,
                 },
                 {
                     accessor: `${modTableColumnNames[3].jsName}.${modTableColumnNames[3].entries[1].jsName}`,
                     title: modTableColumnNames[3].entries[1].headerName,
+                    sortable: true,
                 },
                 {
                     accessor: modTableColumnNames[4].jsName,
                     title: modTableColumnNames[4].headerName,
+                    sortable: true,
                 },
                 {
                     accessor: modTableColumnNames[5].jsName,
                     title: modTableColumnNames[5].headerName,
+                    sortable: true,
                 },
                 {
                     accessor: modTableColumnNames[6].jsName,
                     title: modTableColumnNames[6].headerName,
+                    sortable: true,
                 },
             ]}
+            rowExpansion={{
+                content: ({ record }) => (
+                    <>
+                        <Navigate to={`/mods/${record.id}`} />
+                        <Outlet />
+                    </>
+                ),
+                collapseProps: {
+                    transitionDuration: 100,
+                    animateOpacity: false,
+                    transitionTimingFunction: "ease-out",
+                },
+                allowMultiple: false,
+            }}
         />
     );
 }
