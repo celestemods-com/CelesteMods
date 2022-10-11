@@ -2,7 +2,7 @@ import { useAppDispatch, useAppSelector } from "../../reduxApp/hooks";
 import { DataTable } from "mantine-datatable";
 import { fetchMods, selectModsForTable } from "../../features/mods_maps_publishers/mods/modsSlice";
 import { modTableColumnNames } from "../../features/mods_maps_publishers/mods/modsSliceConstants";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { fetchDifficulties } from "../../features/difficulties/difficultiesSlice";
 import { fetchTechs } from "../../features/techs/techsSlice";
 import { fetchReviewCollections } from "../../features/reviewCollections_reviews_mapReviews/reviewCollections/reviewCollectionsSlice";
@@ -10,13 +10,31 @@ import { fetchPublishers } from "../../features/mods_maps_publishers/publishers/
 import { fetchRatingInfos } from "../../features/ratings_ratingInfos/ratingInfos/ratingInfosSlice";
 import { fetchRatings } from "../../features/ratings_ratingInfos/ratings/ratingsSlice";
 import { fetchUsers } from "../../features/users/usersSlice";
-import { Navigate, Outlet, useNavigate } from "react-router-dom";
+import { Navigate, Outlet, useNavigate, useParams } from "react-router-dom";
+import { ModDropdown } from "./ModDropdown/ModDropdown";
 
 
 
 export const ModsPage = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+
+    let urlModID = Number(useParams().modID);
+    const initialModID = isNaN(urlModID) ? 0 : urlModID;
+
+
+    const [expandedRowModID, setExpandedRowModID] = useState(initialModID);
+    
+    useEffect(() => {
+        if (expandedRowModID === 0) {
+            if (urlModID > 0) {
+                navigate("/mods");
+            }
+        }
+        else if (expandedRowModID !== urlModID) {
+            navigate(`/mods/${expandedRowModID}`);
+        }
+    }, [expandedRowModID]);
 
 
     useEffect(() => {
@@ -110,15 +128,22 @@ export const ModsPage = () => {
                     sortable: true,
                 },
             ]}
+            onRowClick={(record) => {
+                const modID = record.id;
+
+
+                if (expandedRowModID === modID) {
+                    setExpandedRowModID(0);
+                }
+                else {
+                    setExpandedRowModID(modID);
+                }
+            }}
             rowExpansion={{
-                content: ({ record }) => (
-                    <>
-                        <Navigate to={`/mods/${record.id}`} />
-                        <Outlet />
-                    </>
-                ),
+                content: ({ record }) => <ModDropdown modID={record.id} />,
+                initiallyExpanded: (record) => record.id === initialModID,
                 collapseProps: {
-                    transitionDuration: 100,
+                    transitionDuration: 150,
                     animateOpacity: false,
                     transitionTimingFunction: "ease-out",
                 },

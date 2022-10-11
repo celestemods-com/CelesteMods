@@ -2,7 +2,6 @@ import { createBrowserRouter } from "react-router-dom";
 import { HomePage } from "./pages/HomePage";
 import { ModsPage } from "./pages/ModsPage/ModsPage";
 import { AppLayout } from "./otherComponents/AppLayout";
-import { ModDropdown } from "./pages/ModsPage/ModDropdown/ModDropdown";
 
 
 export const routes = [
@@ -20,8 +19,8 @@ export const routes = [
                 pathname: "Mods",
                 children: [
                     {
+                        element: null,
                         path: "/mods/:modID",
-                        element: <ModDropdown />,
                     }
                 ],
             },
