@@ -28,9 +28,7 @@ export interface mapState {
     approvedBy: number;*/
 }
 
-export type map = {
-    mapState: mapState | mapState[],
-}
+export type map = mapState | mapState[];
 
 export type mapEntities = {
     [key: number]: map,

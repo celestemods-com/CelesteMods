@@ -7,9 +7,7 @@ import { getCurrentTime } from "../../../utils/utils";
 import { cmlBaseUri } from "../../../constants";
 import { mapsSlice } from "../maps/mapsSlice";
 
-import {
-    modsState, setModTableSortColumnAction, setModTableSortDirectionAction, toggleModTableItemBoolActions, setModTableItemBoolActions, modEntities, modTableItemState
-} from "./modsSliceTypes";
+import { modsState, modEntities } from "./modsSliceTypes";
 import { formattedMod } from "../../../../../express-backend/src/types/frontend";
 
 //TODO: memoize selectors with createSelector() from RTK
@@ -33,41 +31,13 @@ const initialState: modsState = {
 export const modsSlice = createSlice({
     name: "mods",
     initialState,
-    reducers: {
-        setModTableSortColumn(state, action: setModTableSortColumnAction) {
-            state.sortColumn = action.payload;
-        },
-        toggleModTableSortDirection(state) {
-            const currentDirection = state.sortDirection;
-            state.sortDirection = currentDirection === "Asc" ? "Desc" : "Asc";
-        },
-        setModTableSortDirection(state, action: setModTableSortDirectionAction) {
-            state.sortDirection = action.payload;
-        },
-        toggleModTableItemExpanded(state, action: toggleModTableItemBoolActions) {
-            const id = action.payload;
-            state.entities[id].modTable.expanded = !state.entities[id].modTable.expanded;
-        },
-        setModTableItemExpanded(state, action: setModTableItemBoolActions) {
-            const { id, bool } = action.payload;
-            state.entities[id].modTable.expanded = bool;
-        },
-        toggleModTableItemHidden(state, action: toggleModTableItemBoolActions) {
-            const id = action.payload;
-            state.entities[id].modTable.hidden = !state.entities[id].modTable.hidden;
-        },
-        setModTableItemHidden(state, action: setModTableItemBoolActions) {
-            const { id, bool } = action.payload;
-            state.entities[id].modTable.hidden = bool;
-        },
-    },
+    reducers: {},
     extraReducers: (builder) => {
         builder
             .addCase(fetchMods.pending, (state) => {
                 state.status.fetchStatus = "loading";
             })
             .addCase(fetchMods.fulfilled, (state, action) => {
-                const oldEntities = state.entities;
                 const newEntities: modEntities = {};
                 const lastFetchTime = state.status.timeFetched;
                 const currentTime = getCurrentTime();
@@ -81,23 +51,7 @@ export const modsSlice = createSlice({
                     const id = fetchedMod.id;
 
 
-                    let modTableState: modTableItemState;
-
-                    if (oldEntities.hasOwnProperty(id.toString())) {
-                        modTableState = oldEntities[id].modTable;
-                    }
-                    else {
-                        modTableState = {
-                            expanded: false,
-                            hidden: false,
-                        }
-                    }
-
-
-                    newEntities[id] = {
-                        modState: getModState(fetchedMod),
-                        modTable: modTableState,
-                    }
+                    newEntities[id] = getModState(fetchedMod);
                 });
 
 
@@ -173,18 +127,9 @@ export const selectModsForTable = (rootState: RootState) => {
 }
 
 
-export const selectModForTable = (rootState: RootState, id: number) => {
+export const selectMod = (rootState: RootState, id: number) => {
     const state = selectModsState(rootState).entities;
     const mod = state[id];
 
-    return getModStateForTable(mod);
-}
-
-
-
-
-export const selectModTableItemExpanded = (rootState: RootState, id: number) => {
-    const state = selectModsState(rootState).entities;
-
-    return state[id].modTable.expanded;
+    return mod;
 }

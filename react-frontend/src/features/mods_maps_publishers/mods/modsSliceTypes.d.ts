@@ -24,15 +24,7 @@ export interface modState {
     approvedBy: number;*/
 }
 
-export type modTableItemState = {
-    expanded: boolean;
-    hidden: boolean;
-}
-
-export type mod = {
-    modState: modState | modState[],
-    modTable: modTableItemState,
-}
+export type mod = modState | modState[]
 
 export type modEntities = {
     [key: number]: mod,
@@ -44,29 +36,6 @@ export interface modsState {
     sortColumn: modTableColumnCssNamesType;
     sortDirection: modTableSortDirection;
     entities: modEntities;
-}
-
-export interface setModTableSortColumnAction {
-    payload: modTableColumnCssNamesType;
-    type: string;
-}
-
-export interface setModTableSortDirectionAction {
-    payload: modTableSortDirection;
-    type: string;
-}
-
-export interface toggleModTableItemBoolActions {
-    payload: number;
-    type: string;
-}
-
-export interface setModTableItemBoolActions {
-    payload: {
-        id: number;
-        bool: boolean;
-    };
-    type: string;
 }
 
 

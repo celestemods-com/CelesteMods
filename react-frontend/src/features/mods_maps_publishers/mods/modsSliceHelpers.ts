@@ -33,7 +33,7 @@ export const getModState = (mod: formattedMod): modState => {
 
 
 export const getModStateForTable = (mod: mod) => {
-    const modState = Array.isArray(mod.modState) ? mod.modState[0] : mod.modState;
+    const modState = Array.isArray(mod) ? mod[0] : mod;
     const mapCount = modState.maps.length;
 
 
