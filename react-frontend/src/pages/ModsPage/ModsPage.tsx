@@ -10,7 +10,7 @@ import { fetchPublishers } from "../../features/mods_maps_publishers/publishers/
 import { fetchRatingInfos } from "../../features/ratings_ratingInfos/ratingInfos/ratingInfosSlice";
 import { fetchRatings } from "../../features/ratings_ratingInfos/ratings/ratingsSlice";
 import { fetchUsers } from "../../features/users/usersSlice";
-import { Navigate, Outlet, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { ModDropdown } from "./ModDropdown/ModDropdown";
 
 
@@ -23,9 +23,9 @@ export const ModsPage = () => {
     const initialModID = isNaN(urlModID) ? 0 : urlModID;
 
 
-    const [expandedRowModID, setExpandedRowModID] = useState(initialModID);
+    const [expandedRowModID, setExpandedRowModID] = useState(initialModID);     //TODO: replace these with exported properties from the table and remove onRowClick callback
     
-    useEffect(() => {
+    useEffect(() => {       //TODO: collapse/expand rows as needed when urlModID changes (to handle back button presses)
         if (expandedRowModID === 0) {
             if (urlModID > 0) {
                 navigate("/mods");
