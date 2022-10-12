@@ -127,7 +127,7 @@ export const selectModsForTable = (rootState: RootState) => {
 }
 
 
-export const selectMod = (rootState: RootState, id: number) => {
+export const selectModByID = (rootState: RootState, id: number) => {
     const state = selectModsState(rootState).entities;
     const mod = state[id];
 

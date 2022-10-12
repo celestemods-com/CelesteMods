@@ -9,6 +9,7 @@ import { setSliceFetch_loading, setSliceFetch_rejected } from "../../../utils/re
 
 import { mapEntities, mapsState, setSliceFetch_fulfilledByModsActions } from "./mapsSliceTypes";
 import { formattedMap } from "../../../../../express-backend/src/types/frontend";
+import { selectModByID } from "../mods/modsSlice";
 
 
 
@@ -100,7 +101,9 @@ export const fetchMaps = createAsyncThunk("maps",
     async () => {
         const url = `${cmlBaseUri}/maps`;
 
+
         const response: AxiosResponse<formattedMap[][]> = await axios.get(url);
+
 
         return response.data;
     },
@@ -108,6 +111,7 @@ export const fetchMaps = createAsyncThunk("maps",
         condition: (isInitialLoad: boolean, { getState }) => {
             const { maps } = getState() as RootState;
             const fetchStatus = maps.status.fetchStatus;
+
 
             if (fetchStatus === "loading" || (isInitialLoad && fetchStatus !== "notLoaded")) return false;
         }
@@ -128,5 +132,32 @@ export const selectMapByID = (rootState: RootState, id: number) => {
     const state = selectMapsState(rootState);
     const map = state.entities[id];
 
+
     return map;
+}
+
+
+
+
+export const selectMapsByModID = (rootState: RootState, modID: number) => {
+    const state = selectMapsState(rootState);
+    const entities = state.entities;
+
+    const mod = selectModByID(rootState, modID);
+    const mapIdsArray = Array.isArray(mod) ? mod[0].maps : mod.maps;
+
+
+    const mapsArray = mapIdsArray.map((mapID) => {
+        const mapIdNum = Number(mapID);
+
+        if (isNaN(mapIdNum)) throw `mapIdNum ${mapIdNum} is NaN`;
+
+
+        const map = entities[mapIdNum];
+
+        return map;
+    });
+
+
+    return mapsArray;
 }
