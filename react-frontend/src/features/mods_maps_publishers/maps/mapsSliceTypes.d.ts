@@ -1,5 +1,6 @@
 import { formattedMod } from "../../../../../express-backend/src/types/frontend";
 import { sliceStatus, requestStatuses } from "../../../utils/commonTypes";
+import { mapsSubTableColumnNames } from "./mapsSliceConstants";
 
 
 export interface mapState {
@@ -38,6 +39,18 @@ export interface mapsState {
     status: sliceStatus;
     requests: requestStatuses;
     entities: mapEntities;
+}
+
+
+export interface mapForTable {
+    id: number,
+    [mapsSubTableColumnNames[0].jsName]: string,
+    [mapsSubTableColumnNames[1].jsName]: {
+        [mapsSubTableColumnNames[1].entries[0].jsName]: string,
+        [mapsSubTableColumnNames[1].entries[1].jsName]: string,
+    },
+    [mapsSubTableColumnNames[2].jsName]: string,
+    [mapsSubTableColumnNames[3].jsName]: string,
 }
 
 

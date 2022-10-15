@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../../reduxApp/store";
 import axios, { AxiosResponse } from "axios";
 
-import { getMapState } from "./mapsSliceHelpers";
+import { getMapState, getMapStateForTable } from "./mapsSliceHelpers";
 import { cmlBaseUri } from "../../../constants";
 import { getCurrentTime } from "../../../utils/utils";
 import { setSliceFetch_loading, setSliceFetch_rejected } from "../../../utils/reduxHelpers";
@@ -90,7 +90,7 @@ export const mapsSlice = createSlice({
             })
             .addCase(fetchMaps.rejected, (state) => {
                 state.status.fetchStatus = "rejected";
-            });
+            })
     },
 })
 
@@ -139,9 +139,35 @@ export const selectMapByID = (rootState: RootState, id: number) => {
 
 
 
-export const selectMapsByModID = (rootState: RootState, modID: number) => {
+// export const selectMapsByModID = (rootState: RootState, modID: number) => {
+//     const state = selectMapsState(rootState);
+//     const entities = state.entities;
+
+//     const mod = selectModByID(rootState, modID);
+//     const mapIdsArray = Array.isArray(mod) ? mod[0].maps : mod.maps;
+
+
+//     const mapsArray = mapIdsArray.map((mapID) => {
+//         const mapIdNum = Number(mapID);
+
+//         if (isNaN(mapIdNum)) throw `mapIdNum ${mapIdNum} is NaN`;
+
+
+//         const map = entities[mapIdNum];
+
+//         return map;
+//     });
+
+
+//     return mapsArray;
+// }
+
+
+
+
+export const selectMapsForTableByModID = (rootState: RootState, modID: number) => {
     const state = selectMapsState(rootState);
-    const entities = state.entities;
+    const mapEntities = state.entities;
 
     const mod = selectModByID(rootState, modID);
     const mapIdsArray = Array.isArray(mod) ? mod[0].maps : mod.maps;
@@ -153,9 +179,9 @@ export const selectMapsByModID = (rootState: RootState, modID: number) => {
         if (isNaN(mapIdNum)) throw `mapIdNum ${mapIdNum} is NaN`;
 
 
-        const map = entities[mapIdNum];
+        const map = mapEntities[mapIdNum];
 
-        return map;
+        return getMapStateForTable(map);
     });
 
 

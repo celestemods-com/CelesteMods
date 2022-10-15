@@ -1,5 +1,6 @@
 import { formattedMap, formattedMap_collabOrLobby, formattedMap_contest, formattedMap_normal } from "../../../../../express-backend/src/types/frontend";
-import { mapState } from "./mapsSliceTypes";
+import { qualities } from "../../../constants";
+import { map, mapForTable, mapState } from "./mapsSliceTypes";
 
 
 
@@ -36,6 +37,32 @@ export const getMapState = (map: formattedMap): mapState => {
 
 
     return mapState;
+}
+
+
+
+
+export const getMapStateForTable = (map: map) => {
+    const mapState = Array.isArray(map) ? map[0] : map;
+
+
+    //TODO: get real values
+    const quality = 3;
+    const communityDifficulty = "hArD i GuEsS";
+    const tech = "Wavedashes";
+    const length = "Short"
+
+
+    return {
+        id: mapState.id,
+        name: mapState.name,
+        communityRatings: {
+            quality: qualities[quality],
+            difficulty: communityDifficulty,
+        },
+        length: length,
+        tech: tech,
+    } as mapForTable;
 }
 
 

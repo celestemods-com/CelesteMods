@@ -1,16 +1,19 @@
 import { Group, Stack, Image } from "@mantine/core";
 import { DataTable } from "mantine-datatable";
 import { Carousel } from "@mantine/carousel";
-import { useAppSelector } from "../../../reduxApp/hooks";
+import { useAppDispatch, useAppSelector } from "../../../reduxApp/hooks";
 import { RootState } from "../../../reduxApp/store";
 import { ModDropdownHeader } from "./ModDropdownHeader";
-import { useMemo } from "react";
-import { selectMapsByModID } from "../../../features/mods_maps_publishers/maps/mapsSlice";
+import { useEffect, useMemo } from "react";
+import { selectMapsForTableByModID } from "../../../features/mods_maps_publishers/maps/mapsSlice";
 import { mapsSubTableColumnNames } from "../../../features/mods_maps_publishers/maps/mapsSliceConstants";
+import { fetchImageUrlsByModID, selectImageUrlsByModID } from "../../../features/mods_maps_publishers/mods/modsSlice";
 
 
 export const ModDropdown = ({ modID }: { modID: number }) => {
-    const maps = useAppSelector((rootState: RootState) => selectMapsByModID(rootState, modID));
+    const dispatch = useAppDispatch();
+    const imageUrlsArray = useAppSelector((rootState: RootState) => selectImageUrlsByModID(rootState, modID));
+    const maps = useAppSelector((rootState: RootState) => selectMapsForTableByModID(rootState, modID));
 
     const flattenedMaps = useMemo(() => {
         return maps.map((map) => {
@@ -18,7 +21,10 @@ export const ModDropdown = ({ modID }: { modID: number }) => {
         });
     }, [maps]);
 
-    const imageUrlsArray = ["https://i.imgur.com/sJQR1GY.jpeg", "https://i.imgur.com/knaf4bQ.jpeg"];    //TODO: get images from gamebanana
+
+    useEffect(() => {
+        dispatch(fetchImageUrlsByModID(modID));
+    }, [dispatch, modID]);
 
 
     const mapsTable = DataTable({
@@ -58,7 +64,7 @@ export const ModDropdown = ({ modID }: { modID: number }) => {
     });
 
 
-    const stackParameters = {};
+    //const stackParameters = {};
 
     if (imageUrlsArray.length) {
         return (

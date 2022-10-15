@@ -18,6 +18,7 @@ export interface modState {
     approved: boolean;
     maps: (string | number)[];
     difficulties?: (number | number[])[];
+    imageUrls?: string[];
     /*timeSubmitted: number;
     submittedBy: number;
     timeApproved: number;
@@ -32,9 +33,10 @@ export type modEntities = {
 
 export interface modsState {
     status: sliceStatus;
-    requests: requestStatuses;
-    sortColumn: modTableColumnCssNamesType;
-    sortDirection: modTableSortDirection;
+    requests: {
+        cmlApi: requestStatuses;
+        images: requestStatuses;
+    };
     entities: modEntities;
 }
 
@@ -69,4 +71,28 @@ export interface modTableColumnNameObjectsType__nestedEntry {
 export interface SelectModsForTable {
     modStates: modForTable[];
     isValid?: boolean;
+}
+
+
+export interface SetModRequestStatusAction {
+    type: string;
+    payload: {
+        modID: number,
+    };
+}
+
+
+export interface GamebananaScreenshotsRequestData {
+    screenshots: string;
+}
+
+export interface GamebananaScreenshotData {
+    _nFilesize: number;
+    _sCaption: string;
+    _sFile: string;
+    _sFile100: string;
+    _sFile220?: string;
+    _sFile530?: string;
+    _sFile800?: string;
+    _sTicketId: string;
 }

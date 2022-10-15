@@ -37,6 +37,7 @@ export const getModStateForTable = (mod: mod) => {
     const mapCount = modState.maps.length;
 
 
+    //TODO: get real values
     const quality = 3;
     const communityDifficulty = "hArD i GuEsS";
     const tech = "Wavedashes";

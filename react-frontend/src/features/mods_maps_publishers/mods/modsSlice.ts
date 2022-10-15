@@ -7,9 +7,10 @@ import { getCurrentTime } from "../../../utils/utils";
 import { cmlBaseUri } from "../../../constants";
 import { mapsSlice } from "../maps/mapsSlice";
 
-import { modsState, modEntities, SelectModsForTable } from "./modsSliceTypes";
+import {
+    modsState, modEntities, SelectModsForTable, SetModRequestStatusAction, GamebananaScreenshotsRequestData, GamebananaScreenshotData, modState, mod
+} from "./modsSliceTypes";
 import { formattedMod } from "../../../../../express-backend/src/types/frontend";
-import { useParams } from "react-router-dom";
 
 //TODO: memoize selectors with createSelector() from RTK
 //TODO: refactor selectModsState so it accepts other selectors as a parameter
@@ -22,9 +23,10 @@ const initialState: modsState = {
         fetchStatus: "notLoaded",
         timeFetched: 0,
     },
-    requests: {},
-    sortColumn: "mod-name",
-    sortDirection: "Desc",
+    requests: {
+        cmlApi: {},
+        images: {},
+    },
     entities: {},
 }
 
@@ -32,7 +34,18 @@ const initialState: modsState = {
 export const modsSlice = createSlice({
     name: "mods",
     initialState,
-    reducers: {},
+    reducers: {
+        setImageUrlsRequestStatus_loading(state, action: SetModRequestStatusAction) {
+            const modID = action.payload.modID;
+
+            state.requests.images[modID].fetchStatus = "loading";
+        },
+        setImageUrlsRequestStatus_rejected(state, action: SetModRequestStatusAction) {
+            const modID = action.payload.modID;
+
+            state.requests.images[modID].fetchStatus = "rejected";
+        },
+    },
     extraReducers: (builder) => {
         builder
             .addCase(fetchMods.pending, (state) => {
@@ -40,9 +53,10 @@ export const modsSlice = createSlice({
             })
             .addCase(fetchMods.fulfilled, (state, action) => {
                 const newEntities: modEntities = {};
+
+
                 const lastFetchTime = state.status.timeFetched;
                 const currentTime = getCurrentTime();
-
 
                 if (lastFetchTime >= currentTime - 500) return;  //if fetched in the last 500ms, don't update state
 
@@ -57,12 +71,53 @@ export const modsSlice = createSlice({
 
 
                 state.entities = newEntities;
-                state.status.fetchStatus = "loaded";
-                state.status.timeFetched = currentTime;
+                state.status = {
+                    fetchStatus: "loaded",
+                    timeFetched: currentTime,
+                };
             })
             .addCase(fetchMods.rejected, (state) => {
                 state.status.fetchStatus = "rejected";
-            });
+            })
+            .addCase(fetchImageUrlsByModID.fulfilled, (state, action) => {
+                const { modID, data } = action.payload;
+                const oldEntity = state.entities[modID];
+
+
+                const lastFetchTime: number | undefined = state.requests.images[modID]?.timeFetched;
+                const currentTime = getCurrentTime();
+
+                if (lastFetchTime && lastFetchTime >= currentTime - 60 * 1000) return;    //if fetched in the last 60s (60,000 ms), don't update state
+
+
+                const urlsArray = data.map((screenshotObject) => {
+                    const fileName = screenshotObject._sFile;
+
+                    return `https://images.gamebanana.com/img/ss/mods/${fileName}`;
+                });
+
+
+                let newEntity: mod;
+
+                if (Array.isArray(oldEntity)) {
+                    const oldLatestRev = oldEntity[0];
+                    const otherRevs = oldEntity.length > 1 ? oldEntity.slice(1) : [];
+
+                    const newLatestRev: modState = { imageUrls: urlsArray, ...oldLatestRev };
+
+                    newEntity = [newLatestRev, ...otherRevs];
+                }
+                else {
+                    newEntity = { imageUrls: urlsArray, ...oldEntity };
+                }
+
+
+                state.entities[modID] = newEntity;
+                state.requests.images[modID] = {
+                    fetchStatus: "loaded",
+                    timeFetched: currentTime,
+                }
+            })
     },
 })
 
@@ -98,6 +153,42 @@ export const fetchMods = createAsyncThunk("mods",
             const fetchStatus = mods.status.fetchStatus;
 
             if (fetchStatus === "loading" || (isInitialLoad && fetchStatus !== "notLoaded")) return false;
+        }
+    }
+)
+
+
+
+
+export const fetchImageUrlsByModID = createAsyncThunk("mods/images",
+    async (modID: number, { dispatch }) => {
+        console.log("thunk")
+        const modsSliceActions = modsSlice.actions;
+        try {
+            dispatch(modsSliceActions.setImageUrlsRequestStatus_loading);
+
+
+            const url = `https://api.gamebanana.com/Core/Item/Data?itemtype=Mod&itemid=${modID}&fields=screenshots&return_keys=true`;
+
+            const response: AxiosResponse<GamebananaScreenshotsRequestData> = await axios.get(url);
+
+            const data: GamebananaScreenshotData[] = JSON.parse(response.data.screenshots);
+
+
+            return { modID, data: data };
+        }
+        catch (error) {
+            dispatch(modsSliceActions.setImageUrlsRequestStatus_rejected);
+            throw error;
+        }
+    },
+    {
+        condition: (modID: number, { getState }) => {
+            const { mods } = getState() as RootState;
+            const fetchStatus = mods.requests.images[modID]?.fetchStatus;
+
+
+            if (fetchStatus === "loading") return false;
         }
     }
 )
@@ -161,4 +252,13 @@ export const selectModByID = (rootState: RootState, id: number) => {
     const mod = state[id];
 
     return mod;
+}
+
+
+export const selectImageUrlsByModID = (rootState: RootState, id: number) => {
+    const state = selectModsState(rootState).entities;
+    const mod = state[id];
+    const modState = Array.isArray(mod) ? mod[0] : mod;
+
+    return modState.imageUrls ?? [];
 }

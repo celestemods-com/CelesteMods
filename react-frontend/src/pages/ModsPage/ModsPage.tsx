@@ -27,11 +27,8 @@ export const ModsPage = () => {
 
     
     const [initialModID] = useState(isNaN(urlModIdNum) ? undefined : urlModIdNum);
-    console.log(`initialModID = ${initialModID}`)
-
 
     const [expandedRowModIds, setExpandedRowModIds] = useState(initialModID ? [initialModID] : []);
-
 
     const { modStates, isValid } = useAppSelector((rootState: RootState) => selectModsForTable(rootState, initialModID));
 
@@ -40,6 +37,9 @@ export const ModsPage = () => {
         if (isValid === false && urlModIdNum === initialModID) {
             setExpandedRowModIds([]);
         }
+        
+        //only want this to run once when the page initially loads
+        // eslint-disable-next-line
     }, [isValid])
 
 
