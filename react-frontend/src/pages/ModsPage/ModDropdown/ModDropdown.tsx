@@ -59,15 +59,17 @@ export const ModDropdown = ({ modID }: { modID: number }) => {
     });
 
 
+    const stackParameters = {};
+
     if (imageUrlsArray.length) {
         return (
             <Stack>
                 <ModDropdownHeader modID={modID} />
-                <Group>
+                <Group spacing={"lg"} position={"center"} noWrap align={"start"} grow>
                     <Carousel>
                         {imageUrlsArray.map((url) => {
                             return (
-                                <Carousel.Slide key={url}>
+                                <Carousel.Slide key={url} sx={{maxHeight: 350, maxWidth: 400}}>
                                     <Image src={url} />
                                 </Carousel.Slide>
                             );

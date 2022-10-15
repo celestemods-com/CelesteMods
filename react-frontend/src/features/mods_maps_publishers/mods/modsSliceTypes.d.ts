@@ -65,3 +65,8 @@ export interface modTableColumnNameObjectsType__nestedEntry {
     name: string;
     entries: readonly modTableColumnNameObjectsType__singleEntry[];
 }
+
+export interface SelectModsForTable {
+    modStates: modForTable[];
+    isValid?: boolean;
+}

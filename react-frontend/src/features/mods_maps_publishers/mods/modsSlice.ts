@@ -7,8 +7,9 @@ import { getCurrentTime } from "../../../utils/utils";
 import { cmlBaseUri } from "../../../constants";
 import { mapsSlice } from "../maps/mapsSlice";
 
-import { modsState, modEntities } from "./modsSliceTypes";
+import { modsState, modEntities, SelectModsForTable } from "./modsSliceTypes";
 import { formattedMod } from "../../../../../express-backend/src/types/frontend";
+import { useParams } from "react-router-dom";
 
 //TODO: memoize selectors with createSelector() from RTK
 //TODO: refactor selectModsState so it accepts other selectors as a parameter
@@ -120,10 +121,38 @@ export const selectModsSliceStatus = (rootState: RootState) => {
 
 
 
-export const selectModsForTable = (rootState: RootState) => {
+export const selectModsForTable = (rootState: RootState, initialModID?: number): SelectModsForTable => {
     const state = selectModsState(rootState).entities;
 
-    return Object.entries(state).map(([_idString, mod]) => getModStateForTable(mod));
+
+    const modStates = Object.entries(state).map(([_idString, mod]) => getModStateForTable(mod));
+
+
+    const isLoaded = modStates && modStates.length ? true : false;
+
+    const returnObject: SelectModsForTable = { modStates };
+
+
+    if (isLoaded && initialModID !== undefined) {
+
+
+        if (initialModID !== undefined) {
+            let isValid = false;
+
+            for (const mod of modStates) {
+                if (mod.id === initialModID) {
+                    isValid = true;
+                    break;
+                }
+            }
+
+
+            returnObject.isValid = isValid;
+        }
+    }
+
+
+    return returnObject;
 }
 
 

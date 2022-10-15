@@ -1,8 +1,8 @@
 import { useAppDispatch, useAppSelector } from "../../reduxApp/hooks";
 import { DataTable } from "mantine-datatable";
-import { fetchMods, selectModsForTable } from "../../features/mods_maps_publishers/mods/modsSlice";
+import { fetchMods, selectModsForTable, selectModsSliceStatus } from "../../features/mods_maps_publishers/mods/modsSlice";
 import { modTableColumnNames } from "../../features/mods_maps_publishers/mods/modsSliceConstants";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { fetchDifficulties } from "../../features/difficulties/difficultiesSlice";
 import { fetchTechs } from "../../features/techs/techsSlice";
 import { fetchReviewCollections } from "../../features/reviewCollections_reviews_mapReviews/reviewCollections/reviewCollectionsSlice";
@@ -10,8 +10,10 @@ import { fetchPublishers } from "../../features/mods_maps_publishers/publishers/
 import { fetchRatingInfos } from "../../features/ratings_ratingInfos/ratingInfos/ratingInfosSlice";
 import { fetchRatings } from "../../features/ratings_ratingInfos/ratings/ratingsSlice";
 import { fetchUsers } from "../../features/users/usersSlice";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { ModDropdown } from "./ModDropdown/ModDropdown";
+import { RootState } from "../../reduxApp/store";
+
 
 
 
@@ -19,22 +21,37 @@ export const ModsPage = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
 
-    let urlModID = Number(useParams().modID);
-    const initialModID = isNaN(urlModID) ? 0 : urlModID;
 
+    let urlModID = useParams().modID;
+    let urlModIdNum = Number(urlModID);
 
-    const [expandedRowModID, setExpandedRowModID] = useState(initialModID);     //TODO: replace these with exported properties from the table and remove onRowClick callback
     
-    useEffect(() => {       //TODO: collapse/expand rows as needed when urlModID changes (to handle back button presses)
-        if (expandedRowModID === 0) {
-            if (urlModID > 0) {
-                navigate("/mods");
-            }
+    const [initialModID] = useState(isNaN(urlModIdNum) ? undefined : urlModIdNum);
+    console.log(`initialModID = ${initialModID}`)
+
+
+    const [expandedRowModIds, setExpandedRowModIds] = useState(initialModID ? [initialModID] : []);
+
+
+    const { modStates, isValid } = useAppSelector((rootState: RootState) => selectModsForTable(rootState, initialModID));
+
+
+    useEffect(() => {
+        if (isValid === false && urlModIdNum === initialModID) {
+            setExpandedRowModIds([]);
         }
-        else if (expandedRowModID !== urlModID) {
+    }, [isValid])
+
+
+    useEffect(() => {       //TODO: collapse/expand rows as needed when urlModIdNum changes (to handle back button presses)
+        const expandedRowModID = expandedRowModIds[0];
+        if (!expandedRowModID && urlModID !== undefined) {
+            navigate("/mods");
+        }
+        else if (expandedRowModID !== undefined && expandedRowModID !== urlModIdNum) {
             navigate(`/mods/${expandedRowModID}`);
         }
-    }, [expandedRowModID]);
+    }, [expandedRowModIds, urlModID, urlModIdNum, navigate]);
 
 
     useEffect(() => {
@@ -61,10 +78,6 @@ export const ModsPage = () => {
         //TODO: figure out if adding dispatch as a dependency really matters, and, if it does, find out if it could cause memory leaks here
         // eslint-disable-next-line
     }, []);
-
-
-
-    const modStates = useAppSelector(selectModsForTable);
 
 
     if (!modStates || !modStates.length) {
@@ -128,20 +141,12 @@ export const ModsPage = () => {
                     sortable: true,
                 },
             ]}
-            onRowClick={(record) => {
-                const modID = record.id;
-
-
-                if (expandedRowModID === modID) {
-                    setExpandedRowModID(0);
-                }
-                else {
-                    setExpandedRowModID(modID);
-                }
-            }}
             rowExpansion={{
                 content: ({ record }) => <ModDropdown modID={record.id} />,
-                initiallyExpanded: (record) => record.id === initialModID,
+                expanded: {
+                    recordIds: expandedRowModIds,
+                    onRecordIdsChange: setExpandedRowModIds,
+                },
                 collapseProps: {
                     transitionDuration: 150,
                     animateOpacity: false,
