@@ -161,14 +161,14 @@ export const fetchMods = createAsyncThunk("mods",
 
 
 export const fetchImageUrlsByModID = createAsyncThunk("mods/images",
-    async (modID: number, { dispatch }) => {
+    async ({ modID, gamebananaModID }: { modID: number, gamebananaModID: number }, { dispatch }) => {
         console.log("thunk")
         const modsSliceActions = modsSlice.actions;
         try {
             dispatch(modsSliceActions.setImageUrlsRequestStatus_loading);
 
 
-            const url = `https://api.gamebanana.com/Core/Item/Data?itemtype=Mod&itemid=${modID}&fields=screenshots&return_keys=true`;
+            const url = `https://api.gamebanana.com/Core/Item/Data?itemtype=Mod&itemid=${gamebananaModID}&fields=screenshots&return_keys=true`;
 
             const response: AxiosResponse<GamebananaScreenshotsRequestData> = await axios.get(url);
 
@@ -183,7 +183,7 @@ export const fetchImageUrlsByModID = createAsyncThunk("mods/images",
         }
     },
     {
-        condition: (modID: number, { getState }) => {
+        condition: ({ modID }, { getState }) => {
             const { mods } = getState() as RootState;
             const fetchStatus = mods.requests.images[modID]?.fetchStatus;
 

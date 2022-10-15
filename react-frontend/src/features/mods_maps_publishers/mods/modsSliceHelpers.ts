@@ -48,6 +48,7 @@ export const getModStateForTable = (mod: mod) => {
 
     return {
         id: modState.id,
+        gamebananaModID: modState.gamebananaModID,
         name: modState.name,
         mapCount: mapCount,
         type: modState.type,

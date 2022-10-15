@@ -142,7 +142,7 @@ export const ModsPage = () => {
                 },
             ]}
             rowExpansion={{
-                content: ({ record }) => <ModDropdown modID={record.id} />,
+                content: ({ record }) => <ModDropdown modID={record.id} gamebananaModID={record.gamebananaModID} />,
                 expanded: {
                     recordIds: expandedRowModIds,
                     onRecordIdsChange: setExpandedRowModIds,

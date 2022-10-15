@@ -10,7 +10,7 @@ import { mapsSubTableColumnNames } from "../../../features/mods_maps_publishers/
 import { fetchImageUrlsByModID, selectImageUrlsByModID } from "../../../features/mods_maps_publishers/mods/modsSlice";
 
 
-export const ModDropdown = ({ modID }: { modID: number }) => {
+export const ModDropdown = ({ modID, gamebananaModID }: { modID: number, gamebananaModID: number }) => {
     const dispatch = useAppDispatch();
     const imageUrlsArray = useAppSelector((rootState: RootState) => selectImageUrlsByModID(rootState, modID));
     const maps = useAppSelector((rootState: RootState) => selectMapsForTableByModID(rootState, modID));
@@ -23,7 +23,7 @@ export const ModDropdown = ({ modID }: { modID: number }) => {
 
 
     useEffect(() => {
-        dispatch(fetchImageUrlsByModID(modID));
+        dispatch(fetchImageUrlsByModID({ modID, gamebananaModID }));
     }, [dispatch, modID]);
 
 

@@ -43,6 +43,7 @@ export interface modsState {
 
 export interface modForTable {
     id: number,
+    gamebananaModID: number,
     [modTableColumnNames[0].jsName]: string,
     [modTableColumnNames[1].jsName]: number,
     [modTableColumnNames[2].jsName]: string,
