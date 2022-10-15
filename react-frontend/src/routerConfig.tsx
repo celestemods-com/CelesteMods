@@ -11,12 +11,18 @@ export const routes = [
             {
                 path: "/",
                 element: <HomePage />,
-                key: "Home",
+                pathname: "Home",
             },
             {
                 path: "/mods",
                 element: <ModsPage />,
-                key: "Mods",
+                pathname: "Mods",
+                children: [
+                    {
+                        element: null,
+                        path: "/mods/:modID",
+                    }
+                ],
             },
         ],
     },

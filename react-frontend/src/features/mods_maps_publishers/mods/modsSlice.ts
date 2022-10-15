@@ -8,7 +8,7 @@ import { cmlBaseUri } from "../../../constants";
 import { mapsSlice } from "../maps/mapsSlice";
 
 import {
-    modsState, setModTableSortColumnAction, setModTableSortDirectionAction, toggleModTableItemBoolActions, setModTableItemBoolActions, modEntities, modTableItemState
+    modsState, modEntities, SelectModsForTable, SetModRequestStatusAction, GamebananaScreenshotsRequestData, GamebananaScreenshotData, modState, mod
 } from "./modsSliceTypes";
 import { formattedMod } from "../../../../../express-backend/src/types/frontend";
 
@@ -23,9 +23,10 @@ const initialState: modsState = {
         fetchStatus: "notLoaded",
         timeFetched: 0,
     },
-    requests: {},
-    sortColumn: "mod-name",
-    sortDirection: "Desc",
+    requests: {
+        cmlApi: {},
+        images: {},
+    },
     entities: {},
 }
 
@@ -34,31 +35,15 @@ export const modsSlice = createSlice({
     name: "mods",
     initialState,
     reducers: {
-        setModTableSortColumn(state, action: setModTableSortColumnAction) {
-            state.sortColumn = action.payload;
+        setImageUrlsRequestStatus_loading(state, action: SetModRequestStatusAction) {
+            const modID = action.payload.modID;
+
+            state.requests.images[modID].fetchStatus = "loading";
         },
-        toggleModTableSortDirection(state) {
-            const currentDirection = state.sortDirection;
-            state.sortDirection = currentDirection === "Asc" ? "Desc" : "Asc";
-        },
-        setModTableSortDirection(state, action: setModTableSortDirectionAction) {
-            state.sortDirection = action.payload;
-        },
-        toggleModTableItemExpanded(state, action: toggleModTableItemBoolActions) {
-            const id = action.payload;
-            state.entities[id].modTable.expanded = !state.entities[id].modTable.expanded;
-        },
-        setModTableItemExpanded(state, action: setModTableItemBoolActions) {
-            const { id, bool } = action.payload;
-            state.entities[id].modTable.expanded = bool;
-        },
-        toggleModTableItemHidden(state, action: toggleModTableItemBoolActions) {
-            const id = action.payload;
-            state.entities[id].modTable.hidden = !state.entities[id].modTable.hidden;
-        },
-        setModTableItemHidden(state, action: setModTableItemBoolActions) {
-            const { id, bool } = action.payload;
-            state.entities[id].modTable.hidden = bool;
+        setImageUrlsRequestStatus_rejected(state, action: SetModRequestStatusAction) {
+            const modID = action.payload.modID;
+
+            state.requests.images[modID].fetchStatus = "rejected";
         },
     },
     extraReducers: (builder) => {
@@ -67,11 +52,11 @@ export const modsSlice = createSlice({
                 state.status.fetchStatus = "loading";
             })
             .addCase(fetchMods.fulfilled, (state, action) => {
-                const oldEntities = state.entities;
                 const newEntities: modEntities = {};
+
+
                 const lastFetchTime = state.status.timeFetched;
                 const currentTime = getCurrentTime();
-
 
                 if (lastFetchTime >= currentTime - 500) return;  //if fetched in the last 500ms, don't update state
 
@@ -81,33 +66,58 @@ export const modsSlice = createSlice({
                     const id = fetchedMod.id;
 
 
-                    let modTableState: modTableItemState;
-
-                    if (oldEntities.hasOwnProperty(id.toString())) {
-                        modTableState = oldEntities[id].modTable;
-                    }
-                    else {
-                        modTableState = {
-                            expanded: false,
-                            hidden: false,
-                        }
-                    }
-
-
-                    newEntities[id] = {
-                        modState: getModState(fetchedMod),
-                        modTable: modTableState,
-                    }
+                    newEntities[id] = getModState(fetchedMod);
                 });
 
 
                 state.entities = newEntities;
-                state.status.fetchStatus = "loaded";
-                state.status.timeFetched = currentTime;
+                state.status = {
+                    fetchStatus: "loaded",
+                    timeFetched: currentTime,
+                };
             })
             .addCase(fetchMods.rejected, (state) => {
                 state.status.fetchStatus = "rejected";
-            });
+            })
+            .addCase(fetchImageUrlsByModID.fulfilled, (state, action) => {
+                const { modID, data } = action.payload;
+                const oldEntity = state.entities[modID];
+
+
+                const lastFetchTime: number | undefined = state.requests.images[modID]?.timeFetched;
+                const currentTime = getCurrentTime();
+
+                if (lastFetchTime && lastFetchTime >= currentTime - 60 * 1000) return;    //if fetched in the last 60s (60,000 ms), don't update state
+
+
+                const urlsArray = data.map((screenshotObject) => {
+                    const fileName = screenshotObject._sFile;
+
+                    return `https://images.gamebanana.com/img/ss/mods/${fileName}`;
+                });
+
+
+                let newEntity: mod;
+
+                if (Array.isArray(oldEntity)) {
+                    const oldLatestRev = oldEntity[0];
+                    const otherRevs = oldEntity.length > 1 ? oldEntity.slice(1) : [];
+
+                    const newLatestRev: modState = { imageUrls: urlsArray, ...oldLatestRev };
+
+                    newEntity = [newLatestRev, ...otherRevs];
+                }
+                else {
+                    newEntity = { imageUrls: urlsArray, ...oldEntity };
+                }
+
+
+                state.entities[modID] = newEntity;
+                state.requests.images[modID] = {
+                    fetchStatus: "loaded",
+                    timeFetched: currentTime,
+                }
+            })
     },
 })
 
@@ -150,6 +160,42 @@ export const fetchMods = createAsyncThunk("mods",
 
 
 
+export const fetchImageUrlsByModID = createAsyncThunk("mods/images",
+    async (modID: number, { dispatch }) => {
+        console.log("thunk")
+        const modsSliceActions = modsSlice.actions;
+        try {
+            dispatch(modsSliceActions.setImageUrlsRequestStatus_loading);
+
+
+            const url = `https://api.gamebanana.com/Core/Item/Data?itemtype=Mod&itemid=${modID}&fields=screenshots&return_keys=true`;
+
+            const response: AxiosResponse<GamebananaScreenshotsRequestData> = await axios.get(url);
+
+            const data: GamebananaScreenshotData[] = JSON.parse(response.data.screenshots);
+
+
+            return { modID, data: data };
+        }
+        catch (error) {
+            dispatch(modsSliceActions.setImageUrlsRequestStatus_rejected);
+            throw error;
+        }
+    },
+    {
+        condition: (modID: number, { getState }) => {
+            const { mods } = getState() as RootState;
+            const fetchStatus = mods.requests.images[modID]?.fetchStatus;
+
+
+            if (fetchStatus === "loading") return false;
+        }
+    }
+)
+
+
+
+
 export const selectModsState = (state: RootState) => {
     return state.mods;
 }
@@ -166,25 +212,53 @@ export const selectModsSliceStatus = (rootState: RootState) => {
 
 
 
-export const selectModsForTable = (rootState: RootState) => {
+export const selectModsForTable = (rootState: RootState, initialModID?: number): SelectModsForTable => {
     const state = selectModsState(rootState).entities;
 
-    return Object.entries(state).map(([_idString, mod]) => getModStateForTable(mod));
+
+    const modStates = Object.entries(state).map(([_idString, mod]) => getModStateForTable(mod));
+
+
+    const isLoaded = modStates && modStates.length ? true : false;
+
+    const returnObject: SelectModsForTable = { modStates };
+
+
+    if (isLoaded && initialModID !== undefined) {
+
+
+        if (initialModID !== undefined) {
+            let isValid = false;
+
+            for (const mod of modStates) {
+                if (mod.id === initialModID) {
+                    isValid = true;
+                    break;
+                }
+            }
+
+
+            returnObject.isValid = isValid;
+        }
+    }
+
+
+    return returnObject;
 }
 
 
-export const selectModForTable = (rootState: RootState, id: number) => {
+export const selectModByID = (rootState: RootState, id: number) => {
     const state = selectModsState(rootState).entities;
     const mod = state[id];
 
-    return getModStateForTable(mod);
+    return mod;
 }
 
 
-
-
-export const selectModTableItemExpanded = (rootState: RootState, id: number) => {
+export const selectImageUrlsByModID = (rootState: RootState, id: number) => {
     const state = selectModsState(rootState).entities;
+    const mod = state[id];
+    const modState = Array.isArray(mod) ? mod[0] : mod;
 
-    return state[id].modTable.expanded;
+    return modState.imageUrls ?? [];
 }

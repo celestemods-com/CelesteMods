@@ -18,21 +18,14 @@ export interface modState {
     approved: boolean;
     maps: (string | number)[];
     difficulties?: (number | number[])[];
+    imageUrls?: string[];
     /*timeSubmitted: number;
     submittedBy: number;
     timeApproved: number;
     approvedBy: number;*/
 }
 
-export type modTableItemState = {
-    expanded: boolean;
-    hidden: boolean;
-}
-
-export type mod = {
-    modState: modState | modState[],
-    modTable: modTableItemState,
-}
+export type mod = modState | modState[]
 
 export type modEntities = {
     [key: number]: mod,
@@ -40,33 +33,11 @@ export type modEntities = {
 
 export interface modsState {
     status: sliceStatus;
-    requests: requestStatuses;
-    sortColumn: modTableColumnCssNamesType;
-    sortDirection: modTableSortDirection;
-    entities: modEntities;
-}
-
-export interface setModTableSortColumnAction {
-    payload: modTableColumnCssNamesType;
-    type: string;
-}
-
-export interface setModTableSortDirectionAction {
-    payload: modTableSortDirection;
-    type: string;
-}
-
-export interface toggleModTableItemBoolActions {
-    payload: number;
-    type: string;
-}
-
-export interface setModTableItemBoolActions {
-    payload: {
-        id: number;
-        bool: boolean;
+    requests: {
+        cmlApi: requestStatuses;
+        images: requestStatuses;
     };
-    type: string;
+    entities: modEntities;
 }
 
 
@@ -95,4 +66,33 @@ export interface modTableColumnNameObjectsType__singleEntry {
 export interface modTableColumnNameObjectsType__nestedEntry {
     name: string;
     entries: readonly modTableColumnNameObjectsType__singleEntry[];
+}
+
+export interface SelectModsForTable {
+    modStates: modForTable[];
+    isValid?: boolean;
+}
+
+
+export interface SetModRequestStatusAction {
+    type: string;
+    payload: {
+        modID: number,
+    };
+}
+
+
+export interface GamebananaScreenshotsRequestData {
+    screenshots: string;
+}
+
+export interface GamebananaScreenshotData {
+    _nFilesize: number;
+    _sCaption: string;
+    _sFile: string;
+    _sFile100: string;
+    _sFile220?: string;
+    _sFile530?: string;
+    _sFile800?: string;
+    _sTicketId: string;
 }
