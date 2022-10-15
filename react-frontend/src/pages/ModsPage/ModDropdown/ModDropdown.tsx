@@ -1,10 +1,10 @@
 import { Group, Stack, Image } from "@mantine/core";
 import { DataTable } from "mantine-datatable";
 import { Carousel } from "@mantine/carousel";
-import { useAppDispatch, useAppSelector } from "../../../reduxApp/hooks";
+import { useAppSelector } from "../../../reduxApp/hooks";
 import { RootState } from "../../../reduxApp/store";
 import { ModDropdownHeader } from "./ModDropdownHeader";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { selectMapsByModID } from "../../../features/mods_maps_publishers/maps/mapsSlice";
 import { mapsSubTableColumnNames } from "../../../features/mods_maps_publishers/maps/mapsSliceConstants";
 
@@ -55,7 +55,6 @@ export const ModDropdown = ({ modID }: { modID: number }) => {
                 sortable: true,
             },
         ],
-        //onRowClick: (record) => {},   //TODO: generate Modal on click
     });
 
 
