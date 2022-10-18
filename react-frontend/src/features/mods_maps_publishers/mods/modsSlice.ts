@@ -59,7 +59,7 @@ export const modsSlice = createSlice({
                 const lastFetchTime = state.status.timeFetched;
                 const currentTime = getCurrentTime();
 
-                if (lastFetchTime >= currentTime - 500) return;  //if fetched in the last 500ms, don't update state
+                if (lastFetchTime >= currentTime - 1000) return;  //if fetched in the last 1000ms, don't update state
 
 
                 action.payload.forEach(modArray => {
