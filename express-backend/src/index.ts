@@ -126,7 +126,6 @@ apiRouter_v1.use(function (req, res, next) {
 
 import { sessionRouter } from "./routes/sessions";
 import { difficultiesRouter } from "./routes/difficulties";
-import { goldensRouter, goldenPlayersRouter, goldenRunsRouter, goldenSubmissionsRouter } from "./routes/goldens";
 import { lengthsRouter } from "./routes/lengths";
 import { modsRouter } from "./routes/mods";
 import { mapsRouter } from "./routes/maps";
@@ -140,10 +139,6 @@ import { usersRouter } from "./routes/users";
 
 apiRouter_v1.use("/sessions", sessionRouter);
 apiRouter_v1.use("/difficulties", difficultiesRouter);
-apiRouter_v1.use("/goldens", goldensRouter);
-apiRouter_v1.use("/goldenplayers", goldenPlayersRouter);
-apiRouter_v1.use("/goldenruns", goldenRunsRouter);
-apiRouter_v1.use("/goldensubmissions", goldenSubmissionsRouter);
 apiRouter_v1.use("/lengths", lengthsRouter);
 apiRouter_v1.use("/mods", modsRouter);
 apiRouter_v1.use("/maps", mapsRouter);

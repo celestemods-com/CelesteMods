@@ -16,7 +16,6 @@ export const noUserWithDiscordIdErrorMessage = "No user found matching given dis
 export const adminPermsArray: permissions[] = ["Super_Admin", "Admin"];
 export const mapStaffPermsArray: permissions[] = ["Super_Admin", "Admin", "Map_Moderator"];
 export const mapReviewersPermsArray: permissions[] = ["Super_Admin", "Admin", "Map_Moderator", "Map_Reviewer"];
-export const goldenStaffPermsArray: permissions[] = ["Super_Admin", "Admin", "Golden_Verifier"];
 
 
 export const checkPermissions = async function (req: Request, validPermissionsArray: permissions[], checkSessionAgeBool = true, res?: Response) {
@@ -139,7 +138,6 @@ export const storeIdentityInSession = async function (req: Request, discordUser:
                 include: {
                     users_to_maps: true,
                     publishers: true,
-                    golden_players: true,
                 },
             });
 

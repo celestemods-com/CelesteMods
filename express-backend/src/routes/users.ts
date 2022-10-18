@@ -117,7 +117,6 @@ router.route("/")
                 include: {
                     users_to_maps: true,
                     publishers: true,
-                    golden_players: true,
                 },
             });
 
@@ -145,7 +144,6 @@ router.route("/")
             const showCompletedMaps: boolean = req.body.showCompletedMaps;  //can't be null after validatePost call
             const completedMapIDsArray: number[] | undefined = req.body.completedMapIDs;
             const gamebananaIDsArray: number[] | undefined = req.body.gamebananaIDs;
-            const goldenPlayerID: number | undefined = req.body.goldenPlayerID;
             const generateSessionBool: boolean | undefined = req.body.generateSessionBool;
 
 
@@ -156,7 +154,6 @@ router.route("/")
                 showCompletedMaps: showCompletedMaps,
                 completedMapIDs: completedMapIDsArray,
                 gamebananaIDs: gamebananaIDsArray,
-                goldenPlayerID: goldenPlayerID,
                 generateSessionBool: generateSessionBool,
             });
 
@@ -256,33 +253,11 @@ router.route("/")
             }
 
 
-            if (goldenPlayerID) {
-                const goldenPlayer = await prisma.golden_players.findUnique({
-                    where: { id: goldenPlayerID }
-                });
-
-                if (!goldenPlayer) {
-                    res.status(404).json("Golden Player not found");
-                    return;
-                }
-
-                const matchingUser = await prisma.users.findFirst({ where: { golden_players: { id: goldenPlayerID } } });
-
-                if (matchingUser) {
-                    res.status(400).json("goldenPlayerID already connected to a user account");
-                    return;
-                }
-
-                createData.golden_players = { connect: { id: goldenPlayerID } };
-            }
-
-
             const rawUser = await prisma.users.create({
                 data: createData,
                 include: {
                     users_to_maps: true,
                     publishers: true,
-                    golden_players: true,
                 },
             });
 
@@ -340,7 +315,6 @@ router.route("/search")
                 include: {
                     users_to_maps: true,
                     publishers: true,
-                    golden_players: true,
                 },
             });
 
@@ -375,7 +349,6 @@ router.route("/gamebanana/:gamebananaID")
                 include: {
                     users_to_maps: true,
                     publishers: true,
-                    golden_players: true,
                 }
             });
 
@@ -517,7 +490,6 @@ router.route("/:userID")
                 include: {
                     users_to_maps: true,
                     publishers: true,
-                    golden_players: true,
                 },
             });
             if (!rawUser) throw "rawUser is null!";
@@ -561,16 +533,14 @@ router.route("/:userID")
             const displayName: string | null = req.body.displayName === undefined ? null : req.body.displayName;
             const displayDiscord: boolean | null = req.body.displayDiscord === undefined ? null : req.body.displayDiscord;
             const showCompletedMaps: boolean | null = req.body.showCompletedMaps === undefined ? null : req.body.showCompletedMaps;
-            const goldenPlayerID: number | null = req.body.goldenPlayerID === undefined ? null : req.body.goldenPlayerID;
 
             const valid = validatePatch1({
                 displayName: displayName,
                 displayDiscord: displayDiscord,
                 showCompletedMaps: showCompletedMaps,
-                goldenPlayerID: goldenPlayerID,
             });
 
-            if (!valid || (displayName === undefined && displayDiscord === undefined && !goldenPlayerID && showCompletedMaps === null)) {
+            if (!valid || (displayName === undefined && displayDiscord === undefined && showCompletedMaps === null)) {
                 res.status(400).json("Malformed request body");
                 return;
             }
@@ -590,22 +560,6 @@ router.route("/:userID")
 
             if (showCompletedMaps !== null) updateUserData.showCompletedMaps = showCompletedMaps;
 
-            if (goldenPlayerID) {
-                const goldenPlayer = await prisma.golden_players.findUnique({
-                    where: { id: goldenPlayerID }
-                });
-
-                if (!goldenPlayer) {
-                    res.status(404).json("Golden Player not found");
-                    return;
-                }
-
-                updateUserData.golden_players = { connect: { id: goldenPlayerID } };
-            }
-            else if (goldenPlayerID === 0) {
-                updateUserData.golden_players = { disconnect: true };
-            }
-
 
             const rawUser = await prisma.users.update({
                 where: { id: req.id },
@@ -613,7 +567,6 @@ router.route("/:userID")
                 include: {
                     users_to_maps: true,
                     publishers: true,
-                    golden_players: true,
                 }
             });
 
@@ -701,7 +654,6 @@ router.route("/:userID/discord")
                 include: {
                     users_to_maps: true,
                     publishers: true,
-                    golden_players: true,
                 }
             });
 

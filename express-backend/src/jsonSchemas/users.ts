@@ -37,11 +37,6 @@ const postSchema = {
                 }],
             },
         },
-        goldenPlayerID: {
-            type: "integer",
-            minimum: 0,
-            maximum: intMaxSizes.smallInt.unsigned,
-        },
         generateSessionBool: { type: "boolean" },
     },
     additionalProperties: false,
@@ -60,11 +55,6 @@ const patch1Schema = {
         },
         displayDiscord: { type: ["boolean", "null"] },
         showCompletedMaps: { type: ["boolean", "null"] },
-        goldenPlayerID: {
-            type: ["integer", "null"],
-            minimum: 0,
-            maximum: intMaxSizes.smallInt.unsigned,
-        },
     },
     additionalProperties: false,
 };
@@ -87,7 +77,7 @@ const patch3Schema = {
             uniqueItems: true,
             items: {
                 type: "string",
-                pattern: "(^Super_Admin$)|(^Admin$)|(^Map_Moderator$)|(^Map_Reviewer$)|(^Golden_Verifier$)",
+                pattern: "(^Super_Admin$)|(^Admin$)|(^Map_Moderator$)|(^Map_Reviewer$)",
             }
         }
     }

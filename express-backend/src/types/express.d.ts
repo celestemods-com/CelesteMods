@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { difficulties, goldens_goldenList, publishers } from '.prisma/client';
+import { difficulties, publishers } from '.prisma/client';
 import { rawTech, rawMod, rawMap, rawReview, rawMapReview, rawReviewCollection } from './internal';
 
 
@@ -14,33 +14,6 @@ declare global {
     parentModID?: number | null;
     parentDifficultyID?: number | null;
     order?: number | null;
-  };
-  type reqGolden = {
-    id?: number;
-    mapID?: number;
-    fullClearBool?: boolean;
-    goldenList?: goldens_goldenList;
-    otherList?: string | null;
-    topGoldenListRank?: number | null;
-  };
-  type reqGoldenPlayer = {
-    id?: number;
-    name?: string;
-    userID?: number;
-  };
-  type reqGoldenRun = {
-    id?: number;
-    goldenID?: number;
-    goldenPlayerID?: number;
-    proofURL?: string | null;
-    timeCompleted?: number;
-  };
-  type reqGoldenSubmission = {
-    id?: number;
-    timeSubmitted?: number;
-    submittedBy?: number;
-    timeApproved?: number | null;
-    approvedBy?: number | null;
   };
   type reqLength = {
     id?: number;
@@ -77,7 +50,6 @@ declare global {
     displayName?: string;
     displayDiscord?: boolean;
     gamebananaIDs?: number[];
-    goldenPlayerID?: number;
   };
 
   namespace Express {
@@ -90,10 +62,6 @@ declare global {
       idsMatch?: boolean;
       valid?: boolean;
       difficulty?: difficulties;
-      golden?: reqGolden;
-      goldenPlayer?: reqGoldenPlayer;
-      goldenRun?: reqGoldenRun;
-      goldenSubmission?: reqGoldenSubmission;
       length?: reqLength;
       mod?: rawMod;
       mods?: rawMod[];

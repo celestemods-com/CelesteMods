@@ -1,5 +1,5 @@
 import {
-  users, publishers, golden_players, tech_list, tech_videos, difficulties, mods_ids, mods_details, mods_details_type, maps_ids, maps_details, maps_details_side,
+  users, publishers, tech_list, tech_videos, difficulties, mods_ids, mods_details, mods_details_type, maps_ids, maps_details, maps_details_side,
   map_lengths, maps_to_tech, ratings, reviews, reviews_maps, users_to_maps, review_collections
 } from ".prisma/client";
 
@@ -18,7 +18,6 @@ export interface createUserData {
   showCompletedMaps: boolean;
   users_to_maps?: { create: connectMapsData[] };
   publishers?: Object;
-  golden_players?: Object;
 }
 
 export interface connectMapsData {
@@ -38,13 +37,11 @@ export interface updateUserData {
   displayName?: string;
   displayDiscord?: boolean;
   showCompletedMaps?: boolean;
-  golden_players?: Object;
 }
 
 export interface rawUser extends users {
   users_to_maps: users_to_maps[],
   publishers: publishers[];
-  golden_players: golden_players | null;
 }
 
 

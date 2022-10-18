@@ -7,7 +7,10 @@
     "dev": "nodemon --watch src/ --watch node_modules/.prisma --ext ts,js,json,node,prisma --ignore prisma/ ./src/index.ts",
     "start": "ts-node ./src/index.ts",
     "build": "npx tsc",
-    "start-prod": "npm build && node ./dist/index.js"
+    "start-prod": "npm build && node ./dist/index.js",
+    "prisma-generate": "npx prisma generate",
+    "prisma-db-pull": "npx prisma db pull",
+    "tsc": "npx tsc"
   },
   "dependencies": {
     "@prisma/client": "^4.4.0",

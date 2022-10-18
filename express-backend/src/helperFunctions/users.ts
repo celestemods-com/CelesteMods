@@ -55,7 +55,6 @@ export const formatPartialUser = function (rawUser: rawUser) {
             timeCreated: rawUser.timeCreated,
             accountStatus: rawUser.accountStatus,
             showCompletedMaps: rawUser.showCompletedMaps,
-            goldenPlayerID: rawUser.golden_players?.id,
         };
 
 
@@ -115,7 +114,6 @@ export const formatFullUser = function (rawUser: rawUser) {
             accountStatus: rawUser.accountStatus,
             permissions: permissionsArray,
             showCompletedMaps: rawUser.showCompletedMaps,
-            goldenPlayerID: rawUser.golden_players?.id,
         };
 
 

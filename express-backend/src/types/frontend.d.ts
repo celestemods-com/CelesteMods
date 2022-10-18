@@ -22,10 +22,9 @@ export interface formattedUser {
   showCompletedMaps?: boolean;
   completedMapIDs?: number[];
   gamebananaIDs?: number[];
-  goldenPlayerID?: number;
 }
 
-export type permissions = "Super_Admin" | "Admin" | "Map_Moderator" | "Map_Reviewer" | "Golden_Verifier";
+export type permissions = "Super_Admin" | "Admin" | "Map_Moderator" | "Map_Reviewer";
 
 
 export interface formattedTech {
