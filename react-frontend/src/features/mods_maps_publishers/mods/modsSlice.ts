@@ -52,6 +52,7 @@ export const modsSlice = createSlice({
                 state.status.fetchStatus = "loading";
             })
             .addCase(fetchMods.fulfilled, (state, action) => {
+                const oldEntities = state.entities;
                 const newEntities: modEntities = {};
 
 
@@ -64,9 +65,11 @@ export const modsSlice = createSlice({
                 action.payload.forEach(modArray => {
                     const fetchedMod = modArray[0];
                     const id = fetchedMod.id;
+                    const oldEntity = oldEntities[id];
+                    const oldState = Array.isArray(oldEntity) ? oldEntity[0] : oldEntity;
 
 
-                    newEntities[id] = getModState(fetchedMod);
+                    newEntities[id] = getModState(fetchedMod, oldState.imageUrls);
                 });
 
 

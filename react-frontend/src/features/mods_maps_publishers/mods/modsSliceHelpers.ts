@@ -6,7 +6,7 @@ import { formattedMod } from "../../../../../express-backend/src/types/frontend"
 
 
 
-export const getModState = (mod: formattedMod): modState => {
+export const getModState = (mod: formattedMod, imageUrls?: string[]): modState => {
     const mapIDs = mod.maps.map((mapArray) => {
         return typeof mapArray === "string" ? mapArray : mapArray[0].id;
     });
