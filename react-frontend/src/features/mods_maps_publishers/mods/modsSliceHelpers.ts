@@ -10,7 +10,7 @@ export const getModState = (mod: formattedMod, imageUrls?: string[]): modState =
     const mapIDs = mod.maps.map((mapArray) => {
         return typeof mapArray === "string" ? mapArray : mapArray[0].id;
     });
-
+    
 
     return {
         id: mod.id,

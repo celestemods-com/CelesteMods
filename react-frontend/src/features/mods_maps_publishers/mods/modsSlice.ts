@@ -4,7 +4,7 @@ import axios, { AxiosResponse } from "axios";
 
 import { getModState, getModStateForTable } from "./modsSliceHelpers";
 import { getCurrentTime } from "../../../utils/utils";
-import { cmlBaseUri } from "../../../constants";
+import { cmlBaseUrl, gamebananaBaseImageUrl, gamebananaScreenshotsRequestUrl } from "../../../constants";
 import { mapsSlice } from "../maps/mapsSlice";
 
 import {
@@ -69,7 +69,7 @@ export const modsSlice = createSlice({
                     const oldState = Array.isArray(oldEntity) ? oldEntity[0] : oldEntity;
 
 
-                    newEntities[id] = getModState(fetchedMod, oldState.imageUrls);
+                    newEntities[id] = getModState(fetchedMod, oldState?.imageUrls);
                 });
 
 
@@ -96,9 +96,9 @@ export const modsSlice = createSlice({
                 const urlsArray = data.map((screenshotObject) => {
                     const fileName = screenshotObject._sFile;
 
-                    return `https://images.gamebanana.com/img/ss/mods/${fileName}`;
+                    return `${gamebananaBaseImageUrl}${fileName}`;
                 });
-
+                console.log(`urlsArray = ${urlsArray}`)
 
                 let newEntity: mod;
 
@@ -111,9 +111,9 @@ export const modsSlice = createSlice({
                     newEntity = [newLatestRev, ...otherRevs];
                 }
                 else {
-                    newEntity = { imageUrls: urlsArray, ...oldEntity };
+                    newEntity = { ...oldEntity, imageUrls: urlsArray };
                 }
-
+                console.log(`newEntity = ${JSON.stringify(newEntity)}`)
 
                 state.entities[modID] = newEntity;
                 state.requests.images[modID] = {
@@ -134,7 +134,7 @@ export const fetchMods = createAsyncThunk("mods",
             dispatch(mapsSliceActions.setSliceFetch_loading);
 
 
-            const url = `${cmlBaseUri}/mods`;
+            const url = `${cmlBaseUrl}/mods`;
 
             const response: AxiosResponse<formattedMod[][]> = await axios.get(url);
 
@@ -171,7 +171,7 @@ export const fetchImageUrlsByModID = createAsyncThunk("mods/images",
             dispatch(modsSliceActions.setImageUrlsRequestStatus_loading);
 
 
-            const url = `https://api.gamebanana.com/Core/Item/Data?itemtype=Mod&itemid=${modID}&fields=screenshots&return_keys=true`;
+            const url = `${gamebananaScreenshotsRequestUrl}${modID}`;
 
             const response: AxiosResponse<GamebananaScreenshotsRequestData> = await axios.get(url);
 

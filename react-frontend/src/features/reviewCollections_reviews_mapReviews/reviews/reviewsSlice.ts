@@ -3,7 +3,7 @@ import { RootState } from "../../../reduxApp/store";
 import axios, { AxiosResponse } from "axios";
 
 import { getReviewState } from "./reviewsSliceHelpers";
-import { cmlBaseUri } from "../../../constants";
+import { cmlBaseUrl } from "../../../constants";
 import { getCurrentTime } from "../../../utils/utils";
 import { setSliceFetch_loading, setSliceFetch_rejected } from "../../../utils/reduxHelpers";
 
@@ -103,7 +103,7 @@ export const fetchReviews = createAsyncThunk("reviews",
             dispatch(mapReviewsSliceActions.setSliceFetch_loading);
 
 
-            const url = `${cmlBaseUri}/reviews`;
+            const url = `${cmlBaseUrl}/reviews`;
 
             const response: AxiosResponse<formattedReview[]> = await axios.get(url);
 

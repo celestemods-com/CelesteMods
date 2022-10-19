@@ -3,7 +3,7 @@ import { RootState } from "../../../reduxApp/store";
 import axios, { AxiosResponse } from "axios";
 
 import { getMapState, getMapStateForTable } from "./mapsSliceHelpers";
-import { cmlBaseUri } from "../../../constants";
+import { cmlBaseUrl } from "../../../constants";
 import { getCurrentTime } from "../../../utils/utils";
 import { setSliceFetch_loading, setSliceFetch_rejected } from "../../../utils/reduxHelpers";
 
@@ -99,7 +99,7 @@ export const mapsSlice = createSlice({
 
 export const fetchMaps = createAsyncThunk("maps",
     async () => {
-        const url = `${cmlBaseUri}/maps`;
+        const url = `${cmlBaseUrl}/maps`;
 
 
         const response: AxiosResponse<formattedMap[][]> = await axios.get(url);

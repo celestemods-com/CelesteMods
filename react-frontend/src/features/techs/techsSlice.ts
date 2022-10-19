@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../reduxApp/store";
 import axios, { AxiosResponse } from "axios";
 
-import { cmlBaseUri } from "../../constants";
+import { cmlBaseUrl } from "../../constants";
 import { getCurrentTime } from "../../utils/utils";
 
 import { techEntities, techsState } from "./techsSliceTypes";
@@ -62,7 +62,7 @@ export const techsSlice = createSlice({
 
 export const fetchTechs = createAsyncThunk("techs",
     async () => {
-        const url = `${cmlBaseUri}/techs`;
+        const url = `${cmlBaseUrl}/techs`;
 
         const response: AxiosResponse<formattedTech[]> = await axios.get(url);
 
