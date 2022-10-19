@@ -106,7 +106,7 @@ export const modsSlice = createSlice({
                     const oldLatestRev = oldEntity[0];
                     const otherRevs = oldEntity.length > 1 ? oldEntity.slice(1) : [];
 
-                    const newLatestRev: modState = { imageUrls: urlsArray, ...oldLatestRev };
+                    const newLatestRev: modState = { ...oldLatestRev, imageUrls: urlsArray };
 
                     newEntity = [newLatestRev, ...otherRevs];
                 }
