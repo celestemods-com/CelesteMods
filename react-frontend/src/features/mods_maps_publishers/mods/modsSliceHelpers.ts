@@ -24,8 +24,10 @@ export const getModState = (mod: formattedMod, imageUrls?: string[]): modState =
         longDescription: mod.longDescription,
         gamebananaModID: mod.gamebananaModID,
         approved: mod.approved,
+        timeCreated: mod.timeCreated,
         maps: mapIDs,
         difficulties: mod.difficulties,
+        imageUrls: imageUrls,
     }
 }
 
