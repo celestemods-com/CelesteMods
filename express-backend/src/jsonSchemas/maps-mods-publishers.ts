@@ -96,6 +96,11 @@ const mapPostSchema = {
             minimum: 1,
             maximum: intMaxSizes.tinyInt.unsigned,
         },
+        timeCreated: {
+            type: "integer",
+            minimum: 1,
+            maximum: intMaxSizes.int.signed,
+        },
     },
     allOf: [
         {
@@ -170,7 +175,7 @@ const mapPostSchema = {
             },
         },
     ],
-    required: ["name", "lengthID"],
+    required: ["name", "lengthID", "timeCreated"],
     additionalProperties: false,
 };
 
@@ -266,6 +271,11 @@ const mapPatchSchema = {
             type: ["integer", "null"],
             minimum: 1,
             maximum: intMaxSizes.tinyInt.unsigned,
+        },
+        timeCreated: {
+            type: "integer",
+            minimum: 1,
+            maximum: intMaxSizes.int.signed,
         },
     },
     allOf: [
@@ -428,6 +438,11 @@ const modPostSchema = {
                 ],
             },
         },
+        timeCreated: {
+            type: "integer",
+            minimum: 1,
+            maximum: intMaxSizes.int.signed,
+        },
         maps: {
             type: "array",
             uniqueItems: true,
@@ -479,7 +494,7 @@ const modPostSchema = {
         },
     ],
     additionalProperties: false,
-    required: ["type", "name", "contentWarning", "shortDescription", "gamebananaModID", "maps"],
+    required: ["type", "name", "contentWarning", "shortDescription", "gamebananaModID", "timeCreated", "maps"],
 };
 
 
@@ -526,6 +541,11 @@ const modPatchSchema = {
             type: "integer",
             minimum: 0,
             maximum: intMaxSizes.mediumInt.unsigned,
+        },
+        timeCreated: {
+            type: "integer",
+            minimum: 1,
+            maximum: intMaxSizes.int.signed,
         },
     },
     additionalProperties: false,

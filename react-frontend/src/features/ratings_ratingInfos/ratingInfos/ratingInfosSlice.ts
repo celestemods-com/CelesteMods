@@ -2,7 +2,7 @@ import { AsyncThunk, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../../reduxApp/store";
 import axios, { AxiosResponse } from "axios";
 
-import { cmlBaseUri } from "../../../constants";
+import { cmlBaseUrl } from "../../../constants";
 import { getCurrentTime } from "../../../utils/utils";
 
 import { ratingInfoEntities, ratingInfosState, ratingInfoTypes } from "./ratingInfosSliceTypes";
@@ -75,7 +75,7 @@ export const ratingInfosSlice = createSlice({
 
 export const fetchRatingInfos: AsyncThunk<ratingsInfosTreeObjectType, { isInitialLoad: boolean, type: ratingInfoTypes }, {}> = createAsyncThunk("ratingInfos",
     async ({ type }) => {
-        const url = `${cmlBaseUri}/ratings/${type}`;
+        const url = `${cmlBaseUrl}/ratings/${type}`;
 
         const response: AxiosResponse<ratingsInfosTreeObjectType> = await axios.get(url);
 

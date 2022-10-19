@@ -270,6 +270,7 @@ export const formatMod = async function (rawMod: rawMod) {
             const longDescription = modDetails.longDescription === null ? undefined : modDetails.longDescription;
             const gamebananaModID = modDetails.gamebananaModID === null ? undefined : modDetails.gamebananaModID;
             const approvedBool = modDetails.timeApproved === null ? false : true;
+            const timeCreated = modDetails.timeCreated;
 
 
             const innerFormattedMaps: (string | formattedMap[])[] = [];
@@ -293,6 +294,7 @@ export const formatMod = async function (rawMod: rawMod) {
                 longDescription: longDescription,
                 gamebananaModID: gamebananaModID,
                 approved: approvedBool,
+                timeCreated: timeCreated,
                 maps: innerFormattedMaps,
             };
 
@@ -473,6 +475,7 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
     const side = mapObject.side;
     const modDifficulty = mapObject.modDifficulty;
     const overallRank = mapObject.overallRank;
+    const timeCreated = mapObject.timeCreated;
 
 
     const privilegedUserBool = await checkPermissions(req, mapStaffPermsArray);
@@ -511,6 +514,7 @@ const getMapIdCreationObject = async function (mapObject: jsonCreateMapWithMod, 
                 mapRemovedFromModBool: mapRemovedFromModBool,
                 timeSubmitted: currentTime,
                 users_maps_details_submittedByTousers: { connect: { id: submittingUserId } },
+                timeCreated: timeCreated,
             }],
         },
     };
@@ -740,6 +744,7 @@ export const formatMap = async function (rawMap: rawMap, rawMod?: rawMod) {
                     const notes = mapDetails.notes === null ? undefined : mapDetails.notes;
                     const mapRemovedFromModBool = mapDetails.mapRemovedFromModBool;
                     const approvedBool = mapDetails.timeApproved === null ? false : true;
+                    const timeCreated = mapDetails.timeCreated;
 
 
                     const mapperUserID = mapDetails.mapperUserID === null ? undefined : mapDetails.mapperUserID;
@@ -786,6 +791,7 @@ export const formatMap = async function (rawMap: rawMap, rawMod?: rawMod) {
                         notes: notes,
                         mapRemovedFromModBool: mapRemovedFromModBool,
                         approved: approvedBool,
+                        timeCreated: timeCreated,
                     }
 
                     const techAny: number[] = [];

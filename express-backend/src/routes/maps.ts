@@ -1148,6 +1148,7 @@ mapsRouter.route("/:mapID")
             let mapRemovedFromModBool: boolean = req.body.mapRemovedFromModBool;
             const techAny: number[] | undefined = req.body.techAny === null ? undefined : req.body.techAny;
             const techFC: number[] | undefined = req.body.techFC === null ? undefined : req.body.techFC;
+            const timeCreated: number | undefined = req.body.timeCreated === null ? undefined : req.body.timeCreated;
             const currentTime = getCurrentTime();
 
 
@@ -1167,6 +1168,7 @@ mapsRouter.route("/:mapID")
                 mapRemovedFromModBool: mapRemovedFromModBool,
                 techAny: techAny,
                 techFC: techFC,
+                timeCreated: timeCreated,
             };
 
             if (chapter || side) {
@@ -1183,7 +1185,7 @@ mapsRouter.route("/:mapID")
 
             if (!valid || (modDifficulty && modType === "Normal") || (!name && canonicalDifficulty === undefined && !lengthID && description === undefined &&
                 notes === undefined && mapperUserID === undefined && !mapperNameString && !chapter && !side && !modDifficulty && overallRank === undefined
-                && !mapRemovedFromModBool && !techAny && !techFC)) {
+                && !mapRemovedFromModBool && !techAny && !techFC && !timeCreated)) {
 
                 res.status(400).json("Malformed request body");
                 return;
@@ -1261,6 +1263,7 @@ mapsRouter.route("/:mapID")
                     mapRemovedFromModBool: mapRemovedFromModBool,
                     timeSubmitted: currentTime,
                     users_maps_details_submittedByTousers: { connect: { id: submittingUserId } },
+                    timeCreated: !timeCreated ? latestRevisionObject.timeCreated : timeCreated,
                 };
 
 
@@ -1562,6 +1565,7 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
         const mapRemovedFromModBool: boolean = !req.body.mapRemovedFromModBool ? false : req.body.mapRemovedFromModBool;
         const techAny: number[] | undefined = req.body.techAny === null ? undefined : req.body.techAny;
         const techFC: number[] | undefined = req.body.techFC === null ? undefined : req.body.techFC;
+        const timeCreated: number = req.body.timeCreated === null ? undefined : req.body.timeCreated;
         const currentTime = getCurrentTime();
 
 
@@ -1584,6 +1588,7 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
             mapRemovedFromModBool: mapRemovedFromModBool,
             techAny: techAny,
             techFC: techFC,
+            timeCreated: timeCreated,
         });
 
         if (!valid) {
@@ -1638,7 +1643,8 @@ export const mapPost = <expressRoute>async function (req, res, next) {  //called
                     mapperNameString: mapperNameString,
                     mapRemovedFromModBool: mapRemovedFromModBool,
                     timeSubmitted: currentTime,
-                    users_maps_details_submittedByTousers: { connect: { id: submitterUserID } }
+                    users_maps_details_submittedByTousers: { connect: { id: submitterUserID } },
+                    timeCreated: timeCreated,
                 }]
             }
         }

@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../../reduxApp/store";
 import axios, { AxiosResponse } from "axios";
 
-import { cmlBaseUri } from "../../../constants";
+import { cmlBaseUrl } from "../../../constants";
 import { getCurrentTime } from "../../../utils/utils";
 
 import { publisherEntities, publishersState } from "./publishersSliceTypes";
@@ -62,7 +62,7 @@ export const publishersSlice = createSlice({
 
 export const fetchPublishers = createAsyncThunk("publishers",
     async () => {
-            const url = `${cmlBaseUri}/publishers`;
+            const url = `${cmlBaseUrl}/publishers`;
 
             const response: AxiosResponse<formattedPublisher[]> = await axios.get(url);
 

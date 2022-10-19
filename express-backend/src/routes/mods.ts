@@ -116,6 +116,7 @@ modsRouter.route("/")
             const longDescription: string | undefined = req.body.longDescription;
             const gamebananaModID: number = req.body.gamebananaModID;
             const difficultyNames: (string | string[])[] | undefined = req.body.difficultyNames;
+            const timeCreated: number = req.body.timeCreated;
             const maps: jsonCreateMapWithMod[] = req.body.maps;
             const currentTime = getCurrentTime();
 
@@ -136,6 +137,7 @@ modsRouter.route("/")
                 longDescription: longDescription,
                 gamebananaModID: gamebananaModID,
                 difficultyNames: difficultyNames,
+                timeCreated: timeCreated,
                 maps: maps,
             });
 
@@ -253,6 +255,7 @@ modsRouter.route("/")
                     gamebananaModID: gamebananaModID,
                     timeSubmitted: currentTime,
                     users_mods_details_submittedByTousers: { connect: { id: submittingUserId } },
+                    timeCreated: timeCreated,
                 }
 
 
@@ -1249,6 +1252,7 @@ modsRouter.route("/:modID")
             const shortDescription: string | undefined = req.body.shortDescription === null ? undefined : req.body.shortDescription;
             const longDescription: string | null | undefined = req.body.longDescription;
             const gamebananaModID: number | undefined = req.body.gamebananaModID === null ? undefined : req.body.gamebananaModID;
+            const timeCreated: number | undefined = req.body.timeCreated === null ? undefined : req.body.timeCreated;
             const currentTime = getCurrentTime();
 
 
@@ -1265,10 +1269,11 @@ modsRouter.route("/:modID")
                 shortDescription: shortDescription,
                 longDescription: longDescription,
                 gamebananaModID: gamebananaModID,
+                timeCreated: timeCreated,
             });
 
             if (!valid || (!name && !publisherName && !publisherID && !userID && !contentWarning && notes === undefined &&
-                !shortDescription && longDescription === undefined && !gamebananaModID)) {
+                !shortDescription && longDescription === undefined && !gamebananaModID && !timeCreated)) {
 
                 res.status(400).json("Malformed request body");
                 return;
@@ -1405,6 +1410,7 @@ modsRouter.route("/:modID")
                     gamebananaModID: !gamebananaModID ? latestValidModDetails.gamebananaModID : gamebananaModID,
                     timeSubmitted: currentTime,
                     users_mods_details_submittedByTousers: { connect: { id: submitterUserID } },
+                    timeCreated: !timeCreated ? latestValidModDetails.timeCreated : timeCreated,
                     mods_ids: { connect: { id: id } },
                 }
 

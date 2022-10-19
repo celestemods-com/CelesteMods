@@ -10,7 +10,7 @@ export const getModState = (mod: formattedMod, imageUrls?: string[]): modState =
     const mapIDs = mod.maps.map((mapArray) => {
         return typeof mapArray === "string" ? mapArray : mapArray[0].id;
     });
-
+    
 
     return {
         id: mod.id,
@@ -24,8 +24,10 @@ export const getModState = (mod: formattedMod, imageUrls?: string[]): modState =
         longDescription: mod.longDescription,
         gamebananaModID: mod.gamebananaModID,
         approved: mod.approved,
+        timeCreated: mod.timeCreated,
         maps: mapIDs,
         difficulties: mod.difficulties,
+        imageUrls: imageUrls,
     }
 }
 

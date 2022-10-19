@@ -108,6 +108,7 @@ interface modDetailsCreationObject {
   users_mods_details_submittedByTousers: { connect: { id: number } };
   timeApproved?: number;
   users_mods_details_approvedByTousers?: { connect: { id: number } };
+  timeCreated: number;
 }
 
 export interface modDetailsWithIdCreationObject extends modDetailsCreationObject {
@@ -157,6 +158,7 @@ export interface jsonCreateMapWithMod {
   mapRemovedFromModBool: boolean;
   techAny?: number[];
   techFC?: number[];
+  timeCreated: number;
 }
 
 
@@ -194,9 +196,8 @@ export interface mapDetailsCreationObject {
   side?: maps_details_side;
   difficulties_difficultiesTomaps_details_modDifficultyID?: { connect: { id: number } };
   overallRank?: number | null;
-  maps_to_tech?: {
-    create: mapToTechCreationObject[]
-  }
+  maps_to_tech?: { create: mapToTechCreationObject[] };
+  timeCreated: number;
 }
 
 export interface mapDetailsCreationObjectStandalone extends mapDetailsCreationObject {
@@ -253,6 +254,7 @@ export interface mapValidationJson {
   mapRemovedFromModBool: boolean,
   techAny: number[] | undefined,
   techFC: number[] | undefined,
+  timeCreated?: number;
 }
 
 
