@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3002
--- Generation Time: Oct 18, 2022 at 03:37 AM
+-- Generation Time: Oct 19, 2022 at 05:26 AM
 -- Server version: 10.4.21-MariaDB
 -- PHP Version: 8.1.1
 
@@ -61,7 +61,8 @@ CREATE TABLE `maps_details` (
   `timeSubmitted` int(11) NOT NULL,
   `submittedBy` smallint(5) UNSIGNED DEFAULT NULL,
   `timeApproved` int(11) DEFAULT NULL,
-  `approvedBy` smallint(5) UNSIGNED DEFAULT NULL
+  `approvedBy` smallint(5) UNSIGNED DEFAULT NULL,
+  `timeCreated` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -121,7 +122,8 @@ CREATE TABLE `mods_details` (
   `timeSubmitted` int(11) NOT NULL,
   `submittedBy` smallint(5) UNSIGNED DEFAULT NULL,
   `timeApproved` int(11) DEFAULT NULL,
-  `approvedBy` smallint(5) UNSIGNED DEFAULT NULL
+  `approvedBy` smallint(5) UNSIGNED DEFAULT NULL,
+  `timeCreated` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
