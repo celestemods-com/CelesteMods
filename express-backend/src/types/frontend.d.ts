@@ -51,6 +51,7 @@ export interface formattedMod {
   maps: (formattedMap[] | string)[];
   difficulties?: (number | number[])[];
   approved: boolean;
+  timeCreated: number;
 }
 
 
@@ -68,6 +69,7 @@ interface formattedMap_base {
   techAny?: number[];
   techFC?: number[];
   approved: boolean;
+  timeCreated: number;
 }
 
 export interface formattedMap_normal extends formattedMap_base {

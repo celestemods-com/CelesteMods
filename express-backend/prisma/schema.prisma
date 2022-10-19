@@ -127,6 +127,7 @@ model maps_details {
   submittedBy                                                   Int?               @db.UnsignedSmallInt
   timeApproved                                                  Int?
   approvedBy                                                    Int?               @db.UnsignedSmallInt
+  timeCreated                                                   Int
   maps_ids                                                      maps_ids           @relation(fields: [mapId], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "maps_details_ibfk_1")
   users_maps_details_mapperUserIDTousers                        users?             @relation("maps_details_mapperUserIDTousers", fields: [mapperUserID], references: [id], onUpdate: Restrict, map: "maps_details_ibfk_2")
   difficulties_difficultiesTomaps_details_canonicalDifficultyID difficulties       @relation("difficultiesTomaps_details_canonicalDifficultyID", fields: [canonicalDifficultyID], references: [id], onUpdate: Restrict, map: "maps_details_ibfk_3")
@@ -186,6 +187,7 @@ model mods_details {
   submittedBy                           Int?              @db.UnsignedSmallInt
   timeApproved                          Int?
   approvedBy                            Int?              @db.UnsignedSmallInt
+  timeCreated                           Int
   mods_ids                              mods_ids          @relation(fields: [id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "mods_details_ibfk_1")
   publishers                            publishers        @relation(fields: [publisherID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "mods_details_ibfk_2")
   users_mods_details_submittedByTousers users?            @relation("mods_details_submittedByTousers", fields: [submittedBy], references: [id], onUpdate: Restrict, map: "mods_details_ibfk_3")
