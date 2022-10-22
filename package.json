@@ -4,7 +4,8 @@
   "private": true,
   "workspaces": [
     "./express-backend",
-    "./react-frontend"
+    "./react-frontend",
+    "./express-db-import-server"
   ],
   "scripts": {
     "dev": "npm run dev --workspaces",
@@ -13,6 +14,7 @@
     "start": "npm start --workspaces",
     "start-express": "npm start --workspace=express-backend",
     "start-react": "npm start --workspace=react-frontend",
+    "start-import":"npm start --workspace=express-db-import-server",
     "build": "npm run build --workspaces",
     "test": "npm run test --workspaces --if-present",
     "postinstall": "cd express-backend && npx prisma generate"
