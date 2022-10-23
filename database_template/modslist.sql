@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3002
--- Generation Time: Oct 19, 2022 at 05:26 AM
+-- Generation Time: Oct 23, 2022 at 10:23 PM
 -- Server version: 10.4.21-MariaDB
 -- PHP Version: 8.1.1
 
@@ -257,7 +257,7 @@ CREATE TABLE `tech_videos` (
 CREATE TABLE `users` (
   `id` smallint(5) UNSIGNED NOT NULL,
   `displayName` varchar(50) NOT NULL,
-  `discordID` varchar(50) NOT NULL,
+  `discordID` varchar(50) DEFAULT NULL,
   `discordUsername` varchar(32) NOT NULL,
   `discordDiscrim` varchar(4) NOT NULL,
   `displayDiscord` tinyint(1) NOT NULL,
@@ -267,6 +267,13 @@ CREATE TABLE `users` (
   `accountStatus` enum('Active','Deleted','Banned') NOT NULL DEFAULT 'Active',
   `timeDeletedOrBanned` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `displayName`, `discordID`, `discordUsername`, `discordDiscrim`, `displayDiscord`, `showCompletedMaps`, `timeCreated`, `permissions`, `accountStatus`, `timeDeletedOrBanned`) VALUES
+(1, 'CelesteModsList', 'CelesteModsList', 'CelesteModsList', '9999', 0, 0, 1666549594, 'Map_Reviewer', 'Active', NULL);
 
 -- --------------------------------------------------------
 
@@ -503,7 +510,7 @@ ALTER TABLE `tech_videos`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` smallint(5) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` smallint(5) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Constraints for dumped tables
