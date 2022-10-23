@@ -56,7 +56,7 @@ export const importDifficultiesAndTechs = async (difficulties: Difficulty[], sub
         const techNamesArray = parentDifficulty.techs.split(", ");
 
         const difficultyTechCreationObjects: CreateTechDataForImport[] = techNamesArray.map((techName, techIndex) => {
-            const techID = runningTechCount + techIndex + 1;
+            const techID: number = runningTechCount + techIndex + 1;
 
             return {
                 id: techID,
