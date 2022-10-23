@@ -1,32 +1,50 @@
+import { difficultyNamesArray } from "../helperFunctions/handleDbImport";
+import { createDifficultyData, createUserData } from "../../../express-backend/src/types/internal";
+import { users } from "@prisma/client";
+
+
+
+
 export interface DbImportJSON {
     difficulties: Difficulty[];
     subDifficulties: NameAndDescription[];
     qualities: NameAndDescription[];
     lengths: NameAndDescription[];
     maps: Maps;
+    publishers: Publisher[];
     discordTags: string[];
     ratings: Ratings;
 }
 
 
-export type DifficultyNames = "Beginner" | "Intermediate" | "Advanced" | "Expert" | "Grandmaster";
+export type DifficultyNames = typeof difficultyNamesArray[number];
 
 
-interface NameAndDescription {
+export interface NameAndDescription {
     name: string;
     description: string;
 }
 
-interface Difficulty extends NameAndDescription {
+export interface Difficulty extends NameAndDescription {
+    name: DifficultyNames;
     techs: string;
 }
 
-
-interface Maps {
-    [key: DifficultyNames]: Map;
+export interface Publisher {
+    name: string;
+    publisherGamebananaID: number;
 }
 
-interface Map {
+
+export interface Maps {
+    Beginner: Map[];
+    Intermediate: Map[];
+    Advanced: Map[];
+    Expert: Map[];
+    Grandmaster: Map[];
+}
+
+export interface Map {
     modName: string;
     oldCmlPublisherName: string;
     length: string;
@@ -41,17 +59,37 @@ interface Map {
 
 
 
-interface Ratings {
+export interface Ratings {
     [key: DifficultyNames]: RatingsForDifficultyName;
 }
 
-interface RatingsForDifficultyName {
+export interface RatingsForDifficultyName {
     [key: string]: RatingsForMap;
 }
 
-interface RatingsForMap {
+export interface RatingsForMap {
     [key: string]: {
         qualityRating: number;
         relativeDifficultyRating: number;
     }
+}
+
+
+
+
+export interface CreateDifficultyDataForImport extends createDifficultyData {
+    id: number;
+}
+
+export interface CreateTechDataForImport {
+    id: number;
+    name: string;
+    description?: string | null;
+    techVideos?: { create: createTechVideosData[] };
+    defaultDifficultyID: number;
+}
+
+export interface CreateUserDataForImport extends createUserData {
+    id: number;
+    discordID: null;
 }
