@@ -9,8 +9,9 @@ node_modules
 coverage
 
 # production
-build
-dist
+build/
+dist/
+logs/
 
 # misc
 .DS_Store
