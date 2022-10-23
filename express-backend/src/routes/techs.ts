@@ -88,13 +88,7 @@ router.route("/")
             }
 
 
-            const createData: createTechData = {
-                name: name,
-                description: description,
-                techVideos: { create: createTechVideosArray },
-                difficulties: {},
-            };
-
+            let difficultyID: number;
 
             if (typeof (difficulty) === "string") {
                 const matchingDifficulty = await prisma.difficulties.findFirst({
@@ -110,7 +104,7 @@ router.route("/")
                     return;
                 }
 
-                createData.difficulties = { connect: { id: matchingDifficulty.id } };
+                difficultyID = matchingDifficulty.id;
             }
             else if (typeof difficulty === "number") {
                 const matchingDifficulty = await prisma.difficulties.findUnique({ where: { id: difficulty } });
@@ -125,9 +119,17 @@ router.route("/")
                     return;
                 }
 
-                createData.difficulties = { connect: { id: difficulty } };
+                difficultyID = difficulty;
             }
             else throw "Invalid 'difficulty'";
+
+
+            const createData: createTechData = {
+                name: name,
+                description: description,
+                techVideos: { create: createTechVideosArray },
+                difficulties: { connect: { id: difficultyID } },
+            };
 
 
             const rawTech = await prisma.tech_list.create({

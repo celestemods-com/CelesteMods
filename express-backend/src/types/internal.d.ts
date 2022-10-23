@@ -62,7 +62,7 @@ export interface createTechData {
   name: string;
   description?: string | null;
   techVideos?: { create: createTechVideosData[] };
-  difficulties: Object;
+  difficulties: { connect: { id: number } };
 }
 
 export interface createTechVideosData {
