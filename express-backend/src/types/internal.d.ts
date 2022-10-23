@@ -23,9 +23,9 @@ export interface createUserData {
 export interface connectMapsData {
   maps_ids: {
     connect: {
-      id: number
+      id: number;
     }
-  },
+  };
 }
 
 
@@ -36,7 +36,7 @@ export interface updateUserData {
 }
 
 export interface rawUser extends users {
-  users_to_maps: users_to_maps[],
+  users_to_maps: users_to_maps[];
   publishers: publishers[];
 }
 
@@ -118,8 +118,8 @@ export interface loneModDetailsCreationObject extends modDetailsCreationObject {
 
 
 export interface difficultyNamesForModArrayElement {
-  id?: number,
-  name: string,
+  id?: number;
+  name: string;
 }
 
 export interface createChildDifficultyForMod {
@@ -202,7 +202,7 @@ export interface mapDetailsCreationObjectStandalone extends mapDetailsCreationOb
 }
 
 export interface mapToTechCreationObject {
-  tech_list: { connect: { id: number } },
+  tech_list: { connect: { id: number } };
   fullClearOnlyBool: boolean;
 }
 
@@ -236,20 +236,20 @@ interface modDetailsForMap extends mods_details {
 
 
 export interface mapValidationJson {
-  name: string,
-  canonicalDifficulty?: number | null,
-  lengthID?: number,
-  description: string | null,
-  notes: string | null,
-  mapperUserID: number | null,
-  mapperNameString?: string,
-  chapter?: number,
-  side?: maps_details_side,
-  modDifficulty?: number,
-  overallRank?: number | null,
-  mapRemovedFromModBool: boolean,
-  techAny: number[] | undefined,
-  techFC: number[] | undefined,
+  name: string;
+  canonicalDifficulty?: number | null;
+  lengthID?: number;
+  description: string | null;
+  notes: string | null;
+  mapperUserID: number | null;
+  mapperNameString?: string;
+  chapter?: number;
+  side?: maps_details_side;
+  modDifficulty?: number;
+  overallRank?: number | null;
+  mapRemovedFromModBool: boolean;
+  techAny: number[] | undefined;
+  techFC: number[] | undefined;
   timeCreated?: number;
 }
 
@@ -263,8 +263,8 @@ export interface publisherConnectionObject {
 
 export interface publisherCreationObject {
   create: {
-    name: string,
-    gamebananaID: number,
+    name: string;
+    gamebananaID: number;
   };
 }
 
@@ -281,24 +281,24 @@ export interface rawRating extends ratings {
 }
 
 interface updateRatingDataBase {
-  timeSubmitted?: number,
-  quality: number | null,
+  timeSubmitted?: number;
+  quality: number | null;
 }
 
 export interface updateRatingDataConnectDifficulty extends updateRatingDataBase {
-  difficulties: { connect: { id: number } },
+  difficulties: { connect: { id: number } };
 }
 
 export interface updateRatingDataNullDifficulty extends updateRatingDataBase {
-  difficultyID: null,
+  difficultyID: null;
 }
 
 export interface createRatingData {
-  maps_ids: { connect: { id: number } },
-  users: { connect: { id: number } },
-  timeSubmitted: number,
-  quality: number | null,
-  difficulties?: { connect: { id: number } },
+  maps_ids: { connect: { id: number } };
+  users: { connect: { id: number } };
+  timeSubmitted: number;
+  quality: number | null;
+  difficulties?: { connect: { id: number } };
 }
 
 export interface ratingForInfo extends ratings {
@@ -327,7 +327,7 @@ export interface rawReview extends reviews {
 export interface createReviewData {
   mods_ids: { connect: { id: number } };
   timeSubmitted: number;
-  review_collections: { connect: { id: number } },
+  review_collections: { connect: { id: number } };
   likes?: string;
   dislikes?: string;
   otherComments?: string;
