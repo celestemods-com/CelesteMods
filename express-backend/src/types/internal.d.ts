@@ -28,10 +28,6 @@ export interface connectMapsData {
   },
 }
 
-interface maps_idsConnectionData {
-
-}
-
 
 export interface updateUserData {
   displayName?: string;
