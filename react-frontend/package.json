@@ -23,7 +23,7 @@
     "@types/react-dom": "^18.0.6",
     "@types/react-router-dom": "^5.3.3",
     "axios": "^0.27.2",
-    "dayjs": "^1.11.5",
+    "dayjs": "^1.11.6",
     "embla-carousel-react": "^7.0.3",
     "mantine-datatable": "^1.7.9",
     "react": "^18.2.0",
