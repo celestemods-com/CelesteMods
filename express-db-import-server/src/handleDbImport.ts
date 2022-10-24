@@ -28,7 +28,7 @@ router.route("/initial")
             const { difficultyCreationObjects, techCreationObjects } = await importDifficultiesAndTechs(difficulties.reverse(), subDifficulties.reverse());
             const lengthCreationObjects = await importLengths(lengths.reverse());
             const userCreationObjects = await importDiscordTags(discordTags, currentTime);
-            const publisherCreationObjects = await importPublishers(publishers, userCreationObjects);
+            const publisherCreationObjects = await importPublishers(publishers);
 
 
             console.log("finished initial import");

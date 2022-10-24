@@ -139,7 +139,7 @@ export const importDiscordTags = async (discordTags: string[], currentTime: numb
 
 
 
-export const importPublishers = async (publishers: Publisher[], userCreationObjects: CreateUserDataForImport[]) => {
+export const importPublishers = async (publishers: Publisher[]) => {
     console.log("importing publishers");
 
 
@@ -148,33 +148,11 @@ export const importPublishers = async (publishers: Publisher[], userCreationObje
         const publisherName = publisher.name;
 
 
-        let matchingUserId = 0;
-
-        for (const userCreationObject of userCreationObjects) {
-            const discordUsername = userCreationObject.discordUsername;
-
-            if (discordUsername === publisherName) {
-                matchingUserId = userCreationObject.id;
-                break;
-            }
-        }
-
-
-        if (matchingUserId === 0) {
-            return {
-                id: publisherID,
-                gamebananaID: publisher.publisherGamebananaID,
-                name: publisherName,
-            };
-        }
-        else {
-            return {
-                id: publisherID,
-                gamebananaID: publisher.publisherGamebananaID,
-                name: publisherName,
-                users: { connect: { id: matchingUserId } },
-            };
-        }
+        return {
+            id: publisherID,
+            gamebananaID: publisher.publisherGamebananaID,
+            name: publisherName,
+        };
     });
 
 
