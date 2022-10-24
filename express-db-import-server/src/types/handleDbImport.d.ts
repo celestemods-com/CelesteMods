@@ -10,7 +10,7 @@ export interface DbImportJSON {
     subDifficulties: NameAndDescription[];
     qualities: NameAndDescription[];
     lengths: NameAndDescription[];
-    maps: Maps;
+    mods: Mods;
     publishers: Publisher[];
     discordTags: string[];
     ratings: Ratings;
@@ -36,25 +36,29 @@ export interface Publisher {
 }
 
 
-export interface Maps {
-    Beginner: Map[];
-    Intermediate: Map[];
-    Advanced: Map[];
-    Expert: Map[];
-    Grandmaster: Map[];
+export interface Mods {
+    Beginner: string[];
+    Intermediate: string[];
+    Advanced: string[];
+    Expert: string[];
+    Grandmaster: string[];
+    UniqueMods: {
+        [key: number]: Mod;     //keys are gamebananaModIDs
+    };
 }
 
-export interface Map {
-    modName: string;
-    oldCmlPublisherName: string;
-    length: string;
-    techList: string;
-    description: string;
-    oldDescription: string;
-    gamebananaModID: number;
+export interface Mod {
+    oldCmlModName: string[];
+    oldCmlPublisherName: string[];
+    length: string[];
+    techAny?: string;
+    techFC?: string;
+    description: string[];
+    oldDescription: string[];
     publisherName: string;
     publisherGamebananaID: number;
     timeCreated: number;
+    gamebananaModName: string;
 }
 
 
@@ -64,10 +68,10 @@ export interface Ratings {
 }
 
 export interface RatingsForDifficultyName {
-    [key: string]: RatingsForMap;
+    [key: string]: RatingsForMod;
 }
 
-export interface RatingsForMap {
+export interface RatingsForMod {
     [key: string]: {
         qualityRating: number;
         relativeDifficultyRating: number;

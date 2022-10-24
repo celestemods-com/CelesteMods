@@ -23,7 +23,7 @@ router.route("/initial")
 
 
             const currentTime = getCurrentTime();
-            const { difficulties, subDifficulties, qualities, lengths, maps, publishers, discordTags, ratings } = responseObject;
+            const { difficulties, subDifficulties, qualities, lengths, mods, publishers, discordTags, ratings } = responseObject;
 
             const { difficultyCreationObjects, techCreationObjects } = await importDifficultiesAndTechs(difficulties.reverse(), subDifficulties.reverse());
             const lengthCreationObjects = await importLengths(lengths.reverse());

@@ -1,7 +1,7 @@
 import { map_lengths } from "@prisma/client";
 import { prisma } from "../middlewaresAndConfigs/prismaClient";
 
-import { Difficulty, NameAndDescription, CreateDifficultyDataForImport, CreateTechDataForImport, CreateUserDataForImport, Maps, Publisher } from "../types/handleDbImport";
+import { Difficulty, NameAndDescription, CreateDifficultyDataForImport, CreateTechDataForImport, CreateUserDataForImport, Publisher } from "../types/handleDbImport";
 
 
 
