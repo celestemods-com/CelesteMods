@@ -11,13 +11,13 @@ import { fetchRatingInfos } from "../../features/ratings_ratingInfos/ratingInfos
 import { fetchRatings } from "../../features/ratings_ratingInfos/ratings/ratingsSlice";
 import { fetchUsers } from "../../features/users/usersSlice";
 import { useNavigate, useParams } from "react-router-dom";
-import { ModDropdown } from "./ModDropdown/ModDropdown";
+import { TechDropdown } from "./TechDropdown/TechDropdown";
 import { RootState } from "../../reduxApp/store";
 
 
 
 
-export const ModsPage = () => {
+export const TechsPage = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
 
@@ -143,7 +143,7 @@ export const ModsPage = () => {
                 },
             ]}
             rowExpansion={{
-                content: ({ record }) => <ModDropdown modID={record.id} gamebananaModID={record.gamebananaModID} />,
+                content: ({ record }) => <TechDropdown modID={record.id} gamebananaModID={record.gamebananaModID} />,
                 expanded: {
                     recordIds: expandedRowModIds,
                     onRecordIdsChange: setExpandedRowModIds,

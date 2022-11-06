@@ -1,7 +1,8 @@
 import { createBrowserRouter } from "react-router-dom";
-import { HomePage } from "./pages/HomePage";
-import { ModsPage } from "./pages/ModsPage/ModsPage";
 import { AppLayout } from "./otherComponents/AppLayout";
+import { HomePage } from "./pages/HomePage";
+import { LengthsPage } from "./pages/LengthsPage/LengthsPage";
+import { ModsPage } from "./pages/ModsPage/ModsPage";
 
 
 export const routes = [
@@ -21,6 +22,17 @@ export const routes = [
                     {
                         element: null,
                         path: "/mods/:modID",
+                    }
+                ],
+            },
+            {
+                path: "/lengths",
+                element: <LengthsPage />,
+                pathname: "Lengths",
+                children: [
+                    {
+                        element: null,
+                        path: "/lengths/:lengthID",
                     }
                 ],
             },
