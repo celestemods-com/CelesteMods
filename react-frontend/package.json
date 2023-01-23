@@ -25,7 +25,7 @@
     "axios": "^0.27.2",
     "dayjs": "^1.11.5",
     "embla-carousel-react": "^7.0.3",
-    "mantine-datatable": "^1.7.9",
+    "mantine-datatable": "^1.7.35",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-redux": "^8.0.2",
