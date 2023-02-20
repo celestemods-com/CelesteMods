@@ -16,7 +16,7 @@
     "@prisma/client": "^4.4.0",
     "@quixo3/prisma-session-store": "^3.1.9",
     "ajv": "^8.11.0",
-    "axios": "^0.27.2",
+    "axios": "^1.3.3",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "express": "^4.18.2",
