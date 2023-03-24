@@ -7,33 +7,33 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model archive_maps {
-  id                                     Int                @id @default(autoincrement()) @db.UnsignedMediumInt
-  mapID                                  Int                @db.UnsignedMediumInt
-  modID                                  Int                @db.UnsignedSmallInt
-  mapperUserID                           Int?               @db.UnsignedSmallInt
-  mapperNameString                       String             @db.VarChar(50)
-  name                                   String             @db.VarChar(200)
-  canonicalDifficultyID                  Int                @db.UnsignedSmallInt
-  lengthID                               Int                @db.UnsignedTinyInt
-  description                            String?            @db.VarChar(500)
-  notes                                  String?            @db.VarChar(500)
-  chapter                                Int?               @db.UnsignedTinyInt
-  side                                   archive_maps_side?
-  overallRank                            Int?               @db.UnsignedTinyInt
-  mapRemovedFromModBool                  Boolean            @default(false)
-  timeSubmitted                          Int
-  submittedBy                            Int?               @db.UnsignedSmallInt
-  timeApproved                           Int?
-  approvedBy                             Int?               @db.UnsignedSmallInt
-  timeArchived                           Int
-  maps                                   maps               @relation(fields: [mapID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "archive_maps_ibfk_0")
-  mods                                   mods               @relation(fields: [modID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "archive_maps_ibfk_1")
-  users_archive_maps_mapperUserIDTousers users?             @relation("archive_maps_mapperUserIDTousers", fields: [mapperUserID], references: [id], onUpdate: Restrict, map: "archive_maps_ibfk_2")
-  difficulties                           difficulties       @relation(fields: [canonicalDifficultyID], references: [id], onUpdate: Restrict, map: "archive_maps_ibfk_3")
-  lengths                                lengths            @relation(fields: [lengthID], references: [id], onUpdate: Restrict, map: "archive_maps_ibfk_4")
-  users_archive_maps_submittedByTousers  users?             @relation("archive_maps_submittedByTousers", fields: [submittedBy], references: [id], onUpdate: Restrict, map: "archive_maps_ibfk_5")
-  users_archive_maps_approvedByTousers   users?             @relation("archive_maps_approvedByTousers", fields: [approvedBy], references: [id], onUpdate: Restrict, map: "archive_maps_ibfk_6")
+model archive_map {
+  id                                  Int               @id @default(autoincrement()) @db.UnsignedMediumInt
+  mapID                               Int               @db.UnsignedMediumInt
+  modID                               Int               @db.UnsignedSmallInt
+  mapperUserID                        Int?              @db.UnsignedSmallInt
+  mapperNameString                    String            @db.VarChar(50)
+  name                                String            @db.VarChar(200)
+  canonicalDifficultyID               Int               @db.UnsignedSmallInt
+  lengthID                            Int               @db.UnsignedTinyInt
+  description                         String?           @db.VarChar(500)
+  notes                               String?           @db.VarChar(500)
+  chapter                             Int?              @db.UnsignedTinyInt
+  side                                archive_map_side?
+  overallRank                         Int?              @db.UnsignedTinyInt
+  mapRemovedFromModBool               Boolean           @default(false)
+  timeSubmitted                       Int
+  submittedBy                         Int?              @db.UnsignedSmallInt
+  timeApproved                        Int?
+  approvedBy                          Int?              @db.UnsignedSmallInt
+  timeArchived                        Int
+  map                                 map               @relation(fields: [mapID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "archive_map_ibfk_0")
+  mod                                 mod               @relation(fields: [modID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "archive_map_ibfk_1")
+  user_archive_map_mapperUserIDTouser user?             @relation("archive_map_mapperUserIDTouser", fields: [mapperUserID], references: [id], onUpdate: Restrict, map: "archive_map_ibfk_2")
+  difficulty                          difficulty        @relation(fields: [canonicalDifficultyID], references: [id], onUpdate: Restrict, map: "archive_map_ibfk_3")
+  length                              length            @relation(fields: [lengthID], references: [id], onUpdate: Restrict, map: "archive_map_ibfk_4")
+  user_archive_map_submittedByTouser  user?             @relation("archive_map_submittedByTouser", fields: [submittedBy], references: [id], onUpdate: Restrict, map: "archive_map_ibfk_5")
+  user_archive_map_approvedByTouser   user?             @relation("archive_map_approvedByTouser", fields: [approvedBy], references: [id], onUpdate: Restrict, map: "archive_map_ibfk_6")
 
   @@unique([modID, chapter, side], map: "modChapterSide")
   @@index([approvedBy], map: "approvedBy")
@@ -45,26 +45,26 @@ model archive_maps {
   @@index([submittedBy], map: "submittedBy")
 }
 
-model archive_mods {
-  id                    Int               @id @db.UnsignedSmallInt
-  modID                 Int               @db.UnsignedSmallInt
-  type                  archive_mods_type @default(Normal)
-  name                  String            @db.VarChar(200)
-  publisherID           Int               @db.UnsignedSmallInt
-  contentWarning        Boolean           @default(false)
-  notes                 String?           @db.VarChar(500)
-  shortDescription      String            @db.VarChar(150)
-  longDescription       String?           @db.VarChar(1500)
-  gamebananaModID       Int               @db.UnsignedMediumInt
+model archive_mod {
+  id                    Int              @id @db.UnsignedSmallInt
+  modID                 Int              @db.UnsignedSmallInt
+  type                  archive_mod_type @default(Normal)
+  name                  String           @db.VarChar(200)
+  publisherID           Int              @db.UnsignedSmallInt
+  contentWarning        Boolean          @default(false)
+  notes                 String?          @db.VarChar(500)
+  shortDescription      String           @db.VarChar(150)
+  longDescription       String?          @db.VarChar(1500)
+  gamebananaModID       Int              @db.UnsignedMediumInt
   timeSubmitted         Int
-  submittedBy           Int?              @db.UnsignedSmallInt
+  submittedBy           Int?             @db.UnsignedSmallInt
   timeApproved          Int?
-  approvedBy            Int?              @db.UnsignedSmallInt
+  approvedBy            Int?             @db.UnsignedSmallInt
   timeCreatedGamebanana Int
   timeArchived          Int
-  mods                  mods              @relation(fields: [modID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "archive_mods_ibfk_0")
-  publishers            publishers        @relation(fields: [publisherID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "archive_mods_ibfk_1")
-  users                 users?            @relation(fields: [submittedBy], references: [id], onUpdate: Restrict, map: "archive_mods_ibfk_2")
+  mod                   mod              @relation(fields: [modID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "archive_mod_ibfk_0")
+  publisher             publisher        @relation(fields: [publisherID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "archive_mod_ibfk_1")
+  user                  user?            @relation(fields: [submittedBy], references: [id], onUpdate: Restrict, map: "archive_mod_ibfk_2")
 
   @@index([approvedBy], map: "approvedBy")
   @@index([contentWarning], map: "contentWarning")
@@ -73,63 +73,63 @@ model archive_mods {
   @@index([submittedBy], map: "submittedBy")
 }
 
-model difficulties {
-  id                 Int            @id @default(autoincrement()) @db.UnsignedSmallInt
-  name               String         @db.VarChar(50)
-  description        String?        @db.VarChar(100)
-  parentDifficultyID Int?           @default(0) @db.UnsignedSmallInt
-  order              Int            @db.UnsignedTinyInt
-  archive_maps       archive_maps[]
-  difficulties       difficulties?  @relation("difficultiesTodifficulties", fields: [parentDifficultyID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "difficulties_ibfk_2")
-  other_difficulties difficulties[] @relation("difficultiesTodifficulties")
-  maps               maps[]
-  ratings            ratings[]
-  techs              techs[]
+model difficulty {
+  id                 Int           @id @default(autoincrement()) @db.UnsignedSmallInt
+  name               String        @db.VarChar(50)
+  description        String?       @db.VarChar(100)
+  parentDifficultyID Int?          @default(0) @db.UnsignedSmallInt
+  order              Int           @db.UnsignedTinyInt
+  archive_map        archive_map[]
+  difficulty         difficulty?   @relation("difficultyTodifficulty", fields: [parentDifficultyID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "difficulty_ibfk_2")
+  other_difficulty   difficulty[]  @relation("difficultyTodifficulty")
+  map                map[]
+  rating             rating[]
+  tech               tech[]
 
   @@unique([parentDifficultyID, name], map: "uniqueName")
   @@unique([parentDifficultyID, order], map: "uniqueOrder")
   @@index([parentDifficultyID], map: "difficulties_ibfk_2")
 }
 
-model lengths {
-  id           Int            @id @default(autoincrement()) @db.UnsignedTinyInt
-  name         String         @db.VarChar(20)
-  description  String         @db.VarChar(100)
-  order        Int            @unique(map: "order") @db.UnsignedTinyInt
-  archive_maps archive_maps[]
-  maps         maps[]
-  reviews_maps reviews_maps[]
+model length {
+  id          Int           @id @default(autoincrement()) @db.UnsignedTinyInt
+  name        String        @db.VarChar(20)
+  description String        @db.VarChar(100)
+  order       Int           @unique(map: "order") @db.UnsignedTinyInt
+  archive_map archive_map[]
+  map         map[]
+  review_map  review_map[]
 }
 
-model maps {
-  id                             Int             @id @default(autoincrement()) @db.UnsignedMediumInt
-  modID                          Int             @db.UnsignedSmallInt
-  mapperUserID                   Int?            @db.UnsignedSmallInt
-  mapperNameString               String          @db.VarChar(50)
-  name                           String          @db.VarChar(200)
-  canonicalDifficultyID          Int             @db.UnsignedSmallInt
-  lengthID                       Int             @db.UnsignedTinyInt
-  description                    String?         @db.VarChar(500)
-  notes                          String?         @db.VarChar(500)
-  chapter                        Int?            @db.UnsignedTinyInt
-  side                           maps_side?
-  overallRank                    Int?            @db.UnsignedTinyInt
-  mapRemovedFromModBool          Boolean         @default(false)
-  timeSubmitted                  Int
-  submittedBy                    Int?            @db.UnsignedSmallInt
-  timeApproved                   Int?
-  approvedBy                     Int?            @db.UnsignedSmallInt
-  archive_maps                   archive_maps[]
-  mods                           mods            @relation(fields: [modID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "maps_ibfk_1")
-  users_maps_mapperUserIDTousers users?          @relation("maps_mapperUserIDTousers", fields: [mapperUserID], references: [id], onUpdate: Restrict, map: "maps_ibfk_2")
-  difficulties                   difficulties    @relation(fields: [canonicalDifficultyID], references: [id], onUpdate: Restrict, map: "maps_ibfk_3")
-  lengths                        lengths         @relation(fields: [lengthID], references: [id], onUpdate: Restrict, map: "maps_ibfk_4")
-  users_maps_submittedByTousers  users?          @relation("maps_submittedByTousers", fields: [submittedBy], references: [id], onUpdate: Restrict, map: "maps_ibfk_5")
-  users_maps_approvedByTousers   users?          @relation("maps_approvedByTousers", fields: [approvedBy], references: [id], onUpdate: Restrict, map: "maps_ibfk_6")
-  maps_to_tech                   maps_to_tech[]
-  ratings                        ratings[]
-  reviews_maps                   reviews_maps[]
-  users_to_maps                  users_to_maps[]
+model map {
+  id                          Int             @id @default(autoincrement()) @db.UnsignedMediumInt
+  modID                       Int             @db.UnsignedSmallInt
+  mapperUserID                Int?            @db.UnsignedSmallInt
+  mapperNameString            String          @db.VarChar(50)
+  name                        String          @db.VarChar(200)
+  canonicalDifficultyID       Int             @db.UnsignedSmallInt
+  lengthID                    Int             @db.UnsignedTinyInt
+  description                 String?         @db.VarChar(500)
+  notes                       String?         @db.VarChar(500)
+  chapter                     Int?            @db.UnsignedTinyInt
+  side                        map_side?
+  overallRank                 Int?            @db.UnsignedTinyInt
+  mapRemovedFromModBool       Boolean         @default(false)
+  timeSubmitted               Int
+  submittedBy                 Int?            @db.UnsignedSmallInt
+  timeApproved                Int?
+  approvedBy                  Int?            @db.UnsignedSmallInt
+  archive_map                 archive_map[]
+  mod                         mod             @relation(fields: [modID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "map_ibfk_1")
+  user_map_mapperUserIDTouser user?           @relation("map_mapperUserIDTouser", fields: [mapperUserID], references: [id], onUpdate: Restrict, map: "map_ibfk_2")
+  difficulty                  difficulty      @relation(fields: [canonicalDifficultyID], references: [id], onUpdate: Restrict, map: "map_ibfk_3")
+  length                      length          @relation(fields: [lengthID], references: [id], onUpdate: Restrict, map: "map_ibfk_4")
+  user_map_submittedByTouser  user?           @relation("map_submittedByTouser", fields: [submittedBy], references: [id], onUpdate: Restrict, map: "map_ibfk_5")
+  user_map_approvedByTouser   user?           @relation("map_approvedByTouser", fields: [approvedBy], references: [id], onUpdate: Restrict, map: "map_ibfk_6")
+  maps_to_techs               maps_to_techs[]
+  rating                      rating[]
+  review_map                  review_map[]
+  users_to_maps               users_to_maps[]
 
   @@unique([modID, chapter, side], map: "modChapterSide")
   @@index([approvedBy], map: "approvedBy")
@@ -140,39 +140,39 @@ model maps {
   @@index([submittedBy], map: "submittedBy")
 }
 
-model maps_to_tech {
+model maps_to_techs {
   mapID             Int     @db.UnsignedMediumInt
   techID            Int     @db.UnsignedSmallInt
   fullClearOnlyBool Boolean @default(false)
-  maps              maps    @relation(fields: [mapID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "maps_to_tech_ibfk_1")
-  techs             techs   @relation(fields: [techID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "maps_to_tech_ibfk_2")
+  map               map     @relation(fields: [mapID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "maps_to_techs_ibfk_1")
+  tech              tech    @relation(fields: [techID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "maps_to_techs_ibfk_2")
 
   @@id([mapID, techID])
   @@index([techID], map: "techID")
 }
 
-model mods {
-  id                            Int            @id @default(autoincrement()) @db.UnsignedSmallInt
-  type                          mods_type      @default(Normal)
-  name                          String         @db.VarChar(200)
-  publisherID                   Int            @db.UnsignedSmallInt
-  contentWarning                Boolean        @default(false)
-  notes                         String?        @db.VarChar(500)
-  shortDescription              String         @db.VarChar(150)
-  longDescription               String?        @db.VarChar(1500)
-  gamebananaModID               Int            @unique(map: "gamebananaModID") @db.UnsignedMediumInt
-  timeSubmitted                 Int
-  submittedBy                   Int?           @db.UnsignedSmallInt
-  timeApproved                  Int?
-  approvedBy                    Int?           @db.UnsignedSmallInt
-  timeCreatedGamebanana         Int
-  archive_maps                  archive_maps[]
-  archive_mods                  archive_mods[]
-  maps                          maps[]
-  publishers                    publishers     @relation(fields: [publisherID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "mods_ibfk_1")
-  users_mods_submittedByTousers users?         @relation("mods_submittedByTousers", fields: [submittedBy], references: [id], onUpdate: Restrict, map: "mods_ibfk_2")
-  users_mods_approvedByTousers  users?         @relation("mods_approvedByTousers", fields: [approvedBy], references: [id], onUpdate: Restrict, map: "mods_ibfk_3")
-  reviews                       reviews[]
+model mod {
+  id                         Int           @id @default(autoincrement()) @db.UnsignedSmallInt
+  type                       mod_type      @default(Normal)
+  name                       String        @db.VarChar(200)
+  publisherID                Int           @db.UnsignedSmallInt
+  contentWarning             Boolean       @default(false)
+  notes                      String?       @db.VarChar(500)
+  shortDescription           String        @db.VarChar(150)
+  longDescription            String?       @db.VarChar(1500)
+  gamebananaModID            Int           @unique(map: "gamebananaModID") @db.UnsignedMediumInt
+  timeSubmitted              Int
+  submittedBy                Int?          @db.UnsignedSmallInt
+  timeApproved               Int?
+  approvedBy                 Int?          @db.UnsignedSmallInt
+  timeCreatedGamebanana      Int
+  archive_map                archive_map[]
+  archive_mod                archive_mod[]
+  map                        map[]
+  publisher                  publisher     @relation(fields: [publisherID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "mod_ibfk_1")
+  user_mod_submittedByTouser user?         @relation("mod_submittedByTouser", fields: [submittedBy], references: [id], onUpdate: Restrict, map: "mod_ibfk_2")
+  user_mod_approvedByTouser  user?         @relation("mod_approvedByTouser", fields: [approvedBy], references: [id], onUpdate: Restrict, map: "mod_ibfk_3")
+  review                     review[]
 
   @@index([approvedBy], map: "approvedBy")
   @@index([contentWarning], map: "contentWarning")
@@ -180,37 +180,37 @@ model mods {
   @@index([submittedBy], map: "submittedBy")
 }
 
-model publishers {
-  id           Int            @id @default(autoincrement()) @db.UnsignedSmallInt
-  gamebananaID Int?           @unique(map: "gamebananaID") @db.UnsignedMediumInt
-  name         String         @db.VarChar(100)
-  userID       Int?           @db.UnsignedSmallInt
-  archive_mods archive_mods[]
-  mods         mods[]
-  users        users?         @relation(fields: [userID], references: [id], onUpdate: Restrict, map: "publishers_ibfk_1")
+model publisher {
+  id           Int           @id @default(autoincrement()) @db.UnsignedSmallInt
+  gamebananaID Int?          @unique(map: "gamebananaID") @db.UnsignedMediumInt
+  name         String        @db.VarChar(100)
+  userID       Int?          @db.UnsignedSmallInt
+  archive_mod  archive_mod[]
+  mod          mod[]
+  user         user?         @relation(fields: [userID], references: [id], onUpdate: Restrict, map: "publisher_ibfk_1")
 
   @@index([userID], map: "userID")
 }
 
-model qualities {
-  id          Int       @id @default(autoincrement()) @db.UnsignedTinyInt
-  name        String    @db.VarChar(20)
-  description String    @db.VarChar(100)
-  order       Int       @unique(map: "order") @db.UnsignedTinyInt
-  ratings     ratings[]
+model quality {
+  id          Int      @id @default(autoincrement()) @db.UnsignedTinyInt
+  name        String   @db.VarChar(20)
+  description String   @db.VarChar(100)
+  order       Int      @unique(map: "order") @db.UnsignedTinyInt
+  rating      rating[]
 }
 
-model ratings {
-  id            Int           @id @default(autoincrement()) @db.UnsignedInt
-  mapID         Int           @db.UnsignedMediumInt
-  submittedBy   Int           @db.UnsignedSmallInt
+model rating {
+  id            Int         @id @default(autoincrement()) @db.UnsignedInt
+  mapID         Int         @db.UnsignedMediumInt
+  submittedBy   Int         @db.UnsignedSmallInt
   timeSubmitted Int
-  qualityID     Int?          @db.UnsignedTinyInt
-  difficultyID  Int?          @db.UnsignedSmallInt
-  users         users         @relation(fields: [submittedBy], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "ratings_ibfk_1")
-  maps          maps          @relation(fields: [mapID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "ratings_ibfk_2")
-  difficulties  difficulties? @relation(fields: [difficultyID], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "ratings_ibfk_3")
-  qualities     qualities?    @relation(fields: [qualityID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "ratings_ibfk_4")
+  qualityID     Int?        @db.UnsignedTinyInt
+  difficultyID  Int?        @db.UnsignedSmallInt
+  user          user        @relation(fields: [submittedBy], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "rating_ibfk_1")
+  map           map         @relation(fields: [mapID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "rating_ibfk_2")
+  difficulty    difficulty? @relation(fields: [difficultyID], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "rating_ibfk_3")
+  quality       quality?    @relation(fields: [qualityID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "rating_ibfk_4")
 
   @@unique([mapID, submittedBy], map: "mapAndUser")
   @@index([difficultyID], map: "difficultyID")
@@ -219,35 +219,35 @@ model ratings {
   @@index([submittedBy], map: "submittedBy")
 }
 
-model review_collections {
-  id          Int       @id @default(autoincrement()) @db.UnsignedSmallInt
-  userID      Int       @db.UnsignedSmallInt
-  name        String    @db.VarChar(100)
-  description String    @db.VarChar(500)
-  users       users     @relation(fields: [userID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "review_collections_ibfk_1")
-  reviews     reviews[]
-
-  @@index([userID], map: "userID")
-}
-
-model reviews {
-  id                 Int                @id @default(autoincrement()) @db.UnsignedMediumInt
-  modID              Int                @db.UnsignedSmallInt
-  reviewCollectionID Int                @db.UnsignedSmallInt
+model review {
+  id                 Int               @id @default(autoincrement()) @db.UnsignedMediumInt
+  modID              Int               @db.UnsignedSmallInt
+  reviewCollectionID Int               @db.UnsignedSmallInt
   timeSubmitted      Int
-  likes              String?            @db.VarChar(1000)
-  dislikes           String?            @db.VarChar(1000)
-  otherComments      String?            @db.VarChar(1500)
-  mods               mods               @relation(fields: [modID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "reviews_ibfk_1")
-  review_collections review_collections @relation(fields: [reviewCollectionID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "reviews_ibfk_2")
-  reviews_maps       reviews_maps[]
+  likes              String?           @db.VarChar(1000)
+  dislikes           String?           @db.VarChar(1000)
+  otherComments      String?           @db.VarChar(1500)
+  mod                mod               @relation(fields: [modID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "review_ibfk_1")
+  review_collection  review_collection @relation(fields: [reviewCollectionID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "review_ibfk_2")
+  review_map         review_map[]
 
   @@unique([modID, reviewCollectionID], map: "modAndReviewCollection")
   @@index([modID], map: "modID")
   @@index([reviewCollectionID], map: "reviewCollectionID")
 }
 
-model reviews_maps {
+model review_collection {
+  id          Int      @id @default(autoincrement()) @db.UnsignedSmallInt
+  userID      Int      @db.UnsignedSmallInt
+  name        String   @db.VarChar(100)
+  description String   @db.VarChar(500)
+  review      review[]
+  user        user     @relation(fields: [userID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "review_collection_ibfk_1")
+
+  @@index([userID], map: "userID")
+}
+
+model review_map {
   id                Int     @id @default(autoincrement()) @db.UnsignedInt
   reviewID          Int     @db.UnsignedMediumInt
   mapID             Int     @db.UnsignedMediumInt
@@ -256,9 +256,9 @@ model reviews_maps {
   dislikes          String? @db.VarChar(500)
   otherComments     String? @db.VarChar(500)
   displayRatingBool Boolean @default(false)
-  lengths           lengths @relation(fields: [lengthID], references: [id], onUpdate: Restrict, map: "reviews_maps_ibfk_2")
-  maps              maps    @relation(fields: [mapID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "reviews_maps_ibfk_3")
-  reviews           reviews @relation(fields: [reviewID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "reviews_maps_ibfk_4")
+  length            length  @relation(fields: [lengthID], references: [id], onUpdate: Restrict, map: "review_map_ibfk_2")
+  map               map     @relation(fields: [mapID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "review_map_ibfk_3")
+  review            review  @relation(fields: [reviewID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "review_map_ibfk_4")
 
   @@unique([reviewID, mapID], map: "review_map")
   @@index([lengthID], map: "lengthID")
@@ -273,135 +273,88 @@ model session {
   expiresAt DateTime @db.DateTime(0)
 }
 
-model tech_videos {
-  id     Int    @id @default(autoincrement()) @db.UnsignedSmallInt
-  techID Int    @db.UnsignedSmallInt
-  url    String @db.VarChar(100)
-  techs  techs  @relation(fields: [techID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "tech_videos_ibfk_1")
-
-  @@index([techID], map: "techID")
-}
-
-model techs {
-  id                  Int            @id @default(autoincrement()) @db.UnsignedSmallInt
-  name                String         @unique(map: "name") @db.VarChar(50)
-  description         String?        @db.VarChar(150)
-  defaultDifficultyID Int            @db.UnsignedSmallInt
-  maps_to_tech        maps_to_tech[]
-  tech_videos         tech_videos[]
-  difficulties        difficulties   @relation(fields: [defaultDifficultyID], references: [id], onUpdate: Restrict, map: "techs_ibfk_1")
+model tech {
+  id                  Int             @id @default(autoincrement()) @db.UnsignedSmallInt
+  name                String          @unique(map: "name") @db.VarChar(50)
+  description         String?         @db.VarChar(150)
+  defaultDifficultyID Int             @db.UnsignedSmallInt
+  maps_to_techs       maps_to_techs[]
+  difficulty          difficulty      @relation(fields: [defaultDifficultyID], references: [id], onUpdate: Restrict, map: "tech_ibfk_1")
+  tech_video          tech_video[]
 
   @@index([defaultDifficultyID], map: "defaultDifficultyID")
 }
 
-model users {
-  id                                            Int                  @id @default(autoincrement()) @db.UnsignedSmallInt
-  displayName                                   String               @db.VarChar(50)
-  discordID                                     String?              @unique(map: "discordID") @db.VarChar(50)
-  discordUsername                               String               @db.VarChar(32)
-  discordDiscrim                                String               @db.VarChar(4)
-  displayDiscord                                Boolean
-  showCompletedMaps                             Boolean
-  timeCreated                                   Int
-  permissions                                   String
-  accountStatus                                 users_accountStatus  @default(Active)
-  timeDeletedOrBanned                           Int?
-  archive_maps_archive_maps_mapperUserIDTousers archive_maps[]       @relation("archive_maps_mapperUserIDTousers")
-  archive_maps_archive_maps_submittedByTousers  archive_maps[]       @relation("archive_maps_submittedByTousers")
-  archive_maps_archive_maps_approvedByTousers   archive_maps[]       @relation("archive_maps_approvedByTousers")
-  archive_mods                                  archive_mods[]
-  maps_maps_mapperUserIDTousers                 maps[]               @relation("maps_mapperUserIDTousers")
-  maps_maps_submittedByTousers                  maps[]               @relation("maps_submittedByTousers")
-  maps_maps_approvedByTousers                   maps[]               @relation("maps_approvedByTousers")
-  mods_mods_submittedByTousers                  mods[]               @relation("mods_submittedByTousers")
-  mods_mods_approvedByTousers                   mods[]               @relation("mods_approvedByTousers")
-  publishers                                    publishers[]
-  ratings                                       ratings[]
-  review_collections                            review_collections[]
-  users_to_maps                                 users_to_maps[]
+model tech_video {
+  id     Int    @id @default(autoincrement()) @db.UnsignedSmallInt
+  techID Int    @db.UnsignedSmallInt
+  url    String @db.VarChar(100)
+  tech   tech   @relation(fields: [techID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "tech_video_ibfk_1")
+
+  @@index([techID], map: "techID")
+}
+
+model user {
+  id                                         Int                 @id @default(autoincrement()) @db.UnsignedSmallInt
+  displayName                                String              @db.VarChar(50)
+  discordID                                  String?             @unique(map: "discordID") @db.VarChar(50)
+  discordUsername                            String              @db.VarChar(32)
+  discordDiscrim                             String              @db.VarChar(4)
+  displayDiscord                             Boolean
+  showCompletedMaps                          Boolean
+  timeCreated                                Int
+  permissions                                String
+  accountStatus                              user_accountStatus  @default(Active)
+  timeDeletedOrBanned                        Int?
+  archive_map_archive_map_mapperUserIDTouser archive_map[]       @relation("archive_map_mapperUserIDTouser")
+  archive_map_archive_map_submittedByTouser  archive_map[]       @relation("archive_map_submittedByTouser")
+  archive_map_archive_map_approvedByTouser   archive_map[]       @relation("archive_map_approvedByTouser")
+  archive_mod                                archive_mod[]
+  map_map_mapperUserIDTouser                 map[]               @relation("map_mapperUserIDTouser")
+  map_map_submittedByTouser                  map[]               @relation("map_submittedByTouser")
+  map_map_approvedByTouser                   map[]               @relation("map_approvedByTouser")
+  mod_mod_submittedByTouser                  mod[]               @relation("mod_submittedByTouser")
+  mod_mod_approvedByTouser                   mod[]               @relation("mod_approvedByTouser")
+  publisher                                  publisher[]
+  rating                                     rating[]
+  review_collection                          review_collection[]
+  users_to_maps                              users_to_maps[]
 
   @@unique([discordUsername, discordDiscrim], map: "discordTag")
 }
 
 model users_to_maps {
-  userID Int   @db.UnsignedSmallInt
-  mapID  Int   @db.UnsignedMediumInt
-  users  users @relation(fields: [userID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "users_to_maps_ibfk_1")
-  maps   maps  @relation(fields: [mapID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "users_to_maps_ibfk_2")
+  userID Int  @db.UnsignedSmallInt
+  mapID  Int  @db.UnsignedMediumInt
+  user   user @relation(fields: [userID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "users_to_maps_ibfk_1")
+  map    map  @relation(fields: [mapID], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "users_to_maps_ibfk_2")
 
   @@id([userID, mapID])
   @@index([mapID], map: "mapID")
 }
 
-// Necessary for Next auth
-model Account {
-    id                String  @id @default(cuid())
-    userId            String
-    type              String
-    provider          String
-    providerAccountId String
-    refresh_token     String? // @db.Text
-    access_token      String? // @db.Text
-    expires_at        Int?
-    token_type        String?
-    scope             String?
-    id_token          String? // @db.Text
-    session_state     String?
-    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-    @@unique([provider, providerAccountId])
-}
-
-model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
-}
-
-model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
-
-    @@unique([identifier, token])
-}
-
-//End Next Auth tables
-
-enum mods_type {
+enum mod_type {
   Normal
   Collab
   Contest
   LobbyOther
 }
 
-enum archive_mods_type {
+enum archive_mod_type {
   Normal
   Collab
   Contest
   LobbyOther
 }
 
-enum users_accountStatus {
+enum user_accountStatus {
   Active
   Deleted
   Banned
   Unlinked
 }
 
-enum maps_side {
+enum map_side {
   A
   B
   C
@@ -409,7 +362,7 @@ enum maps_side {
   E
 }
 
-enum archive_maps_side {
+enum archive_map_side {
   A
   B
   C
