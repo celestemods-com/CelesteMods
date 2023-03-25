@@ -21,3 +21,12 @@ export type ModlistModeratorPermissionString = typeof MODLIST_MODERATOR_PERMISSI
 
 export const MOD_REVIEWER_PERMISSION_STRINGS = getPermissions(["Super_Admin", "Admin", "Map_Moderator", "Map_Reviewer"] as const);
 export type ModReviewerPermissionString = typeof MODLIST_MODERATOR_PERMISSION_STRINGS[number];
+
+
+
+
+export function assertsIsPermission(item: string): asserts item is Permission {
+  for (const permission of permissionArray) if (permission === item) return;
+
+  throw `"${item}" is not a valid permission`;
+}

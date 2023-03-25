@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, publicProcedure, adminProcedure } from "~/server/api/trpc";
 import { Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { intMaxSizes } from "~/consts/integerSizes";
@@ -9,12 +9,12 @@ const defaultDifficultySelect = Prisma.validator<Prisma.difficultySelect>()({
     id: true,
     name: true,
     description: true,
-    parentDifficultyID: true,
+    parentDifficultyId: true,
     order: true,
 });
 
 const defaultDifficultyOrder: Prisma.difficultyOrderByWithRelationInput = {
-    parentDifficultyID: "asc",
+    parentDifficultyId: "asc",
     order: "asc",
 }
 

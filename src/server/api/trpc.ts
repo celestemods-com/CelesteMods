@@ -106,30 +106,57 @@ export const createTRPCRouter = t.router;
  */
 export const publicProcedure = t.procedure;
 
+
+
+
+//custom code begins here
+import { Permission, ADMIN_PERMISSION_STRINGS, MODLIST_MODERATOR_PERMISSION_STRINGS, MOD_REVIEWER_PERMISSION_STRINGS } from "~/consts/permissions";
+
+
+const checkPermissions = (validPermissionsArray: readonly Permission[], userPermissionsArray: Permission[]): boolean => {
+  if (!userPermissionsArray.length) return false;
+
+
+  for (const validPermission of validPermissionsArray) {
+    for (const userPermission of userPermissionsArray) {
+      if (userPermission === validPermission) {
+        return true;
+      }
+    }
+  }
+
+
+  return false;
+}
+
+
 /** 
  * Reusable middleware that enforces permission levels before running the procedure. 
  * 
  * Omit `permissions` to simply enforce users are logged in
 */
-const enforcePermissions = (permissions?: Permission[]) => {
+const enforcePermissions = (validPermissionsArray?: readonly Permission[]) => {
   return t.middleware(
-    ({ ctx: oldCtx, next }) => {
+    async ({ ctx: oldCtx, next }) => {
       if (!oldCtx.session || !oldCtx.session.user) {
         throw new TRPCError({ code: "UNAUTHORIZED" });
       }
 
-      // infers the `session` as non-nullable
-      const ctxWithSession = { ...oldCtx.session, user: oldCtx.session.user };
+      if (validPermissionsArray) {
+        const userPermissionsArray = oldCtx.session.user.permissions;
+
+        const isValid = checkPermissions(validPermissionsArray, userPermissionsArray);
+
+        if (!isValid) {
+          throw new TRPCError({ code: "UNAUTHORIZED" });
+        }
+      }
 
 
-      if (permissions) {
-        
-      }
-      else {
-        return next({
-          ctx: ctxWithSession,
-        });
-      }
+      return next({
+        // infers the `session` as non-nullable
+        ctx: { ...oldCtx.session, user: oldCtx.session.user },
+      });
     });
 };
 
@@ -141,9 +168,12 @@ const enforcePermissions = (permissions?: Permission[]) => {
  *
  * @see https://trpc.io/docs/procedures
  */
-export const protectedProcedure = t.procedure.use(enforcePermissions());
+export const loggedInProcedure = t.procedure.use(enforcePermissions());
 
+export const superAdminProcedure = t.procedure.use(enforcePermissions(["Super_Admin"] as const));
 
+export const adminProcedure = t.procedure.use(enforcePermissions(ADMIN_PERMISSION_STRINGS));
 
+export const modlistModeratorProcedure = t.procedure.use(enforcePermissions(MODLIST_MODERATOR_PERMISSION_STRINGS));
 
-import { Permission } from "~/consts/permissions";
+export const modReviewerProcedure = t.procedure.use(enforcePermissions(MOD_REVIEWER_PERMISSION_STRINGS));

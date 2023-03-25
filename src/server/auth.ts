@@ -7,7 +7,9 @@ import {
 import DiscordProvider from "next-auth/providers/discord";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { env } from "~/env.mjs";
+import { user as PrismaUser } from "@prisma/client";
 import { prisma } from "~/server/prisma";
+import { Permission, assertsIsPermission } from "~/consts/permissions";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -17,18 +19,39 @@ import { prisma } from "~/server/prisma";
  */
 declare module "next-auth" {
   interface Session extends DefaultSession {
-    user: {
-      id: string;
-      // ...other properties
-      // role: UserRole;
-    } & DefaultSession["user"];
+    user: SessionUser;
   }
 
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
+  interface User {
+    id: PrismaUser["id"];
+    permissions: string;
+
+    // ...other properties
+    // role: UserRole;
+  }
+
+  interface SessionUser extends Omit<User, "permissions"> {
+    permissions: Permission[];
+  }
 }
+
+
+const getPermissionArray = (permissionsString: string): Permission[] => {
+  const uncheckedStringArray = permissionsString.split(",");
+
+  if (!uncheckedStringArray.length) throw "uncheckedStringArray is empty";
+
+
+  const permissionArray = uncheckedStringArray.map((uncheckedString) => {
+    assertsIsPermission(uncheckedString);
+
+    return uncheckedString;
+  });
+
+
+  return permissionArray;
+}
+
 
 /**
  * Options for NextAuth.js used to configure adapters, providers, callbacks, etc.
@@ -39,7 +62,18 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     session({ session, user }) {
       if (session.user) {
+        if (typeof user.id !== "number") {    //TODO: figure out if forcing the type of `id` to be `number` is going to cause problems
+          console.log('typeof user.id !== "number"');
+
+          const idAsNumber = Number(user.id);
+
+          if (isNaN(idAsNumber)) throw "user.id is NaN";
+
+          user.id = idAsNumber;
+        };
+
         session.user.id = user.id;
+        session.user.permissions = getPermissionArray(user.permissions);
         // session.user.role = user.role; <-- put other properties on the session here
       }
       return session;
