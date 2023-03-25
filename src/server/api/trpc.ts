@@ -106,18 +106,32 @@ export const createTRPCRouter = t.router;
  */
 export const publicProcedure = t.procedure;
 
-/** Reusable middleware that enforces users are logged in before running the procedure. */
-const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
-  if (!ctx.session || !ctx.session.user) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
-  }
-  return next({
-    ctx: {
+/** 
+ * Reusable middleware that enforces permission levels before running the procedure. 
+ * 
+ * Omit `permissions` to simply enforce users are logged in
+*/
+const enforcePermissions = (permissions?: Permission[]) => {
+  return t.middleware(
+    ({ ctx: oldCtx, next }) => {
+      if (!oldCtx.session || !oldCtx.session.user) {
+        throw new TRPCError({ code: "UNAUTHORIZED" });
+      }
+
       // infers the `session` as non-nullable
-      session: { ...ctx.session, user: ctx.session.user },
-    },
-  });
-});
+      const ctxWithSession = { ...oldCtx.session, user: oldCtx.session.user };
+
+
+      if (permissions) {
+        
+      }
+      else {
+        return next({
+          ctx: ctxWithSession,
+        });
+      }
+    });
+};
 
 /**
  * Protected (authenticated) procedure
@@ -127,4 +141,9 @@ const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
  *
  * @see https://trpc.io/docs/procedures
  */
-export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
+export const protectedProcedure = t.procedure.use(enforcePermissions());
+
+
+
+
+import { Permission } from "~/consts/permissions";
