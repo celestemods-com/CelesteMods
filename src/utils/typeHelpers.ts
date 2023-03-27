@@ -1,5 +1,3 @@
-import { Prisma } from "@prisma/client";
-
 export type NonEmptyArray<T, IsReadonly extends boolean = true> = IsReadonly extends true ? readonly [T, ...T[]] : [T, ...T[]];
 
 
