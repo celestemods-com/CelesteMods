@@ -1,8 +1,9 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure, adminProcedure } from "~/server/api/trpc";
-import { difficulty, Prisma } from "@prisma/client";
-import { MyPrismaClient } from "~/server/prisma";
 import { TRPCError } from "@trpc/server";
+import { MyPrismaClient, sortOrders } from "~/server/prisma";
+import { difficulty, Prisma } from "@prisma/client";
+import { getNonEmptyArray } from "~/utils/typeHelpers";
 import { intMaxSizes } from "~/consts/integerSizes";
 
 
@@ -15,12 +16,6 @@ const defaultDifficultySelect = Prisma.validator<Prisma.difficultySelect>()({
     parentDifficultyId: true,
     order: true,
 });
-
-
-const defaultDifficultyOrder: Prisma.difficultyOrderByWithRelationInput = {
-    parentDifficultyId: "asc",
-    order: "asc",
-};
 
 
 
@@ -39,6 +34,93 @@ const difficultyPostSchema = z.object({
 const difficultyIdSchema = z.object({
     id: z.number().min(1).max(intMaxSizes.smallInt.unsigned),
 }).strict();
+
+
+
+
+const difficultyParameters = getNonEmptyArray(Prisma.DifficultyScalarFieldEnum);
+
+
+const sortOrderSchema = z.object({
+    sortOrder: z.union([
+        z.enum(sortOrders),
+        z.enum(sortOrders).array().nonempty(),
+    ]).default(["asc"]),
+}).strict();
+
+
+const difficultySortBySchema = z.object({
+    sortBy: z.union([
+        z.enum(difficultyParameters),
+        z.enum(difficultyParameters).array().nonempty(),
+    ]).default(["parentDifficultyId", "order"]),
+}).strict();
+
+const difficultyOrderSchema = sortOrderSchema.merge(difficultySortBySchema);
+
+
+const getDifficultyOrderObject = (input: z.infer<typeof difficultyOrderSchema>): Prisma.difficultyOrderByWithRelationInput => {
+    const { sortBy, sortOrder } = input;
+
+
+    const difficultyOrderObject: Prisma.difficultyOrderByWithRelationInput = {};
+
+    if (Array.isArray(sortBy)) {
+        if (Array.isArray(sortOrder)) {
+            if (sortBy.length === sortOrder.length) {
+                for (let index = 0; index < sortBy.length; index++) {
+                    const scalarField = sortBy[index];
+                    const order = sortOrder[index];
+
+                    if (!scalarField || !order) throw "a value is undefined in getDifficultyOrderObject section 1";
+
+                    difficultyOrderObject[scalarField] = order;
+                }
+            }
+            else {
+                if (sortOrder.length !== 1) throw "sortOrder.length does not match sortBy.length";
+
+                const order = sortOrder[0];
+
+                for (let index = 0; index < sortBy.length; index++) {
+                    const scalarField = sortBy[index];
+
+                    if (!scalarField || !order) throw "a value is undefined in getDifficultyOrderObject section 2";
+
+                    difficultyOrderObject[scalarField] = order;
+                }
+            }
+        }
+        else {
+            for (let index = 0; index < sortBy.length; index++) {
+                const scalarField = sortBy[index];
+
+                if (!scalarField) throw "scalarField is undefined in getDifficultyOrderObject section 3";
+
+                difficultyOrderObject[scalarField] = sortOrder;
+            }
+        }
+    }
+    else {
+        let order: Prisma.SortOrder;
+
+        if (Array.isArray(sortOrder)) {
+            if (sortOrder.length !== 1) throw "sortOrder may only be an array if sortBy is also an array";
+
+            order = sortOrder[0];
+        }
+        else {
+            order = sortOrder;
+        }
+
+        difficultyOrderObject[sortBy] = order;
+    }
+
+
+    if (!!difficultyOrderObject) throw "difficultyOrderObject is empty";
+
+    return difficultyOrderObject;
+}
 
 
 
@@ -98,21 +180,37 @@ const getDifficultyById = async (prisma: MyPrismaClient, id: number): Promise<di
 
 
 export const difficultyRouter = createTRPCRouter({
-    getAll: publicProcedure.query(({ ctx }) => {
-        return ctx.prisma.difficulty.findMany({
-            select: defaultDifficultySelect,
-            orderBy: defaultDifficultyOrder,
-        });
-    }),
+    getAll: publicProcedure
+        .input(difficultyOrderSchema)
+        .query(({ ctx, input }) => {
+            const orderByObj = getDifficultyOrderObject(input);
 
-    getMany: publicProcedure    //TODO: add input and query to handle offset-based pagination (see prisma docs)
+            return ctx.prisma.difficulty.findMany({
+                select: defaultDifficultySelect,
+                orderBy: orderByObj,
+            });
+        }),
+
+    getMany: publicProcedure
         .input(
             z.object({
-
-            }).strict(),
+                pageSize: z.number().int().min(1).max(10).default(50),
+                pageNumber: z.number().int().min(1).default(1),
+            }).strict().merge(difficultyOrderSchema),
         )
-        .query(({ ctx }) => {
+        .query(async ({ ctx, input }) => {
+            const { pageSize, pageNumber } = input;
 
+            const numToSkip = pageSize * (pageNumber - 1);
+
+            const difficulties = await ctx.prisma.difficulty.findMany({
+                skip: numToSkip,
+                take: pageSize,
+                select: defaultDifficultySelect,
+                orderBy: getDifficultyOrderObject(input),
+            });
+
+            return difficulties;
         }),
 
     getById: publicProcedure
@@ -124,12 +222,12 @@ export const difficultyRouter = createTRPCRouter({
         }),
 
     getByParentDifficultyId: publicProcedure
-        .input(difficultyIdSchema)
+        .input(difficultyIdSchema.merge(difficultyOrderSchema))
         .query(async ({ ctx, input }) => {
             const difficulties = await ctx.prisma.difficulty.findMany({
                 where: { parentDifficultyId: input.id },
                 select: defaultDifficultySelect,
-                orderBy: defaultDifficultyOrder,
+                orderBy: getDifficultyOrderObject(input),
             });
 
             return difficulties;
@@ -139,13 +237,13 @@ export const difficultyRouter = createTRPCRouter({
         .input(
             z.object({
                 query: difficultyNameSchema_NonObject,
-            }).strict(),
+            }).strict().merge(difficultyOrderSchema),
         )
         .query(async ({ ctx, input }) => {
             const difficulties = await ctx.prisma.difficulty.findMany({
                 where: { name: { contains: input.query } },
                 select: defaultDifficultySelect,
-                orderBy: defaultDifficultyOrder,
+                orderBy: getDifficultyOrderObject(input),
             });
 
             return difficulties;

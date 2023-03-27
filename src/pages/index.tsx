@@ -7,7 +7,6 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { api } from "~/utils/api";
 
 const Home: NextPage = () => {
-  const hello = api.example.hello.useQuery({ text: "from tRPC" });
 
   return (
     <>
@@ -46,9 +45,6 @@ const Home: NextPage = () => {
             </Link>
           </div>
           <div className={styles.showcaseContainer}>
-            <p className={styles.showcaseText}>
-              {hello.data ? hello.data.greeting : "Loading tRPC query..."}
-            </p>
             <AuthShowcase />
           </div>
         </div>
@@ -62,16 +58,20 @@ export default Home;
 const AuthShowcase: React.FC = () => {
   const { data: sessionData } = useSession();
 
-  const { data: secretMessage } = api.example.getSecretMessage.useQuery(
-    undefined, // no input
-    { enabled: sessionData?.user !== undefined },
+  const { data: secretMessage } = api.difficulty.getMany.useQuery(
+    {
+      pageNumber: 5,
+      pageSize: 5,
+    },
+    {
+      enabled: sessionData?.user !== undefined
+    },
   );
 
   return (
     <div className={styles.authContainer}>
       <p className={styles.showcaseText}>
         {sessionData && <span>Logged in as {sessionData.user?.name}</span>}
-        {secretMessage && <span> - {secretMessage}</span>}
       </p>
       <button
         className={styles.loginButton}
