@@ -3,8 +3,8 @@ import { createTRPCRouter, publicProcedure, adminProcedure } from "~/server/api/
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
 import { difficulty, Prisma } from "@prisma/client";
-import { getCombinedSchema, getOrderObject } from "~/server/sortOrderHelpers";
-import { getNonEmptyArray } from "~/utils/typeHelpers";
+import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
+import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { intMaxSizes } from "~/consts/integerSizes";
 
 

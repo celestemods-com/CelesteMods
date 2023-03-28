@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
-import { getNonEmptyArray } from "~/utils/typeHelpers";
+import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 
 
 
