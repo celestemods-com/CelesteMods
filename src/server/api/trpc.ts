@@ -110,24 +110,7 @@ export const publicProcedure = t.procedure;
 
 
 //custom code begins here
-import { Permission, ADMIN_PERMISSION_STRINGS, MODLIST_MODERATOR_PERMISSION_STRINGS, MOD_REVIEWER_PERMISSION_STRINGS } from "~/consts/permissions";
-
-
-const checkPermissions = (validPermissionsArray: readonly Permission[], userPermissionsArray: Permission[]): boolean => {
-  if (!userPermissionsArray.length) return false;
-
-
-  for (const validPermission of validPermissionsArray) {
-    for (const userPermission of userPermissionsArray) {
-      if (userPermission === validPermission) {
-        return true;
-      }
-    }
-  }
-
-
-  return false;
-}
+import { Permission, ADMIN_PERMISSION_STRINGS, MODLIST_MODERATOR_PERMISSION_STRINGS, MOD_REVIEWER_PERMISSION_STRINGS, checkPermissions } from "~/server/api/utils/permissions";
 
 
 /** 

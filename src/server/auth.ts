@@ -9,7 +9,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { env } from "~/env.mjs";
 import { user as PrismaUser } from "@prisma/client";
 import { prisma } from "~/server/prisma";
-import { Permission, assertsIsPermission } from "~/consts/permissions";
+import { Permission, assertsIsPermission } from "~/server/api/utils/permissions";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`

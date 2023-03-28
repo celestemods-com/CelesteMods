@@ -30,3 +30,20 @@ export function assertsIsPermission(item: string): asserts item is Permission {
 
   throw `"${item}" is not a valid permission`;
 }
+
+
+export const checkPermissions = (validPermissionsArray: readonly Permission[], userPermissionsArray: Permission[]): boolean => {
+  if (!userPermissionsArray.length) return false;
+
+
+  for (const validPermission of validPermissionsArray) {
+    for (const userPermission of userPermissionsArray) {
+      if (userPermission === validPermission) {
+        return true;
+      }
+    }
+  }
+
+
+  return false;
+}
