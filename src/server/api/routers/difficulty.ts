@@ -24,7 +24,7 @@ const defaultDifficultySelect = Prisma.validator<Prisma.difficultySelect>()({
 const difficultyNameSchema_NonObject = z.string().min(1).max(50);
 
 
-const difficultyIdSchema_NonObject = z.number().gte(1).lte(intMaxSizes.smallInt.unsigned);
+const difficultyIdSchema_NonObject = z.number().int().gte(1).lte(intMaxSizes.smallInt.unsigned);
 
 const difficultyIdSchema = z.object({
     id: difficultyIdSchema_NonObject,
@@ -175,10 +175,22 @@ export const difficultyRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             await validateDifficulty(ctx.prisma, undefined, input.parentDifficultyId, input.order);     //check that the new difficulty won't conflict with an existing one
 
+            if (!input.parentDifficultyId) throw new TRPCError({
+                message: "parentDifficultyId is undefined, but it was already confirmed as defined. Please contact an admin.",
+                code: "INTERNAL_SERVER_ERROR",
+            });
+
+
             const difficulty = await ctx.prisma.difficulty.create({
-                data: input,
+                data: {
+                    name: input.name,
+                    description: input.description,
+                    order: input.order,
+                    other_difficulty: { connect: { id: input.parentDifficultyId } },
+                },
                 select: defaultDifficultySelect,
             });
+
 
             return difficulty;
         }),
@@ -189,11 +201,23 @@ export const difficultyRouter = createTRPCRouter({
             await getDifficultyById(ctx.prisma, input.id);  //check that id matches an existing difficulty
             await validateDifficulty(ctx.prisma, input.id, input.parentDifficultyId, input.order);     //check that the new difficulty won't conflict with an existing one
 
+            if (!input.parentDifficultyId) throw new TRPCError({
+                message: "parentDifficultyId is undefined, but it was already confirmed as defined. Please contact an admin.",
+                code: "INTERNAL_SERVER_ERROR",
+            });
+
+
             const difficulty = await ctx.prisma.difficulty.update({
                 where: { id: input.id },
-                data: input,
+                data: {
+                    name: input.name,
+                    description: input.description,
+                    order: input.order,
+                    other_difficulty: { connect: { id: input.parentDifficultyId } },
+                },
                 select: defaultDifficultySelect,
             });
+
 
             return difficulty;
         }),
