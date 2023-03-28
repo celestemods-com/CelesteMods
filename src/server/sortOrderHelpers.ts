@@ -41,10 +41,6 @@ export const getCombinedSchema = <
     defaultSelectors: DefaultSelectorArray,
     defaultDirections: DefaultDirections,
 ) => {
-    // const t = getSortBySchema(selectors, defaultSelectors).merge(getSortOrderSchema(defaultDirections));
-    // let y: z.infer<typeof t> = { so };     //TODO: why is sortBy optional and sortOrder isnt?
-
-
     const sortBySchema = getSortBySchema(selectors, defaultSelectors);
     const sortOrderSchema = getSortOrderSchema(defaultDirections);
 
