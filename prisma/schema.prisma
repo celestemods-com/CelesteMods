@@ -267,15 +267,15 @@ model review_map {
 }
 
 model tech {
-  id                  Int             @id @default(autoincrement()) @db.UnsignedSmallInt
-  name                String          @unique(map: "name") @db.VarChar(50)
-  description         String?         @db.VarChar(150)
-  defaultDifficultyId Int             @db.UnsignedSmallInt
-  maps_to_techs       maps_to_techs[]
-  difficulty          difficulty      @relation(fields: [defaultDifficultyId], references: [id], onUpdate: Restrict, map: "tech_ibfk_1")
-  tech_video          tech_video[]
+  id            Int             @id @default(autoincrement()) @db.UnsignedSmallInt
+  name          String          @unique(map: "name") @db.VarChar(50)
+  description   String?         @db.VarChar(150)
+  difficultyId  Int             @db.UnsignedSmallInt
+  maps_to_techs maps_to_techs[]
+  difficulty    difficulty      @relation(fields: [difficultyId], references: [id], onUpdate: Restrict, map: "tech_ibfk_1")
+  tech_video    tech_video[]
 
-  @@index([defaultDifficultyId], map: "defaultDifficultyId")
+  @@index([difficultyId], map: "difficultyId")
 }
 
 model tech_video {
