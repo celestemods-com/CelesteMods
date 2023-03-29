@@ -3,7 +3,7 @@
  * @link https://www.prisma.io/docs/support/help-articles/nextjs-prisma-client-dev-practices
  */
 
-import { Prisma as P, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 import { env } from "~/env.mjs";
 
