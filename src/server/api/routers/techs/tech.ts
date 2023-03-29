@@ -2,18 +2,13 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure, adminProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
-import { tech, Prisma } from "@prisma/client";
+import { Prisma, tech } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { intMaxSizes } from "~/consts/integerSizes";
+import { techVideoRouter, defaultTechVideoSelect, techVideoPostWithTechSchema } from "./techVideos";
 
 
-
-
-const defaultTechVideoSelect = Prisma.validator<Prisma.tech_videoSelect>()({
-    id: true,
-    url: true,
-})
 
 
 const defaultTechSelect = Prisma.validator<Prisma.techSelect>()({
@@ -27,22 +22,10 @@ const defaultTechSelect = Prisma.validator<Prisma.techSelect>()({
 
 
 
-const techVideoIdSchema = z.object({
-    id: z.number().int().gte(1).lte(intMaxSizes.smallInt.unsigned),
-}).strict();
-
-
-const techVideoPostWithTechSchema = z.object({
-    url: z.string().url()
-}).strict();
-
-
-
-
 const techNameSchema_NonObject = z.string().min(1).max(50);
 
 
-const techIdSchema_NonObject = z.number().int().gte(1).lte(intMaxSizes.smallInt.unsigned);
+export const techIdSchema_NonObject = z.number().int().gte(1).lte(intMaxSizes.smallInt.unsigned);
 
 const techIdSchema = z.object({
     id: techIdSchema_NonObject,
@@ -52,8 +35,8 @@ const techIdSchema = z.object({
 const techPostSchema = z.object({
     name: techNameSchema_NonObject,
     description: z.string().min(1).max(150).nullish(),
-    difficultyId: techIdSchema_NonObject.nullable(),
-    techVideo: techVideoPostWithTechSchema.array().nonempty(),
+    difficultyId: techIdSchema_NonObject,
+    techVideo: techVideoPostWithTechSchema.array(),
 }).strict();
 
 
@@ -80,8 +63,9 @@ const validateTech = async (prisma: MyPrismaClient, newName?: string): Promise<v
 
 
 
-const getTechById = async (prisma: MyPrismaClient, id: number): Promise<tech> => {
-    const tech = await prisma.tech.findUnique({
+//TODO: should accept getOrderObject
+const getTechById = async (prisma: MyPrismaClient, id: number) => {
+    const tech: tech | null = await prisma.tech.findUnique({    //having type declaration here AND in function signature is safer
         where: { id: id },
         select: defaultTechSelect,
     });
@@ -112,7 +96,7 @@ export const techRouter = createTRPCRouter({
     getMany: publicProcedure
         .input(
             z.object({
-                pageSize: z.number().int().min(1).max(10).default(50),
+                pageSize: z.number().int().min(1).max(100).default(50),
                 pageNumber: z.number().int().min(1).default(1),
             }).strict().merge(techOrderSchema),
         )
@@ -131,12 +115,10 @@ export const techRouter = createTRPCRouter({
             return techs;
         }),
 
-    getById: publicProcedure
+    getById: publicProcedure        //TODO: should accept getOrderObject
         .input(techIdSchema)
         .query(async ({ ctx, input }) => {
-            const tech = await getTechById(ctx.prisma, input.id);
-
-            return tech;
+            return await getTechById(ctx.prisma, input.id);
         }),
 
     getByDifficultyId: publicProcedure
@@ -172,11 +154,6 @@ export const techRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             await validateTech(ctx.prisma, input.name);     //check that the new tech won't conflict with an existing one
 
-            if (!input.difficultyId) throw new TRPCError({
-                message: "difficultyId is undefined, but it was already confirmed to be defined. Please contact an admin.",
-                code: "INTERNAL_SERVER_ERROR",
-            });
-
             const tech = await ctx.prisma.tech.create({
                 data: {
                     name: input.name,
@@ -191,22 +168,21 @@ export const techRouter = createTRPCRouter({
         }),
 
     edit: adminProcedure
-        .input(techPostSchema.partial().merge(techIdSchema).omit({techVideo: true}))
+        .input(techPostSchema.partial().merge(techIdSchema).omit({ techVideo: true }))
         .mutation(async ({ ctx, input }) => {
             await getTechById(ctx.prisma, input.id);  //check that id matches an existing difficulty
             await validateTech(ctx.prisma, input.name);     //check that the new difficulty won't conflict with an existing one
 
-            if (!input.difficultyId) throw new TRPCError({
-                message: "difficultyId is undefined, but it was already confirmed to be defined. Please contact an admin.",
+            if (!input.name) throw new TRPCError({
+                message: "name is undefined, but it was already confirmed to be defined. Please contact an admin.",
                 code: "INTERNAL_SERVER_ERROR",
             });
 
             const tech = await ctx.prisma.tech.create({
                 data: {
-                    [input.name ? name : undefined]: input.name,
+                    name: input.name,
                     description: input.description,
                     difficulty: { connect: { id: input.difficultyId } },
-                    tech_video: { createMany: { data: input.techVideo } },
                 },
                 select: defaultTechSelect,
             });
@@ -217,10 +193,13 @@ export const techRouter = createTRPCRouter({
     delete: adminProcedure
         .input(techIdSchema)
         .mutation(async ({ ctx, input }) => {
-            await getDifficultyById(ctx.prisma, input.id);  //check that id matches an existing difficulty
+            await getTechById(ctx.prisma, input.id);  //check that id matches an existing difficulty
 
-            await ctx.prisma.difficulty.delete({ where: { id: input.id } });
+            await ctx.prisma.tech.delete({ where: { id: input.id } });
 
             return true;
         }),
+
+
+    techVideo: techVideoRouter,
 });

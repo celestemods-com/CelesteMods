@@ -5,6 +5,11 @@ import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 
 
 
+//export type NonEmptyArrayFromStringUnion<StringUnion extends string> = [StringUnion, ...StringUnion[]];
+
+
+
+
 const sortOrders = getNonEmptyArray(Prisma.SortOrder);
 
 

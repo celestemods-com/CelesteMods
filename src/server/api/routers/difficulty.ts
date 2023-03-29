@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure, adminProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
-import { difficulty, Prisma } from "@prisma/client";
+import { Prisma, difficulty } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { intMaxSizes } from "~/consts/integerSizes";
@@ -83,8 +83,9 @@ const validateDifficulty = async (
 
 
 
-const getDifficultyById = async (prisma: MyPrismaClient, id: number): Promise<difficulty> => {
-    const difficulty = await prisma.difficulty.findUnique({
+//TODO: should accept getOrderObject
+const getDifficultyById = async (prisma: MyPrismaClient, id: number): Promise<Pick<difficulty, keyof typeof defaultDifficultySelect>> => {
+    const difficulty: difficulty | null = await prisma.difficulty.findUnique({  //having type declaration here AND in function signature is safer
         where: { id: id },
         select: defaultDifficultySelect,
     });
@@ -115,7 +116,7 @@ export const difficultyRouter = createTRPCRouter({
     getMany: publicProcedure
         .input(
             z.object({
-                pageSize: z.number().int().min(1).max(10).default(50),
+                pageSize: z.number().int().min(1).max(100).default(50),
                 pageNumber: z.number().int().min(1).default(1),
             }).strict().merge(difficultyOrderSchema),
         )
@@ -134,12 +135,10 @@ export const difficultyRouter = createTRPCRouter({
             return difficulties;
         }),
 
-    getById: publicProcedure
+    getById: publicProcedure        //TODO: should accept getOrderObject
         .input(difficultyIdSchema)
         .query(async ({ ctx, input }) => {
-            const difficulty = await getDifficultyById(ctx.prisma, input.id);
-
-            return difficulty;
+            return await getDifficultyById(ctx.prisma, input.id);
         }),
 
     getByParentDifficultyId: publicProcedure

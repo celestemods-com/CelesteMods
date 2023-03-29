@@ -1,5 +1,6 @@
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { difficultyRouter } from "./routers/difficulty";
+import { techRouter } from "./routers/techs/tech";
 
 /**
  * This is the primary router for your server.
@@ -9,6 +10,7 @@ import { difficultyRouter } from "./routers/difficulty";
 export const appRouter = createTRPCRouter({
   healthcheck: publicProcedure.query(() => 'yay!'),
   difficulty: difficultyRouter,
+  tech: techRouter,
 });
 
 // export type definition of API
