@@ -63,7 +63,6 @@ const validateTech = async (prisma: MyPrismaClient, newName?: string): Promise<v
 
 
 
-//TODO: should accept getOrderObject
 const getTechById = async (prisma: MyPrismaClient, id: number) => {
     const tech: tech | null = await prisma.tech.findUnique({    //having type declaration here AND in function signature is safer
         where: { id: id },
@@ -115,7 +114,7 @@ export const techRouter = createTRPCRouter({
             return techs;
         }),
 
-    getById: publicProcedure        //TODO: should accept getOrderObject
+    getById: publicProcedure
         .input(techIdSchema)
         .query(async ({ ctx, input }) => {
             return await getTechById(ctx.prisma, input.id);
@@ -178,7 +177,8 @@ export const techRouter = createTRPCRouter({
                 code: "INTERNAL_SERVER_ERROR",
             });
 
-            const tech = await ctx.prisma.tech.create({
+            const tech = await ctx.prisma.tech.update({
+                where: { id: input.id },
                 data: {
                     name: input.name,
                     description: input.description,

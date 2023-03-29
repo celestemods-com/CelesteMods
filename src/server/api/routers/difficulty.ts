@@ -83,7 +83,6 @@ const validateDifficulty = async (
 
 
 
-//TODO: should accept getOrderObject
 const getDifficultyById = async (prisma: MyPrismaClient, id: number): Promise<Pick<difficulty, keyof typeof defaultDifficultySelect>> => {
     const difficulty: difficulty | null = await prisma.difficulty.findUnique({  //having type declaration here AND in function signature is safer
         where: { id: id },
@@ -135,7 +134,7 @@ export const difficultyRouter = createTRPCRouter({
             return difficulties;
         }),
 
-    getById: publicProcedure        //TODO: should accept getOrderObject
+    getById: publicProcedure
         .input(difficultyIdSchema)
         .query(async ({ ctx, input }) => {
             return await getDifficultyById(ctx.prisma, input.id);
