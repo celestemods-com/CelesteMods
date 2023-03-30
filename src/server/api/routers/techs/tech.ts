@@ -169,8 +169,8 @@ export const techRouter = createTRPCRouter({
     edit: adminProcedure
         .input(techPostSchema.partial().merge(techIdSchema).omit({ techVideo: true }))
         .mutation(async ({ ctx, input }) => {
-            await getTechById(ctx.prisma, input.id);  //check that id matches an existing difficulty
-            await validateTech(ctx.prisma, input.name);     //check that the new difficulty won't conflict with an existing one
+            await getTechById(ctx.prisma, input.id);  //check that id matches an existing tech
+            await validateTech(ctx.prisma, input.name);     //check that the new tech won't conflict with an existing one
 
             if (!input.name) throw new TRPCError({
                 message: "name is undefined, but it was already confirmed to be defined. Please contact an admin.",
@@ -193,7 +193,7 @@ export const techRouter = createTRPCRouter({
     delete: adminProcedure
         .input(techIdSchema)
         .mutation(async ({ ctx, input }) => {
-            await getTechById(ctx.prisma, input.id);  //check that id matches an existing difficulty
+            await getTechById(ctx.prisma, input.id);  //check that id matches an existing tech
 
             await ctx.prisma.tech.delete({ where: { id: input.id } });
 

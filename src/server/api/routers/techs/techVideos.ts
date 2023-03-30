@@ -111,7 +111,7 @@ export const techVideoRouter = createTRPCRouter({
     edit: adminProcedure
         .input(techVideoPostAloneSchema.partial().merge(techVideoIdSchema))
         .mutation(async ({ ctx, input }) => {
-            await getTechVideoById(ctx.prisma, input.id);  //check that id matches an existing difficulty
+            await getTechVideoById(ctx.prisma, input.id);  //check that id matches an existing techVideo
 
             if (!input.techId && !input.url) throw new TRPCError({
                 message: "No changes were provided.",
@@ -133,7 +133,7 @@ export const techVideoRouter = createTRPCRouter({
     delete: adminProcedure
         .input(techVideoIdSchema)
         .mutation(async ({ ctx, input }) => {
-            await getTechVideoById(ctx.prisma, input.id);  //check that id matches an existing difficulty
+            await getTechVideoById(ctx.prisma, input.id);  //check that id matches an existing techVideo
 
             await ctx.prisma.tech_video.delete({ where: { id: input.id } });
 
