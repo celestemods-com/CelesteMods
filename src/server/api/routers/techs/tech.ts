@@ -6,7 +6,7 @@ import { Prisma, tech } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { intMaxSizes } from "~/consts/integerSizes";
-import { techVideoRouter, defaultTechVideoSelect, techVideoPostWithTechSchema } from "./techVideos";
+import { techVideoRouter, defaultTechVideoSelect, techVideoPostWithTechSchema } from "./techVideo";
 
 
 
