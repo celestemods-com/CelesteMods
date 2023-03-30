@@ -1,6 +1,7 @@
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { difficultyRouter } from "./routers/difficulty";
 import { techRouter } from "./routers/techs/tech";
+import { lengthRouter } from "./routers/length";
 
 /**
  * This is the primary router for your server.
@@ -10,6 +11,7 @@ import { techRouter } from "./routers/techs/tech";
 export const appRouter = createTRPCRouter({
   healthcheck: publicProcedure.query(() => 'yay!'),
   difficulty: difficultyRouter,
+  length: lengthRouter,
   tech: techRouter,
 });
 
