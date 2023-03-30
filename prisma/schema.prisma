@@ -93,7 +93,7 @@ model difficulty {
 
 model length {
   id          Int           @id @default(autoincrement()) @db.UnsignedTinyInt
-  name        String        @db.VarChar(20)
+  name        String        @unique(map: "name") @db.VarChar(20)
   description String        @db.VarChar(100)
   order       Int           @unique(map: "order") @db.UnsignedTinyInt
   archive_map archive_map[]
@@ -194,7 +194,7 @@ model publisher {
 
 model quality {
   id          Int      @id @default(autoincrement()) @db.UnsignedTinyInt
-  name        String   @db.VarChar(20)
+  name        String   @unique(map: "name") @db.VarChar(20)
   description String   @db.VarChar(100)
   order       Int      @unique(map: "order") @db.UnsignedTinyInt
   rating      rating[]
