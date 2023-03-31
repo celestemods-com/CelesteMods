@@ -1,15 +1,17 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure, adminProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, publicProcedure, loggedInProcedure, adminProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, user } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { intMaxSizes } from "~/consts/integerSizes";
+import { ADMIN_PERMISSION_STRINGS, Permission, checkPermissions } from "../utils/permissions";
+import { SessionUser } from "next-auth";
 
 
 
-const defaultUserSelectObject = {
+const defaultPartialUserSelectObject = {
     id: true,
     displayName: true,
     displayDiscord: true,
@@ -18,24 +20,37 @@ const defaultUserSelectObject = {
     accountStatus: true,
 };
 
-const defaultUserSelect = Prisma.validator<Prisma.userSelect>()(defaultUserSelectObject);
+const defaultPartialUserSelect = Prisma.validator<Prisma.userSelect>()(defaultPartialUserSelectObject);
 
 
 const discordUserSelectObject = {
     discordId: true,
     discordUsername: true,
     discordDiscrim: true,
-}
+};
 
 const discordUserSelect = Prisma.validator<Prisma.userSelect>()(discordUserSelectObject);
 
 
 const defaultFullUserSelect = Prisma.validator<Prisma.userSelect>()({
-    ...defaultUserSelectObject,
+    ...defaultPartialUserSelectObject,
     ...discordUserSelectObject,
     permissions: true,
     timeDeletedOrBanned: true,
-})
+});
+
+
+/**
+ * @param permissions permission string array from sessionUser
+ * @param overwrite set to true to force return of defaultFullUserSelect. set to false to force return of defaultPartialUserSelect. leave undefined to use fallback logic.
+ */
+const getUserSelect = (permissions: Permission[] | undefined, overwrite?: boolean): typeof defaultPartialUserSelect | typeof defaultFullUserSelect => { //TODO: base check on admin OR relevant user
+    if (overwrite === true) return defaultFullUserSelect;
+    else if (overwrite === false) return defaultPartialUserSelect;
+
+    if (checkPermissions(ADMIN_PERMISSION_STRINGS, permissions)) return defaultFullUserSelect;
+    else return defaultPartialUserSelect;
+}
 
 
 
@@ -51,39 +66,38 @@ const userIdSchema = z.object({
 
 
 const userPostSchema = z.object({
+    discordCode: z.string(),
     displayName: displayNameSchema_NonObject,
-    description: z.string().min(1).max(150).nullish(),
-    difficultyId: userIdSchema_NonObject,
+    displayDiscord: z.boolean(),
+    showCompletedMaps: z.boolean(),
 }).strict();
 
 
 const userOrderSchema = getCombinedSchema(
     getNonEmptyArray(Prisma.UserScalarFieldEnum),
-    ["difficultyId", "name"],
+    ["displayName"],
     ["asc"],
 );
 
 
 
 
-const validateUser = async (prisma: MyPrismaClient, newName?: string): Promise<void> => {
-    if (!newName) return;
-
-    const matchingUser = await prisma.user.findUnique({ where: { name: newName } });
-
-    if (matchingUser) throw new TRPCError({
-        message: `Conflicts with existing user ${matchingUser.id}`,
-        code: "FORBIDDEN",
-    });
-}
-
-
-
-
-const getUserById = async (prisma: MyPrismaClient, id: number) => {
-    const user: user | null = await prisma.user.findUnique({    //having type declaration here AND in function signature is safer
+/**
+ * @param permissions permission string array from sessionUser
+ * @param overwrite set to true to force return of defaultFullUserSelect. set to false to force return of defaultPartialUserSelect. leave undefined to use fallback logic.
+ */
+const getUserById = async (
+    prisma: MyPrismaClient,
+    id: number,
+    permissions: Permission[] | undefined,
+    overwrite?: boolean,
+): Promise<
+    Pick<user, keyof typeof defaultPartialUserSelect> |
+    Pick<user, keyof typeof defaultFullUserSelect>
+> => {
+    const user = await prisma.user.findUnique({    //having type declaration here AND in function signature is safer
         where: { id: id },
-        select: defaultUserSelect,
+        select: getUserSelect(permissions, overwrite),
     });
 
     if (!user) {
@@ -99,12 +113,34 @@ const getUserById = async (prisma: MyPrismaClient, id: number) => {
 
 
 
+const checkIsPrivileged = (sessionUser: SessionUser, targetUserId: number): void => {
+    if (sessionUser.id === targetUserId) return;
+
+
+    const isPrivileged = checkPermissions(ADMIN_PERMISSION_STRINGS, sessionUser.permissions);
+
+    if (!isPrivileged) throw new TRPCError({
+        code: "FORBIDDEN",
+    });
+}
+
+
+
+
+const undefinedSessionError = new TRPCError({
+    message: "Session is undefined when it should not be. Please contact an admin.",
+    code: "INTERNAL_SERVER_ERROR",
+});
+
+
+
+
 export const userRouter = createTRPCRouter({
     getAll: publicProcedure
         .input(userOrderSchema)
         .query(({ ctx, input }) => {
             return ctx.prisma.user.findMany({
-                select: defaultUserSelect,
+                select: getUserSelect(ctx.session?.user.permissions),
                 orderBy: getOrderObject(input.selectors, input.directions),
             });
         }),
@@ -124,7 +160,7 @@ export const userRouter = createTRPCRouter({
             const users = await ctx.prisma.user.findMany({
                 skip: numToSkip,
                 take: pageSize,
-                select: defaultUserSelect,
+                select: getUserSelect(ctx.session?.user.permissions),
                 orderBy: getOrderObject(input.selectors, input.directions),
             });
 
@@ -134,19 +170,7 @@ export const userRouter = createTRPCRouter({
     getById: publicProcedure
         .input(userIdSchema)
         .query(async ({ ctx, input }) => {
-            return await getUserById(ctx.prisma, input.id);
-        }),
-
-    getByDifficultyId: publicProcedure
-        .input(userIdSchema.merge(userOrderSchema))
-        .query(async ({ ctx, input }) => {
-            const users = await ctx.prisma.user.findMany({
-                where: { difficultyId: input.id },
-                select: defaultUserSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
-            });
-
-            return users;
+            return await getUserById(ctx.prisma, input.id, ctx.session?.user.permissions);
         }),
 
     getByName: publicProcedure
@@ -157,62 +181,54 @@ export const userRouter = createTRPCRouter({
         )
         .query(async ({ ctx, input }) => {
             const users = await ctx.prisma.user.findMany({
-                where: { name: { contains: input.query } },
-                select: defaultUserSelect,
+                where: { displayName: { contains: input.query } },
+                select: defaultPartialUserSelect,
                 orderBy: getOrderObject(input.selectors, input.directions),
             });
 
             return users;
         }),
 
-    add: adminProcedure
+    add: loggedInProcedure
         .input(userPostSchema)
         .mutation(async ({ ctx, input }) => {
-            await validateUser(ctx.prisma, input.name);     //check that the new user won't conflict with an existing one
-
-            const user = await ctx.prisma.user.create({
-                data: {
-                    name: input.name,
-                    description: input.description,
-                    difficulty: { connect: { id: input.difficultyId } },
-                },
-                select: defaultUserSelect,
-            });
-
-            return user;
+            //TODO: implement procedure
+            
+            throw "not implemented"
         }),
 
-    edit: adminProcedure
+    edit: loggedInProcedure
         .input(userPostSchema.partial().merge(userIdSchema))
         .mutation(async ({ ctx, input }) => {
-            await getUserById(ctx.prisma, input.id);  //check that id matches an existing user
-            await validateUser(ctx.prisma, input.name);     //check that the new user won't conflict with an existing one
+            //TODO: implement procedure
 
-            if (!input.name) throw new TRPCError({
-                message: "name is undefined, but it was already confirmed to be defined. Please contact an admin.",
-                code: "INTERNAL_SERVER_ERROR",
-            });
-
-            const user = await ctx.prisma.user.update({
-                where: { id: input.id },
-                data: {
-                    name: input.name,
-                    description: input.description,
-                    difficulty: { connect: { id: input.difficultyId } },
-                },
-                select: defaultUserSelect,
-            });
-
-            return user;
+            throw "not implemented"
         }),
 
-    delete: adminProcedure
+    delete: loggedInProcedure
         .input(userIdSchema)
         .mutation(async ({ ctx, input }) => {
-            await getUserById(ctx.prisma, input.id);  //check that id matches an existing user
+            if (!ctx.session?.user) throw undefinedSessionError;
+
+
+            checkIsPrivileged(ctx.session.user, input.id);  //check user has sufficient privileges
+
+            await getUserById(ctx.prisma, input.id, ctx.session.user.permissions, true);  //check that id matches an existing user  //overwrite = true because checkIsPrivileged was called
+
 
             await ctx.prisma.user.delete({ where: { id: input.id } });
 
+
             return true;
+        }),
+
+    adminEdits: adminProcedure
+        .input(userPostSchema)
+        .mutation(async ({ ctx, input }) => {
+            //TODO: implement procedure
+            //cover things like banning users or changing permissions
+            //may split into multiple procedures
+
+            throw "not implemented"
         }),
 });

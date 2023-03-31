@@ -32,8 +32,8 @@ export function assertsIsPermission(item: string): asserts item is Permission {
 }
 
 
-export const checkPermissions = (validPermissionsArray: readonly Permission[], userPermissionsArray: Permission[]): boolean => {
-  if (!userPermissionsArray.length) return false;
+export const checkPermissions = (validPermissionsArray: readonly Permission[], userPermissionsArray?: Permission[]): boolean => {
+  if (!userPermissionsArray || !userPermissionsArray.length) return false;
 
 
   for (const validPermission of validPermissionsArray) {
