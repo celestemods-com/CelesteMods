@@ -289,7 +289,7 @@ model tech_video {
 
 model user {
   id                                         Int                 @id @default(autoincrement()) @db.UnsignedSmallInt
-  displayName                                String              @db.VarChar(50)
+  displayName                                String              @unique(map: "displayName") @db.VarChar(50)
   discordId                                  String?             @unique(map: "discordId") @db.VarChar(50)
   discordUsername                            String              @db.VarChar(32)
   discordDiscrim                             String              @db.VarChar(4)
