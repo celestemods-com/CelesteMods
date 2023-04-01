@@ -6,8 +6,7 @@ import { Prisma, user } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { intMaxSizes } from "~/consts/integerSizes";
-import { ADMIN_PERMISSION_STRINGS, Permission, checkPermissions } from "../utils/permissions";
-import { SessionUser } from "next-auth";
+import { ADMIN_PERMISSION_STRINGS, Permission, checkIsPrivileged, checkPermissions } from "../utils/permissions";
 
 
 
@@ -113,20 +112,6 @@ const getUserById = async (
 
 
 
-const checkIsPrivileged = (sessionUser: SessionUser, targetUserId: number): void => {
-    if (sessionUser.id === targetUserId) return;
-
-
-    const isPrivileged = checkPermissions(ADMIN_PERMISSION_STRINGS, sessionUser.permissions);
-
-    if (!isPrivileged) throw new TRPCError({
-        code: "FORBIDDEN",
-    });
-}
-
-
-
-
 const undefinedSessionError = new TRPCError({
     message: "Session is undefined when it should not be. Please contact an admin.",
     code: "INTERNAL_SERVER_ERROR",
@@ -211,9 +196,9 @@ export const userRouter = createTRPCRouter({
             if (!ctx.session?.user) throw undefinedSessionError;
 
 
-            checkIsPrivileged(ctx.session.user, input.id);  //check user has sufficient privileges
+            checkIsPrivileged(ADMIN_PERMISSION_STRINGS, ctx.user, input.id);  //check user has sufficient privileges
 
-            await getUserById(ctx.prisma, input.id, ctx.session.user.permissions, true);  //check that id matches an existing user  //overwrite = true because checkIsPrivileged was called
+            await getUserById(ctx.prisma, input.id, ctx.user.permissions, true);  //check that id matches an existing user  //overwrite = true because checkIsPrivileged was called
 
 
             await ctx.prisma.user.delete({ where: { id: input.id } });

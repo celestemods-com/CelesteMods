@@ -15,7 +15,7 @@ export const defaultTechVideoSelect = Prisma.validator<Prisma.tech_videoSelect>(
     id: true,
     techId: true,
     url: true,
-})
+});
 
 
 
@@ -26,7 +26,7 @@ const techVideoIdSchema = z.object({
 
 
 export const techVideoPostWithTechSchema = z.object({
-    url: z.string().url()
+    url: z.string().url(),
 }).strict();
 
 

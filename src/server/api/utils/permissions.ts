@@ -1,4 +1,6 @@
 import { Prisma } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
+import { SessionUser } from "next-auth";
 
 
 
@@ -46,4 +48,18 @@ export const checkPermissions = (validPermissionsArray: readonly Permission[], u
 
 
   return false;
+}
+
+
+
+
+export const checkIsPrivileged = (validPermissionsArray: readonly Permission[], sessionUser: SessionUser, targetUserId: number): void => {
+    if (sessionUser.id === targetUserId) return;
+
+
+    const isPrivileged = checkPermissions(validPermissionsArray, sessionUser.permissions);
+
+    if (!isPrivileged) throw new TRPCError({
+        code: "FORBIDDEN",
+    });
 }
