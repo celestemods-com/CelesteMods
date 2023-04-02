@@ -23,13 +23,15 @@ const defaultPublisherSelect = Prisma.validator<Prisma.publisherSelect>()({
 
 
 
-const publisherNameSchema_NonObject = z.string().min(1).max(20);
+export const PUBLISHER_NAME_MAX_LENGTH = 20;
+
+const publisherNameSchema_NonObject = z.string().min(1).max(PUBLISHER_NAME_MAX_LENGTH);
 
 
-const gamebananaIdSchema_NonObject = z.number().int().gte(1).lte(intMaxSizes.mediumInt.unsigned);
+export const publisherGamebananaIdSchema_NonObject = z.number().int().gte(1).lte(intMaxSizes.mediumInt.unsigned);
 
-const gamebananaIdSchema = z.object({
-    gamebananaId: gamebananaIdSchema_NonObject,
+const publisherGamebananaIdSchema = z.object({
+    gamebananaId: publisherGamebananaIdSchema_NonObject,
 }).strict();
 
 
@@ -41,7 +43,7 @@ const publisherIdSchema = z.object({
 
 
 const publisherPostSchema = z.object({
-    gamebananaId: gamebananaIdSchema_NonObject,
+    gamebananaId: publisherGamebananaIdSchema_NonObject,
     userId: userIdSchema_NonObject,
 }).strict();
 
@@ -56,7 +58,10 @@ const publisherOrderSchema = getCombinedSchema(
 
 
 const getPublisherByGamebananaId = async (prisma: MyPrismaClient, gamebananaId: number, throwOnMatch: boolean): Promise<void | Pick<publisher, keyof typeof defaultPublisherSelect>> => {
-    const matchingPublisher: publisher | null = await prisma.publisher.findUnique({ where: { gamebananaId: gamebananaId } });
+    const matchingPublisher: publisher | null = await prisma.publisher.findUnique({
+        where: { gamebananaId: gamebananaId },
+        select: defaultPublisherSelect,
+    });
 
 
     if (throwOnMatch) {
@@ -163,7 +168,7 @@ export const publisherRouter = createTRPCRouter({
         }),
 
     getByGamebananaId: publicProcedure
-        .input(gamebananaIdSchema)
+        .input(publisherGamebananaIdSchema)
         .query(async ({ ctx, input }) => {
             return await getPublisherByGamebananaId(ctx.prisma, input.gamebananaId, false);
         }),
@@ -184,7 +189,7 @@ export const publisherRouter = createTRPCRouter({
             return publishers;
         }),
 
-    add: adminProcedure
+    add: loggedInProcedure
         .input(publisherPostSchema)
         .mutation(async ({ ctx, input }) => {
             await getPublisherByGamebananaId(ctx.prisma, input.gamebananaId, true);     //check that the new publisher won't conflict with an existing one
@@ -206,33 +211,83 @@ export const publisherRouter = createTRPCRouter({
             return publisher;
         }),
 
-    editGamebananaId: loggedInProcedure
-        .input(gamebananaIdSchema.merge(publisherIdSchema))
+    //Shouldn't actually be needed. GamebananaId should be set once and never changed. If it needs to be changed, it should be done by deleting the publisher and adding a new one.
+    // editGamebananaId: loggedInProcedure
+    //     .input(publisherGamebananaIdSchema.merge(publisherIdSchema))
+    //     .mutation(async ({ ctx, input }) => {
+    //         const publisherFromId = await getPublisherById(ctx.prisma, input.id);  //check that id matches an existing publisher
+
+    //         checkIsPrivileged(ADMIN_PERMISSION_STRINGS, ctx.user, publisherFromId.userId ?? -1);  //check that the user is permitted to edit this publisher
+
+
+    //         await getPublisherByGamebananaId(ctx.prisma, input.gamebananaId, true);     //check that the new publisher won't conflict with an existing one
+
+
+    //         const gamebananaUsername = await getGamebananaUsernameById(input.gamebananaId);
+
+
+    //         const publisher = await ctx.prisma.publisher.update({
+    //             where: { id: input.id },
+    //             data: {
+    //                 gamebananaId: input.gamebananaId,
+    //                 name: gamebananaUsername,
+    //             },
+    //             select: defaultPublisherSelect,
+    //         });
+
+
+    //         return publisher;
+    //     }),
+
+    claimPublisher: loggedInProcedure
+        .input(publisherIdSchema)
         .mutation(async ({ ctx, input }) => {
             const publisherFromId = await getPublisherById(ctx.prisma, input.id);  //check that id matches an existing publisher
 
-            checkIsPrivileged(ADMIN_PERMISSION_STRINGS, ctx.user, publisherFromId.userId ?? -1);  //check that the user is permitted to edit this publisher
+            if (publisherFromId.userId) {
+                throw new TRPCError({
+                    message: `Publisher "${input.id}" is already claimed by user "${publisherFromId.userId}".`,
+                    code: "FORBIDDEN",
+                });
+            }
 
 
-            await getPublisherByGamebananaId(ctx.prisma, input.gamebananaId, true);     //check that the new publisher won't conflict with an existing one
-
-
-            const gamebananaUsername = await getGamebananaUsernameById(input.gamebananaId);
-
-
-            const publisher = await ctx.prisma.publisher.update({
+            const updatedPublisher = await ctx.prisma.publisher.update({
                 where: { id: input.id },
                 data: {
-                    gamebananaId: input.gamebananaId,
-                    name: gamebananaUsername,
+                    user: { connect: { id: ctx.user.id } },
                 },
                 select: defaultPublisherSelect,
             });
 
 
-            return publisher;
+            return updatedPublisher;
         }),
 
+    disownPublisher: loggedInProcedure
+        .input(publisherIdSchema)
+        .mutation(async ({ ctx, input }) => {
+            const publisherFromId = await getPublisherById(ctx.prisma, input.id);  //check that id matches an existing publisher
+
+            if (publisherFromId.userId != ctx.user.id) {
+                throw new TRPCError({
+                    message: `User "${ctx.user.id}" is not the owner of publisher "${input.id}".`,
+                    code: "FORBIDDEN",
+                });
+            }
+
+
+            const updatedPublisher = await ctx.prisma.publisher.update({
+                where: { id: input.id },
+                data: {
+                    user: { disconnect: true },
+                },
+                select: defaultPublisherSelect,
+            });
+
+
+            return updatedPublisher;
+        }),
 
     editConnectedUser: adminProcedure
         .input(z.object({
@@ -250,12 +305,12 @@ export const publisherRouter = createTRPCRouter({
             });
         }),
 
-    delete: loggedInProcedure
+    delete: adminProcedure
         .input(publisherIdSchema)
         .mutation(async ({ ctx, input }) => {
-            const publisherFromId = await getPublisherById(ctx.prisma, input.id);  //check that id matches an existing publisher
+            await getPublisherById(ctx.prisma, input.id);  //check that id matches an existing publisher
 
-            checkIsPrivileged(ADMIN_PERMISSION_STRINGS, ctx.user, publisherFromId.userId ?? -1);  //check that the user is permitted to edit this publisher
+            //checkIsPrivileged(ADMIN_PERMISSION_STRINGS, ctx.user, publisherFromId.userId ?? -1);  //check that the user is permitted to edit this publisher
 
             await ctx.prisma.publisher.delete({ where: { id: input.id } });
 

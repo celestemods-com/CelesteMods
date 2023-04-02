@@ -24,7 +24,7 @@ const defaultDifficultySelect = Prisma.validator<Prisma.difficultySelect>()({
 const difficultyNameSchema_NonObject = z.string().min(1).max(50);
 
 
-const difficultyIdSchema_NonObject = z.number().int().gte(0).lte(intMaxSizes.smallInt.unsigned);
+export const difficultyIdSchema_NonObject = z.number().int().gte(0).lte(intMaxSizes.smallInt.unsigned);
 
 const difficultyIdSchema = z.object({
     id: difficultyIdSchema_NonObject,

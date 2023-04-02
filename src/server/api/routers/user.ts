@@ -54,7 +54,7 @@ const getUserSelect = (permissions: Permission[] | undefined, overwrite?: boolea
 
 
 
-const displayNameSchema_NonObject = z.string().min(1).max(50);
+export const displayNameSchema_NonObject = z.string().min(1).max(50);
 
 
 export const userIdSchema_NonObject = z.number().int().gte(1).lte(intMaxSizes.smallInt.unsigned);
@@ -178,6 +178,7 @@ export const userRouter = createTRPCRouter({
         .input(userPostSchema)
         .mutation(async ({ ctx, input }) => {
             //TODO: implement procedure
+            //enforce unique displayNames
             
             throw "not implemented"
         }),
@@ -186,6 +187,7 @@ export const userRouter = createTRPCRouter({
         .input(userPostSchema.partial().merge(userIdSchema))
         .mutation(async ({ ctx, input }) => {
             //TODO: implement procedure
+            //enforce unique displayNames
 
             throw "not implemented"
         }),

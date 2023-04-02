@@ -23,7 +23,7 @@ const defaultLengthSelect = Prisma.validator<Prisma.lengthSelect>()({
 const lengthNameSchema_NonObject = z.string().min(1).max(20);
 
 
-const lengthIdSchema_NonObject = z.number().int().gte(1).lte(intMaxSizes.tinyInt.unsigned);
+export const lengthIdSchema_NonObject = z.number().int().gte(1).lte(intMaxSizes.tinyInt.unsigned);
 
 const lengthIdSchema = z.object({
     id: lengthIdSchema_NonObject,
