@@ -8,8 +8,8 @@ import { SessionUser } from "next-auth";
 const permissionArray = ["Super_Admin", "Admin", "Map_Moderator", "Map_Reviewer"] as const;
 export type Permission = typeof permissionArray[number];
 
-const getPermissions = <T extends readonly Permission[]> (array: T) => {
-    return array;
+const getPermissions = <T extends readonly Permission[]>(array: T) => {
+  return array;
 }
 
 
@@ -52,14 +52,16 @@ export const checkPermissions = (validPermissionsArray: readonly Permission[], u
 
 
 
-
+/**
+ *  throws on failure
+ */
 export const checkIsPrivileged = (validPermissionsArray: readonly Permission[], sessionUser: SessionUser, targetUserId: number): void => {
-    if (sessionUser.id === targetUserId) return;
+  if (sessionUser.id === targetUserId) return;
 
 
-    const isPrivileged = checkPermissions(validPermissionsArray, sessionUser.permissions);
+  const isPrivileged = checkPermissions(validPermissionsArray, sessionUser.permissions);
 
-    if (!isPrivileged) throw new TRPCError({
-        code: "FORBIDDEN",
-    });
+  if (!isPrivileged) throw new TRPCError({
+    code: "FORBIDDEN",
+  });
 }
