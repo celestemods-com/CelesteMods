@@ -120,43 +120,45 @@ const modPostSchema = z.object({
 
 const modOrderSchema = getCombinedSchema(
     getNonEmptyArray(Prisma.ModScalarFieldEnum),
-    ["publisherId", "timeCreatedGamebanana"],
+    ["publisherId", "timeCreatedGamebanana", "name"],
     ["asc"],
 );
 
 
 
 
-const getModByGamebananaModId = async (prisma: MyPrismaClient, gamebananaModId: number, throwOnMatch: boolean) => {
-    const matchingMod = await prisma.mod.findUnique({
-        where: { gamebananaModId: gamebananaModId },
-        select: defaultModSelect,
-    });
+// const getModByGamebananaModId = async (prisma: MyPrismaClient, gamebananaModId: number, throwOnMatch: boolean) => {
+//     const matchingMod = await prisma.mod.findUnique({
+//         where: { gamebananaModId: gamebananaModId },
+//         select: defaultModSelect,
+//     });
 
 
-    if (throwOnMatch) {
-        if (matchingMod) throw new TRPCError({
-            code: "FORBIDDEN",
-            message: `Conflicts with existing mod ${matchingMod.id}`,
-        });
-    }
-    else {
-        if (!matchingMod) throw new TRPCError({
-            code: "NOT_FOUND",
-            message: `No mod exists with gamebananaModId "${gamebananaModId}"`,
-        });
+//     if (throwOnMatch) {
+//         if (matchingMod) throw new TRPCError({
+//             code: "FORBIDDEN",
+//             message: `Conflicts with existing mod ${matchingMod.id}`,
+//         });
+//     }
+//     else {
+//         if (!matchingMod) throw new TRPCError({
+//             code: "NOT_FOUND",
+//             message: `No mod exists with gamebananaModId "${gamebananaModId}"`,
+//         });
 
-        return matchingMod;
-    }
-}
-
-
+//         return matchingMod;
+//     }
+// }
 
 
-const getModById = async<
+
+
+export const getModById = async<
     TableName extends "Mod" | "Mod_Archive" | "Mod_Edit" | "Mod_New",
+    IdType extends "mod" | "gamebanana",
     ReturnAll extends boolean,
-    ReturnType extends (
+    ThrowOnMatch extends boolean,
+    ModUnion extends (
         TableName extends "Mod" ?
         (
             ReturnAll extends true ? ExpandedMod : TrimmedMod
@@ -180,58 +182,79 @@ const getModById = async<
                 )
             )
         )
+    ) | null,
+    ReturnType extends (
+        ThrowOnMatch extends true ? void : NonNullable<ModUnion>
     ),
 >(
     tableName: TableName,
+    idType: IdType,
     returnAll: ReturnAll,
+    throwOnMatch: ThrowOnMatch,
     prisma: MyPrismaClient,
     id: number,
+    customErrorMessage?: string,
 ): Promise<
     ReturnType
 > => {
-    let mod: ReturnType | null;
+    const whereObject = idType == "mod" ? { id: id } : { gamebananaModId: id };
+
+
+    let mod: ModUnion;
 
     if (tableName == "Mod") {
-        mod = await prisma.mod.findUnique({  //having type declaration here AND in function signature is safer
-            where: { id: id },
+        mod = await prisma.mod.findUnique({
+            where: whereObject,
             select: returnAll ? undefined : defaultModSelect,
-        }) as (ReturnType | null);
+        }) as ModUnion;
     }
     else if (tableName == "Mod_Archive") {
         mod = await prisma.mod_Archive.findUnique({
-            where: { id: id },
+            where: whereObject,
             select: returnAll ? undefined : modArchiveSelect,
-        }) as (ReturnType | null);
+        }) as ModUnion;
     }
     else if (tableName == "Mod_Edit") {
         mod = await prisma.mod_Edit.findUnique({
-            where: { id: id },
+            where: whereObject,
             select: returnAll ? undefined : modEditSelect,
-        }) as (ReturnType | null);
+        }) as ModUnion;
     }
     else if (tableName == "Mod_New") {
         mod = await prisma.mod_New.findUnique({
-            where: { id: id },
+            where: whereObject,
             select: returnAll ? undefined : modNewSelect,
-        }) as (ReturnType | null);
+        }) as ModUnion;
     }
     else {
         throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: `Invalid table name "${tableName}"`,
+            message: customErrorMessage ?? `Invalid table name "${tableName}"`,
         });
     }
 
 
-    if (!mod) {
-        throw new TRPCError({
-            code: "NOT_FOUND",
-            message: `No mod exists in table "${tableName}" with id "${id}"`,
-        });
+    if (throwOnMatch) {
+        if (mod) {
+            throw new TRPCError({
+                code: "FORBIDDEN",
+                message: customErrorMessage ?? `Conflicts with existing mod ${id}`,
+            });
+        }
+
+        return undefined as ReturnType;
     }
+    else {
+        if (!mod) {
+            throw new TRPCError({
+                code: "NOT_FOUND",
+                message: customErrorMessage ?? `No mod exists in table "${tableName}" with id "${id}"`,
+            });
+        }
 
 
-    return mod;
+        return mod as ReturnType;
+    }
 }
 
 
@@ -325,13 +348,13 @@ export const modRouter = createTRPCRouter({
     getById: publicProcedure
         .input(modIdSchema)
         .query(async ({ ctx, input }) => {
-            return await getModById("Mod", false, ctx.prisma, input.id);
+            return await getModById("Mod", "mod", false, false, ctx.prisma, input.id);
         }),
 
     getByGamebananaModId: publicProcedure
         .input(gamebananaModIdSchema)
         .query(async ({ ctx, input }) => {
-            return await getModByGamebananaModId(ctx.prisma, input.gamebananaModId, false);
+            return await getModById("Mod", "gamebanana", false, false, ctx.prisma, input.gamebananaModId);
         }),
 
     getByName: publicProcedure
@@ -350,11 +373,10 @@ export const modRouter = createTRPCRouter({
             return mods;
         }),
 
-    //this is the only procedure that may affect the map tables. this ensures that mods aren't created without any maps
     add: loggedInProcedure
         .input(modPostSchema)
         .mutation(async ({ ctx, input }) => {
-            await getModByGamebananaModId(ctx.prisma, input.gamebananaModId, true);     //check that the new mod won't conflict with an existing one
+            await getModById("Mod", "gamebanana", false, true, ctx.prisma, input.gamebananaModId);     //check that the new mod won't conflict with an existing one
 
 
             const gamebananaModInfo = await getGamebananaModInfo(input.gamebananaModId);
@@ -428,8 +450,16 @@ export const modRouter = createTRPCRouter({
                     },
                     select: defaultModSelect,
                 });
+
+
+                await ctx.prisma.mod_New.deleteMany({ where: { gamebananaModId: input.gamebananaModId } });     //if the same mod has already been submitted, delete the unapproved submission
             }
             else {
+                await getModById(
+                    "Mod_New", "gamebanana", false, true, ctx.prisma, input.gamebananaModId, "A mod with this gamebanana id has already been submitted"
+                );     //check that the new mod hasn't already been submitted
+
+
                 const mapCreateDataArray_new: Prisma.Map_NewCreateWithoutMod_NewInput[] = mapCreateDataArray_base.map((map) => {
                     return {
                         ...map,
@@ -457,32 +487,28 @@ export const modRouter = createTRPCRouter({
     approveNew: modlistModeratorProcedure
         .input(modIdSchema)
         .mutation(async ({ ctx, input }) => {
-            const modFromId = await getModById("Mod_New", true, ctx.prisma, input.id);
+            const newMod = await getModById("Mod_New", "mod", true, false, ctx.prisma, input.id);
 
             const currentTime = getCurrentTime();
 
 
-            //TODO!: modify to only transfer the mod and not the maps. should first check if the Mod_New has any remaining unapproved_maps to approve and throw an error if it does.
-            //must also check if the mod already exists and either archive it or throw an error
-            //maybe should have different procedures for approving new mods vs approving edits to existing mods
-
             const approvedMod = await ctx.prisma.mod.create({
                 data: {
-                    type: modFromId.type,
-                    name: modFromId.name,
-                    contentWarning: modFromId.contentWarning,
-                    notes: modFromId.notes,
-                    shortDescription: modFromId.shortDescription,
-                    longDescription: modFromId.longDescription,
-                    gamebananaModId: modFromId.gamebananaModId,
-                    timeSubmitted: modFromId.timeSubmitted,
-                    User_SubmittedBy: { connect: { id: modFromId.submittedBy ?? undefined } },
+                    type: newMod.type,
+                    name: newMod.name,
+                    contentWarning: newMod.contentWarning,
+                    notes: newMod.notes,
+                    shortDescription: newMod.shortDescription,
+                    longDescription: newMod.longDescription,
+                    gamebananaModId: newMod.gamebananaModId,
+                    timeSubmitted: newMod.timeSubmitted,
+                    User_SubmittedBy: { connect: { id: newMod.submittedBy ?? undefined } },
                     timeApproved: currentTime,
                     User_ApprovedBy: { connect: { id: ctx.user.id } },
-                    timeCreatedGamebanana: modFromId.timeCreatedGamebanana,
-                    Publisher: { connect: { id: modFromId.publisherId } },
+                    timeCreatedGamebanana: newMod.timeCreatedGamebanana,
+                    Publisher: { connect: { id: newMod.publisherId } },
                     Map: {
-                        create: modFromId.Map_New.map(
+                        create: newMod.Map_New.map(
                             (newMap) => {
                                 return {
                                     mapperNameString: newMap.mapperNameString,
@@ -518,7 +544,7 @@ export const modRouter = createTRPCRouter({
     rejectNew: modlistModeratorProcedure
         .input(modIdSchema)
         .mutation(async ({ ctx, input }) => {
-            await getModById("Mod_Edit", false, ctx.prisma, input.id);
+            await getModById("Mod_New", "mod", false, false, ctx.prisma, input.id);
 
             await ctx.prisma.mod_New.delete({ where: { id: input.id } });    //the deletion should cascade to any unapproved_maps
 
@@ -528,9 +554,88 @@ export const modRouter = createTRPCRouter({
     update: modlistModeratorProcedure
         .input(modPostSchema.partial().merge(modIdSchema))
         .mutation(async ({ ctx, input }) => {
-            //TODO: if authed, create Mod_Archive with data from live mod, and update live mod with data from input. if not authed, create Mod_Edit with data from input
-            //only affects the mod, not the maps
+            const existingMod = await getModById("Mod", "mod", true, false, ctx.prisma, input.id);
 
+            const currentTime = getCurrentTime();
+
+
+            let mod: TrimmedMod | TrimmedModEdit;
+
+            if (checkPermissions(MODLIST_MODERATOR_PERMISSION_STRINGS, ctx.user.permissions)) {
+                await ctx.prisma.mod_Archive.create({
+                    data: {
+                        Mod: { connect: { id: existingMod.id } },
+                        type: existingMod.type,
+                        name: existingMod.name,
+                        Publisher: { connect: { id: existingMod.publisherId } },
+                        contentWarning: existingMod.contentWarning,
+                        notes: existingMod.notes,
+                        shortDescription: existingMod.shortDescription,
+                        longDescription: existingMod.longDescription,
+                        gamebananaModId: existingMod.gamebananaModId,
+                        timeCreatedGamebanana: existingMod.timeCreatedGamebanana,
+                        timeSubmitted: existingMod.timeSubmitted,
+                        User_SubmittedBy: { connect: { id: existingMod.submittedBy ?? undefined } },
+                        timeApproved: existingMod.timeApproved,
+                        User_ApprovedBy: { connect: { id: existingMod.approvedBy ?? undefined } },
+                        timeArchived: currentTime,
+                    },
+                });
+
+
+                mod = await ctx.prisma.mod.update({
+                    where: { id: input.id },
+                    data: {
+                        type: input.type,
+                        name: input.name,   //TODO: errors are because this info comes directly from gamebanana. need to decide how to handle. probably, just make a different moderator procedure for updating from gamebanana
+                        Publisher: { connect: { id: input.publisherId } },
+                        contentWarning: input.contentWarning,
+                        notes: input.notes,
+                        shortDescription: input.shortDescription,
+                        longDescription: input.longDescription,
+                        gamebananaModId: input.gamebananaModId,
+                        timeSubmitted: currentTime,
+                        User_SubmittedBy: { connect: { id: ctx.user.id } },
+                        timeApproved: currentTime,
+                        User_ApprovedBy: { connect: { id: ctx.user.id } },
+                        timeCreatedGamebanana: input.timeCreatedGamebanana,
+                    },
+                    select: defaultModSelect,
+                });
+            }
+            else {
+                mod = await ctx.prisma.mod_Edit.create({
+                    data: {
+                        Mod: { connect: { id: existingMod.id } },
+                        type: input.type,
+                        name: input.name,
+                        Publisher: { connect: { id: input.publisherId } },
+                        contentWarning: input.contentWarning,
+                        notes: input.notes,
+                        shortDescription: input.shortDescription,
+                        longDescription: input.longDescription,
+                        gamebananaModId: input.gamebananaModId,
+                        timeCreatedGamebanana: input.timeCreatedGamebanana,
+                        timeSubmitted: currentTime,
+                        User_SubmittedBy: { connect: { id: ctx.user.id } },
+                    },
+                    select: defaultModSelect,
+                });
+            }
+
+
+            return mod;
+        }),
+
+    approveEdit: modlistModeratorProcedure
+        .input(modIdSchema)
+        .mutation(async ({ ctx, input }) => {
+            throw new Error("Not implemented");
+        }),
+
+    rejectEdit: modlistModeratorProcedure
+        .input(modIdSchema)
+        .mutation(async ({ ctx, input }) => {
             throw new Error("Not implemented");
         }),
 
@@ -543,11 +648,10 @@ export const modRouter = createTRPCRouter({
             throw new Error("Not implemented");
         }),
 
-
     deleteArchiveMod: adminProcedure
         .input(modIdSchema)
         .mutation(async ({ ctx, input }) => {
-            await getModById("Mod_Archive", false, ctx.prisma, input.id);  //check that id matches an existing mod
+            await getModById("Mod_Archive", "mod", false, false, ctx.prisma, input.id);  //check that id matches an existing mod
 
             await ctx.prisma.mod_Archive.delete({ where: { id: input.id } });
 
@@ -557,7 +661,7 @@ export const modRouter = createTRPCRouter({
     deleteMod_total: adminProcedure
         .input(modIdSchema)
         .mutation(async ({ ctx, input }) => {
-            const modFromId = await getModById("Mod", true, ctx.prisma, input.id);  //check that id matches an existing mod
+            const modFromId = await getModById("Mod", "mod", false, false, ctx.prisma, input.id);  //check that id matches an existing mod
 
             await ctx.prisma.mod.delete({ where: { id: input.id } });   //the deletion should cascade to any maps
 
