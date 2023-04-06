@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure, adminProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
-import { Prisma, difficulty } from "@prisma/client";
+import { Prisma, Difficulty } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { intMaxSizes } from "~/consts/integerSizes";
@@ -10,7 +10,7 @@ import { intMaxSizes } from "~/consts/integerSizes";
 
 
 
-const defaultDifficultySelect = Prisma.validator<Prisma.difficultySelect>()({
+const defaultDifficultySelect = Prisma.validator<Prisma.DifficultySelect>()({
     id: true,
     name: true,
     description: true,
@@ -83,8 +83,8 @@ const validateDifficulty = async (
 
 
 
-const getDifficultyById = async (prisma: MyPrismaClient, id: number): Promise<Pick<difficulty, keyof typeof defaultDifficultySelect>> => {
-    const difficulty: difficulty | null = await prisma.difficulty.findUnique({  //having type declaration here AND in function signature is safer
+const getDifficultyById = async (prisma: MyPrismaClient, id: number): Promise<Pick<Difficulty, keyof typeof defaultDifficultySelect>> => {
+    const difficulty: Difficulty | null = await prisma.difficulty.findUnique({  //having type declaration here AND in function signature is safer
         where: { id: id },
         select: defaultDifficultySelect,
     });
@@ -184,7 +184,7 @@ export const difficultyRouter = createTRPCRouter({
                     name: input.name,
                     description: input.description,
                     order: input.order,
-                    other_difficulty: { connect: { id: input.parentDifficultyId } },
+                    ChildDifficulty: { connect: { id: input.parentDifficultyId } },
                 },
                 select: defaultDifficultySelect,
             });
@@ -211,7 +211,7 @@ export const difficultyRouter = createTRPCRouter({
                     name: input.name,
                     description: input.description,
                     order: input.order,
-                    other_difficulty: { connect: { id: input.parentDifficultyId } },
+                    ChildDifficulty: { connect: { id: input.parentDifficultyId } },
                 },
                 select: defaultDifficultySelect,
             });

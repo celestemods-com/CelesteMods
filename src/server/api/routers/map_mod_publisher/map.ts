@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure, adminProcedure, loggedInProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
-import { Prisma, map, map_side } from "@prisma/client";
+import { Prisma, Map, MapSide } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { intMaxSizes } from "~/consts/integerSizes";
@@ -17,7 +17,7 @@ import { techIdSchema_NonObject } from "../techs/tech";
 
 
 
-export const defaultMapSelect = Prisma.validator<Prisma.mapSelect>()({
+export const defaultMapSelect = Prisma.validator<Prisma.MapSelect>()({
     id: true,
     modId: true,
     mapperUserId: true,
@@ -33,14 +33,14 @@ export const defaultMapSelect = Prisma.validator<Prisma.mapSelect>()({
     mapRemovedFromModBool: true,
     timeSubmitted: true,
     timeApproved: true,
-    archive_map: { select: { id: true } },
-    maps_to_techs: {
+    Map_Archive: { select: { id: true } },
+    MapsToTechs: {
         select: {
             techId: true,
             fullClearOnlyBool: true,
         },
     },
-    review_map: { select: { id: true } },
+    ReviewMap: { select: { id: true } },
 });
 
 
@@ -53,7 +53,7 @@ const mapDescriptionSchema_NonObject = z.string().min(1).max(500);
 const mapNotesSchema_NonObject = z.string().min(1).max(500);
 
 
-const mapSideSchema_NonObject = z.enum(getNonEmptyArray(map_side));
+const mapSideSchema_NonObject = z.enum(getNonEmptyArray(MapSide));
 
 const mapSideSchema = z.object({
     side: mapSideSchema_NonObject,
@@ -71,7 +71,7 @@ export const mapperUserIdSchema = z.object({
     mapperUserId: userIdSchema_NonObject.optional(),
 }).strict();
 
-export type mapperUserId = z.infer<typeof mapperUserIdSchema>;
+export type MapperUserId = z.infer<typeof mapperUserIdSchema>;
 
 
 
@@ -134,7 +134,7 @@ export const mapOrderSchema = getCombinedSchema(
 
 
 const getMapByGamebananaId = async (prisma: MyPrismaClient, gamebananaId: number, throwOnMatch: boolean) => {       //TODO?: add type declaration
-    const matchingMap: map | null = await prisma.map.findUnique({
+    const matchingMap: Map | null = await prisma.map.findUnique({
         where: { gamebananaId: gamebananaId },
         select: defaultMapSelect,
     });

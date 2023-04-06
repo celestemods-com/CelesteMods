@@ -2,27 +2,29 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure, adminProcedure, loggedInProcedure, modlistModeratorProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
-import { Prisma, archive_mod, mod, mod_type, unapproved_mod, archive_map, map, unapproved_map } from "@prisma/client";
+import { Prisma, ModType, Mod, Map, Mod_Archive, Map_Archive, Mod_Edit, Map_Edit, Mod_New, Map_New } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { intMaxSizes } from "~/consts/integerSizes";
 import { userIdSchema_NonObject } from "../user";
 import axios, { AxiosResponse } from "axios";
 import { ADMIN_PERMISSION_STRINGS, MODLIST_MODERATOR_PERMISSION_STRINGS, checkIsPrivileged, checkPermissions } from "../../utils/permissions";
-import { mapPostWithModSchema, mapperUserId, mapperUserIdSchema } from "./map";
+import { mapPostWithModSchema, MapperUserId, mapperUserIdSchema } from "./map";
 import { PUBLISHER_NAME_MAX_LENGTH } from "./publisher";
 import { getCurrentTime } from "../../utils/getCurrentTime";
 
 
 
 
-type TrimmedMod = Omit<mod, "submittedBy" | "approvedBy"> & { map: { id: number }[] };
-type TrimmedArchiveMod = Omit<archive_mod, "submittedBy" | "approvedBy"> & { archive_map: { id: number }[] };
-type TrimmedUnapprovedMod = Omit<unapproved_mod, "submittedBy"> & { unapproved_map: { id: number }[] };
+type TrimmedMod = Omit<Mod, "submittedBy" | "approvedBy"> & { Map: { id: number }[] };
+type TrimmedArchiveMod = Omit<Mod_Archive, "submittedBy" | "approvedBy"> & { Map_Archive: { id: number }[] };
+type TrimmedModEdit = Omit<Mod_Edit, "submittedBy"> & { Map_Edit: { id: number }[] };
+type TrimmedModNew = Omit<Mod_New, "submittedBy"> & { Map_New: { id: number }[] };
 
-type ExpandedMod = mod & { map: map[] };
-type ExpandedArchiveMod = archive_mod & { archive_map: archive_map[] };
-type ExpandedUnapprovedMod = unapproved_mod & { unapproved_map: unapproved_map[] };
+type ExpandedMod = Mod & { Map: Map[] };
+type ExpandedArchiveMod = Mod_Archive & { Map_Archive: Map_Archive[] };
+type ExpandedModEdit = Mod_Edit & { Map_Edit: Map_Edit[] };
+type ExpandedModNew = Mod_New & { Map_New: Map_New[] };
 
 
 
@@ -42,29 +44,32 @@ const baseModSelectObject = {
 };
 
 
-const defaultModSelect = Prisma.validator<Prisma.modSelect>()({
+const defaultModSelect = Prisma.validator<Prisma.ModSelect>()({
     ...baseModSelectObject,
     timeApproved: true,
-    archive_mod: { select: { id: true } },
-    unapproved_mod: { select: { id: true } },
-    map: { select: { id: true } },
-    review: { select: { id: true } },
+    Map: { select: { id: true } },
+    Mod_Archive: { select: { id: true } },
+    Mod_Edit: { select: { id: true } },
+    Review: { select: { id: true } },
 });
 
 
-const archiveModSelect = Prisma.validator<Prisma.archive_modSelect>()({
+const modArchiveSelect = Prisma.validator<Prisma.Mod_ArchiveSelect>()({
     ...baseModSelectObject,
     modId: true,
     timeApproved: true,
     timeArchived: true,
-    archive_map: { select: { id: true } },
 });
 
 
-const unapprovedModSelect = Prisma.validator<Prisma.unapproved_modSelect>()({
+const modEditSelect = Prisma.validator<Prisma.Mod_EditSelect>()({
     ...baseModSelectObject,
     modId: true,
-    unapproved_map: { select: { id: true } },
+});
+
+
+const modNewSelect = Prisma.validator<Prisma.Mod_NewSelect>()({
+    ...baseModSelectObject,
 });
 
 
@@ -95,7 +100,7 @@ const modIdSchema = z.object({
 }).strict();
 
 
-const modTypeSchema_NonObject = z.enum(getNonEmptyArray(mod_type));
+const modTypeSchema_NonObject = z.enum(getNonEmptyArray(ModType));
 
 const modTypeSchema = z.object({
     type: modTypeSchema_NonObject,
@@ -149,20 +154,30 @@ const getModByGamebananaModId = async (prisma: MyPrismaClient, gamebananaModId: 
 
 
 const getModById = async<
-    TableName extends "mod" | "archive_mod" | "unapproved_mod",
+    TableName extends "Mod" | "Mod_Archive" | "Mod_Edit" | "Mod_New",
     ReturnAll extends boolean,
     ReturnType extends (
-        TableName extends "mod" ?
+        TableName extends "Mod" ?
         (
             ReturnAll extends true ? ExpandedMod : TrimmedMod
         ) :
         (
-            TableName extends "archive_mod" ?
+            TableName extends "Mod_Archive" ?
             (
                 ReturnAll extends true ? ExpandedArchiveMod : TrimmedArchiveMod
             ) :
             (
-                ReturnAll extends true ? ExpandedUnapprovedMod : TrimmedUnapprovedMod
+                TableName extends "Mod_Edit" ?
+                (
+                    ReturnAll extends true ? ExpandedModEdit : TrimmedModEdit
+                ) :
+                (
+                    TableName extends "Mod_New" ?
+                    (
+                        ReturnAll extends true ? ExpandedModNew : TrimmedModNew
+                    ) :
+                    never
+                )
             )
         )
     ),
@@ -176,22 +191,28 @@ const getModById = async<
 > => {
     let mod: ReturnType | null;
 
-    if (tableName == "mod") {
+    if (tableName == "Mod") {
         mod = await prisma.mod.findUnique({  //having type declaration here AND in function signature is safer
             where: { id: id },
             select: returnAll ? undefined : defaultModSelect,
         }) as (ReturnType | null);
     }
-    else if (tableName == "archive_mod") {
-        mod = await prisma.archive_mod.findUnique({
+    else if (tableName == "Mod_Archive") {
+        mod = await prisma.mod_Archive.findUnique({
             where: { id: id },
-            select: returnAll ? undefined : archiveModSelect,
+            select: returnAll ? undefined : modArchiveSelect,
         }) as (ReturnType | null);
     }
-    else if (tableName == "unapproved_mod") {
-        mod = await prisma.unapproved_mod.findUnique({
+    else if (tableName == "Mod_Edit") {
+        mod = await prisma.mod_Edit.findUnique({
             where: { id: id },
-            select: returnAll ? undefined : unapprovedModSelect,
+            select: returnAll ? undefined : modEditSelect,
+        }) as (ReturnType | null);
+    }
+    else if (tableName == "Mod_New") {
+        mod = await prisma.mod_New.findUnique({
+            where: { id: id },
+            select: returnAll ? undefined : modNewSelect,
         }) as (ReturnType | null);
     }
     else {
@@ -304,7 +325,7 @@ export const modRouter = createTRPCRouter({
     getById: publicProcedure
         .input(modIdSchema)
         .query(async ({ ctx, input }) => {
-            return await getModById("mod", false, ctx.prisma, input.id);
+            return await getModById("Mod", false, ctx.prisma, input.id);
         }),
 
     getByGamebananaModId: publicProcedure
@@ -342,9 +363,9 @@ export const modRouter = createTRPCRouter({
             const currentTime = getCurrentTime();
 
 
-            let mod: TrimmedMod | TrimmedUnapprovedMod;
+            let mod: TrimmedMod | TrimmedModNew;
 
-            const modCreateData_base: Prisma.modCreateInput | Prisma.unapproved_modCreateInput = {
+            const modCreateData_base: Prisma.ModCreateInput | Prisma.Mod_NewCreateInput = {
                 type: input.type,
                 name: gamebananaModInfo.gamebananaModName,
                 contentWarning: input.contentWarning,
@@ -354,7 +375,7 @@ export const modRouter = createTRPCRouter({
                 gamebananaModId: input.gamebananaModId,
                 timeSubmitted: currentTime,
                 timeCreatedGamebanana: gamebananaModInfo.timeCreatedGamebanana,
-                publisher: {
+                Publisher: {
                     connectOrCreate: {
                         where: { gamebananaId: gamebananaModInfo.publisherGamebananaId },
                         create: {
@@ -366,7 +387,7 @@ export const modRouter = createTRPCRouter({
             };
 
 
-            const mapCreateDataArray_base: (Prisma.mapCreateWithoutModInput & mapperUserId)[] | (Prisma.unapproved_mapCreateWithoutUnapproved_modInput & mapperUserId)[] = input.maps.map((map) => {
+            const mapCreateDataArray_base: (Prisma.MapCreateWithoutModInput & MapperUserId)[] | (Prisma.Map_NewCreateWithoutMod_NewInput & MapperUserId)[] = input.maps.map((map) => {
                 return {
                     mapperUserId: "mapperUserId" in map ? map.mapperUserId : undefined,
                     mapperNameString: ("mapperNameString" in map ? map.mapperNameString : undefined) ?? gamebananaModInfo.publisherName,
@@ -378,14 +399,14 @@ export const modRouter = createTRPCRouter({
                     overallRank: "overallRank" in map ? map.overallRank : undefined,
                     mapRemovedFromModBool: map.mapRemovedFromModBool,
                     timeSubmitted: currentTime,
-                    difficulty: { connect: { id: map.canonicalDifficultyId } },
-                    length: { connect: { id: map.lengthId } },
+                    Difficulty: { connect: { id: map.canonicalDifficultyId } },
+                    Length: { connect: { id: map.lengthId } },
                 };
             });
 
 
             if (checkPermissions(MODLIST_MODERATOR_PERMISSION_STRINGS, ctx.user.permissions)) {
-                const mapCreateDataArray_approved: Prisma.mapCreateWithoutModInput[] = mapCreateDataArray_base.map((map) => {
+                const mapCreateDataArray_approved: Prisma.MapCreateWithoutModInput[] = mapCreateDataArray_base.map((map) => {
                     return {
                         ...map,
                         mapperUserId: undefined,
@@ -400,16 +421,16 @@ export const modRouter = createTRPCRouter({
                 mod = await ctx.prisma.mod.create({
                     data: {
                         ...modCreateData_base,
-                        user_mod_submittedByTouser: { connect: { id: ctx.user.id } },
+                        User_SubmittedBy: { connect: { id: ctx.user.id } },
                         timeApproved: currentTime,
-                        user_mod_approvedByTouser: { connect: { id: ctx.user.id } },
-                        map: { create: mapCreateDataArray_approved },
+                        User_ApprovedBy: { connect: { id: ctx.user.id } },
+                        Map: { create: mapCreateDataArray_approved },
                     },
                     select: defaultModSelect,
                 });
             }
             else {
-                const mapCreateDataArray_unapproved: Prisma.unapproved_mapCreateWithoutUnapproved_modInput[] = mapCreateDataArray_base.map((map) => {
+                const mapCreateDataArray_new: Prisma.Map_NewCreateWithoutMod_NewInput[] = mapCreateDataArray_base.map((map) => {
                     return {
                         ...map,
                         mapperUserId: undefined,
@@ -419,11 +440,11 @@ export const modRouter = createTRPCRouter({
                 });
 
 
-                mod = await ctx.prisma.unapproved_mod.create({
+                mod = await ctx.prisma.mod_New.create({
                     data: {
                         ...modCreateData_base,
-                        user: { connect: { id: ctx.user.id } },
-                        unapproved_map: { create: mapCreateDataArray_unapproved },
+                        User_SubmittedBy: { connect: { id: ctx.user.id } },
+                        Map_New: { create: mapCreateDataArray_new },
                     },
                     select: defaultModSelect,
                 });
@@ -433,15 +454,15 @@ export const modRouter = createTRPCRouter({
             return mod;
         }),
 
-    approve: modlistModeratorProcedure
+    approveNew: modlistModeratorProcedure
         .input(modIdSchema)
         .mutation(async ({ ctx, input }) => {
-            const modFromId = await getModById("unapproved_mod", true, ctx.prisma, input.id);
+            const modFromId = await getModById("Mod_New", true, ctx.prisma, input.id);
 
             const currentTime = getCurrentTime();
 
 
-            //TODO!: modify to only transfer the mod and not the maps. should first check if the unapproved_mod has any remaining unapproved_maps to approve and throw an error if it does.
+            //TODO!: modify to only transfer the mod and not the maps. should first check if the Mod_New has any remaining unapproved_maps to approve and throw an error if it does.
             //must also check if the mod already exists and either archive it or throw an error
             //maybe should have different procedures for approving new mods vs approving edits to existing mods
 
@@ -455,30 +476,30 @@ export const modRouter = createTRPCRouter({
                     longDescription: modFromId.longDescription,
                     gamebananaModId: modFromId.gamebananaModId,
                     timeSubmitted: modFromId.timeSubmitted,
-                    user_mod_submittedByTouser: { connect: { id: modFromId.submittedBy ?? undefined } },
+                    User_SubmittedBy: { connect: { id: modFromId.submittedBy ?? undefined } },
                     timeApproved: currentTime,
-                    user_mod_approvedByTouser: { connect: { id: ctx.user.id } },
+                    User_ApprovedBy: { connect: { id: ctx.user.id } },
                     timeCreatedGamebanana: modFromId.timeCreatedGamebanana,
-                    publisher: { connect: { id: modFromId.publisherId } },
-                    map: {
-                        create: modFromId.unapproved_map.map(
-                            (unapprovedMap) => {
+                    Publisher: { connect: { id: modFromId.publisherId } },
+                    Map: {
+                        create: modFromId.Map_New.map(
+                            (newMap) => {
                                 return {
-                                    mapperNameString: unapprovedMap.mapperNameString,
-                                    user_map_mapperUserIdTouser: { connect: { id: unapprovedMap.mapperUserId ?? undefined } },
-                                    name: unapprovedMap.name,
-                                    description: unapprovedMap.description,
-                                    notes: unapprovedMap.notes,
-                                    chapter: unapprovedMap.chapter,
-                                    side: unapprovedMap.side,
-                                    overallRank: unapprovedMap.overallRank,
-                                    mapRemovedFromModBool: unapprovedMap.mapRemovedFromModBool,
-                                    timeSubmitted: unapprovedMap.timeSubmitted,
-                                    user_map_submittedByTouser: { connect: { id: unapprovedMap.submittedBy ?? undefined } },
+                                    mapperNameString: newMap.mapperNameString,
+                                    User_MapperUser: { connect: { id: newMap.mapperUserId ?? undefined } },
+                                    name: newMap.name,
+                                    description: newMap.description,
+                                    notes: newMap.notes,
+                                    chapter: newMap.chapter,
+                                    side: newMap.side,
+                                    overallRank: newMap.overallRank,
+                                    mapRemovedFromModBool: newMap.mapRemovedFromModBool,
+                                    timeSubmitted: newMap.timeSubmitted,
+                                    User_SubmittedBy: { connect: { id: newMap.submittedBy ?? undefined } },
                                     timeApproved: currentTime,
-                                    approvedBy: { connect: { id: ctx.user.id } },
-                                    difficulty: { connect: { id: unapprovedMap.canonicalDifficultyId } },
-                                    length: { connect: { id: unapprovedMap.lengthId } },
+                                    User_ApprovedBy: { connect: { id: ctx.user.id } },
+                                    Difficulty: { connect: { id: newMap.canonicalDifficultyId } },
+                                    Length: { connect: { id: newMap.lengthId } },
                                 };
                             },
                         ),
@@ -488,18 +509,18 @@ export const modRouter = createTRPCRouter({
             });
 
 
-            await ctx.prisma.unapproved_mod.delete({ where: { id: input.id } });    //the deletion should cascade to any unapproved_maps
+            await ctx.prisma.mod_New.delete({ where: { id: input.id } });    //the deletion should cascade to any unapproved_maps
 
 
             return approvedMod;
         }),
 
-    reject: modlistModeratorProcedure
+    rejectNew: modlistModeratorProcedure
         .input(modIdSchema)
         .mutation(async ({ ctx, input }) => {
-            await getModById("unapproved_mod", false, ctx.prisma, input.id);
+            await getModById("Mod_Edit", false, ctx.prisma, input.id);
 
-            await ctx.prisma.unapproved_mod.delete({ where: { id: input.id } });    //the deletion should cascade to any unapproved_maps
+            await ctx.prisma.mod_New.delete({ where: { id: input.id } });    //the deletion should cascade to any unapproved_maps
 
             return true;
         }),
@@ -507,7 +528,7 @@ export const modRouter = createTRPCRouter({
     update: modlistModeratorProcedure
         .input(modPostSchema.partial().merge(modIdSchema))
         .mutation(async ({ ctx, input }) => {
-            //TODO: if authed, create archive_mod with data from live mod, and update live mod with data from input. if not authed, create unapproved_mod with data from input
+            //TODO: if authed, create Mod_Archive with data from live mod, and update live mod with data from input. if not authed, create Mod_Edit with data from input
             //only affects the mod, not the maps
 
             throw new Error("Not implemented");
@@ -516,7 +537,7 @@ export const modRouter = createTRPCRouter({
     restore: modlistModeratorProcedure
         .input(modIdSchema)
         .mutation(async ({ ctx, input }) => {
-            //TODO: use id to select specific archive_mod, update live mod with data from archive_mod, delete archive_mod
+            //TODO: use id to select specific Mod_Archive, update live mod with data from Mod_Archive, delete Mod_Archive
             //only affects the mod, not the maps
 
             throw new Error("Not implemented");
@@ -526,9 +547,9 @@ export const modRouter = createTRPCRouter({
     deleteArchiveMod: adminProcedure
         .input(modIdSchema)
         .mutation(async ({ ctx, input }) => {
-            await getModById("archive_mod", false, ctx.prisma, input.id);  //check that id matches an existing mod
+            await getModById("Mod_Archive", false, ctx.prisma, input.id);  //check that id matches an existing mod
 
-            await ctx.prisma.archive_mod.delete({ where: { id: input.id } });
+            await ctx.prisma.mod_Archive.delete({ where: { id: input.id } });
 
             return true;
         }),
@@ -536,28 +557,39 @@ export const modRouter = createTRPCRouter({
     deleteMod_total: adminProcedure
         .input(modIdSchema)
         .mutation(async ({ ctx, input }) => {
-            const modFromId = await getModById("mod", true, ctx.prisma, input.id);  //check that id matches an existing mod
+            const modFromId = await getModById("Mod", true, ctx.prisma, input.id);  //check that id matches an existing mod
 
             await ctx.prisma.mod.delete({ where: { id: input.id } });   //the deletion should cascade to any maps
 
 
-            const archivedModsToDelete = await ctx.prisma.archive_mod.findMany({ where: { gamebananaModId: modFromId.gamebananaModId } });
+            const archivedModsToDelete = await ctx.prisma.mod_Archive.findMany({ where: { gamebananaModId: modFromId.gamebananaModId } });
 
             await Promise.all(
                 archivedModsToDelete.map(
                     (archivedMod) => {
-                        return ctx.prisma.archive_mod.delete({ where: { id: archivedMod.id } });    //the deletion should cascade to any archive_maps
+                        return ctx.prisma.mod_Archive.delete({ where: { id: archivedMod.id } });    //the deletion should cascade to any archivedMaps
                     },
                 ),
             );
 
 
-            const unapprovedModsToDelete = await ctx.prisma.unapproved_mod.findMany({ where: { gamebananaModId: modFromId.gamebananaModId } });
+            const modEditsToDelete = await ctx.prisma.mod_Edit.findMany({ where: { gamebananaModId: modFromId.gamebananaModId } });
 
             await Promise.all(
-                unapprovedModsToDelete.map(
-                    (unapprovedMod) => {
-                        return ctx.prisma.unapproved_mod.delete({ where: { id: unapprovedMod.id } });   //the deletion should cascade to any unapproved_maps
+                modEditsToDelete.map(
+                    (modEdit) => {
+                        return ctx.prisma.mod_Edit.delete({ where: { id: modEdit.id } });   //the deletion should cascade to any mapEdits
+                    },
+                ),
+            );
+
+
+            const newModsToDelete = await ctx.prisma.mod_New.findMany({ where: { gamebananaModId: modFromId.gamebananaModId } });
+
+            await Promise.all(
+                newModsToDelete.map(
+                    (newMod) => {
+                        return ctx.prisma.mod_New.delete({ where: { id: newMod.id } });   //the deletion should cascade to any newMaps
                     },
                 ),
             );

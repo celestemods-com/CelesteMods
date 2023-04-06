@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure, adminProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
-import { Prisma, length } from "@prisma/client";
+import { Prisma, Length } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { intMaxSizes } from "~/consts/integerSizes";
@@ -10,7 +10,7 @@ import { intMaxSizes } from "~/consts/integerSizes";
 
 
 
-const defaultLengthSelect = Prisma.validator<Prisma.lengthSelect>()({
+const defaultLengthSelect = Prisma.validator<Prisma.LengthSelect>()({
     id: true,
     name: true,
     description: true,
@@ -60,8 +60,8 @@ const validateLength = async (prisma: MyPrismaClient, newName?: string): Promise
 
 
 
-const getLengthById = async (prisma: MyPrismaClient, id: number): Promise<Pick<length, keyof typeof defaultLengthSelect>> => {
-    const length: length | null = await prisma.length.findUnique({  //having type declaration here AND in function signature is safer
+const getLengthById = async (prisma: MyPrismaClient, id: number): Promise<Pick<Length, keyof typeof defaultLengthSelect>> => {
+    const length: Length | null = await prisma.length.findUnique({  //having type declaration here AND in function signature is safer
         where: { id: id },
         select: defaultLengthSelect,
     });

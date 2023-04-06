@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure, loggedInProcedure, adminProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
-import { Prisma, user } from "@prisma/client";
+import { Prisma, User } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { intMaxSizes } from "~/consts/integerSizes";
@@ -19,7 +19,7 @@ const defaultPartialUserSelectObject = {
     accountStatus: true,
 };
 
-const defaultPartialUserSelect = Prisma.validator<Prisma.userSelect>()(defaultPartialUserSelectObject);
+const defaultPartialUserSelect = Prisma.validator<Prisma.UserSelect>()(defaultPartialUserSelectObject);
 
 
 const discordUserSelectObject = {
@@ -28,10 +28,10 @@ const discordUserSelectObject = {
     discordDiscrim: true,
 };
 
-const discordUserSelect = Prisma.validator<Prisma.userSelect>()(discordUserSelectObject);
+const discordUserSelect = Prisma.validator<Prisma.UserSelect>()(discordUserSelectObject);
 
 
-const defaultFullUserSelect = Prisma.validator<Prisma.userSelect>()({
+const defaultFullUserSelect = Prisma.validator<Prisma.UserSelect>()({
     ...defaultPartialUserSelectObject,
     ...discordUserSelectObject,
     permissions: true,
@@ -91,8 +91,8 @@ const getUserById = async (
     permissions: Permission[] | undefined,
     overwrite?: boolean,
 ): Promise<
-    Pick<user, keyof typeof defaultPartialUserSelect> |
-    Pick<user, keyof typeof defaultFullUserSelect>
+    Pick<User, keyof typeof defaultPartialUserSelect> |
+    Pick<User, keyof typeof defaultFullUserSelect>
 > => {
     const user = await prisma.user.findUnique({    //having type declaration here AND in function signature is safer
         where: { id: id },

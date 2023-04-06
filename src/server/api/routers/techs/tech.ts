@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure, adminProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
-import { Prisma, tech } from "@prisma/client";
+import { Prisma, Tech } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { intMaxSizes } from "~/consts/integerSizes";
@@ -11,12 +11,12 @@ import { techVideoRouter, defaultTechVideoSelect, techVideoPostWithTechSchema } 
 
 
 
-const defaultTechSelect = Prisma.validator<Prisma.techSelect>()({
+const defaultTechSelect = Prisma.validator<Prisma.TechSelect>()({
     id: true,
     name: true,
     description: true,
     difficultyId: true,
-    tech_video: { select: defaultTechVideoSelect },
+    TechVideo: { select: defaultTechVideoSelect },
 });
 
 
@@ -64,7 +64,7 @@ const validateTech = async (prisma: MyPrismaClient, newName?: string): Promise<v
 
 
 const getTechById = async (prisma: MyPrismaClient, id: number) => {
-    const tech: tech | null = await prisma.tech.findUnique({    //having type declaration here AND in function signature is safer
+    const tech: Tech | null = await prisma.tech.findUnique({    //having type declaration here AND in function signature is safer
         where: { id: id },
         select: defaultTechSelect,
     });
@@ -157,8 +157,8 @@ export const techRouter = createTRPCRouter({
                 data: {
                     name: input.name,
                     description: input.description,
-                    difficulty: { connect: { id: input.difficultyId } },
-                    tech_video: { createMany: { data: input.techVideo } },
+                    Difficulty: { connect: { id: input.difficultyId } },
+                    TechVideo: { createMany: { data: input.techVideo } },
                 },
                 select: defaultTechSelect,
             });
@@ -182,7 +182,7 @@ export const techRouter = createTRPCRouter({
                 data: {
                     name: input.name,
                     description: input.description,
-                    difficulty: { connect: { id: input.difficultyId } },
+                    Difficulty: { connect: { id: input.difficultyId } },
                 },
                 select: defaultTechSelect,
             });

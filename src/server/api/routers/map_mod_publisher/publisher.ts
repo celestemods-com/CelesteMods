@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure, adminProcedure, loggedInProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
-import { Prisma, publisher } from "@prisma/client";
+import { Prisma, Publisher } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { intMaxSizes } from "~/consts/integerSizes";
@@ -13,7 +13,7 @@ import { ADMIN_PERMISSION_STRINGS, checkIsPrivileged } from "../../utils/permiss
 
 
 
-const defaultPublisherSelect = Prisma.validator<Prisma.publisherSelect>()({
+const defaultPublisherSelect = Prisma.validator<Prisma.PublisherSelect>()({
     id: true,
     gamebananaId: true,
     userId: true,
@@ -57,8 +57,8 @@ const publisherOrderSchema = getCombinedSchema(
 
 
 
-const getPublisherByGamebananaId = async (prisma: MyPrismaClient, gamebananaId: number, throwOnMatch: boolean): Promise<void | Pick<publisher, keyof typeof defaultPublisherSelect>> => {
-    const matchingPublisher: publisher | null = await prisma.publisher.findUnique({
+const getPublisherByGamebananaId = async (prisma: MyPrismaClient, gamebananaId: number, throwOnMatch: boolean): Promise<void | Pick<Publisher, keyof typeof defaultPublisherSelect>> => {
+    const matchingPublisher: Publisher | null = await prisma.publisher.findUnique({
         where: { gamebananaId: gamebananaId },
         select: defaultPublisherSelect,
     });
@@ -83,8 +83,8 @@ const getPublisherByGamebananaId = async (prisma: MyPrismaClient, gamebananaId: 
 
 
 
-const getPublisherById = async (prisma: MyPrismaClient, id: number): Promise<Pick<publisher, keyof typeof defaultPublisherSelect>> => {
-    const publisher: publisher | null = await prisma.publisher.findUnique({  //having type declaration here AND in function signature is safer
+const getPublisherById = async (prisma: MyPrismaClient, id: number): Promise<Pick<Publisher, keyof typeof defaultPublisherSelect>> => {
+    const publisher: Publisher | null = await prisma.publisher.findUnique({  //having type declaration here AND in function signature is safer
         where: { id: id },
         select: defaultPublisherSelect,
     });
@@ -202,7 +202,7 @@ export const publisherRouter = createTRPCRouter({
                 data: {
                     gamebananaId: input.gamebananaId,
                     name: gamebananaUsername,
-                    user: { connect: { id: input.userId } },
+                    User: { connect: { id: input.userId } },
                 },
                 select: defaultPublisherSelect,
             });
@@ -255,7 +255,7 @@ export const publisherRouter = createTRPCRouter({
             const updatedPublisher = await ctx.prisma.publisher.update({
                 where: { id: input.id },
                 data: {
-                    user: { connect: { id: ctx.user.id } },
+                    User: { connect: { id: ctx.user.id } },
                 },
                 select: defaultPublisherSelect,
             });
@@ -280,7 +280,7 @@ export const publisherRouter = createTRPCRouter({
             const updatedPublisher = await ctx.prisma.publisher.update({
                 where: { id: input.id },
                 data: {
-                    user: { disconnect: true },
+                    User: { disconnect: true },
                 },
                 select: defaultPublisherSelect,
             });
@@ -299,7 +299,7 @@ export const publisherRouter = createTRPCRouter({
             return await ctx.prisma.publisher.update({
                 where: { id: input.id },
                 data: {
-                    user: { connect: { id: input.userId } },
+                    User: { connect: { id: input.userId } },
                 },
                 select: defaultPublisherSelect,
             });

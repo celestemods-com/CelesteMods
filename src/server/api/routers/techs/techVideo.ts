@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure, adminProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
-import { Prisma, tech_video } from "@prisma/client";
+import { Prisma, TechVideo } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { intMaxSizes } from "~/consts/integerSizes";
@@ -11,7 +11,7 @@ import { techIdSchema_NonObject } from "./tech";
 
 
 
-export const defaultTechVideoSelect = Prisma.validator<Prisma.tech_videoSelect>()({
+export const defaultTechVideoSelect = Prisma.validator<Prisma.TechVideoSelect>()({
     id: true,
     techId: true,
     url: true,
@@ -39,7 +39,7 @@ const techVideoPostAloneSchema = techIdSchema_forTechVideos.merge(techVideoPostW
 
 
 const techVideoOrderSchema = getCombinedSchema(
-    getNonEmptyArray(Prisma.Tech_videoScalarFieldEnum),
+    getNonEmptyArray(Prisma.TechVideoScalarFieldEnum),
     ["techId", "id"],
     ["asc"],
 );
@@ -47,8 +47,8 @@ const techVideoOrderSchema = getCombinedSchema(
 
 
 
-const getTechVideoById = async (prisma: MyPrismaClient, id: number): Promise<Pick<tech_video, keyof typeof defaultTechVideoSelect>> => {
-    const techVideo: tech_video | null = await prisma.difficulty.findUnique({   //having type declaration here AND in function signature is safer
+const getTechVideoById = async (prisma: MyPrismaClient, id: number): Promise<Pick<TechVideo, keyof typeof defaultTechVideoSelect>> => {
+    const techVideo: TechVideo | null = await prisma.difficulty.findUnique({   //having type declaration here AND in function signature is safer
         where: { id: id },
         select: defaultTechVideoSelect,
     });
@@ -70,7 +70,7 @@ export const techVideoRouter = createTRPCRouter({
     getAll: publicProcedure
         .input(techVideoOrderSchema)
         .query(({ ctx, input }) => {
-            return ctx.prisma.tech_video.findMany({
+            return ctx.prisma.techVideo.findMany({
                 select: defaultTechVideoSelect,
                 orderBy: getOrderObject(input.selectors, input.directions),
             });
@@ -85,7 +85,7 @@ export const techVideoRouter = createTRPCRouter({
     getByTechId: publicProcedure
         .input(techIdSchema_forTechVideos.merge(techVideoOrderSchema))
         .query(async ({ ctx, input }) => {
-            const techVideos = await ctx.prisma.tech_video.findMany({
+            const techVideos = await ctx.prisma.techVideo.findMany({
                 where: { techId: input.techId },
                 select: defaultTechVideoSelect,
                 orderBy: getOrderObject(input.selectors, input.directions),
@@ -97,10 +97,10 @@ export const techVideoRouter = createTRPCRouter({
     add: adminProcedure
         .input(techVideoPostAloneSchema)
         .mutation(async ({ ctx, input }) => {
-            const techVideo = await ctx.prisma.tech_video.create({
+            const techVideo = await ctx.prisma.techVideo.create({
                 data: {
                     url: input.url,
-                    tech: { connect: { id: input.techId } },
+                    Tech: { connect: { id: input.techId } },
                 },
                 select: defaultTechVideoSelect,
             });
@@ -118,11 +118,11 @@ export const techVideoRouter = createTRPCRouter({
                 code: "BAD_REQUEST",
             });
 
-            const techVideo = await ctx.prisma.tech_video.update({
+            const techVideo = await ctx.prisma.techVideo.update({
                 where: { id: input.id },
                 data: {
                     url: input.url,
-                    tech: { connect: { id: input.techId } },
+                    Tech: { connect: { id: input.techId } },
                 },
                 select: defaultTechVideoSelect,
             });
@@ -135,7 +135,7 @@ export const techVideoRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             await getTechVideoById(ctx.prisma, input.id);  //check that id matches an existing techVideo
 
-            await ctx.prisma.tech_video.delete({ where: { id: input.id } });
+            await ctx.prisma.techVideo.delete({ where: { id: input.id } });
 
             return true;
         }),
