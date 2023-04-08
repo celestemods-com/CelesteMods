@@ -17,7 +17,7 @@ import { techIdSchema_NonObject } from "../techs/tech";
 
 
 
-export const defaultMapSelect = Prisma.validator<Prisma.MapSelect>()({
+const defaultMapSelect = Prisma.validator<Prisma.MapSelect>()({
     id: true,
     modId: true,
     mapperUserId: true,
@@ -41,6 +41,31 @@ export const defaultMapSelect = Prisma.validator<Prisma.MapSelect>()({
         },
     },
     ReviewMap: { select: { id: true } },
+});
+
+
+const defaultMapNewSelect = Prisma.validator<Prisma.Map_NewSelect>()({
+    id: true,
+    mod_newId: true,
+    mapperUserId: true,
+    mapperNameString: true,
+    name: true,
+    canonicalDifficultyId: true,
+    lengthId: true,
+    description: true,
+    notes: true,
+    chapter: true,
+    side: true,
+    overallRank: true,
+    mapRemovedFromModBool: true,
+    timeSubmitted: true,
+    submittedBy: true,
+    Map_NewToTechs: {
+        select: {
+            techId: true,
+            fullClearOnlyBool: true,
+        },
+    },
 });
 
 

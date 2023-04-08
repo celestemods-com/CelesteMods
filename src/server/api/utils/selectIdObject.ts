@@ -1,0 +1,1 @@
+export const selectIdObject = { id: true };
