@@ -7,7 +7,7 @@ import {
 import DiscordProvider from "next-auth/providers/discord";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { env } from "~/env.mjs";
-import { user as PrismaUser } from "@prisma/client";
+import { User as PrismaUser } from "@prisma/client";
 import { prisma } from "~/server/prisma";
 import { Permission, assertsIsPermission } from "~/server/api/utils/permissions";
 
