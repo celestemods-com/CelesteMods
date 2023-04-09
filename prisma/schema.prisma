@@ -8,31 +8,33 @@ datasource db {
 }
 
 model Length {
-  id          Int           @id @default(autoincrement()) @db.UnsignedTinyInt
-  name        String        @unique @db.VarChar(20)
-  description String        @db.VarChar(100)
-  order       Int           @unique @db.UnsignedTinyInt
-  map         Map[]
-  ReviewMap   ReviewMap[]
-  Map_Archive Map_Archive[]
-  Map_Edit    Map_Edit[]
-  Map_New     Map_New[]
+  id                 Int                  @id @default(autoincrement()) @db.UnsignedTinyInt
+  name               String               @unique @db.VarChar(20)
+  description        String               @db.VarChar(100)
+  order              Int                  @unique @db.UnsignedTinyInt
+  map                Map[]
+  ReviewMap          ReviewMap[]
+  Map_Archive        Map_Archive[]
+  Map_Edit           Map_Edit[]
+  Map_NewWithMod_New Map_NewWithMod_New[]
+  Map_NewSolo        Map_NewSolo[]
 }
 
 model Difficulty {
-  id                 Int           @id @default(autoincrement()) @db.UnsignedSmallInt
-  name               String        @db.VarChar(50)
-  description        String?       @db.VarChar(100)
-  ParentDifficulty   Difficulty?   @relation("DifficultyToDifficulty", fields: [parentDifficultyId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  parentDifficultyId Int?          @default(0) @db.UnsignedSmallInt
-  order              Int           @db.UnsignedTinyInt
-  ChildDifficulty    Difficulty[]  @relation("DifficultyToDifficulty")
+  id                 Int                  @id @default(autoincrement()) @db.UnsignedSmallInt
+  name               String               @db.VarChar(50)
+  description        String?              @db.VarChar(100)
+  ParentDifficulty   Difficulty?          @relation("DifficultyToDifficulty", fields: [parentDifficultyId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  parentDifficultyId Int?                 @default(0) @db.UnsignedSmallInt
+  order              Int                  @db.UnsignedTinyInt
+  ChildDifficulty    Difficulty[]         @relation("DifficultyToDifficulty")
   Rating             Rating[]
   Tech               Tech[]
   Map                Map[]
   Map_Archive        Map_Archive[]
   Map_Edit           Map_Edit[]
-  Map_New            Map_New[]
+  Map_NewWithMod_New Map_NewWithMod_New[]
+  Map_NewSolo        Map_NewSolo[]
 
   @@unique([parentDifficultyId, name])
   @@unique([parentDifficultyId, order])
@@ -40,16 +42,17 @@ model Difficulty {
 }
 
 model Tech {
-  id                  Int                   @id @default(autoincrement()) @db.UnsignedSmallInt
-  name                String                @unique @db.VarChar(50)
-  description         String?               @db.VarChar(150)
-  Difficulty          Difficulty            @relation(fields: [difficultyId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  difficultyId        Int                   @db.UnsignedSmallInt
-  TechVideo           TechVideo[]
-  MapsToTechs         MapsToTechs[]
-  Map_ArchivesToTechs Map_ArchivesToTechs[]
-  Map_EditsToTechs    Map_EditsToTechs[]
-  Map_NewToTechs      Map_NewToTechs[]
+  id                        Int                         @id @default(autoincrement()) @db.UnsignedSmallInt
+  name                      String                      @unique @db.VarChar(50)
+  description               String?                     @db.VarChar(150)
+  Difficulty                Difficulty                  @relation(fields: [difficultyId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  difficultyId              Int                         @db.UnsignedSmallInt
+  TechVideo                 TechVideo[]
+  MapsToTechs               MapsToTechs[]
+  Map_ArchivesToTechs       Map_ArchivesToTechs[]
+  Map_EditsToTechs          Map_EditsToTechs[]
+  Map_NewWithMod_NewToTechs Map_NewWithMod_NewToTechs[]
+  Map_NewSoloToTechs        Map_NewSoloToTechs[]
 
   @@index([difficultyId])
 }
@@ -99,6 +102,7 @@ model Mod {
   Review                Review[]
   Mod_Archive           Mod_Archive[]
   Mod_Edit              Mod_Edit[]
+  Map_NewSolo           Map_NewSolo[]
 
   @@index([approvedBy])
   @@index([contentWarning])
@@ -297,49 +301,49 @@ model Map_EditsToTechs {
 }
 
 model Mod_New {
-  id                    Int       @id @default(autoincrement()) @db.UnsignedSmallInt
-  type                  ModType   @default(Normal)
-  name                  String    @db.VarChar(200)
-  Publisher             Publisher @relation(fields: [publisherId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  publisherId           Int       @db.UnsignedSmallInt
-  contentWarning        Boolean   @default(false)
-  notes                 String?   @db.VarChar(500)
-  shortDescription      String    @db.VarChar(150)
-  longDescription       String?   @db.VarChar(1500)
-  gamebananaModId       Int       @unique @db.UnsignedMediumInt
+  id                    Int                  @id @default(autoincrement()) @db.UnsignedSmallInt
+  type                  ModType              @default(Normal)
+  name                  String               @db.VarChar(200)
+  Publisher             Publisher            @relation(fields: [publisherId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  publisherId           Int                  @db.UnsignedSmallInt
+  contentWarning        Boolean              @default(false)
+  notes                 String?              @db.VarChar(500)
+  shortDescription      String               @db.VarChar(150)
+  longDescription       String?              @db.VarChar(1500)
+  gamebananaModId       Int                  @unique @db.UnsignedMediumInt
   timeSubmitted         Int
-  User_SubmittedBy      User?     @relation(fields: [submittedBy], references: [id], onDelete: SetNull, onUpdate: Restrict)
-  submittedBy           Int?      @db.UnsignedSmallInt
+  User_SubmittedBy      User?                @relation(fields: [submittedBy], references: [id], onDelete: SetNull, onUpdate: Restrict)
+  submittedBy           Int?                 @db.UnsignedSmallInt
   timeCreatedGamebanana Int
-  Map_New               Map_New[]
+  Map_NewWithMod_New    Map_NewWithMod_New[]
 
   @@index([contentWarning])
   @@index([publisherId])
   @@index([submittedBy])
 }
 
-model Map_New {
-  id                    Int              @id @default(autoincrement()) @db.UnsignedMediumInt
-  Mod_New               Mod_New          @relation(fields: [mod_newId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  mod_newId             Int              @db.UnsignedSmallInt
-  User_MapperUser       User?            @relation("Map_New_MapperUserIdToUser", fields: [mapperUserId], references: [id], onDelete: SetNull, onUpdate: Restrict)
-  mapperUserId          Int?             @db.UnsignedSmallInt
-  mapperNameString      String           @db.VarChar(50)
-  name                  String           @db.VarChar(200)
-  Difficulty            Difficulty       @relation(fields: [canonicalDifficultyId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  canonicalDifficultyId Int              @db.UnsignedSmallInt
-  Length                Length           @relation(fields: [lengthId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  lengthId              Int              @db.UnsignedTinyInt
-  description           String?          @db.VarChar(500)
-  notes                 String?          @db.VarChar(500)
-  chapter               Int?             @db.UnsignedTinyInt
-  side                  MapSide?
-  overallRank           Int?             @db.UnsignedTinyInt
-  mapRemovedFromModBool Boolean          @default(false)
-  timeSubmitted         Int
-  User_SubmittedBy      User?            @relation("Map_New_SubmittedByToUser", fields: [submittedBy], references: [id], onDelete: SetNull, onUpdate: Restrict)
-  submittedBy           Int?             @db.UnsignedSmallInt
-  Map_NewToTechs        Map_NewToTechs[]
+model Map_NewWithMod_New {
+  id                        Int                         @id @default(autoincrement()) @db.UnsignedMediumInt
+  Mod_New                   Mod_New                     @relation(fields: [mod_newId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  mod_newId                 Int                         @db.UnsignedSmallInt
+  User_MapperUser           User?                       @relation("Map_NewWithMod_New_MapperUserIdToUser", fields: [mapperUserId], references: [id], onDelete: SetNull, onUpdate: Restrict)
+  mapperUserId              Int?                        @db.UnsignedSmallInt
+  mapperNameString          String                      @db.VarChar(50)
+  name                      String                      @db.VarChar(200)
+  Difficulty                Difficulty                  @relation(fields: [canonicalDifficultyId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  canonicalDifficultyId     Int                         @db.UnsignedSmallInt
+  Length                    Length                      @relation(fields: [lengthId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  lengthId                  Int                         @db.UnsignedTinyInt
+  description               String?                     @db.VarChar(500)
+  notes                     String?                     @db.VarChar(500)
+  chapter                   Int?                        @db.UnsignedTinyInt
+  side                      MapSide?
+  overallRank               Int?                        @db.UnsignedTinyInt
+  mapRemovedFromModBool     Boolean                     @default(false)
+  timeSubmitted             Int
+  User_SubmittedBy          User?                       @relation("Map_NewWithMod_New_SubmittedByToUser", fields: [submittedBy], references: [id], onDelete: SetNull, onUpdate: Restrict)
+  submittedBy               Int?                        @db.UnsignedSmallInt
+  Map_NewWithMod_NewToTechs Map_NewWithMod_NewToTechs[]
 
   @@unique([mod_newId, chapter, side])
   @@unique([mod_newId, name])
@@ -350,14 +354,57 @@ model Map_New {
   @@index([submittedBy])
 }
 
-model Map_NewToTechs {
-  Map_New           Map_New @relation(fields: [map_newId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  map_newId         Int     @db.UnsignedMediumInt
-  Tech              Tech    @relation(fields: [techId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  techId            Int     @db.UnsignedSmallInt
-  fullClearOnlyBool Boolean @default(false)
+model Map_NewWithMod_NewToTechs {
+  Map_NewWithMod_New   Map_NewWithMod_New @relation(fields: [map_NewWithMod_NewId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  map_NewWithMod_NewId Int                @db.UnsignedMediumInt
+  Tech                 Tech               @relation(fields: [techId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  techId               Int                @db.UnsignedSmallInt
+  fullClearOnlyBool    Boolean            @default(false)
 
-  @@id([map_newId, techId])
+  @@id([map_NewWithMod_NewId, techId])
+  @@index([techId])
+}
+
+model Map_NewSolo {
+  id                    Int                  @id @default(autoincrement()) @db.UnsignedMediumInt
+  Mod                   Mod                  @relation(fields: [modId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  modId                 Int                  @db.UnsignedSmallInt
+  User_MapperUser       User?                @relation("Map_NewSolo_MapperUserIdToUser", fields: [mapperUserId], references: [id], onDelete: SetNull, onUpdate: Restrict)
+  mapperUserId          Int?                 @db.UnsignedSmallInt
+  mapperNameString      String               @db.VarChar(50)
+  name                  String               @db.VarChar(200)
+  Difficulty            Difficulty           @relation(fields: [canonicalDifficultyId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  canonicalDifficultyId Int                  @db.UnsignedSmallInt
+  Length                Length               @relation(fields: [lengthId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  lengthId              Int                  @db.UnsignedTinyInt
+  description           String?              @db.VarChar(500)
+  notes                 String?              @db.VarChar(500)
+  chapter               Int?                 @db.UnsignedTinyInt
+  side                  MapSide?
+  overallRank           Int?                 @db.UnsignedTinyInt
+  mapRemovedFromModBool Boolean              @default(false)
+  timeSubmitted         Int
+  User_SubmittedBy      User?                @relation("Map_NewSolo_SubmittedByToUser", fields: [submittedBy], references: [id], onDelete: SetNull, onUpdate: Restrict)
+  submittedBy           Int?                 @db.UnsignedSmallInt
+  Map_NewSoloToTechs    Map_NewSoloToTechs[]
+
+  @@unique([modId, chapter, side])
+  @@unique([modId, name])
+  @@index([canonicalDifficultyId])
+  @@index([lengthId])
+  @@index([mapperUserId])
+  @@index([modId])
+  @@index([submittedBy])
+}
+
+model Map_NewSoloToTechs {
+  Map_NewSolo       Map_NewSolo @relation(fields: [Map_NewSoloId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  Map_NewSoloId     Int         @db.UnsignedMediumInt
+  Tech              Tech        @relation(fields: [techId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  techId            Int         @db.UnsignedSmallInt
+  fullClearOnlyBool Boolean     @default(false)
+
+  @@id([Map_NewSoloId, techId])
   @@index([techId])
 }
 
@@ -436,39 +483,41 @@ model ReviewMap {
 }
 
 model User {
-  id                             Int                    @id @default(autoincrement()) @db.UnsignedSmallInt
-  displayName                    String                 @db.VarChar(50)
-  discordId                      String?                @unique @db.VarChar(50)
-  discordUsername                String                 @db.VarChar(32)
-  discordDiscrim                 String                 @db.VarChar(4)
-  displayDiscord                 Boolean
-  showCompletedMaps              Boolean
-  timeCreated                    Int
-  permissions                    String
-  accountStatus                  User_AccountStatus     @default(Active)
-  timeDeletedOrBanned            Int?
-  Publisher                      Publisher[]
-  Rating                         Rating[]
-  ReviewCollection               ReviewCollection[]
-  CompletedMaps                  UsersToCompletedMaps[]
-  Account                        Account[]
-  Session                        Session[]
-  Mod_submittedByToUser          Mod[]                  @relation("Mod_SubmittedByToUser")
-  Mod_approvedByToUser           Mod[]                  @relation("Mod_ApprovedByToUser")
-  Map_mapperUserIdToUser         Map[]                  @relation("Map_MapperUserIdToUser")
-  Map_submittedByToUser          Map[]                  @relation("Map_SubmittedByToUser")
-  Map_approvedByToUser           Map[]                  @relation("Map_ApprovedByToUser")
-  Mod_Archive_submittedByToUser  Mod_Archive[]          @relation("Mod_Archive_SubmittedByToUser")
-  Mod_Archive_approvedByToUser   Mod_Archive[]          @relation("Mod_Archive_ApprovedByToUser")
-  Map_Archive_mapperUserIdToUser Map_Archive[]          @relation("Map_Archive_MapperUserIdToUser")
-  Map_Archive_submittedByToUser  Map_Archive[]          @relation("Map_Archive_SubmittedByToUser")
-  Map_Archive_approvedByToUser   Map_Archive[]          @relation("Map_Archive_ApprovedByToUser")
-  Mod_Edit_submittedByToUser     Mod_Edit[]
-  Map_Edit_mapperUserIdToUser    Map_Edit[]             @relation("Map_Edit_MapperUserIdToUser")
-  Map_Edit_submittedByToUser     Map_Edit[]             @relation("Map_Edit_SubmittedByToUser")
-  Mod_New_submittedByToUser      Mod_New[]
-  Map_New_mapperUserIdToUser     Map_New[]              @relation("Map_New_MapperUserIdToUser")
-  Map_New_submittedByToUser      Map_New[]              @relation("Map_New_SubmittedByToUser")
+  id                                    Int                    @id @default(autoincrement()) @db.UnsignedSmallInt
+  displayName                           String                 @db.VarChar(50)
+  discordId                             String?                @unique @db.VarChar(50)
+  discordUsername                       String                 @db.VarChar(32)
+  discordDiscrim                        String                 @db.VarChar(4)
+  displayDiscord                        Boolean
+  showCompletedMaps                     Boolean
+  timeCreated                           Int
+  permissions                           String
+  accountStatus                         User_AccountStatus     @default(Active)
+  timeDeletedOrBanned                   Int?
+  Publisher                             Publisher[]
+  Rating                                Rating[]
+  ReviewCollection                      ReviewCollection[]
+  CompletedMaps                         UsersToCompletedMaps[]
+  Account                               Account[]
+  Session                               Session[]
+  Mod_submittedByToUser                 Mod[]                  @relation("Mod_SubmittedByToUser")
+  Mod_approvedByToUser                  Mod[]                  @relation("Mod_ApprovedByToUser")
+  Map_mapperUserIdToUser                Map[]                  @relation("Map_MapperUserIdToUser")
+  Map_submittedByToUser                 Map[]                  @relation("Map_SubmittedByToUser")
+  Map_approvedByToUser                  Map[]                  @relation("Map_ApprovedByToUser")
+  Mod_Archive_submittedByToUser         Mod_Archive[]          @relation("Mod_Archive_SubmittedByToUser")
+  Mod_Archive_approvedByToUser          Mod_Archive[]          @relation("Mod_Archive_ApprovedByToUser")
+  Map_Archive_mapperUserIdToUser        Map_Archive[]          @relation("Map_Archive_MapperUserIdToUser")
+  Map_Archive_submittedByToUser         Map_Archive[]          @relation("Map_Archive_SubmittedByToUser")
+  Map_Archive_approvedByToUser          Map_Archive[]          @relation("Map_Archive_ApprovedByToUser")
+  Mod_Edit_submittedByToUser            Mod_Edit[]
+  Map_Edit_mapperUserIdToUser           Map_Edit[]             @relation("Map_Edit_MapperUserIdToUser")
+  Map_Edit_submittedByToUser            Map_Edit[]             @relation("Map_Edit_SubmittedByToUser")
+  Mod_New_submittedByToUser             Mod_New[]
+  Map_NewWithMod_New_mapperUserIdToUser Map_NewWithMod_New[]   @relation("Map_NewWithMod_New_MapperUserIdToUser")
+  Map_NewWithMod_New_submittedByToUser  Map_NewWithMod_New[]   @relation("Map_NewWithMod_New_SubmittedByToUser")
+  Map_NewSolo_mapperUserIdToUser        Map_NewSolo[]          @relation("Map_NewSolo_MapperUserIdToUser")
+  Map_NewSolo_submittedByToUser         Map_NewSolo[]          @relation("Map_NewSolo_SubmittedByToUser")
 
   @@unique([discordUsername, discordDiscrim])
 }
