@@ -1,0 +1,1 @@
+export type IfElse<Boolean, True, False> = Boolean extends true ? True : False;
