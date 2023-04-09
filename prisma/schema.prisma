@@ -138,6 +138,7 @@ model Map {
   Map_Edit              Map_Edit[]
 
   @@unique([modId, chapter, side])
+  @@unique([modId, name])
   @@index([approvedBy])
   @@index([canonicalDifficultyId])
   @@index([lengthId])
@@ -341,6 +342,7 @@ model Map_New {
   Map_NewToTechs        Map_NewToTechs[]
 
   @@unique([mod_newId, chapter, side])
+  @@unique([mod_newId, name])
   @@index([canonicalDifficultyId])
   @@index([lengthId])
   @@index([mapperUserId])
