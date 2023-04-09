@@ -12,6 +12,7 @@ import { mapPostWithModSchema, MapperUserId } from "./map";
 import { PUBLISHER_NAME_MAX_LENGTH } from "./publisher";
 import { getCurrentTime } from "../../utils/getCurrentTime";
 import { selectIdObject } from "../../utils/selectIdObject";
+import { IfElse } from "../../utils/typeHelpers";
 
 
 
@@ -123,57 +124,19 @@ const modOrderSchema = getCombinedSchema(
 
 
 
-// const getModByGamebananaModId = async (prisma: MyPrismaClient, gamebananaModId: number, throwOnMatch: boolean) => {
-//     const matchingMod = await prisma.mod.findUnique({
-//         where: { gamebananaModId: gamebananaModId },
-//         select: defaultModSelect,
-//     });
-
-
-//     if (throwOnMatch) {
-//         if (matchingMod) throw new TRPCError({
-//             code: "FORBIDDEN",
-//             message: `Conflicts with existing mod ${matchingMod.id}`,
-//         });
-//     }
-//     else {
-//         if (!matchingMod) throw new TRPCError({
-//             code: "NOT_FOUND",
-//             message: `No mod exists with gamebananaModId "${gamebananaModId}"`,
-//         });
-
-//         return matchingMod;
-//     }
-// }
-
-
-
-
 export const getModById = async<
     TableName extends "Mod" | "Mod_Archive" | "Mod_Edit" | "Mod_New",
     IdType extends "mod" | "gamebanana",
     ReturnAll extends boolean,
     ThrowOnMatch extends boolean,
     ModUnion extends (
-        TableName extends "Mod" ?
+        TableName extends "Mod" ? IfElse<ReturnAll, ExpandedMod, TrimmedMod> :
         (
-            ReturnAll extends true ? ExpandedMod : TrimmedMod
-        ) :
-        (
-            TableName extends "Mod_Archive" ?
+            TableName extends "Mod_Archive" ? IfElse<ReturnAll, ExpandedArchiveMod, TrimmedArchiveMod> :
             (
-                ReturnAll extends true ? ExpandedArchiveMod : TrimmedArchiveMod
-            ) :
-            (
-                TableName extends "Mod_Edit" ?
+                TableName extends "Mod_Edit" ? IfElse<ReturnAll, ExpandedModEdit, TrimmedModEdit> :
                 (
-                    ReturnAll extends true ? ExpandedModEdit : TrimmedModEdit
-                ) :
-                (
-                    TableName extends "Mod_New" ?
-                    (
-                        ReturnAll extends true ? ExpandedModNew : TrimmedModNew
-                    ) :
+                    TableName extends "Mod_New" ? IfElse<ReturnAll, ExpandedModNew, TrimmedModNew> :
                     never
                 )
             )
@@ -183,40 +146,32 @@ export const getModById = async<
         ThrowOnMatch extends true ? void : NonNullable<ModUnion>
     ),
 >(
-    tableName: TableName,
-    idType: IdType,
-    returnAll: ReturnAll,
-    throwOnMatch: ThrowOnMatch,
-    prisma: MyPrismaClient,
-    id: number,
-    customErrorMessage?: string,
-): Promise<
-    ReturnType
-> => {
-    const whereObject = idType == "mod" ? { id: id } : { gamebananaModId: id };
+    tableName: TableName, idType: IdType, returnAll: ReturnAll, throwOnMatch: ThrowOnMatch, prisma: MyPrismaClient, id: number, customErrorMessage?: string,
+): Promise<ReturnType> => {
+    const whereObject = idType === "mod" ? { id: id } : { gamebananaModId: id };
 
 
     let mod: ModUnion;
 
-    if (tableName == "Mod") {
+    if (tableName === "Mod") {
         mod = await prisma.mod.findUnique({
             where: whereObject,
             select: returnAll ? undefined : defaultModSelect,
         }) as ModUnion;
     }
-    else if (tableName == "Mod_Archive") {
+    else if (tableName === "Mod_Archive") {
         mod = await prisma.mod_Archive.findUnique({
             where: whereObject,
             select: returnAll ? undefined : modArchiveSelect,
         }) as ModUnion;
     }
-    else if (tableName == "Mod_Edit") {
+    else if (tableName === "Mod_Edit") {
         mod = await prisma.mod_Edit.findUnique({
             where: whereObject,
             select: returnAll ? undefined : modEditSelect,
         }) as ModUnion;
     }
-    else if (tableName == "Mod_New") {
+    else if (tableName === "Mod_New") {
         mod = await prisma.mod_New.findUnique({
             where: whereObject,
             select: returnAll ? undefined : modNewSelect,
@@ -769,7 +724,7 @@ export const modRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             //TODO: use id to select specific ModArchive, update live mod with data from ModArchive, delete ModArchive
             //only affects the mod, not the maps
-            
+
             const modArchive = await getModById("Mod_Archive", "mod", true, false, ctx.prisma, input.id);  //check that the ModArchive exists
 
 
