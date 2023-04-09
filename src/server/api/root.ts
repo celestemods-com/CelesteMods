@@ -1,6 +1,6 @@
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { difficultyRouter } from "./routers/difficulty";
-import { techRouter } from "./routers/techs/tech";
+import { techRouter } from "./routers/tech_techVideo/tech";
 import { lengthRouter } from "./routers/length";
 import { userRouter } from "./routers/user";
 import { publisherRouter } from "./routers/map_mod_publisher/publisher";
