@@ -55,7 +55,7 @@ const defaultModSelect = Prisma.validator<Prisma.ModSelect>()({
 });
 
 
-const modArchiveSelect = Prisma.validator<Prisma.Mod_ArchiveSelect>()({
+const defaultModArchiveSelect = Prisma.validator<Prisma.Mod_ArchiveSelect>()({
     ...baseModSelectObject,
     modId: true,
     timeApproved: true,
@@ -63,13 +63,13 @@ const modArchiveSelect = Prisma.validator<Prisma.Mod_ArchiveSelect>()({
 });
 
 
-const modEditSelect = Prisma.validator<Prisma.Mod_EditSelect>()({
+const defaultModEditSelect = Prisma.validator<Prisma.Mod_EditSelect>()({
     ...baseModSelectObject,
     modId: true,
 });
 
 
-const modNewSelect = Prisma.validator<Prisma.Mod_NewSelect>()({
+const defaultModNewSelect = Prisma.validator<Prisma.Mod_NewSelect>()({
     ...baseModSelectObject,
 });
 
@@ -162,19 +162,19 @@ export const getModById = async<
     else if (tableName === "Mod_Archive") {
         mod = await prisma.mod_Archive.findUnique({
             where: whereObject,
-            select: returnAll ? undefined : modArchiveSelect,
+            select: returnAll ? undefined : defaultModArchiveSelect,
         }) as ModUnion;
     }
     else if (tableName === "Mod_Edit") {
         mod = await prisma.mod_Edit.findUnique({
             where: whereObject,
-            select: returnAll ? undefined : modEditSelect,
+            select: returnAll ? undefined : defaultModEditSelect,
         }) as ModUnion;
     }
     else if (tableName === "Mod_New") {
         mod = await prisma.mod_New.findUnique({
             where: whereObject,
-            select: returnAll ? undefined : modNewSelect,
+            select: returnAll ? undefined : defaultModNewSelect,
         }) as ModUnion;
     }
     else {
@@ -461,7 +461,7 @@ export const modRouter = createTRPCRouter({
                         Map_New: { create: mapCreateDataArray_new },
                     },
                     select: {
-                        ...modNewSelect,
+                        ...defaultModNewSelect,
                         Map_New: { select: selectIdObject },
                     },
                 });
