@@ -18,12 +18,12 @@ import { IfElse } from "../../utils/typeHelpers";
 
 
 type TrimmedMod = Omit<Mod, "submittedBy" | "approvedBy"> & { Map: { id: number }[] };
-type TrimmedArchiveMod = Omit<Mod_Archive, "submittedBy" | "approvedBy"> & { Map_Archive: { id: number }[] };
+type TrimmedModArchive = Omit<Mod_Archive, "submittedBy" | "approvedBy"> & { Map_Archive: { id: number }[] };
 type TrimmedModEdit = Omit<Mod_Edit, "submittedBy"> & { Map_Edit: { id: number }[] };
 type TrimmedModNew = Omit<Mod_New, "submittedBy"> & { Map_New: { id: number }[] };
 
 type ExpandedMod = Mod & { Map: Map[] };
-type ExpandedArchiveMod = Mod_Archive & { Map_Archive: Map_Archive[] };
+type ExpandedModArchive = Mod_Archive & { Map_Archive: Map_Archive[] };
 type ExpandedModEdit = Mod_Edit & { Map_Edit: Map_Edit[] };
 type ExpandedModNew = Mod_New & { Map_New: Map_New[] };
 
@@ -125,14 +125,14 @@ const modOrderSchema = getCombinedSchema(
 
 
 export const getModById = async<
-    TableName extends "Mod" | "Mod_Archive" | "Mod_Edit" | "Mod_New",
+    TableName extends ("Mod" | "Mod_Archive" | "Mod_Edit" | "Mod_New" extends Prisma.ModelName ? Prisma.ModelName : never),
     IdType extends "mod" | "gamebanana",
     ReturnAll extends boolean,
     ThrowOnMatch extends boolean,
     ModUnion extends (
         TableName extends "Mod" ? IfElse<ReturnAll, ExpandedMod, TrimmedMod> :
         (
-            TableName extends "Mod_Archive" ? IfElse<ReturnAll, ExpandedArchiveMod, TrimmedArchiveMod> :
+            TableName extends "Mod_Archive" ? IfElse<ReturnAll, ExpandedModArchive, TrimmedModArchive> :
             (
                 TableName extends "Mod_Edit" ? IfElse<ReturnAll, ExpandedModEdit, TrimmedModEdit> :
                 (
