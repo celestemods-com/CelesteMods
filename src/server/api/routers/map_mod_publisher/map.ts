@@ -18,6 +18,8 @@ import { getCheckedTableNames } from "../../utils/getCheckedTableNames";
 import { checkSubarray, CheckSubarray } from "~/utils/checkSubarray";
 import { getPublisherById } from "./publisher";
 
+//TODO!: check all routers to make sure disconnect/connect or set are used in any many-to-many relationships
+
 
 
 
@@ -824,12 +826,11 @@ export const mapRouter = createTRPCRouter({
                 mapUpdateData = {
                     ...mapUpdateData_base,
                     User_MapperUser:
-                        nonNormalInput.mapperUserId === undefined ?
-                            undefined :
-                            {   //if mapperUserId is null, then we want to disconnect the mapper user
-                                disconnect: true,   //TODO!: check all other routers to make sure disconnect/connect or set are used
-                                connect: { id: mapperUserId ?? undefined } 
-                            },
+                        mapperUserId === undefined ?
+                            undefined :     //don't change
+                            mapperUserId === null ?
+                                { disconnect: true } :  //disconnect existing
+                                { connect: { id: mapperUserId } },  //connect new
                     mapperNameString: mapperNameString,
                     overallRank: nonNormalInput.overallRank,
                 }
