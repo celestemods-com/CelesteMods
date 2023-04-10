@@ -226,13 +226,13 @@ model Map_Archive {
 }
 
 model Map_ArchivesToTechs {
-  Map_Archive       Map_Archive @relation(fields: [map_archiveId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  map_archiveId     Int         @db.UnsignedMediumInt
+  Map_Archive       Map_Archive @relation(fields: [map_ArchiveId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  map_ArchiveId     Int         @db.UnsignedMediumInt
   Tech              Tech        @relation(fields: [techId], references: [id], onDelete: Cascade, onUpdate: Restrict)
   techId            Int         @db.UnsignedSmallInt
   fullClearOnlyBool Boolean     @default(false)
 
-  @@id([map_archiveId, techId])
+  @@id([map_ArchiveId, techId])
   @@index([techId])
 }
 
@@ -324,8 +324,8 @@ model Mod_New {
 
 model Map_NewWithMod_New {
   id                        Int                         @id @default(autoincrement()) @db.UnsignedMediumInt
-  Mod_New                   Mod_New                     @relation(fields: [mod_newId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  mod_newId                 Int                         @db.UnsignedSmallInt
+  Mod_New                   Mod_New                     @relation(fields: [mod_NewId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  mod_NewId                 Int                         @db.UnsignedSmallInt
   User_MapperUser           User?                       @relation("Map_NewWithMod_New_MapperUserIdToUser", fields: [mapperUserId], references: [id], onDelete: SetNull, onUpdate: Restrict)
   mapperUserId              Int?                        @db.UnsignedSmallInt
   mapperNameString          String                      @db.VarChar(50)
@@ -345,12 +345,12 @@ model Map_NewWithMod_New {
   submittedBy               Int?                        @db.UnsignedSmallInt
   Map_NewWithMod_NewToTechs Map_NewWithMod_NewToTechs[]
 
-  @@unique([mod_newId, chapter, side])
-  @@unique([mod_newId, name])
+  @@unique([mod_NewId, chapter, side])
+  @@unique([mod_NewId, name])
   @@index([canonicalDifficultyId])
   @@index([lengthId])
   @@index([mapperUserId])
-  @@index([mod_newId])
+  @@index([mod_NewId])
   @@index([submittedBy])
 }
 
@@ -398,13 +398,13 @@ model Map_NewSolo {
 }
 
 model Map_NewSoloToTechs {
-  Map_NewSolo       Map_NewSolo @relation(fields: [Map_NewSoloId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  Map_NewSoloId     Int         @db.UnsignedMediumInt
+  Map_NewSolo       Map_NewSolo @relation(fields: [map_NewSoloId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  map_NewSoloId     Int         @db.UnsignedMediumInt
   Tech              Tech        @relation(fields: [techId], references: [id], onDelete: Cascade, onUpdate: Restrict)
   techId            Int         @db.UnsignedSmallInt
   fullClearOnlyBool Boolean     @default(false)
 
-  @@id([Map_NewSoloId, techId])
+  @@id([map_NewSoloId, techId])
   @@index([techId])
 }
 
