@@ -27,6 +27,30 @@ type TrimmedMapEdit = Omit<Map_Edit, "submittedBy">;
 type TrimmedMapNewWithModNew = Omit<Map_NewWithMod_New, "submittedBy">;
 type TrimmedMapNewSolo = Omit<Map_NewSolo, "submittedBy">;
 
+type ExpandedMap = Map;
+type ExpandedMapArchive = Map_Archive;
+type ExpandedMapEdit = Map_Edit;
+type ExpandedMapNewWithModNew = Map_NewWithMod_New;
+type ExpandedMapNewSolo = Map_NewSolo;
+
+
+
+
+// type GetMapToTechSelectObject<
+//     PrismaMapToTechSelect extends Record<string, any>,
+// > = Record<
+//     "select",
+//     Pick<PrismaMapToTechSelect, "techId" | "fullClearOnlyBool">,
+// >;
+
+// type GetMapToTechObject<
+//     PrismaMapToTechSelect extends Record<string, any>,
+//     MapToTechPropertyName extends string,
+// > = Record<
+//     MapToTechPropertyName,
+//     GetMapToTechSelectObject<PrismaMapToTechSelect>,
+// >;
+
 
 
 
@@ -91,7 +115,7 @@ const defaultMapEditSelect = Prisma.validator<Prisma.Map_EditSelect>()({
 
 const defaultMapNewWithModNewSelect = Prisma.validator<Prisma.Map_NewWithMod_NewSelect>()({
     ...baseMapSelectObject,
-    mod_newId: true,
+    mod_NewId: true,
     Map_NewWithMod_NewToTechs: {
         select: {
             techId: true,
@@ -164,7 +188,7 @@ const mapSchema_Normal = mapSchema_base.extend({
 
 
 const mapSchema_Collab_Contest_Lobby = mapSchema_base.extend({
-    mapperUserId: userIdSchema_NonObject.optional(),
+    mapperUserId: userIdSchema_NonObject.nullish(),
     mapperNameString: displayNameSchema_NonObject.nullish(), /** Set to null to indicate the mod's publisher's name should be used */
     overallRank: z.number().int().min(1).max(intMaxSizes.tinyInt.unsigned),
 }).strict();
@@ -182,14 +206,23 @@ const modIdForMapSchema = z.object({
     modId: modIdSchema_NonObject,
 }).strict();
 
+export const mapPostWithModSchema = z.union([
+    mapSchema_Normal,
+    mapSchema_Collab_Contest_Lobby.refine(refineCollabContestLobby),
+]);
+
 const mapSoloPostSchema = z.union([
     mapSchema_Normal.merge(modIdForMapSchema),
     mapSchema_Collab_Contest_Lobby.merge(modIdForMapSchema).refine(refineCollabContestLobby),
 ]);
 
-export const mapPostWithModSchema = z.union([
-    mapSchema_Normal,
-    mapSchema_Collab_Contest_Lobby.refine(refineCollabContestLobby),
+
+const mapUpdateSchema_Normal = mapSchema_Normal.partial().merge(mapIdSchema);
+const mapUpdateSchema_Collab_Contest_Lobby = mapSchema_Collab_Contest_Lobby.partial().merge(mapIdSchema);
+
+const mapUpdateSchema = z.union([
+    mapUpdateSchema_Normal,
+    mapUpdateSchema_Collab_Contest_Lobby,
 ]);
 
 
@@ -215,15 +248,15 @@ type MapUnion<
     TableName extends MapTableName,
     ReturnAll extends boolean
 > = (
-    TableName extends "Map" ? IfElse<ReturnAll, Map, TrimmedMap> :
+    TableName extends "Map" ? IfElse<ReturnAll, ExpandedMap, TrimmedMap> :
     (
-        TableName extends "Map_Archive" ? IfElse<ReturnAll, Map, TrimmedMapArchive> :
+        TableName extends "Map_Archive" ? IfElse<ReturnAll, ExpandedMapArchive, TrimmedMapArchive> :
         (
-            TableName extends "Map_Edit" ? IfElse<ReturnAll, Map, TrimmedMapEdit> :
+            TableName extends "Map_Edit" ? IfElse<ReturnAll, ExpandedMapEdit, TrimmedMapEdit> :
             (
-                TableName extends "Map_NewWithMod_New" ? IfElse<ReturnAll, Map, TrimmedMapNewWithModNew> :
+                TableName extends "Map_NewWithMod_New" ? IfElse<ReturnAll, ExpandedMapNewWithModNew, TrimmedMapNewWithModNew> :
                 (
-                    TableName extends "Map_NewSolo" ? IfElse<ReturnAll, Map, TrimmedMapNewSolo> :
+                    TableName extends "Map_NewSolo" ? IfElse<ReturnAll, ExpandedMapNewSolo, TrimmedMapNewSolo> :
                     never
                 )
             )
@@ -441,6 +474,31 @@ const getMapByName = async<
 
 
 
+const getTechConnectObject = (input: z.infer<typeof mapSoloPostSchema> | z.infer<typeof mapUpdateSchema>): Prisma.MapsToTechsCreateWithoutMapInput[] => {
+    const techConnectObject: Prisma.MapsToTechsCreateWithoutMapInput[] = [];
+
+
+    input.techAnyIds?.forEach((techId) => {
+        techConnectObject.push({
+            fullClearOnlyBool: false,
+            Tech: { connect: { id: techId } },
+        });
+    });
+
+    input.techFullClearIds?.forEach((techId) => {
+        techConnectObject.push({
+            fullClearOnlyBool: true,
+            Tech: { connect: { id: techId } },
+        });
+    });
+
+
+    return techConnectObject;
+}
+
+
+
+
 export const mapRouter = createTRPCRouter({
     getAll: publicProcedure
         .input(mapOrderSchema)
@@ -491,7 +549,7 @@ export const mapRouter = createTRPCRouter({
             return await getMapByName(input.tableName ?? "Map", false, false, ctx.prisma, input.query);
         }),
 
-    add: loggedInProcedure
+    addSolo: loggedInProcedure
         .input(mapSoloPostSchema)
         .mutation(async ({ ctx, input }) => {
             await getMapByName("Map", false, true, ctx.prisma, input.name, true, input.modId);   //check that the map won't conflict with an existing one
@@ -502,22 +560,7 @@ export const mapRouter = createTRPCRouter({
             const currentTime = getCurrentTime();
 
 
-
-            const techConnectObject: Prisma.MapsToTechsCreateWithoutMapInput[] = [];
-
-            input.techAnyIds?.forEach((techId) => {
-                techConnectObject.push({
-                    fullClearOnlyBool: false,
-                    Tech: { connect: { id: techId } },
-                });
-            });
-
-            input.techFullClearIds?.forEach((techId) => {
-                techConnectObject.push({
-                    fullClearOnlyBool: true,
-                    Tech: { connect: { id: techId } },
-                });
-            });
+            const techConnectObject = getTechConnectObject(input);
 
 
             const mapCreateData_base = {
@@ -577,13 +620,13 @@ export const mapRouter = createTRPCRouter({
 
                     mapperNameString = userFromId.displayName;
                 }
+                else if (nonNormalInput.mapperNameString) {
+                    mapperNameString = nonNormalInput.mapperNameString;
+                }
                 else if (nonNormalInput.mapperNameString === null) {
                     const publisherFromId = await getPublisherById(ctx.prisma, modFromId.publisherId);
 
                     mapperNameString = publisherFromId.name;
-                }
-                else if (nonNormalInput.mapperNameString) {
-                    mapperNameString = nonNormalInput.mapperNameString;
                 }
                 else {
                     throw new TRPCError({
@@ -595,7 +638,7 @@ export const mapRouter = createTRPCRouter({
 
                 mapCreateData = {
                     ...mapCreateData_base,
-                    User_MapperUser: { connect: { id: nonNormalInput.mapperUserId } },
+                    User_MapperUser: { connect: { id: nonNormalInput.mapperUserId ?? undefined } },
                     mapperNameString: mapperNameString,
                     overallRank: nonNormalInput.overallRank,
                 };
@@ -640,91 +683,158 @@ export const mapRouter = createTRPCRouter({
             return map;
         }),
 
-    approveNew: modlistModeratorProcedure
-        .input(modIdSchema)
+    approveNewSolo: modlistModeratorProcedure
+        .input(mapIdSchema)
         .mutation(async ({ ctx, input }) => {
-            const newMod = await getModById("Mod_New", "mod", true, false, ctx.prisma, input.id);
+            const newMap = await getMapById("Map_NewSolo", true, false, ctx.prisma, input.id);
+            const linkedTechIds = await ctx.prisma.map_NewSoloToTechs.findMany({ where: { map_NewSoloId: newMap.id } });
 
             const currentTime = getCurrentTime();
 
 
-            const approvedMod = await ctx.prisma.mod.create({
+            const techConnectObject: Prisma.MapsToTechsCreateWithoutMapInput[] = linkedTechIds.map(
+                (techConnection) => ({
+                    Tech: { connect: { id: techConnection.techId } },
+                    fullClearOnlyBool: techConnection.fullClearOnlyBool,
+                }),
+            );
+
+
+            const approvedMap = await ctx.prisma.map.create({
                 data: {
-                    type: newMod.type,
-                    name: newMod.name,
-                    contentWarning: newMod.contentWarning,
-                    notes: newMod.notes,
-                    shortDescription: newMod.shortDescription,
-                    longDescription: newMod.longDescription,
-                    gamebananaModId: newMod.gamebananaModId,
-                    timeSubmitted: newMod.timeSubmitted,
-                    User_SubmittedBy: { connect: { id: newMod.submittedBy ?? undefined } },
+                    Mod: { connect: { id: newMap.modId } },
+                    User_MapperUser: { connect: { id: newMap.mapperUserId ?? undefined } },
+                    mapperNameString: newMap.mapperNameString,
+                    name: newMap.name,
+                    Difficulty: { connect: { id: newMap.canonicalDifficultyId } },
+                    Length: { connect: { id: newMap.lengthId } },
+                    description: newMap.description,
+                    notes: newMap.notes,
+                    chapter: newMap.chapter,
+                    side: newMap.side,
+                    overallRank: newMap.overallRank,
+                    mapRemovedFromModBool: newMap.mapRemovedFromModBool,
+                    timeSubmitted: newMap.timeSubmitted,
+                    User_SubmittedBy: { connect: { id: newMap.submittedBy ?? undefined } },
                     timeApproved: currentTime,
                     User_ApprovedBy: { connect: { id: ctx.user.id } },
-                    timeCreatedGamebanana: newMod.timeCreatedGamebanana,
-                    Publisher: { connect: { id: newMod.publisherId } },
-                    Map: {
-                        create: newMod.Map_New.map(
-                            (newMap) => {
-                                return {
-                                    mapperNameString: newMap.mapperNameString,
-                                    User_MapperUser: { connect: { id: newMap.mapperUserId ?? undefined } },
-                                    name: newMap.name,
-                                    description: newMap.description,
-                                    notes: newMap.notes,
-                                    chapter: newMap.chapter,
-                                    side: newMap.side,
-                                    overallRank: newMap.overallRank,
-                                    mapRemovedFromModBool: newMap.mapRemovedFromModBool,
-                                    timeSubmitted: newMap.timeSubmitted,
-                                    User_SubmittedBy: { connect: { id: newMap.submittedBy ?? undefined } },
-                                    timeApproved: currentTime,
-                                    User_ApprovedBy: { connect: { id: ctx.user.id } },
-                                    Difficulty: { connect: { id: newMap.canonicalDifficultyId } },
-                                    Length: { connect: { id: newMap.lengthId } },
-                                };
-                            },
-                        ),
-                    },
-                },
-                include: {  //use include instead of select so that all Mod properties are returned
-                    Map: { select: selectIdObject },
+                    MapsToTechs: { create: techConnectObject },
                 },
             });
 
 
-            await ctx.prisma.mod_New.delete({ where: { id: input.id } });    //the deletion should cascade to any NewMaps
+            await ctx.prisma.map_NewSolo.delete({ where: { id: input.id } });
 
 
-            return approvedMod;
+            return approvedMap;
         }),
 
-    rejectNew: modlistModeratorProcedure
-        .input(modIdSchema)
+    rejectNewSolo: modlistModeratorProcedure
+        .input(mapIdSchema)
         .mutation(async ({ ctx, input }) => {
-            await getModById("Mod_New", "mod", false, false, ctx.prisma, input.id);
+            await getMapById("Map_NewSolo", false, false, ctx.prisma, input.id);    //check that the map exists
 
-            await ctx.prisma.mod_New.delete({ where: { id: input.id } });    //the deletion should cascade to any NewMaps
+            await ctx.prisma.map_NewSolo.delete({ where: { id: input.id } });
 
             return true;
         }),
 
     update: loggedInProcedure
-        .input(modPostSchema.partial().merge(modIdSchema).merge(z.object({
-            longDescription: z.string().nullish(),  //null = set to null in db, undefined = don't change
-        })))
+        .input(mapUpdateSchema)
         .mutation(async ({ ctx, input }) => {
-            const existingMod = await getModById("Mod", "mod", true, false, ctx.prisma, input.id);  //check that the mod exists
+            const existingMap = await getMapById("Map", true, false, ctx.prisma, input.id);  //check that the map exists
 
-            if (input.gamebananaModId) {
-                await getModById(
-                    "Mod", "gamebanana", false, true, ctx.prisma, input.gamebananaModId, "A mod with this gamebanana id has already been submitted"
-                );     //check that the new mod doesn't already exist
-            }
+            const modFromId = await getModById("Mod", "mod", false, false, ctx.prisma, existingMap.modId);
 
 
             const currentTime = getCurrentTime();
 
+
+            const techConnectObject = getTechConnectObject(input);
+
+
+            const mapUpdateData_base = {
+                name: input.name,
+                Difficulty: { connect: { id: input.canonicalDifficultyId } },
+                Length: { connect: { id: input.lengthId } },
+                description: input.description,     //null = set to null in db, undefined = don't change
+                notes: input.notes,
+                timeSubmitted: currentTime,
+                User_SubmittedBy: { connect: { id: ctx.user.id } },
+            };
+
+
+            let mapUpdateData: Prisma.MapUpdateInput | Prisma.Map_EditCreateInput;
+
+            if (modFromId.type === "Normal") {
+                const normalInput = input as z.infer<typeof mapUpdateSchema_Normal>;
+
+
+                const publisherFromId = await getPublisherById(ctx.prisma, modFromId.publisherId);
+
+
+                mapUpdateData = {
+                    ...mapUpdateData_base,
+                    mapperNameString: publisherFromId.name,
+                    chapter: normalInput.chapter,
+                    side: normalInput.side,
+                };
+            }
+            else {
+                const nonNormalInput = input as z.infer<typeof mapUpdateSchema_Collab_Contest_Lobby>;
+
+
+                let mapperUserId: number | null | undefined;
+                let mapperNameString: string;
+
+                if (nonNormalInput.mapperUserId) {
+                    const userFromId = await getUserById(ctx.prisma, nonNormalInput.mapperUserId, undefined);
+
+                    mapperUserId = userFromId.id;
+                    mapperNameString = userFromId.displayName;
+                }
+                else if (nonNormalInput.mapperUserId !== null && existingMap.mapperUserId) {
+                    const userFromId = await getUserById(ctx.prisma, existingMap.mapperUserId, undefined);
+
+                    mapperUserId = undefined;
+                    mapperNameString = userFromId.displayName;
+                }
+                else {
+                    if (nonNormalInput.mapperUserId === null) mapperUserId = null;
+                    else mapperUserId = existingMap.mapperUserId;
+
+
+                    if (nonNormalInput.mapperNameString) {
+                        mapperNameString = nonNormalInput.mapperNameString;
+                    }
+                    else if (nonNormalInput.mapperNameString === null) {
+                        const publisherFromId = await getPublisherById(ctx.prisma, modFromId.publisherId);
+
+                        mapperNameString = publisherFromId.name;
+                    }
+                    else {
+                        throw new TRPCError({
+                            code: "INTERNAL_SERVER_ERROR",
+                            message: "Unable to determine mapper name. Please contact an admin.",
+                        });
+                    }
+                }
+
+
+                mapUpdateData = {
+                    ...mapUpdateData_base,
+                    User_MapperUser:
+                        nonNormalInput.mapperUserId === undefined ?
+                            undefined :
+                            {   //if mapperUserId is null, then we want to disconnect the mapper user
+                                disconnect: true,   //TODO!: check all other routers to make sure disconnect/connect or set are used
+                                connect: { id: mapperUserId ?? undefined } 
+                            },
+                    mapperNameString: mapperNameString,
+                    overallRank: nonNormalInput.overallRank,
+                }
+            }
+            //TODO: continue here
 
             let mod: TrimmedMod | TrimmedModEdit;
 

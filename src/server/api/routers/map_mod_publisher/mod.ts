@@ -479,7 +479,7 @@ export const modRouter = createTRPCRouter({
 
             const mapCreateDataArray_base: (Prisma.MapCreateWithoutModInput & MapperUserId)[] | (Prisma.Map_NewWithMod_NewCreateWithoutMod_NewInput & MapperUserId)[] = input.maps.map((map) => {
                 return {
-                    User_MapperUser: "mapperUserId" in map ? { connect: { id: map.mapperUserId } } : undefined,
+                    User_MapperUser: "mapperUserId" in map ? { connect: { id: map.mapperUserId ?? undefined } } : undefined,
                     mapperNameString: ("mapperNameString" in map ? map.mapperNameString : undefined) ?? gamebananaModInfo.publisherName,
                     name: map.name,
                     description: map.description,
@@ -513,7 +513,7 @@ export const modRouter = createTRPCRouter({
                         User_ApprovedBy: { connect: { id: ctx.user.id } },
                         Map: { create: mapCreateDataArray_approved },
                     },
-                    include: {  //use include instead of select so that all Map properties are returned
+                    include: {  //use include instead of select so that other Mod properties are still returned
                         Map: { select: selectIdObject },
                     },
                 });
@@ -590,7 +590,7 @@ export const modRouter = createTRPCRouter({
                         ),
                     },
                 },
-                include: {  //use include instead of select so that all Map properties are returned
+                include: {  //use include instead of select so that other Mod properties are still returned
                     Map: { select: selectIdObject },
                 },
             });
