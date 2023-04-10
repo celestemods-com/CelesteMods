@@ -83,7 +83,7 @@ const getPublisherByGamebananaId = async (prisma: MyPrismaClient, gamebananaId: 
 
 
 
-const getPublisherById = async (prisma: MyPrismaClient, id: number): Promise<Pick<Publisher, keyof typeof defaultPublisherSelect>> => {
+export const getPublisherById = async (prisma: MyPrismaClient, id: number): Promise<Pick<Publisher, keyof typeof defaultPublisherSelect>> => {
     const publisher: Publisher | null = await prisma.publisher.findUnique({  //having type declaration here AND in function signature is safer
         where: { id: id },
         select: defaultPublisherSelect,

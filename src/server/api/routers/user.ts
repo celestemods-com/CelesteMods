@@ -85,7 +85,7 @@ const userOrderSchema = getCombinedSchema(
  * @param permissions permission string array from sessionUser
  * @param overwrite set to true to force return of defaultFullUserSelect. set to false to force return of defaultPartialUserSelect. leave undefined to use fallback logic.
  */
-const getUserById = async (
+export const getUserById = async (
     prisma: MyPrismaClient,
     id: number,
     permissions: Permission[] | undefined,

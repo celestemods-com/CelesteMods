@@ -3,7 +3,7 @@ import axios from "axios";
 import { createTRPCRouter, publicProcedure, adminProcedure, loggedInProcedure, modlistModeratorProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
-import { Prisma, ModType, Mod, Map, Mod_Archive, Map_Archive, Mod_Edit, Map_Edit, Mod_New, Map_New } from "@prisma/client";
+import { Prisma, ModType, Mod, Map, Mod_Archive, Map_Archive, Mod_Edit, Map_Edit, Mod_New, Map_NewWithMod_New } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { intMaxSizes } from "~/consts/integerSizes";
@@ -12,7 +12,8 @@ import { mapPostWithModSchema, MapperUserId } from "./map";
 import { PUBLISHER_NAME_MAX_LENGTH } from "./publisher";
 import { getCurrentTime } from "../../utils/getCurrentTime";
 import { selectIdObject } from "../../utils/selectIdObject";
-import { IfElse } from "../../utils/typeHelpers";
+import { IfElse } from "../../../../utils/typeHelpers";
+import { getCheckedTableNames } from "../../utils/getCheckedTableNames";
 
 
 
@@ -20,12 +21,12 @@ import { IfElse } from "../../utils/typeHelpers";
 type TrimmedMod = Omit<Mod, "submittedBy" | "approvedBy"> & { Map: { id: number }[] };
 type TrimmedModArchive = Omit<Mod_Archive, "submittedBy" | "approvedBy"> & { Map_Archive: { id: number }[] };
 type TrimmedModEdit = Omit<Mod_Edit, "submittedBy"> & { Map_Edit: { id: number }[] };
-type TrimmedModNew = Omit<Mod_New, "submittedBy"> & { Map_New: { id: number }[] };
+type TrimmedModNew = Omit<Mod_New, "submittedBy"> & { Map_NewWithMod_New: { id: number }[] };
 
 type ExpandedMod = Mod & { Map: Map[] };
 type ExpandedModArchive = Mod_Archive & { Map_Archive: Map_Archive[] };
 type ExpandedModEdit = Mod_Edit & { Map_Edit: Map_Edit[] };
-type ExpandedModNew = Mod_New & { Map_New: Map_New[] };
+type ExpandedModNew = Mod_New & { Map_NewWithMod_New: Map_NewWithMod_New[] };
 
 
 
@@ -122,66 +123,93 @@ const modOrderSchema = getCombinedSchema(
 );
 
 
+const modTableNameArray = getCheckedTableNames(["Mod", "Mod_Archive", "Mod_Edit", "Mod_New"]);
+
+const modTableNameSchema = z.object({
+    tableName: z.enum(modTableNameArray)
+}).strict();
+
+type ModTableName = typeof modTableNameArray[number];
+
+
+
+
+type ModUnion<
+    TableName extends ModTableName,
+    ReturnAll extends boolean
+> = (
+    TableName extends "Mod" ? IfElse<ReturnAll, ExpandedMod, TrimmedMod> :
+    (
+        TableName extends "Mod_Archive" ? IfElse<ReturnAll, ExpandedModArchive, TrimmedModArchive> :
+        (
+            TableName extends "Mod_Edit" ? IfElse<ReturnAll, ExpandedModEdit, TrimmedModEdit> :
+            (
+                TableName extends "Mod_New" ? IfElse<ReturnAll, ExpandedModNew, TrimmedModNew> :
+                never
+            )
+        )
+    )
+) | null;
 
 
 export const getModById = async<
-    TableName extends ("Mod" | "Mod_Archive" | "Mod_Edit" | "Mod_New" extends Prisma.ModelName ? Prisma.ModelName : never),
+    TableName extends ModTableName,
     IdType extends "mod" | "gamebanana",
     ReturnAll extends boolean,
     ThrowOnMatch extends boolean,
-    ModUnion extends (
-        TableName extends "Mod" ? IfElse<ReturnAll, ExpandedMod, TrimmedMod> :
-        (
-            TableName extends "Mod_Archive" ? IfElse<ReturnAll, ExpandedModArchive, TrimmedModArchive> :
-            (
-                TableName extends "Mod_Edit" ? IfElse<ReturnAll, ExpandedModEdit, TrimmedModEdit> :
-                (
-                    TableName extends "Mod_New" ? IfElse<ReturnAll, ExpandedModNew, TrimmedModNew> :
-                    never
-                )
-            )
-        )
-    ) | null,
+    Union extends ModUnion<TableName, ReturnAll>,
     ReturnType extends (
-        ThrowOnMatch extends true ? void : NonNullable<ModUnion>
+        ThrowOnMatch extends true ? void : NonNullable<Union>
     ),
 >(
-    tableName: TableName, idType: IdType, returnAll: ReturnAll, throwOnMatch: ThrowOnMatch, prisma: MyPrismaClient, id: number, customErrorMessage?: string,
+    tableName: TableName,
+    idType: IdType,
+    returnAll: ReturnAll,
+    throwOnMatch: ThrowOnMatch,
+    prisma: MyPrismaClient,
+    id: number,
+    customErrorMessage?: string,
 ): Promise<ReturnType> => {
-    const whereObject = idType === "mod" ? { id: id } : { gamebananaModId: id };
+    const whereObject: Prisma.ModWhereUniqueInput = idType === "mod" ? { id: id } : { gamebananaModId: id };
 
 
-    let mod: ModUnion;
+    let mod: Union;
 
-    if (tableName === "Mod") {
-        mod = await prisma.mod.findUnique({
-            where: whereObject,
-            select: returnAll ? undefined : defaultModSelect,
-        }) as ModUnion;
-    }
-    else if (tableName === "Mod_Archive") {
-        mod = await prisma.mod_Archive.findUnique({
-            where: whereObject,
-            select: returnAll ? undefined : defaultModArchiveSelect,
-        }) as ModUnion;
-    }
-    else if (tableName === "Mod_Edit") {
-        mod = await prisma.mod_Edit.findUnique({
-            where: whereObject,
-            select: returnAll ? undefined : defaultModEditSelect,
-        }) as ModUnion;
-    }
-    else if (tableName === "Mod_New") {
-        mod = await prisma.mod_New.findUnique({
-            where: whereObject,
-            select: returnAll ? undefined : defaultModNewSelect,
-        }) as ModUnion;
-    }
-    else {
-        throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: customErrorMessage ?? `Invalid table name "${tableName}"`,
-        });
+    switch (tableName) {
+        case "Mod": {
+            mod = await prisma.mod.findUnique({
+                where: whereObject,
+                select: returnAll ? undefined : defaultModSelect,
+            }) as Union;
+            break;
+        }
+        case "Mod_Archive": {
+            mod = await prisma.mod_Archive.findUnique({
+                where: whereObject,
+                select: returnAll ? undefined : defaultModArchiveSelect,
+            }) as Union;
+            break;
+        }
+        case "Mod_Edit": {
+            mod = await prisma.mod_Edit.findUnique({
+                where: whereObject,
+                select: returnAll ? undefined : defaultModEditSelect,
+            }) as Union;
+            break;
+        }
+        case "Mod_New": {
+            mod = await prisma.mod_New.findUnique({
+                where: whereObject,
+                select: returnAll ? undefined : defaultModNewSelect,
+            }) as Union;
+            break;
+        }
+        default: {
+            throw new TRPCError({
+                code: "INTERNAL_SERVER_ERROR",
+                message: customErrorMessage ?? `Invalid table name "${tableName}"`,
+            });
+        }
     }
 
 
@@ -211,6 +239,67 @@ export const getModById = async<
 
 
 
+const getModByName = async<
+    TableName extends ModTableName,
+    ReturnAll extends boolean,
+    Union extends ModUnion<TableName, ReturnAll>,
+    ReturnType extends NonNullable<Union>[],
+>(
+    tableName: TableName,
+    returnAll: ReturnAll,
+    prisma: MyPrismaClient,
+    query: string,
+    customErrorMessage?: string,
+): Promise<ReturnType> => {
+    const whereObject: Prisma.ModWhereInput = { name: { contains: query } };
+
+
+    let mods: Union[];
+
+    switch (tableName) {
+        case "Mod": {
+            mods = await prisma.mod.findMany({
+                where: whereObject,
+                select: returnAll ? undefined : defaultModSelect,
+            }) as ReturnType;
+            break;
+        }
+        case "Mod_Archive": {
+            mods = await prisma.mod_Archive.findMany({
+                where: whereObject,
+                select: returnAll ? undefined : defaultModArchiveSelect,
+            }) as ReturnType;
+            break;
+        }
+        case "Mod_Edit": {
+            mods = await prisma.mod_Edit.findMany({
+                where: whereObject,
+                select: returnAll ? undefined : defaultModEditSelect,
+            }) as ReturnType;
+            break;
+        }
+        case "Mod_New": {
+            mods = await prisma.mod_New.findMany({
+                where: whereObject,
+                select: returnAll ? undefined : defaultModNewSelect,
+            }) as ReturnType;
+            break;
+        }
+        default: {
+            throw new TRPCError({
+                code: "INTERNAL_SERVER_ERROR",
+                message: customErrorMessage ?? `Invalid table name "${tableName}"`,
+            });
+        }
+    }
+
+
+    return mods as ReturnType;
+}
+
+
+
+
 type GamebananaModInfo = {
     publisherGamebananaId: number,
     publisherName: string,
@@ -219,7 +308,7 @@ type GamebananaModInfo = {
 }
 
 
-const getGamebananaModInfo = async function (gamebananaModID: number): Promise<GamebananaModInfo> {
+const getGamebananaModInfo = async (gamebananaModID: number): Promise<GamebananaModInfo> => {
     try {
         const options = {
             url: `https://api.gamebanana.com/Core/Item/Data?return_keys=true&itemtype=Mod&itemid=${gamebananaModID}&fields=userid,Owner().name,date,name`,
@@ -328,31 +417,27 @@ export const modRouter = createTRPCRouter({
         }),
 
     getById: publicProcedure
-        .input(modIdSchema)
+        .input(modIdSchema.merge(modTableNameSchema.partial()))
         .query(async ({ ctx, input }) => {
-            return await getModById("Mod", "mod", false, false, ctx.prisma, input.id);
+            return await getModById(input.tableName ?? "Mod", "mod", false, false, ctx.prisma, input.id);
         }),
 
     getByGamebananaModId: publicProcedure
-        .input(gamebananaModIdSchema)
+        .input(gamebananaModIdSchema.merge(modTableNameSchema.partial()))
         .query(async ({ ctx, input }) => {
-            return await getModById("Mod", "gamebanana", false, false, ctx.prisma, input.gamebananaModId);
+            return await getModById(input.tableName ?? "Mod", "gamebanana", false, false, ctx.prisma, input.gamebananaModId);
         }),
 
     getByName: publicProcedure
         .input(
             z.object({
                 query: modNameSchema_NonObject,
-            }).strict().merge(modOrderSchema),
+            }).strict()
+                .merge(modTableNameSchema.partial())
+                .merge(modOrderSchema),
         )
         .query(async ({ ctx, input }) => {
-            const mods = await ctx.prisma.mod.findMany({
-                where: { name: { contains: input.query } },
-                select: defaultModSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
-            });
-
-            return mods;
+            return await getModByName(input.tableName ?? "Mod", false, ctx.prisma, input.query, `No mod exists in table "${input.tableName}" with a name matching "${input.query}"`);
         }),
 
     add: loggedInProcedure
@@ -378,6 +463,7 @@ export const modRouter = createTRPCRouter({
                 longDescription: input.longDescription,
                 gamebananaModId: input.gamebananaModId,
                 timeSubmitted: currentTime,
+                User_SubmittedBy: { connect: { id: ctx.user.id } },
                 timeCreatedGamebanana: gamebananaModInfo.timeCreatedGamebanana,
                 Publisher: {
                     connectOrCreate: {
@@ -391,9 +477,9 @@ export const modRouter = createTRPCRouter({
             };
 
 
-            const mapCreateDataArray_base: (Prisma.MapCreateWithoutModInput & MapperUserId)[] | (Prisma.Map_NewCreateWithoutMod_NewInput & MapperUserId)[] = input.maps.map((map) => {
+            const mapCreateDataArray_base: (Prisma.MapCreateWithoutModInput & MapperUserId)[] | (Prisma.Map_NewWithMod_NewCreateWithoutMod_NewInput & MapperUserId)[] = input.maps.map((map) => {
                 return {
-                    mapperUserId: "mapperUserId" in map ? map.mapperUserId : undefined,
+                    User_MapperUser: "mapperUserId" in map ? { connect: { id: map.mapperUserId } } : undefined,
                     mapperNameString: ("mapperNameString" in map ? map.mapperNameString : undefined) ?? gamebananaModInfo.publisherName,
                     name: map.name,
                     description: map.description,
@@ -403,6 +489,7 @@ export const modRouter = createTRPCRouter({
                     overallRank: "overallRank" in map ? map.overallRank : undefined,
                     mapRemovedFromModBool: map.mapRemovedFromModBool,
                     timeSubmitted: currentTime,
+                    User_SubmittedBy: { connect: { id: ctx.user.id } },
                     Difficulty: { connect: { id: map.canonicalDifficultyId } },
                     Length: { connect: { id: map.lengthId } },
                 };
@@ -413,9 +500,6 @@ export const modRouter = createTRPCRouter({
                 const mapCreateDataArray_approved: Prisma.MapCreateWithoutModInput[] = mapCreateDataArray_base.map((map) => {
                     return {
                         ...map,
-                        mapperUserId: undefined,
-                        user_map_mapperUserIdTouser: { connect: { id: map.mapperUserId } },
-                        user_map_submittedByTouser: { connect: { id: ctx.user.id } },
                         timeApproved: currentTime,
                         user_map_approvedByTouser: { connect: { id: ctx.user.id } },
                     };
@@ -425,12 +509,11 @@ export const modRouter = createTRPCRouter({
                 mod = await ctx.prisma.mod.create({
                     data: {
                         ...modCreateData_base,
-                        User_SubmittedBy: { connect: { id: ctx.user.id } },
                         timeApproved: currentTime,
                         User_ApprovedBy: { connect: { id: ctx.user.id } },
                         Map: { create: mapCreateDataArray_approved },
                     },
-                    include: {  //use include instead of select so that all Mod properties are returned
+                    include: {  //use include instead of select so that all Map properties are returned
                         Map: { select: selectIdObject },
                     },
                 });
@@ -444,25 +527,14 @@ export const modRouter = createTRPCRouter({
                 );     //check that the new mod hasn't already been submitted
 
 
-                const mapCreateDataArray_new: Prisma.Map_NewCreateWithoutMod_NewInput[] = mapCreateDataArray_base.map((map) => {
-                    return {
-                        ...map,
-                        mapperUserId: undefined,
-                        user_unapproved_map_mapperUserIdTouser: { connect: { id: map.mapperUserId } },
-                        user_unapproved_map_submittedByTouser: { connect: { id: ctx.user.id } },
-                    };
-                });
-
-
                 mod = await ctx.prisma.mod_New.create({
                     data: {
                         ...modCreateData_base,
-                        User_SubmittedBy: { connect: { id: ctx.user.id } },
-                        Map_New: { create: mapCreateDataArray_new },
+                        Map_NewWithMod_New: { create: mapCreateDataArray_base },
                     },
                     select: {
                         ...defaultModNewSelect,
-                        Map_New: { select: selectIdObject },
+                        Map_NewWithMod_New: { select: selectIdObject },
                     },
                 });
             }
@@ -495,7 +567,7 @@ export const modRouter = createTRPCRouter({
                     timeCreatedGamebanana: newMod.timeCreatedGamebanana,
                     Publisher: { connect: { id: newMod.publisherId } },
                     Map: {
-                        create: newMod.Map_New.map(
+                        create: newMod.Map_NewWithMod_New.map(
                             (newMap) => {
                                 return {
                                     mapperNameString: newMap.mapperNameString,
@@ -518,7 +590,7 @@ export const modRouter = createTRPCRouter({
                         ),
                     },
                 },
-                include: {  //use include instead of select so that all Mod properties are returned
+                include: {  //use include instead of select so that all Map properties are returned
                     Map: { select: selectIdObject },
                 },
             });
