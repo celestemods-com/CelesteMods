@@ -12,8 +12,9 @@ import { mapPostWithModSchema, MapperUserId } from "./map";
 import { PUBLISHER_NAME_MAX_LENGTH } from "./publisher";
 import { getCurrentTime } from "../../utils/getCurrentTime";
 import { selectIdObject } from "../../utils/selectIdObject";
-import { IfElse } from "../../../../utils/typeHelpers";
+import { GetArrayElementFromMatchingArray, IfElse } from "../../../../utils/typeHelpers";
 import { getCheckedTableNames } from "../../utils/getCheckedTableNames";
+import { HandleTableNames, IncludeOrSelectObjects } from "../../utils/handleTableNames";
 
 
 
@@ -129,27 +130,54 @@ const modTableNameSchema = z.object({
     tableName: z.enum(modTableNameArray)
 }).strict();
 
-type ModTableName = typeof modTableNameArray[number];
+type ModTableNameArray = typeof modTableNameArray;
+type ModTableName = ModTableNameArray[number];
 
 
+
+
+const selectObject = { select: defaultModSelect };
+type SelectObject = typeof selectObject;
+
+const getSelectIncludeObject = <
+    TableName extends ModTableName,
+    ReturnAll extends boolean,
+    ReturnType extends (
+        HandleTableNames<
+            ModTableNameArray,
+            TableName,
+            [
+                ReturnAll,
+                IncludeOrSelectObjects<"include",
+                    ModTableNameArray,
+                    [ExpandedMod, ExpandedModArchive, ExpandedModEdit, ExpandedModNew]
+                >,
+                IncludeOrSelectObjects<"include",
+                    ModTableNameArray,
+                    [typeof defaultModSelect],
+                >,
+            ]
+    ),
+>(
+    tableName: TableName,
+    returnAll: ReturnAll,
+): ReturnType => {
+
+}
 
 
 type ModUnion<
     TableName extends ModTableName,
     ReturnAll extends boolean
-> = (
-    TableName extends "Mod" ? IfElse<ReturnAll, ExpandedMod, TrimmedMod> :
-    (
-        TableName extends "Mod_Archive" ? IfElse<ReturnAll, ExpandedModArchive, TrimmedModArchive> :
-        (
-            TableName extends "Mod_Edit" ? IfElse<ReturnAll, ExpandedModEdit, TrimmedModEdit> :
-            (
-                TableName extends "Mod_New" ? IfElse<ReturnAll, ExpandedModNew, TrimmedModNew> :
-                never
-            )
-        )
-    )
-) | null;
+> = HandleTableNames<
+    ModTableNameArray,
+    TableName,
+    [
+        ReturnAll,
+        [ExpandedMod, ExpandedModArchive, ExpandedModEdit, ExpandedModNew],
+        [TrimmedMod, TrimmedModArchive, TrimmedModEdit, TrimmedModNew],
+    ],
+> | null;
 
 
 export const getModById = async<
@@ -171,6 +199,7 @@ export const getModById = async<
     customErrorMessage?: string,
 ): Promise<ReturnType> => {
     const whereObject: Prisma.ModWhereUniqueInput = idType === "mod" ? { id: id } : { gamebananaModId: id };
+    const selectIncludeObject: Pick<Prisma.ModCreateArgs, "select" | "include"> = returnAll ? { include: { Map: true } } : { select: defaultModSelect };
 
 
     let mod: Union;
@@ -179,28 +208,28 @@ export const getModById = async<
         case "Mod": {
             mod = await prisma.mod.findUnique({
                 where: whereObject,
-                select: returnAll ? undefined : defaultModSelect,
+                ...selectIncludeObject,
             }) as Union;
             break;
         }
         case "Mod_Archive": {
             mod = await prisma.mod_Archive.findUnique({
                 where: whereObject,
-                select: returnAll ? undefined : defaultModArchiveSelect,
+                ...selectIncludeObject,
             }) as Union;
             break;
         }
         case "Mod_Edit": {
             mod = await prisma.mod_Edit.findUnique({
                 where: whereObject,
-                select: returnAll ? undefined : defaultModEditSelect,
+                ...selectIncludeObject,
             }) as Union;
             break;
         }
         case "Mod_New": {
             mod = await prisma.mod_New.findUnique({
                 where: whereObject,
-                select: returnAll ? undefined : defaultModNewSelect,
+                ...selectIncludeObject,
             }) as Union;
             break;
         }

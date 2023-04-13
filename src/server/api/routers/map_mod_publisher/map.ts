@@ -29,11 +29,14 @@ type TrimmedMapEdit = Omit<Map_Edit, "submittedBy">;
 type TrimmedMapNewWithModNew = Omit<Map_NewWithMod_New, "submittedBy">;
 type TrimmedMapNewSolo = Omit<Map_NewSolo, "submittedBy">;
 
-type ExpandedMap = Map;
-type ExpandedMapArchive = Map_Archive;
-type ExpandedMapEdit = Map_Edit;
-type ExpandedMapNewWithModNew = Map_NewWithMod_New;
-type ExpandedMapNewSolo = Map_NewSolo;
+
+type MapToTechRelation = { techId: number, fullClearOnlyBool: boolean }[];
+
+type ExpandedMap = Map & { MapsToTechs: MapToTechRelation };
+type ExpandedMapArchive = Map_Archive & { Map_ArchivesToTechs: MapToTechRelation };
+type ExpandedMapEdit = Map_Edit & { Map_EditsToTechs: MapToTechRelation };
+type ExpandedMapNewWithModNew = Map_NewWithMod_New & { Map_NewWithMod_NewToTechs: MapToTechRelation };
+type ExpandedMapNewSolo = Map_NewSolo & { Map_NewSoloToTechs: MapToTechRelation };
 
 
 
@@ -476,18 +479,18 @@ const getMapByName = async<
 
 
 
-const getTechConnectObject = (input: z.infer<typeof mapSoloPostSchema> | z.infer<typeof mapUpdateSchema>): Prisma.MapsToTechsCreateWithoutMapInput[] => {
+const getTechConnectObject = (techAnyIds?: number[], techFullClearIds?: number[]): Prisma.MapsToTechsCreateWithoutMapInput[] => {
     const techConnectObject: Prisma.MapsToTechsCreateWithoutMapInput[] = [];
 
 
-    input.techAnyIds?.forEach((techId) => {
+    techAnyIds?.forEach((techId) => {
         techConnectObject.push({
             fullClearOnlyBool: false,
             Tech: { connect: { id: techId } },
         });
     });
 
-    input.techFullClearIds?.forEach((techId) => {
+    techFullClearIds?.forEach((techId) => {
         techConnectObject.push({
             fullClearOnlyBool: true,
             Tech: { connect: { id: techId } },
@@ -562,7 +565,7 @@ export const mapRouter = createTRPCRouter({
             const currentTime = getCurrentTime();
 
 
-            const techConnectObject = getTechConnectObject(input);
+            const techConnectObject = getTechConnectObject(input.techAnyIds, input.techFullClearIds);
 
 
             const mapCreateData_base = {
@@ -752,7 +755,8 @@ export const mapRouter = createTRPCRouter({
             const currentTime = getCurrentTime();
 
 
-            const techConnectObject = getTechConnectObject(input);
+            const techUpdateConnectObject = getTechConnectObject(input.techAnyIds, input.techFullClearIds);
+            const techArchiveConnectObject = getTechConnectObject(existingMap.techAnyIds, existingMap.techFullClearIds);
 
 
             const mapUpdateData_base = {
@@ -830,67 +834,45 @@ export const mapRouter = createTRPCRouter({
                             undefined :     //don't change
                             mapperUserId === null ?
                                 { disconnect: true } :  //disconnect existing
-                                { connect: { id: mapperUserId } },  //connect new
+                                { connect: { id: mapperUserId } },  //connect new   //disconnect not needed because there can only be 1 connection
                     mapperNameString: mapperNameString,
                     overallRank: nonNormalInput.overallRank,
                 }
             }
-            //TODO: continue here
+            
 
-            let mod: TrimmedMod | TrimmedModEdit;
+            let map: Omit<ExpandedMap, "MapsToTechs"> | TrimmedMapEdit;
 
             if (checkPermissions(MODLIST_MODERATOR_PERMISSION_STRINGS, ctx.user.permissions)) {
-                await ctx.prisma.mod_Archive.create({
+                await ctx.prisma.map_Archive.create({
                     data: {
-                        Mod: { connect: { id: existingMod.id } },
-                        type: existingMod.type,
-                        name: existingMod.name,
-                        Publisher: { connect: { id: existingMod.publisherId } },
-                        contentWarning: existingMod.contentWarning,
-                        notes: existingMod.notes,
-                        shortDescription: existingMod.shortDescription,
-                        longDescription: existingMod.longDescription,
-                        gamebananaModId: existingMod.gamebananaModId,
-                        timeCreatedGamebanana: existingMod.timeCreatedGamebanana,
-                        timeSubmitted: existingMod.timeSubmitted,
-                        User_SubmittedBy: { connect: { id: existingMod.submittedBy ?? undefined } },
-                        timeApproved: existingMod.timeApproved,
-                        User_ApprovedBy: { connect: { id: existingMod.approvedBy ?? undefined } },
+                        Map: { connect: { id: existingMap.id } },
+                        User_MapperUser: { connect: { id: existingMap.mapperUserId ?? undefined } },
+                        mapperNameString: existingMap.mapperNameString,
+                        name: existingMap.name,
+                        Difficulty: { connect: { id: existingMap.canonicalDifficultyId } },
+                        Length: { connect: { id: existingMap.lengthId } },
+                        description: existingMap.description,
+                        notes: existingMap.notes,
+                        chapter: existingMap.chapter,
+                        side: existingMap.side,
+                        overallRank: existingMap.overallRank,
+                        mapRemovedFromModBool: existingMap.mapRemovedFromModBool,
+                        timeSubmitted: existingMap.timeSubmitted,
+                        User_SubmittedBy: { connect: { id: existingMap.submittedBy ?? undefined } },
+                        timeApproved: existingMap.timeApproved,
+                        User_ApprovedBy: { connect: { id: existingMap.approvedBy ?? undefined } },
                         timeArchived: currentTime,
+                        Map_ArchivesToTechs: { create:}
                     },
                 });
 
 
-                let modUpdateData: Prisma.ModUpdateInput = {
-                    type: input.type,
-                    name: existingMod.name,
-                    Publisher: { connect: { id: existingMod.publisherId } },
-                    contentWarning: input.contentWarning,
-                    notes: input.notes,
-                    shortDescription: input.shortDescription,
-                    longDescription: input.longDescription,
-                    gamebananaModId: input.gamebananaModId,
-                    timeSubmitted: currentTime,
-                    User_SubmittedBy: { connect: { id: ctx.user.id } },
-                    timeApproved: currentTime,
-                    User_ApprovedBy: { connect: { id: ctx.user.id } },
-                    timeCreatedGamebanana: existingMod.timeCreatedGamebanana,
-                };
-
-
-                if (input.gamebananaModId && input.gamebananaModId !== existingMod.gamebananaModId) {
-                    const updateGamebananaModIdObject = await getUpdateGamebananaModIdObject(input.gamebananaModId);
-
-                    modUpdateData = {
-                        ...modUpdateData,
-                        ...updateGamebananaModIdObject,
-                    };
-                }
-
-
-                mod = await ctx.prisma.mod.update({
+                map = await ctx.prisma.map.update({
                     where: { id: input.id },
-                    data: modUpdateData,
+                    data: {
+
+                    },
                     select: defaultModSelect,
                 });
             }
