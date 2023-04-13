@@ -87,17 +87,3 @@ export type IsNonEmptyArray<T> = T extends any[] ? (
 ) : false;
 
 export type NonEmptyArray<T> = IsNonEmptyArray<T> extends true ? T : never;
-
-
-/** Doesn't work if MainArray holds duplicate elements */
-export type GetArrayElementFromMatchingArray<
-    MainArray extends any[] | readonly any[],
-    MainArrayElement extends MainArray[number],
-    MatchingArray extends any[] | readonly any[],
-> = {
-        [Index in keyof MainArray]: Index extends number ? (
-            MainArray[Index] extends MainArrayElement ?
-            MatchingArray[Index] :
-            never
-        ) : never
-    }

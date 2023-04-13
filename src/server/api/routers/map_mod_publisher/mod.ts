@@ -12,9 +12,8 @@ import { mapPostWithModSchema, MapperUserId } from "./map";
 import { PUBLISHER_NAME_MAX_LENGTH } from "./publisher";
 import { getCurrentTime } from "../../utils/getCurrentTime";
 import { selectIdObject } from "../../utils/selectIdObject";
-import { GetArrayElementFromMatchingArray, IfElse } from "../../../../utils/typeHelpers";
 import { getCheckedTableNames } from "../../utils/getCheckedTableNames";
-import { HandleTableNames, IncludeOrSelectObjects } from "../../utils/handleTableNames";
+import { HandleTableNames, getIncludeOrSelectObject } from "../../utils/handleTableNames";
 
 
 
@@ -136,36 +135,6 @@ type ModTableName = ModTableNameArray[number];
 
 
 
-const selectObject = { select: defaultModSelect };
-type SelectObject = typeof selectObject;
-
-const getSelectIncludeObject = <
-    TableName extends ModTableName,
-    ReturnAll extends boolean,
-    ReturnType extends (
-        HandleTableNames<
-            ModTableNameArray,
-            TableName,
-            [
-                ReturnAll,
-                IncludeOrSelectObjects<"include",
-                    ModTableNameArray,
-                    [ExpandedMod, ExpandedModArchive, ExpandedModEdit, ExpandedModNew]
-                >,
-                IncludeOrSelectObjects<"include",
-                    ModTableNameArray,
-                    [typeof defaultModSelect],
-                >,
-            ]
-    ),
->(
-    tableName: TableName,
-    returnAll: ReturnAll,
-): ReturnType => {
-
-}
-
-
 type ModUnion<
     TableName extends ModTableName,
     ReturnAll extends boolean
@@ -176,7 +145,7 @@ type ModUnion<
         ReturnAll,
         [ExpandedMod, ExpandedModArchive, ExpandedModEdit, ExpandedModNew],
         [TrimmedMod, TrimmedModArchive, TrimmedModEdit, TrimmedModNew],
-    ],
+    ]
 > | null;
 
 
@@ -199,7 +168,8 @@ export const getModById = async<
     customErrorMessage?: string,
 ): Promise<ReturnType> => {
     const whereObject: Prisma.ModWhereUniqueInput = idType === "mod" ? { id: id } : { gamebananaModId: id };
-    const selectIncludeObject: Pick<Prisma.ModCreateArgs, "select" | "include"> = returnAll ? { include: { Map: true } } : { select: defaultModSelect };
+    const selectIncludeObject: Pick<Prisma.ModCreateArgs, "select" | "include"> = returnAll ? { include: { Map: { select: { id: true } } } } : { select: defaultModSelect };
+    // const selectIncludeObject: Pick<Prisma.ModCreateArgs, "select" | "include"> = getIncludeSelectObject(returnAll ? "include" : "select", modTableNameArray, tableName, [{ Map: true}])
 
 
     let mod: Union;
