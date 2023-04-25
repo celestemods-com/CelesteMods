@@ -41,7 +41,7 @@ type ExpandedMapNewSolo = Map_NewSolo & { Map_NewSoloToTechs: MapToTechRelation;
 
 
 
-const includeObject = {
+const includeTechObject = {
     select: {
         techId: true,
         fullClearOnlyBool: true,
@@ -294,35 +294,35 @@ export const getMapById = async<
             case "Map": {
                 map = await prisma.map.findUnique({
                     where: whereObject,
-                    include: { MapsToTechs: includeObject },
+                    include: { MapsToTechs: includeTechObject },
                 }) as Union;
                 break;
             }
             case "Map_Archive": {
                 map = await prisma.map_Archive.findUnique({
                     where: whereObject,
-                    include: { Map_ArchivesToTechs: includeObject },
+                    include: { Map_ArchivesToTechs: includeTechObject },
                 }) as Union;
                 break;
             }
             case "Map_Edit": {
                 map = await prisma.map_Edit.findUnique({
                     where: whereObject,
-                    include: { Map_EditsToTechs: includeObject },
+                    include: { Map_EditsToTechs: includeTechObject },
                 }) as Union;
                 break;
             }
             case "Map_NewWithMod_New": {
                 map = await prisma.map_NewWithMod_New.findUnique({
                     where: whereObject,
-                    include: { Map_NewWithMod_NewToTechs: includeObject },
+                    include: { Map_NewWithMod_NewToTechs: includeTechObject },
                 }) as Union;
                 break;
             }
             case "Map_NewSolo": {
                 map = await prisma.map_NewSolo.findUnique({
                     where: whereObject,
-                    include: { Map_NewSoloToTechs: includeObject },
+                    include: { Map_NewSoloToTechs: includeTechObject },
                 }) as Union;
                 break;
             }
@@ -450,35 +450,35 @@ const getMapByName = async<
             case "Map": {
                 maps = await prisma.map.findMany({
                     where: whereObject,
-                    include: { MapsToTechs: includeObject },
+                    include: { MapsToTechs: includeTechObject },
                 }) as Union[];
                 break;
             }
             case "Map_Archive": {
                 maps = await prisma.map_Archive.findMany({
                     where: whereObject,
-                    include: { Map_ArchivesToTechs: includeObject },
+                    include: { Map_ArchivesToTechs: includeTechObject },
                 }) as Union[];
                 break;
             }
             case "Map_Edit": {
                 maps = await prisma.map_Edit.findMany({
                     where: whereObject,
-                    include: { Map_EditsToTechs: includeObject },
+                    include: { Map_EditsToTechs: includeTechObject },
                 }) as Union[];
                 break;
             }
             case "Map_NewWithMod_New": {
                 maps = await prisma.map_NewWithMod_New.findMany({
                     where: whereObject,
-                    include: { Map_NewWithMod_NewToTechs: includeObject },
+                    include: { Map_NewWithMod_NewToTechs: includeTechObject },
                 }) as Union[];
                 break;
             }
             case "Map_NewSolo": {
                 maps = await prisma.map_NewSolo.findMany({
                     where: whereObject,
-                    include: { Map_NewSoloToTechs: includeObject },
+                    include: { Map_NewSoloToTechs: includeTechObject },
                 }) as Union[];
                 break;
             }
@@ -845,11 +845,12 @@ export const mapRouter = createTRPCRouter({
 
 
             const mapUpdateData_base = {
-                name: input.name,
+                name: input.name ?? existingMap.name,
                 Difficulty: { connect: { id: input.canonicalDifficultyId } },
                 Length: { connect: { id: input.lengthId } },
                 description: input.description,     //null = set to null in db, undefined = don't change
                 notes: input.notes,
+                mapRemovedFromModBool: input.mapRemovedFromModBool ?? existingMap.mapRemovedFromModBool,
                 timeSubmitted: currentTime,
                 User_SubmittedBy: { connect: { id: ctx.user.id } },
             };
@@ -924,103 +925,60 @@ export const mapRouter = createTRPCRouter({
                     overallRank: nonNormalInput.overallRank,
                 };
             }
-            //TODO: continue here
 
-            let mod: TrimmedMod | TrimmedModEdit;
+
+            let map: ExpandedMap | TrimmedMapEdit;
 
             if (checkPermissions(MODLIST_MODERATOR_PERMISSION_STRINGS, ctx.user.permissions)) {
-                await ctx.prisma.mod_Archive.create({
+                await ctx.prisma.map_Archive.create({
                     data: {
-                        Mod: { connect: { id: existingMod.id } },
-                        type: existingMod.type,
-                        name: existingMod.name,
-                        Publisher: { connect: { id: existingMod.publisherId } },
-                        contentWarning: existingMod.contentWarning,
-                        notes: existingMod.notes,
-                        shortDescription: existingMod.shortDescription,
-                        longDescription: existingMod.longDescription,
-                        gamebananaModId: existingMod.gamebananaModId,
-                        timeCreatedGamebanana: existingMod.timeCreatedGamebanana,
-                        timeSubmitted: existingMod.timeSubmitted,
-                        User_SubmittedBy: { connect: { id: existingMod.submittedBy ?? undefined } },
-                        timeApproved: existingMod.timeApproved,
-                        User_ApprovedBy: { connect: { id: existingMod.approvedBy ?? undefined } },
+                        Map: { connect: { id: existingMap.id } },
+                        User_MapperUser: { connect: { id: existingMap.mapperUserId ?? undefined } },
+                        mapperNameString: existingMap.mapperNameString,
+                        name: existingMap.name,
+                        Difficulty: { connect: { id: existingMap.canonicalDifficultyId } },
+                        Length: { connect: { id: existingMap.lengthId } },
+                        description: existingMap.description,
+                        notes: existingMap.notes,
+                        chapter: existingMap.chapter,
+                        side: existingMap.side,
+                        overallRank: existingMap.overallRank,
+                        mapRemovedFromModBool: existingMap.mapRemovedFromModBool,
+                        timeSubmitted: existingMap.timeSubmitted,
+                        User_SubmittedBy: { connect: { id: existingMap.submittedBy ?? undefined } },
+                        timeApproved: existingMap.timeApproved,
+                        User_ApprovedBy: { connect: { id: existingMap.approvedBy ?? undefined } },
                         timeArchived: currentTime,
+                        Map_ArchivesToTechs: { create: techConnectObject },
                     },
                 });
 
 
-                let modUpdateData: Prisma.ModUpdateInput = {
-                    type: input.type,
-                    name: existingMod.name,
-                    Publisher: { connect: { id: existingMod.publisherId } },
-                    contentWarning: input.contentWarning,
-                    notes: input.notes,
-                    shortDescription: input.shortDescription,
-                    longDescription: input.longDescription,
-                    gamebananaModId: input.gamebananaModId,
-                    timeSubmitted: currentTime,
-                    User_SubmittedBy: { connect: { id: ctx.user.id } },
-                    timeApproved: currentTime,
-                    User_ApprovedBy: { connect: { id: ctx.user.id } },
-                    timeCreatedGamebanana: existingMod.timeCreatedGamebanana,
-                };
-
-
-                if (input.gamebananaModId && input.gamebananaModId !== existingMod.gamebananaModId) {
-                    const updateGamebananaModIdObject = await getUpdateGamebananaModIdObject(input.gamebananaModId);
-
-                    modUpdateData = {
-                        ...modUpdateData,
-                        ...updateGamebananaModIdObject,
-                    };
-                }
-
-
-                mod = await ctx.prisma.mod.update({
+                map = await ctx.prisma.map.update({
                     where: { id: input.id },
-                    data: modUpdateData,
-                    select: defaultModSelect,
+                    data: mapUpdateData,
+                    include: { MapsToTechs: includeTechObject },
                 });
             }
             else {
-                let modEditCreateData: Prisma.Mod_EditCreateInput = {
-                    Mod: { connect: { id: existingMod.id } },
-                    type: input.type,
-                    name: existingMod.name,
-                    Publisher: { connect: { id: existingMod.publisherId } },
-                    contentWarning: input.contentWarning,
-                    notes: input.notes,
-                    shortDescription: input.shortDescription ?? existingMod.shortDescription,
-                    longDescription: input.longDescription === undefined ? existingMod.longDescription : input.longDescription, //null = set to null in db, undefined = don't change
-                    gamebananaModId: existingMod.gamebananaModId,
-                    timeCreatedGamebanana: existingMod.timeCreatedGamebanana,
-                    timeSubmitted: currentTime,
-                    User_SubmittedBy: { connect: { id: ctx.user.id } },
+                const mapEditCreateData: Prisma.Map_EditCreateInput = {
+                    ...mapUpdateData as Omit<Prisma.Map_EditCreateInput, "Map" | "Map_EditsToTechs">,
+                    Map: { connect: { id: existingMap.id } },
+                    Map_EditsToTechs: { create: techConnectObject },
                 };
 
 
-                if (input.gamebananaModId && input.gamebananaModId !== existingMod.gamebananaModId) {
-                    const updateGamebananaModIdObject = await getUpdateGamebananaModIdObject(input.gamebananaModId);
-
-                    modEditCreateData = {
-                        ...modEditCreateData,
-                        ...updateGamebananaModIdObject,
-                    };
-                }
-
-
-                mod = await ctx.prisma.mod_Edit.create({
-                    data: modEditCreateData,
-                    select: defaultModSelect,
+                map = await ctx.prisma.map_Edit.create({
+                    data: mapEditCreateData,
+                    select: defaultMapEditSelect,
                 });
             }
 
 
-            return mod;
+            return map;
         }),
 
-    approveEdit: modlistModeratorProcedure
+    approveEdit: modlistModeratorProcedure  //TODO: continue here
         .input(modIdSchema)
         .mutation(async ({ ctx, input }) => {
             const modEdit = await getModById("Mod_Edit", "mod", true, false, ctx.prisma, input.id);  //check that the ModEdit exists
