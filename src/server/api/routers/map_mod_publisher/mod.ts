@@ -12,21 +12,21 @@ import { mapPostWithModSchema, MapperUserId } from "./map";
 import { PUBLISHER_NAME_MAX_LENGTH } from "./publisher";
 import { getCurrentTime } from "../../utils/getCurrentTime";
 import { selectIdObject } from "../../utils/selectIdObject";
+import { IfElse } from "../../../../utils/typeHelpers";
 import { getCheckedTableNames } from "../../utils/getCheckedTableNames";
-import { HandleTableNames } from "../../utils/handleTableNames";
 
 
 
 
-export type TrimmedMod = Omit<Mod, "submittedBy" | "approvedBy"> & { Map: { id: number; }[]; };
-export type TrimmedModArchive = Omit<Mod_Archive, "submittedBy" | "approvedBy"> & { Map_Archive: { id: number; }[]; };
-export type TrimmedModEdit = Omit<Mod_Edit, "submittedBy"> & { Map_Edit: { id: number; }[]; };
-export type TrimmedModNew = Omit<Mod_New, "submittedBy"> & { Map_NewWithMod_New: { id: number; }[]; };
+type TrimmedMod = Omit<Mod, "submittedBy" | "approvedBy"> & { Map: { id: number }[] };
+type TrimmedModArchive = Omit<Mod_Archive, "submittedBy" | "approvedBy"> & { Map_Archive: { id: number }[] };
+type TrimmedModEdit = Omit<Mod_Edit, "submittedBy"> & { Map_Edit: { id: number }[] };
+type TrimmedModNew = Omit<Mod_New, "submittedBy"> & { Map_NewWithMod_New: { id: number }[] };
 
-export type ExpandedMod = Mod & { Map: { id: number; }[]; };
-export type ExpandedModArchive = Mod_Archive & { Map_Archive: { id: number; }[]; };
-export type ExpandedModEdit = Mod_Edit & { Map_Edit: { id: number; }[]; };
-export type ExpandedModNew = Mod_New & { Map_NewWithMod_New: { id: number; }[]; };
+type ExpandedMod = Mod & { Map: Map[] };
+type ExpandedModArchive = Mod_Archive & { Map_Archive: Map_Archive[] };
+type ExpandedModEdit = Mod_Edit & { Map_Edit: Map_Edit[] };
+type ExpandedModNew = Mod_New & { Map_NewWithMod_New: Map_NewWithMod_New[] };
 
 
 
@@ -126,11 +126,10 @@ const modOrderSchema = getCombinedSchema(
 const modTableNameArray = getCheckedTableNames(["Mod", "Mod_Archive", "Mod_Edit", "Mod_New"]);
 
 const modTableNameSchema = z.object({
-    tableName: z.enum(modTableNameArray),
+    tableName: z.enum(modTableNameArray)
 }).strict();
 
-type ModTableNameArray = typeof modTableNameArray;
-type ModTableName = ModTableNameArray[number];
+type ModTableName = typeof modTableNameArray[number];
 
 
 
@@ -138,107 +137,19 @@ type ModTableName = ModTableNameArray[number];
 type ModUnion<
     TableName extends ModTableName,
     ReturnAll extends boolean
-> = HandleTableNames<
-    ModTableNameArray,
-    TableName,
-    [
-        ReturnAll,
-        [ExpandedMod, ExpandedModArchive, ExpandedModEdit, ExpandedModNew],
-        [TrimmedMod, TrimmedModArchive, TrimmedModEdit, TrimmedModNew],
-    ]
-> | null;
-
-
-
-
-type ModCreateArgsForTable<
-    TableName extends ModTableName,
-> = HandleTableNames<
-    ModTableNameArray,
-    TableName,
-    [
-        Prisma.ModCreateArgs,
-        Prisma.Mod_ArchiveCreateArgs,
-        Prisma.Mod_EditCreateArgs,
-        Prisma.Mod_NewCreateArgs,
-    ]
->;
-
-type t = ModCreateArgsForTable<"Mod">;
-//   ^?
-
-
-type IncludeSelectObject<
-    TableName extends ModTableName,
-    ReturnAll extends boolean,
-    ObjectType extends string = ReturnAll extends true ? "include" : "select",
-> = Pick<
-    ModCreateArgsForTable<TableName>,
-    ObjectType
->;
-
-const getIncludeSelectObject = <
-    TableName extends ModTableName,
-    ReturnAll extends boolean,
-    ReturnType extends IncludeSelectObject<TableName, ReturnAll>,
->(
-    tableName: TableName,
-    returnAll: ReturnAll,
-): ReturnType => {
-    let includeSelectObject: ReturnType;
-
-
-    switch (tableName) {
-        case "Mod": {
-            includeSelectObject = (
-                returnAll ? {
-                    include: { Map: { select: { id: true } } },
-                } : {
-                    select: defaultModSelect,
-                }
-            ) as unknown as ReturnType;
-            break;
-        }
-        case "Mod_Archive": {
-            includeSelectObject = (
-                returnAll ? {
-                    include: { Map_Archive: { select: { id: true } } },
-                } : {
-                    select: defaultModArchiveSelect,
-                }
-            ) as unknown as ReturnType;
-            break;
-        }
-        case "Mod_Edit": {
-            includeSelectObject = (
-                returnAll ? {
-                    include: { Map_Edit: { select: { id: true } } },
-                } : {
-                    select: defaultModEditSelect,
-                }
-            ) as unknown as ReturnType;
-            break;
-        }
-        case "Mod_New": {
-            includeSelectObject = (
-                returnAll ? {
-                    include: { Map_NewWithMod_New: { select: { id: true } } },
-                } : {
-                    select: defaultModNewSelect,
-                }
-            ) as unknown as ReturnType;
-            break;
-        }
-        default: {
-            throw new Error(`Invalid table name: ${tableName}`);
-        }
-    }
-
-
-    return includeSelectObject;
-};
-
-
+> = (
+    TableName extends "Mod" ? IfElse<ReturnAll, ExpandedMod, TrimmedMod> :
+    (
+        TableName extends "Mod_Archive" ? IfElse<ReturnAll, ExpandedModArchive, TrimmedModArchive> :
+        (
+            TableName extends "Mod_Edit" ? IfElse<ReturnAll, ExpandedModEdit, TrimmedModEdit> :
+            (
+                TableName extends "Mod_New" ? IfElse<ReturnAll, ExpandedModNew, TrimmedModNew> :
+                never
+            )
+        )
+    )
+) | null;
 
 
 export const getModById = async<
@@ -260,7 +171,6 @@ export const getModById = async<
     customErrorMessage?: string,
 ): Promise<ReturnType> => {
     const whereObject: Prisma.ModWhereUniqueInput = idType === "mod" ? { id: id } : { gamebananaModId: id };
-    //const selectIncludeObject = getIncludeSelectObject(tableName, returnAll);
 
 
     let mod: Union;
@@ -270,7 +180,6 @@ export const getModById = async<
             mod = await prisma.mod.findUnique({
                 where: whereObject,
                 select: returnAll ? undefined : defaultModSelect,
-                // ...selectIncludeObject,
             }) as Union;
             break;
         }
@@ -278,7 +187,6 @@ export const getModById = async<
             mod = await prisma.mod_Archive.findUnique({
                 where: whereObject,
                 select: returnAll ? undefined : defaultModArchiveSelect,
-                // ...selectIncludeObject,
             }) as Union;
             break;
         }
@@ -286,7 +194,6 @@ export const getModById = async<
             mod = await prisma.mod_Edit.findUnique({
                 where: whereObject,
                 select: returnAll ? undefined : defaultModEditSelect,
-                // ...selectIncludeObject,
             }) as Union;
             break;
         }
@@ -294,7 +201,6 @@ export const getModById = async<
             mod = await prisma.mod_New.findUnique({
                 where: whereObject,
                 select: returnAll ? undefined : defaultModNewSelect,
-                // ...selectIncludeObject,
             }) as Union;
             break;
         }
@@ -328,7 +234,7 @@ export const getModById = async<
 
         return mod as ReturnType;
     }
-};
+}
 
 
 
@@ -346,7 +252,6 @@ const getModByName = async<
     customErrorMessage?: string,
 ): Promise<ReturnType> => {
     const whereObject: Prisma.ModWhereInput = { name: { contains: query } };
-    const selectIncludeObject = getIncludeSelectObject(tableName, returnAll);
 
 
     let mods: Union[];
@@ -355,29 +260,29 @@ const getModByName = async<
         case "Mod": {
             mods = await prisma.mod.findMany({
                 where: whereObject,
-                ...selectIncludeObject,
-            }) as unknown as ReturnType;
+                select: returnAll ? undefined : defaultModSelect,
+            }) as ReturnType;
             break;
         }
         case "Mod_Archive": {
             mods = await prisma.mod_Archive.findMany({
                 where: whereObject,
-                ...selectIncludeObject,
-            }) as unknown as ReturnType;
+                select: returnAll ? undefined : defaultModArchiveSelect,
+            }) as ReturnType;
             break;
         }
         case "Mod_Edit": {
             mods = await prisma.mod_Edit.findMany({
                 where: whereObject,
-                ...selectIncludeObject,
-            }) as unknown as ReturnType;
+                select: returnAll ? undefined : defaultModEditSelect,
+            }) as ReturnType;
             break;
         }
         case "Mod_New": {
             mods = await prisma.mod_New.findMany({
                 where: whereObject,
-                ...selectIncludeObject,
-            }) as unknown as ReturnType;
+                select: returnAll ? undefined : defaultModNewSelect,
+            }) as ReturnType;
             break;
         }
         default: {
@@ -390,7 +295,7 @@ const getModByName = async<
 
 
     return mods as ReturnType;
-};
+}
 
 
 
@@ -400,7 +305,7 @@ type GamebananaModInfo = {
     publisherName: string,
     timeCreatedGamebanana: number,
     gamebananaModName: string,
-};
+}
 
 
 const getGamebananaModInfo = async (gamebananaModID: number): Promise<GamebananaModInfo> => {
@@ -443,7 +348,7 @@ const getGamebananaModInfo = async (gamebananaModID: number): Promise<Gamebanana
             message: "Error getting gamebanana mod info.",
         });
     }
-};
+}
 
 
 
@@ -453,7 +358,7 @@ type UpdateGamebananaModIdObject = {
     gamebananaModId: number,
     timeCreatedGamebanana: number,
     Publisher: Prisma.PublisherCreateNestedOneWithoutModInput,
-};
+}
 
 
 const getUpdateGamebananaModIdObject = async (newGamebananaModId: number): Promise<UpdateGamebananaModIdObject> => {
@@ -474,7 +379,7 @@ const getUpdateGamebananaModIdObject = async (newGamebananaModId: number): Promi
             },
         },
     };
-};
+}
 
 
 
@@ -547,7 +452,7 @@ export const modRouter = createTRPCRouter({
             const currentTime = getCurrentTime();
 
 
-            let mod: (Omit<ExpandedMod, "Map"> & { Map: { id: number; }[]; }) | TrimmedModNew;
+            let mod: (Omit<ExpandedMod, "Map"> & { Map: { id: number }[] }) | TrimmedModNew;
 
             const modCreateData_base: Prisma.ModCreateInput | Prisma.Mod_NewCreateInput = {
                 type: input.type,

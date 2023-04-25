@@ -59,7 +59,7 @@ export type ArrayIncludes<
 ) : never;
 
 
-export type ReturnTypeOfKnownArray<
+type ReturnTypeOfKnownArray<
     T extends (
         U extends undefined ? any[] : U
     ),
@@ -80,10 +80,10 @@ type PossibleArrayLength<
     );
 
 
-export type IsNonEmptyArray<T> = T extends any[] ? (
+type IsNonEmptyArray<T> = T extends any[] ? (
     T["length"] extends 0 ?
     false :
     true
 ) : false;
 
-export type NonEmptyArray<T> = IsNonEmptyArray<T> extends true ? T : never;
+type NonEmptyArray<T> = IsNonEmptyArray<T> extends true ? T : never;

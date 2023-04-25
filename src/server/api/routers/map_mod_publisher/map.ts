@@ -30,31 +30,23 @@ type TrimmedMapNewWithModNew = Omit<Map_NewWithMod_New, "submittedBy">;
 type TrimmedMapNewSolo = Omit<Map_NewSolo, "submittedBy">;
 
 
-type MapToTechRelation = { techId: number, fullClearOnlyBool: boolean }[];
+type MapToTechRelation = { techId: number, fullClearOnlyBool: boolean; }[];
 
-type ExpandedMap = Map & { MapsToTechs: MapToTechRelation };
-type ExpandedMapArchive = Map_Archive & { Map_ArchivesToTechs: MapToTechRelation };
-type ExpandedMapEdit = Map_Edit & { Map_EditsToTechs: MapToTechRelation };
-type ExpandedMapNewWithModNew = Map_NewWithMod_New & { Map_NewWithMod_NewToTechs: MapToTechRelation };
-type ExpandedMapNewSolo = Map_NewSolo & { Map_NewSoloToTechs: MapToTechRelation };
-
-
+type ExpandedMap = Map & { MapsToTechs: MapToTechRelation; };
+type ExpandedMapArchive = Map_Archive & { Map_ArchivesToTechs: MapToTechRelation; };
+type ExpandedMapEdit = Map_Edit & { Map_EditsToTechs: MapToTechRelation; };
+type ExpandedMapNewWithModNew = Map_NewWithMod_New & { Map_NewWithMod_NewToTechs: MapToTechRelation; };
+type ExpandedMapNewSolo = Map_NewSolo & { Map_NewSoloToTechs: MapToTechRelation; };
 
 
-// type GetMapToTechSelectObject<
-//     PrismaMapToTechSelect extends Record<string, any>,
-// > = Record<
-//     "select",
-//     Pick<PrismaMapToTechSelect, "techId" | "fullClearOnlyBool">,
-// >;
 
-// type GetMapToTechObject<
-//     PrismaMapToTechSelect extends Record<string, any>,
-//     MapToTechPropertyName extends string,
-// > = Record<
-//     MapToTechPropertyName,
-//     GetMapToTechSelectObject<PrismaMapToTechSelect>,
-// >;
+
+const includeObject = {
+    select: {
+        techId: true,
+        fullClearOnlyBool: true,
+    }
+};
 
 
 
@@ -204,7 +196,7 @@ const refineCollabContestLobby = (data: any) => {   //TODO: add type for data
     if (data.mapperUserId || data.mapperNameString !== undefined) return true;
 
     return false;
-}
+};
 
 
 const modIdForMapSchema = z.object({
@@ -289,49 +281,96 @@ export const getMapById = async<
     const whereObject: Prisma.MapWhereUniqueInput = { id: id };
 
 
+    const invalidTableNameError = new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: customErrorMessage ?? `Invalid table name "${tableName}"`,
+    });
+
+
     let map: Union;
 
-    switch (tableName) {
-        case "Map": {
-            map = await prisma.map.findUnique({
-                where: whereObject,
-                select: returnAll ? undefined : defaultMapSelect,
-            }) as Union;
-            break;
+    if (returnAll) {
+        switch (tableName) {
+            case "Map": {
+                map = await prisma.map.findUnique({
+                    where: whereObject,
+                    include: { MapsToTechs: includeObject },
+                }) as Union;
+                break;
+            }
+            case "Map_Archive": {
+                map = await prisma.map_Archive.findUnique({
+                    where: whereObject,
+                    include: { Map_ArchivesToTechs: includeObject },
+                }) as Union;
+                break;
+            }
+            case "Map_Edit": {
+                map = await prisma.map_Edit.findUnique({
+                    where: whereObject,
+                    include: { Map_EditsToTechs: includeObject },
+                }) as Union;
+                break;
+            }
+            case "Map_NewWithMod_New": {
+                map = await prisma.map_NewWithMod_New.findUnique({
+                    where: whereObject,
+                    include: { Map_NewWithMod_NewToTechs: includeObject },
+                }) as Union;
+                break;
+            }
+            case "Map_NewSolo": {
+                map = await prisma.map_NewSolo.findUnique({
+                    where: whereObject,
+                    include: { Map_NewSoloToTechs: includeObject },
+                }) as Union;
+                break;
+            }
+            default: {
+                throw invalidTableNameError;
+            }
         }
-        case "Map_Archive": {
-            map = await prisma.map_Archive.findUnique({
-                where: whereObject,
-                select: returnAll ? undefined : defaultMapArchiveSelect,
-            }) as Union;
-            break;
-        }
-        case "Map_Edit": {
-            map = await prisma.map_Edit.findUnique({
-                where: whereObject,
-                select: returnAll ? undefined : defaultMapEditSelect,
-            }) as Union;
-            break;
-        }
-        case "Map_NewWithMod_New": {
-            map = await prisma.map_NewWithMod_New.findUnique({
-                where: whereObject,
-                select: returnAll ? undefined : defaultMapNewWithModNewSelect,
-            }) as Union;
-            break;
-        }
-        case "Map_NewSolo": {
-            map = await prisma.map_NewSolo.findUnique({
-                where: whereObject,
-                select: returnAll ? undefined : defaultMapNewSoloSelect,
-            }) as Union;
-            break;
-        }
-        default: {
-            throw new TRPCError({
-                code: "INTERNAL_SERVER_ERROR",
-                message: customErrorMessage ?? `Invalid table name "${tableName}"`,
-            });
+    }
+    else {
+        switch (tableName) {
+            case "Map": {
+                map = await prisma.map.findUnique({
+                    where: whereObject,
+                    select: defaultMapSelect,
+                }) as Union;
+                break;
+            }
+            case "Map_Archive": {
+                map = await prisma.map_Archive.findUnique({
+                    where: whereObject,
+                    select: defaultMapArchiveSelect,
+                }) as Union;
+                break;
+            }
+            case "Map_Edit": {
+                map = await prisma.map_Edit.findUnique({
+                    where: whereObject,
+                    select: defaultMapEditSelect,
+                }) as Union;
+                break;
+            }
+            case "Map_NewWithMod_New": {
+                map = await prisma.map_NewWithMod_New.findUnique({
+                    where: whereObject,
+                    select: defaultMapNewWithModNewSelect,
+                }) as Union;
+                break;
+            }
+            case "Map_NewSolo": {
+                map = await prisma.map_NewSolo.findUnique({
+                    where: whereObject,
+                    select: defaultMapNewSoloSelect,
+                }) as Union;
+                break;
+            }
+            default: {
+                throw invalidTableNameError;
+            }
         }
     }
 
@@ -357,7 +396,7 @@ export const getMapById = async<
 
         return map as ReturnType;
     }
-}
+};
 
 
 
@@ -398,49 +437,96 @@ const getMapByName = async<
         };
 
 
+    const invalidTableNameError = new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: customErrorMessage ?? `Invalid table name "${tableName}"`,
+    });
+
+
     let maps: Union[];
 
-    switch (tableName) {
-        case "Map": {
-            maps = await prisma.map.findMany({
-                where: whereObject,
-                select: returnAll ? undefined : defaultMapSelect,
-            }) as Union[];
-            break;
+    if (returnAll) {
+        switch (tableName) {
+            case "Map": {
+                maps = await prisma.map.findMany({
+                    where: whereObject,
+                    include: { MapsToTechs: includeObject },
+                }) as Union[];
+                break;
+            }
+            case "Map_Archive": {
+                maps = await prisma.map_Archive.findMany({
+                    where: whereObject,
+                    include: { Map_ArchivesToTechs: includeObject },
+                }) as Union[];
+                break;
+            }
+            case "Map_Edit": {
+                maps = await prisma.map_Edit.findMany({
+                    where: whereObject,
+                    include: { Map_EditsToTechs: includeObject },
+                }) as Union[];
+                break;
+            }
+            case "Map_NewWithMod_New": {
+                maps = await prisma.map_NewWithMod_New.findMany({
+                    where: whereObject,
+                    include: { Map_NewWithMod_NewToTechs: includeObject },
+                }) as Union[];
+                break;
+            }
+            case "Map_NewSolo": {
+                maps = await prisma.map_NewSolo.findMany({
+                    where: whereObject,
+                    include: { Map_NewSoloToTechs: includeObject },
+                }) as Union[];
+                break;
+            }
+            default: {
+                throw invalidTableNameError;
+            }
         }
-        case "Map_Archive": {
-            maps = await prisma.map_Archive.findMany({
-                where: whereObject,
-                select: returnAll ? undefined : defaultMapArchiveSelect,
-            }) as Union[];
-            break;
-        }
-        case "Map_Edit": {
-            maps = await prisma.map_Edit.findMany({
-                where: whereObject,
-                select: returnAll ? undefined : defaultMapEditSelect,
-            }) as Union[];
-            break;
-        }
-        case "Map_NewWithMod_New": {
-            maps = await prisma.map_NewWithMod_New.findMany({
-                where: whereObject,
-                select: returnAll ? undefined : defaultMapNewWithModNewSelect,
-            }) as Union[];
-            break;
-        }
-        case "Map_NewSolo": {
-            maps = await prisma.map_NewSolo.findMany({
-                where: whereObject,
-                select: returnAll ? undefined : defaultMapNewSoloSelect,
-            }) as Union[];
-            break;
-        }
-        default: {
-            throw new TRPCError({
-                code: "INTERNAL_SERVER_ERROR",
-                message: customErrorMessage ?? `Invalid table name "${tableName}"`,
-            });
+    }
+    else {
+        switch (tableName) {
+            case "Map": {
+                maps = await prisma.map.findMany({
+                    where: whereObject,
+                    select: defaultMapSelect,
+                }) as unknown as Union[];   //TODO: attempt to fix this. why is this the only case where this is needed?
+                break;
+            }
+            case "Map_Archive": {
+                maps = await prisma.map_Archive.findMany({
+                    where: whereObject,
+                    select: defaultMapArchiveSelect,
+                }) as Union[];
+                break;
+            }
+            case "Map_Edit": {
+                maps = await prisma.map_Edit.findMany({
+                    where: whereObject,
+                    select: defaultMapEditSelect,
+                }) as Union[];
+                break;
+            }
+            case "Map_NewWithMod_New": {
+                maps = await prisma.map_NewWithMod_New.findMany({
+                    where: whereObject,
+                    select: defaultMapNewWithModNewSelect,
+                }) as Union[];
+                break;
+            }
+            case "Map_NewSolo": {
+                maps = await prisma.map_NewSolo.findMany({
+                    where: whereObject,
+                    select: defaultMapNewSoloSelect,
+                }) as Union[];
+                break;
+            }
+            default: {
+                throw invalidTableNameError;
+            }
         }
     }
 
@@ -474,23 +560,23 @@ const getMapByName = async<
 
         return maps as ReturnType;
     }
-}
+};
 
 
 
 
-const getTechConnectObject = (techAnyIds?: number[], techFullClearIds?: number[]): Prisma.MapsToTechsCreateWithoutMapInput[] => {
+const getTechConnectObject = (input: z.infer<typeof mapSoloPostSchema> | z.infer<typeof mapUpdateSchema>): Prisma.MapsToTechsCreateWithoutMapInput[] => {
     const techConnectObject: Prisma.MapsToTechsCreateWithoutMapInput[] = [];
 
 
-    techAnyIds?.forEach((techId) => {
+    input.techAnyIds?.forEach((techId) => {
         techConnectObject.push({
             fullClearOnlyBool: false,
             Tech: { connect: { id: techId } },
         });
     });
 
-    techFullClearIds?.forEach((techId) => {
+    input.techFullClearIds?.forEach((techId) => {
         techConnectObject.push({
             fullClearOnlyBool: true,
             Tech: { connect: { id: techId } },
@@ -499,7 +585,7 @@ const getTechConnectObject = (techAnyIds?: number[], techFullClearIds?: number[]
 
 
     return techConnectObject;
-}
+};
 
 
 
@@ -565,7 +651,7 @@ export const mapRouter = createTRPCRouter({
             const currentTime = getCurrentTime();
 
 
-            const techConnectObject = getTechConnectObject(input.techAnyIds, input.techFullClearIds);
+            const techConnectObject = getTechConnectObject(input);
 
 
             const mapCreateData_base = {
@@ -755,8 +841,7 @@ export const mapRouter = createTRPCRouter({
             const currentTime = getCurrentTime();
 
 
-            const techUpdateConnectObject = getTechConnectObject(input.techAnyIds, input.techFullClearIds);
-            const techArchiveConnectObject = getTechConnectObject(existingMap.techAnyIds, existingMap.techFullClearIds);
+            const techConnectObject = getTechConnectObject(input);
 
 
             const mapUpdateData_base = {
@@ -837,42 +922,64 @@ export const mapRouter = createTRPCRouter({
                                 { connect: { id: mapperUserId } },  //connect new   //disconnect not needed because there can only be 1 connection
                     mapperNameString: mapperNameString,
                     overallRank: nonNormalInput.overallRank,
-                }
+                };
             }
-            
+            //TODO: continue here
 
-            let map: Omit<ExpandedMap, "MapsToTechs"> | TrimmedMapEdit;
+            let mod: TrimmedMod | TrimmedModEdit;
 
             if (checkPermissions(MODLIST_MODERATOR_PERMISSION_STRINGS, ctx.user.permissions)) {
-                await ctx.prisma.map_Archive.create({
+                await ctx.prisma.mod_Archive.create({
                     data: {
-                        Map: { connect: { id: existingMap.id } },
-                        User_MapperUser: { connect: { id: existingMap.mapperUserId ?? undefined } },
-                        mapperNameString: existingMap.mapperNameString,
-                        name: existingMap.name,
-                        Difficulty: { connect: { id: existingMap.canonicalDifficultyId } },
-                        Length: { connect: { id: existingMap.lengthId } },
-                        description: existingMap.description,
-                        notes: existingMap.notes,
-                        chapter: existingMap.chapter,
-                        side: existingMap.side,
-                        overallRank: existingMap.overallRank,
-                        mapRemovedFromModBool: existingMap.mapRemovedFromModBool,
-                        timeSubmitted: existingMap.timeSubmitted,
-                        User_SubmittedBy: { connect: { id: existingMap.submittedBy ?? undefined } },
-                        timeApproved: existingMap.timeApproved,
-                        User_ApprovedBy: { connect: { id: existingMap.approvedBy ?? undefined } },
+                        Mod: { connect: { id: existingMod.id } },
+                        type: existingMod.type,
+                        name: existingMod.name,
+                        Publisher: { connect: { id: existingMod.publisherId } },
+                        contentWarning: existingMod.contentWarning,
+                        notes: existingMod.notes,
+                        shortDescription: existingMod.shortDescription,
+                        longDescription: existingMod.longDescription,
+                        gamebananaModId: existingMod.gamebananaModId,
+                        timeCreatedGamebanana: existingMod.timeCreatedGamebanana,
+                        timeSubmitted: existingMod.timeSubmitted,
+                        User_SubmittedBy: { connect: { id: existingMod.submittedBy ?? undefined } },
+                        timeApproved: existingMod.timeApproved,
+                        User_ApprovedBy: { connect: { id: existingMod.approvedBy ?? undefined } },
                         timeArchived: currentTime,
-                        Map_ArchivesToTechs: { create:}
                     },
                 });
 
 
-                map = await ctx.prisma.map.update({
-                    where: { id: input.id },
-                    data: {
+                let modUpdateData: Prisma.ModUpdateInput = {
+                    type: input.type,
+                    name: existingMod.name,
+                    Publisher: { connect: { id: existingMod.publisherId } },
+                    contentWarning: input.contentWarning,
+                    notes: input.notes,
+                    shortDescription: input.shortDescription,
+                    longDescription: input.longDescription,
+                    gamebananaModId: input.gamebananaModId,
+                    timeSubmitted: currentTime,
+                    User_SubmittedBy: { connect: { id: ctx.user.id } },
+                    timeApproved: currentTime,
+                    User_ApprovedBy: { connect: { id: ctx.user.id } },
+                    timeCreatedGamebanana: existingMod.timeCreatedGamebanana,
+                };
 
-                    },
+
+                if (input.gamebananaModId && input.gamebananaModId !== existingMod.gamebananaModId) {
+                    const updateGamebananaModIdObject = await getUpdateGamebananaModIdObject(input.gamebananaModId);
+
+                    modUpdateData = {
+                        ...modUpdateData,
+                        ...updateGamebananaModIdObject,
+                    };
+                }
+
+
+                mod = await ctx.prisma.mod.update({
+                    where: { id: input.id },
+                    data: modUpdateData,
                     select: defaultModSelect,
                 });
             }
