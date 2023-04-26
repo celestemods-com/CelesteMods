@@ -876,7 +876,10 @@ export const modRouter = createTRPCRouter({
                     longDescription: modEdit.longDescription,
                     gamebananaModId: modEdit.gamebananaModId,
                     timeSubmitted: modEdit.timeSubmitted,
-                    User_SubmittedBy: { connect: { id: modEdit.submittedBy ?? undefined } },
+                    User_SubmittedBy: 
+                        modEdit.submittedBy === null ?
+                        { disconnect: true } :
+                        { connect: { id: modEdit.submittedBy } },
                     timeApproved: currentTime,
                     User_ApprovedBy: { connect: { id: ctx.user.id } },
                     timeCreatedGamebanana: modEdit.timeCreatedGamebanana,
@@ -951,7 +954,7 @@ export const modRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             const modFromId = await getModById("Mod", "mod", false, false, ctx.prisma, input.id);  //check that id matches an existing mod
 
-            await ctx.prisma.mod.delete({ where: { id: input.id } });   //the deletion should cascade to any maps
+            await ctx.prisma.mod.delete({ where: { id: input.id } });   //the deletion should cascade to any maps, mapEdits, mapArchives, mapNewSolos, modEdits, and modArchives
 
 
             const archivedModsToDelete = await ctx.prisma.mod_Archive.findMany({ where: { gamebananaModId: modFromId.gamebananaModId } });
@@ -964,6 +967,8 @@ export const modRouter = createTRPCRouter({
                 ),
             );
 
+            if (archivedModsToDelete.length) console.log(`Deleted mod had ArchivedMods with the same GamebananaModId. This should never happen.`);
+
 
             const modEditsToDelete = await ctx.prisma.mod_Edit.findMany({ where: { gamebananaModId: modFromId.gamebananaModId } });
 
@@ -974,6 +979,8 @@ export const modRouter = createTRPCRouter({
                     },
                 ),
             );
+
+            if (modEditsToDelete.length) console.log(`Deleted mod had ModEdits with the same GamebananaModId. This should never happen.`);
 
 
             const newModsToDelete = await ctx.prisma.mod_New.findMany({ where: { gamebananaModId: modFromId.gamebananaModId } });

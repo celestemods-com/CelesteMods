@@ -956,7 +956,11 @@ export const mapRouter = createTRPCRouter({
 
                 map = await ctx.prisma.map.update({
                     where: { id: input.id },
-                    data: mapUpdateData,
+                    data: {
+                        ...mapUpdateData,
+                        timeApproved: currentTime,
+                        User_ApprovedBy: { connect: { id: ctx.user.id } },
+                    },
                     include: { MapsToTechs: includeTechObject },
                 });
             }
@@ -1024,7 +1028,7 @@ export const mapRouter = createTRPCRouter({
                             undefined :     //don't change
                             mapEdit.mapperUserId === null ?
                                 { disconnect: true } :  //disconnect existing
-                                { connect: { id: mapEdit.mapperUserId } },  //connect new   //disconnect not needed because there can only be 1 connection
+                                { connect: { id: mapEdit.mapperUserId } },  //connect new
                     mapperNameString: mapEdit.mapperNameString,
                     name: mapEdit.name,
                     Difficulty: { connect: { id: mapEdit.canonicalDifficultyId } },
@@ -1036,7 +1040,10 @@ export const mapRouter = createTRPCRouter({
                     overallRank: mapEdit.overallRank,
                     mapRemovedFromModBool: mapEdit.mapRemovedFromModBool,
                     timeSubmitted: mapEdit.timeSubmitted,
-                    User_SubmittedBy: { connect: { id: mapEdit.submittedBy ?? undefined } },
+                    User_SubmittedBy:
+                        mapEdit.submittedBy === null ?
+                            { disconnect: true } :  //disconnect existing
+                            { connect: { id: mapEdit.submittedBy } },   //connect new
                     timeApproved: currentTime,
                     User_ApprovedBy: { connect: { id: ctx.user.id } },
                     MapsToTechs: {
@@ -1054,109 +1061,95 @@ export const mapRouter = createTRPCRouter({
             });
 
 
-            await ctx.prisma.map_Edit.delete({ where: { id: input.id } });  //this deletion has nothing to cascade to.
+            await ctx.prisma.map_Edit.delete({ where: { id: input.id } });  //this deletion has nothing to cascade to
 
 
             return updatedMap;
         }),
 
     rejectEdit: modlistModeratorProcedure   //TODO: continue here
-        .input(modIdSchema)
+        .input(mapIdSchema)
         .mutation(async ({ ctx, input }) => {
-            await getModById("Mod_New", "mod", false, false, ctx.prisma, input.id);
+            await getMapById("Map_Edit", false, false, ctx.prisma, input.id);
 
-            await ctx.prisma.mod_Edit.delete({ where: { id: input.id } });  //this deletion has nothing to cascade to. ModEdits are never connected to MapEdits.
+            await ctx.prisma.map_Edit.delete({ where: { id: input.id } });  //this deletion has nothing to cascade to
 
             return true;
         }),
 
     restore: modlistModeratorProcedure
-        .input(modIdSchema)
+        .input(mapIdSchema)
         .mutation(async ({ ctx, input }) => {
-            //TODO: use id to select specific ModArchive, update live mod with data from ModArchive, delete ModArchive
-            //only affects the mod, not the maps
+            //only affects the single map, not the mod or other maps
 
-            const modArchive = await getModById("Mod_Archive", "mod", true, false, ctx.prisma, input.id);  //check that the ModArchive exists
+            const mapArchive = await getMapById("Map_Archive", true, false, ctx.prisma, input.id);  //check that the MapArchive exists
 
 
-            const updatedMod = await ctx.prisma.mod.update({
-                where: { id: modArchive.modId },
+            const updatedMap = await ctx.prisma.map.update({
+                where: { id: mapArchive.mapId },
                 data: {
-                    type: modArchive.type,
-                    name: modArchive.name,
-                    Publisher: { connect: { id: modArchive.publisherId } },
-                    contentWarning: modArchive.contentWarning,
-                    notes: modArchive.notes,
-                    shortDescription: modArchive.shortDescription,
-                    longDescription: modArchive.longDescription,
-                    gamebananaModId: modArchive.gamebananaModId,
-                    timeSubmitted: modArchive.timeSubmitted,
-                    User_SubmittedBy: { connect: { id: modArchive.submittedBy ?? undefined } },
-                    timeApproved: modArchive.timeApproved,
-                    User_ApprovedBy: { connect: { id: modArchive.approvedBy ?? undefined } },
-                    timeCreatedGamebanana: modArchive.timeCreatedGamebanana,
+                    //Mod can't be changed
+                    User_MapperUser:
+                        mapArchive.mapperUserId === null ?
+                            { disconnect: true } :  //disconnect existing
+                            { connect: { id: mapArchive.mapperUserId } },  //connect new
+                    mapperNameString: mapArchive.mapperNameString,
+                    name: mapArchive.name,
+                    Difficulty: { connect: { id: mapArchive.canonicalDifficultyId } },
+                    Length: { connect: { id: mapArchive.lengthId } },
+                    description: mapArchive.description,
+                    notes: mapArchive.notes,
+                    chapter: mapArchive.chapter,
+                    side: mapArchive.side,
+                    overallRank: mapArchive.overallRank,
+                    mapRemovedFromModBool: mapArchive.mapRemovedFromModBool,
+                    timeSubmitted: mapArchive.timeSubmitted,
+                    User_SubmittedBy:
+                        mapArchive.submittedBy === null ?
+                            { disconnect: true } :  //disconnect existing
+                            { connect: { id: mapArchive.submittedBy } },  //connect new
+                    timeApproved: mapArchive.timeApproved,
+                    User_ApprovedBy:
+                        mapArchive.approvedBy === null ?
+                            { disconnect: true } :  //disconnect existing
+                            { connect: { id: mapArchive.approvedBy } },  //connect new
+                    MapsToTechs: {
+                        set: mapArchive.Map_ArchivesToTechs.map(
+                            (mapToTech) => ({
+                                mapId_techId: {
+                                    mapId: mapArchive.mapId,
+                                    techId: mapToTech.techId,
+                                },
+                            }),
+                        ),
+                    },
                 },
-                select: undefined,  //this procedure is moderator only, so we can return everything
+                include: { MapsToTechs: includeTechObject },  //this procedure is moderator only, so we can return everything
             });
 
 
-            await ctx.prisma.mod_Archive.delete({ where: { id: input.id } });  //this deletion has nothing to cascade to. ModArchives are never connected to MapArchives.
+            await ctx.prisma.map_Archive.delete({ where: { id: input.id } });  //this deletion has nothing to cascade to
 
 
-            return updatedMod;
+            return updatedMap;
         }),
 
-    deleteArchiveMod: adminProcedure
-        .input(modIdSchema)
+    deleteArchiveMap: adminProcedure
+        .input(mapIdSchema)
         .mutation(async ({ ctx, input }) => {
-            await getModById("Mod_Archive", "mod", false, false, ctx.prisma, input.id);  //check that id matches an existing mod
+            await getMapById("Map_Archive", false, false, ctx.prisma, input.id);  //check that id matches an existing mapArchive
 
-            await ctx.prisma.mod_Archive.delete({ where: { id: input.id } });
+            await ctx.prisma.map_Archive.delete({ where: { id: input.id } });
 
             return true;
         }),
 
-    deleteMod_total: adminProcedure
-        .input(modIdSchema)
+    deleteMap_total: adminProcedure
+        .input(mapIdSchema)
         .mutation(async ({ ctx, input }) => {
-            const modFromId = await getModById("Mod", "mod", false, false, ctx.prisma, input.id);  //check that id matches an existing mod
+            const mapFromId = await getMapById("Map", false, false, ctx.prisma, input.id);  //check that id matches an existing map
 
-            await ctx.prisma.mod.delete({ where: { id: input.id } });   //the deletion should cascade to any maps
-
-
-            const archivedModsToDelete = await ctx.prisma.mod_Archive.findMany({ where: { gamebananaModId: modFromId.gamebananaModId } });
-
-            await Promise.all(
-                archivedModsToDelete.map(
-                    (archivedMod) => {
-                        return ctx.prisma.mod_Archive.delete({ where: { id: archivedMod.id } });    //this deletion has nothing to cascade to. ModArchives are never connected to MapArchives.
-                    },
-                ),
-            );
-
-
-            const modEditsToDelete = await ctx.prisma.mod_Edit.findMany({ where: { gamebananaModId: modFromId.gamebananaModId } });
-
-            await Promise.all(
-                modEditsToDelete.map(
-                    (modEdit) => {
-                        return ctx.prisma.mod_Edit.delete({ where: { id: modEdit.id } });   //this deletion has nothing to cascade to. ModEdits are never connected to MapEdits.
-                    },
-                ),
-            );
-
-
-            const newModsToDelete = await ctx.prisma.mod_New.findMany({ where: { gamebananaModId: modFromId.gamebananaModId } });
-
-            await Promise.all(
-                newModsToDelete.map(
-                    (newMod) => {
-                        return ctx.prisma.mod_New.delete({ where: { id: newMod.id } });   //the deletion should cascade to any newMaps
-                    },
-                ),
-            );
-
-            if (newModsToDelete.length) console.log(`Deleted mod had NewMods with the same GamebananaModId. This should never happen.`);
+            await ctx.prisma.map.delete({ where: { id: input.id } });   //the deletion should cascade to any maps, mapEdits, and mapArchives
 
 
             return true;
