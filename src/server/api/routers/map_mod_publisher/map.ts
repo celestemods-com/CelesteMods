@@ -1067,7 +1067,7 @@ export const mapRouter = createTRPCRouter({
             return updatedMap;
         }),
 
-    rejectEdit: modlistModeratorProcedure   //TODO: continue here
+    rejectEdit: modlistModeratorProcedure
         .input(mapIdSchema)
         .mutation(async ({ ctx, input }) => {
             await getMapById("Map_Edit", false, false, ctx.prisma, input.id);
