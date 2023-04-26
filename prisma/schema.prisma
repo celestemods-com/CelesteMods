@@ -423,7 +423,7 @@ model Rating {
   User_SubmittedBy User        @relation(fields: [submittedBy], references: [id], onDelete: Cascade, onUpdate: Restrict)
   submittedBy      Int         @db.UnsignedSmallInt
   timeSubmitted    Int
-  Quality          Quality?    @relation(fields: [qualityId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  Quality          Quality?    @relation(fields: [qualityId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   qualityId        Int?        @db.UnsignedTinyInt
   Difficulty       Difficulty? @relation(fields: [difficultyId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   difficultyId     Int?        @db.UnsignedSmallInt
