@@ -884,7 +884,7 @@ export const modRouter = createTRPCRouter({
                     User_ApprovedBy: { connect: { id: ctx.user.id } },
                     timeCreatedGamebanana: modEdit.timeCreatedGamebanana,
                 },
-                select: undefined,  //this procedure is moderator only, so we can return everything
+                //this procedure is moderator only, so we can return everything
             });
 
 
@@ -929,7 +929,7 @@ export const modRouter = createTRPCRouter({
                     User_ApprovedBy: { connect: { id: modArchive.approvedBy ?? undefined } },
                     timeCreatedGamebanana: modArchive.timeCreatedGamebanana,
                 },
-                select: undefined,  //this procedure is moderator only, so we can return everything
+                //this procedure is moderator only, so we can return everything
             });
 
 
