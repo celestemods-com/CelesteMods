@@ -435,6 +435,18 @@ model Rating {
   @@index([submittedBy])
 }
 
+model ReviewCollection {
+  id          Int      @id @default(autoincrement()) @db.UnsignedSmallInt
+  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  userId      Int      @db.UnsignedSmallInt
+  name        String   @db.VarChar(100)
+  description String   @db.VarChar(500)
+  Review      Review[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
 model Review {
   id                 Int              @id @default(autoincrement()) @db.UnsignedMediumInt
   Mod                Mod              @relation(fields: [modId], references: [id], onDelete: Cascade, onUpdate: Restrict)
@@ -447,20 +459,9 @@ model Review {
   otherComments      String?          @db.VarChar(1500)
   ReviewMap          ReviewMap[]
 
-  @@unique([modId, reviewCollectionId])
+  @@unique([reviewCollectionId, modId])
   @@index([modId])
   @@index([reviewCollectionId])
-}
-
-model ReviewCollection {
-  id          Int      @id @default(autoincrement()) @db.UnsignedSmallInt
-  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  userId      Int      @db.UnsignedSmallInt
-  name        String   @db.VarChar(100)
-  description String   @db.VarChar(500)
-  Review      Review[]
-
-  @@index([userId])
 }
 
 model ReviewMap {
