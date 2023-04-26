@@ -288,7 +288,7 @@ export const getModById = async<
         if (!mod) {
             throw new TRPCError({
                 code: "NOT_FOUND",
-                message: customErrorMessage ?? `No mod exists in table "${tableName}" with id "${id}"`,
+                message: customErrorMessage ?? `No mod exists in table "${tableName}" with ${idType}Id "${id}"`,
             });
         }
 
