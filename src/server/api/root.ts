@@ -6,6 +6,7 @@ import { userRouter } from "./routers/user";
 import { publisherRouter } from "./routers/map_mod_publisher/publisher";
 import { modRouter } from "./routers/map_mod_publisher/mod";
 import { mapRouter } from "./routers/map_mod_publisher/map";
+import { qualityRouter } from "./routers/quality";
 
 /**
  * This is the primary router for your server.
@@ -21,6 +22,7 @@ export const appRouter = createTRPCRouter({
   publisher: publisherRouter,
   mod: modRouter,
   map: mapRouter,
+  quality: qualityRouter,
 });
 
 // export type definition of API
