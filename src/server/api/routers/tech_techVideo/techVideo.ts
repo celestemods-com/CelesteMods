@@ -114,8 +114,8 @@ export const techVideoRouter = createTRPCRouter({
             await getTechVideoById(ctx.prisma, input.id);  //check that id matches an existing techVideo
 
             if (!input.techId && !input.url) throw new TRPCError({
-                message: "No changes were provided.",
                 code: "BAD_REQUEST",
+                message: "No changes were provided.",
             });
 
             const techVideo = await ctx.prisma.techVideo.update({

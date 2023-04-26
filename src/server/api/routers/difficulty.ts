@@ -55,13 +55,13 @@ const validateDifficulty = async (
         const parentDifficulty = await prisma.difficulty.findUnique({ where: { id: parentDifficultyId } });
 
         if (!parentDifficulty) throw new TRPCError({
+            code: "NOT_FOUND",
             message: "parentDifficulty not found",
-            code: "NOT_FOUND"
         });
 
         if (parentDifficulty.parentDifficultyId !== 0) throw new TRPCError({
-            message: "This difficulty is malformed. SubDifficulties may not have their own subDifficulties. Please contact an admin.",
             code: "INTERNAL_SERVER_ERROR",
+            message: "This difficulty is malformed. SubDifficulties may not have their own subDifficulties. Please contact an admin.",
         });
     }
 
@@ -75,8 +75,8 @@ const validateDifficulty = async (
     });
 
     if (matchingDifficulty) throw new TRPCError({
-        message: `Conflicts with existing difficulty ${matchingDifficulty.id}`,
         code: "FORBIDDEN",
+        message: `Conflicts with existing difficulty ${matchingDifficulty.id}`,
     });
 }
 
@@ -174,8 +174,8 @@ export const difficultyRouter = createTRPCRouter({
             await validateDifficulty(ctx.prisma, undefined, input.parentDifficultyId, input.order);     //check that the new difficulty won't conflict with an existing one
 
             if (!input.parentDifficultyId) throw new TRPCError({
-                message: "parentDifficultyId is undefined, but it was already confirmed as defined. Please contact an admin.",
                 code: "INTERNAL_SERVER_ERROR",
+                message: "parentDifficultyId is undefined, but it was already confirmed as defined. Please contact an admin.",
             });
 
 
@@ -200,8 +200,8 @@ export const difficultyRouter = createTRPCRouter({
             await validateDifficulty(ctx.prisma, input.id, input.parentDifficultyId, input.order);     //check that the new difficulty won't conflict with an existing one
 
             if (!input.parentDifficultyId) throw new TRPCError({
-                message: "parentDifficultyId is undefined, but it was already confirmed as defined. Please contact an admin.",
                 code: "INTERNAL_SERVER_ERROR",
+                message: "parentDifficultyId is undefined, but it was already confirmed as defined. Please contact an admin.",
             });
 
 

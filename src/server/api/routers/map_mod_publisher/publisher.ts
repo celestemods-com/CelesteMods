@@ -66,14 +66,14 @@ const getPublisherByGamebananaId = async (prisma: MyPrismaClient, gamebananaId: 
 
     if (throwOnMatch) {
         if (matchingPublisher) throw new TRPCError({
-            message: `Conflicts with existing publisher ${matchingPublisher.id}`,
             code: "FORBIDDEN",
+            message: `Conflicts with existing publisher ${matchingPublisher.id}`,
         });
     }
     else {
         if (!matchingPublisher) throw new TRPCError({
-            message: `No publisher exists with gamebananaId "${gamebananaId}"`,
             code: "NOT_FOUND",
+            message: `No publisher exists with gamebananaId "${gamebananaId}"`,
         });
 
         return matchingPublisher;
@@ -120,8 +120,8 @@ const getGamebananaUsernameById = async function (gamebananaID: number) {
     }
     catch (error) {
         throw new TRPCError({
-            message: "Error getting gamebanana username.",
             code: "INTERNAL_SERVER_ERROR",
+            message: "Error getting gamebanana username.",
         });
     }
 }
@@ -246,8 +246,8 @@ export const publisherRouter = createTRPCRouter({
 
             if (publisherFromId.userId) {
                 throw new TRPCError({
-                    message: `Publisher "${input.id}" is already claimed by user "${publisherFromId.userId}".`,
                     code: "FORBIDDEN",
+                    message: `Publisher "${input.id}" is already claimed by user "${publisherFromId.userId}".`,
                 });
             }
 
@@ -271,8 +271,8 @@ export const publisherRouter = createTRPCRouter({
 
             if (publisherFromId.userId != ctx.user.id) {
                 throw new TRPCError({
-                    message: `User "${ctx.user.id}" is not the owner of publisher "${input.id}".`,
                     code: "FORBIDDEN",
+                    message: `User "${ctx.user.id}" is not the owner of publisher "${input.id}".`,
                 });
             }
 

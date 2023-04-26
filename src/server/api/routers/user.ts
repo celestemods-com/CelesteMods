@@ -113,8 +113,8 @@ export const getUserById = async (
 
 
 const undefinedSessionError = new TRPCError({
-    message: "Session is undefined when it should not be. Please contact an admin.",
     code: "INTERNAL_SERVER_ERROR",
+    message: "Session is undefined when it should not be. Please contact an admin.",
 });
 
 

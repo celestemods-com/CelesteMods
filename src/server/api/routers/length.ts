@@ -52,8 +52,8 @@ const validateLength = async (prisma: MyPrismaClient, newName?: string): Promise
     const matchingLength = await prisma.length.findUnique({ where: { name: newName } });
 
     if (matchingLength) throw new TRPCError({
-        message: `Conflicts with existing length ${matchingLength.id}`,
         code: "FORBIDDEN",
+        message: `Conflicts with existing length ${matchingLength.id}`,
     });
 }
 

@@ -55,8 +55,8 @@ const validateTech = async (prisma: MyPrismaClient, newName?: string): Promise<v
     const matchingTech = await prisma.tech.findUnique({ where: { name: newName } });
 
     if (matchingTech) throw new TRPCError({
-        message: `Conflicts with existing tech ${matchingTech.id}`,
         code: "FORBIDDEN",
+        message: `Conflicts with existing tech ${matchingTech.id}`,
     });
 }
 
@@ -173,8 +173,8 @@ export const techRouter = createTRPCRouter({
             await validateTech(ctx.prisma, input.name);     //check that the new tech won't conflict with an existing one
 
             if (!input.name) throw new TRPCError({
-                message: "name is undefined, but it was already confirmed to be defined. Please contact an admin.",
                 code: "INTERNAL_SERVER_ERROR",
+                message: "name is undefined, but it was already confirmed to be defined. Please contact an admin.",
             });
 
             const tech = await ctx.prisma.tech.update({
