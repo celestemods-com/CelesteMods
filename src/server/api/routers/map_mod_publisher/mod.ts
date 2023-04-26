@@ -904,7 +904,6 @@ export const modRouter = createTRPCRouter({
     restore: modlistModeratorProcedure
         .input(modIdSchema)
         .mutation(async ({ ctx, input }) => {
-            //TODO: use id to select specific ModArchive, update live mod with data from ModArchive, delete ModArchive
             //only affects the mod, not the maps
 
             const modArchive = await getModById("Mod_Archive", "mod", true, false, ctx.prisma, input.id);  //check that the ModArchive exists
