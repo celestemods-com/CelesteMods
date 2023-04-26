@@ -978,65 +978,89 @@ export const mapRouter = createTRPCRouter({
             return map;
         }),
 
-    approveEdit: modlistModeratorProcedure  //TODO: continue here
-        .input(modIdSchema)
+    approveEdit: modlistModeratorProcedure
+        .input(mapIdSchema)
         .mutation(async ({ ctx, input }) => {
-            const modEdit = await getModById("Mod_Edit", "mod", true, false, ctx.prisma, input.id);  //check that the ModEdit exists
-            const existingMod = await getModById("Mod", "mod", true, false, ctx.prisma, modEdit.modId);  //check that the mod exists
+            const mapEdit = await getMapById("Map_Edit", true, false, ctx.prisma, input.id);  //check that the MapEdit exists
+            const existingMap = await getMapById("Map", true, false, ctx.prisma, mapEdit.mapId);  //check that the map exists
 
 
             const currentTime = getCurrentTime();
 
 
-            await ctx.prisma.mod_Archive.create({
+            const techConnectObject = getTechConnectObject(input);
+
+
+            await ctx.prisma.map_Archive.create({
                 data: {
-                    Mod: { connect: { id: existingMod.id } },
-                    type: existingMod.type,
-                    name: existingMod.name,
-                    Publisher: { connect: { id: existingMod.publisherId } },
-                    contentWarning: existingMod.contentWarning,
-                    notes: existingMod.notes,
-                    shortDescription: existingMod.shortDescription,
-                    longDescription: existingMod.longDescription,
-                    gamebananaModId: existingMod.gamebananaModId,
-                    timeCreatedGamebanana: existingMod.timeCreatedGamebanana,
-                    timeSubmitted: existingMod.timeSubmitted,
-                    User_SubmittedBy: { connect: { id: existingMod.submittedBy ?? undefined } },
-                    timeApproved: existingMod.timeApproved,
-                    User_ApprovedBy: { connect: { id: existingMod.approvedBy ?? undefined } },
+                    Map: { connect: { id: existingMap.id } },
+                    User_MapperUser: { connect: { id: existingMap.mapperUserId ?? undefined } },
+                    mapperNameString: existingMap.mapperNameString,
+                    name: existingMap.name,
+                    Difficulty: { connect: { id: existingMap.canonicalDifficultyId } },
+                    Length: { connect: { id: existingMap.lengthId } },
+                    description: existingMap.description,
+                    notes: existingMap.notes,
+                    chapter: existingMap.chapter,
+                    side: existingMap.side,
+                    overallRank: existingMap.overallRank,
+                    mapRemovedFromModBool: existingMap.mapRemovedFromModBool,
+                    timeSubmitted: existingMap.timeSubmitted,
+                    User_SubmittedBy: { connect: { id: existingMap.submittedBy ?? undefined } },
+                    timeApproved: existingMap.timeApproved,
+                    User_ApprovedBy: { connect: { id: existingMap.approvedBy ?? undefined } },
                     timeArchived: currentTime,
+                    Map_ArchivesToTechs: { create: techConnectObject },
                 },
             });
 
 
-            const updatedMod = await ctx.prisma.mod.update({
-                where: { id: existingMod.id },
+            const updatedMap = await ctx.prisma.map.update({
+                where: { id: existingMap.id },
                 data: {
-                    type: modEdit.type,
-                    name: modEdit.name,
-                    Publisher: { connect: { id: modEdit.publisherId } },
-                    contentWarning: modEdit.contentWarning,
-                    notes: modEdit.notes,
-                    shortDescription: modEdit.shortDescription,
-                    longDescription: modEdit.longDescription,
-                    gamebananaModId: modEdit.gamebananaModId,
-                    timeSubmitted: modEdit.timeSubmitted,
-                    User_SubmittedBy: { connect: { id: modEdit.submittedBy ?? undefined } },
+                    //Mod can't be changed
+                    User_MapperUser:
+                        mapEdit.mapperUserId === undefined ?
+                            undefined :     //don't change
+                            mapEdit.mapperUserId === null ?
+                                { disconnect: true } :  //disconnect existing
+                                { connect: { id: mapEdit.mapperUserId } },  //connect new   //disconnect not needed because there can only be 1 connection
+                    mapperNameString: mapEdit.mapperNameString,
+                    name: mapEdit.name,
+                    Difficulty: { connect: { id: mapEdit.canonicalDifficultyId } },
+                    Length: { connect: { id: mapEdit.lengthId } },
+                    description: mapEdit.description,
+                    notes: mapEdit.notes,
+                    chapter: mapEdit.chapter,
+                    side: mapEdit.side,
+                    overallRank: mapEdit.overallRank,
+                    mapRemovedFromModBool: mapEdit.mapRemovedFromModBool,
+                    timeSubmitted: mapEdit.timeSubmitted,
+                    User_SubmittedBy: { connect: { id: mapEdit.submittedBy ?? undefined } },
                     timeApproved: currentTime,
                     User_ApprovedBy: { connect: { id: ctx.user.id } },
-                    timeCreatedGamebanana: modEdit.timeCreatedGamebanana,
+                    MapsToTechs: {
+                        set: mapEdit.Map_EditsToTechs.map(
+                            (mapToTech) => ({
+                                mapId_techId: {
+                                    mapId: mapEdit.mapId,
+                                    techId: mapToTech.techId,
+                                },
+                            }),
+                        ),
+                    },
                 },
-                select: undefined,  //this procedure is moderator only, so we can return everything
+                include: { MapsToTechs: includeTechObject },  //this procedure is moderator only, so we can return everything
             });
 
 
-            await ctx.prisma.mod_Edit.delete({ where: { id: input.id } });  //this deletion has nothing to cascade to. ModEdits are never connected to MapEdits.
+            await ctx.prisma.map_Edit.delete({ where: { id: input.id } });  //this deletion has nothing to cascade to.
 
 
-            return updatedMod;
+            return updatedMap;
         }),
 
-    rejectEdit: modlistModeratorProcedure
+    rejectEdit: modlistModeratorProcedure   //TODO: continue here
         .input(modIdSchema)
         .mutation(async ({ ctx, input }) => {
             await getModById("Mod_New", "mod", false, false, ctx.prisma, input.id);
