@@ -18,15 +18,39 @@ import { getCheckedTableNames } from "../../utils/getCheckedTableNames";
 
 
 
-type TrimmedMod = Omit<Mod, "submittedBy" | "approvedBy"> & { Map: { id: number }[] };
-type TrimmedModArchive = Omit<Mod_Archive, "submittedBy" | "approvedBy"> & { Map_Archive: { id: number }[] };
-type TrimmedModEdit = Omit<Mod_Edit, "submittedBy"> & { Map_Edit: { id: number }[] };
-type TrimmedModNew = Omit<Mod_New, "submittedBy"> & { Map_NewWithMod_New: { id: number }[] };
+type IdObjectArray = { id: number; }[];
 
-type ExpandedMod = Mod & { Map: Map[] };
-type ExpandedModArchive = Mod_Archive & { Map_Archive: Map_Archive[] };
-type ExpandedModEdit = Mod_Edit & { Map_Edit: Map_Edit[] };
-type ExpandedModNew = Mod_New & { Map_NewWithMod_New: Map_NewWithMod_New[] };
+type ExpandedMod = Mod & {
+    Map: IdObjectArray;
+    Review: IdObjectArray;
+    Mod_Archive: IdObjectArray;
+    Mod_Edit: IdObjectArray;
+    Map_NewSolo: IdObjectArray;
+};
+type ExpandedModArchive = Mod_Archive;
+type ExpandedModEdit = Mod_Edit;
+type ExpandedModNew = Mod_New & { Map_NewWithMod_New: IdObjectArray; };
+
+type TrimmedMod = Omit<ExpandedMod, "submittedBy" | "approvedBy">;
+type TrimmedModArchive = Omit<ExpandedModArchive, "submittedBy" | "approvedBy">;
+type TrimmedModEdit = Omit<ExpandedModEdit, "submittedBy">;
+type TrimmedModNew = Omit<ExpandedModNew, "submittedBy">;
+
+
+
+
+const includeModConnectionsObject = {
+    Map: selectIdObject,
+    Review: selectIdObject,
+    Mod_Archive: selectIdObject,
+    Mod_Edit: selectIdObject,
+    Map_NewSolo: selectIdObject,
+};
+
+
+const includeModNewConnectionsObject = {
+    Map_NewWithMod_New: selectIdObject,
+};
 
 
 
@@ -49,10 +73,7 @@ const baseModSelectObject = {
 const defaultModSelect = Prisma.validator<Prisma.ModSelect>()({
     ...baseModSelectObject,
     timeApproved: true,
-    Map: { select: selectIdObject },
-    Mod_Archive: { select: selectIdObject },
-    Mod_Edit: { select: selectIdObject },
-    Review: { select: selectIdObject },
+    ...includeModConnectionsObject,
 });
 
 
@@ -72,6 +93,7 @@ const defaultModEditSelect = Prisma.validator<Prisma.Mod_EditSelect>()({
 
 const defaultModNewSelect = Prisma.validator<Prisma.Mod_NewSelect>()({
     ...baseModSelectObject,
+    ...includeModNewConnectionsObject,
 });
 
 
@@ -170,45 +192,84 @@ export const getModById = async<
     id: number,
     customErrorMessage?: string,
 ): Promise<ReturnType> => {
-    const whereObject: Prisma.ModWhereUniqueInput = idType === "mod" ? { id: id } : { gamebananaModId: id };
+    const idObject = { id: id };
+    const whereObject = idType === "mod" ? idObject : { gamebananaModId: id };
+    const invalidTableNameError = new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: customErrorMessage ?? `Invalid table name "${tableName}"`,
+    });
 
 
     let mod: Union;
 
-    switch (tableName) {
-        case "Mod": {
-            mod = await prisma.mod.findUnique({
-                where: whereObject,
-                select: returnAll ? undefined : defaultModSelect,
-            }) as Union;
-            break;
+    if (returnAll) {
+        switch (tableName) {
+            case "Mod": {
+                mod = await prisma.mod.findUnique({
+                    where: whereObject,
+                    include: includeModConnectionsObject,
+                }) as Union;
+                break;
+            }
+            case "Mod_Archive": {
+                mod = await prisma.mod_Archive.findUnique({
+                    where: idObject,
+                    include: undefined,
+                }) as Union;
+                break;
+            }
+            case "Mod_Edit": {
+                mod = await prisma.mod_Edit.findUnique({
+                    where: idObject,
+                    include: undefined,
+                }) as Union;
+                break;
+            }
+            case "Mod_New": {
+                mod = await prisma.mod_New.findUnique({
+                    where: whereObject,
+                    include: includeModNewConnectionsObject,
+                }) as Union;
+                break;
+            }
+            default: {
+                throw invalidTableNameError;
+            }
         }
-        case "Mod_Archive": {
-            mod = await prisma.mod_Archive.findUnique({
-                where: whereObject,
-                select: returnAll ? undefined : defaultModArchiveSelect,
-            }) as Union;
-            break;
-        }
-        case "Mod_Edit": {
-            mod = await prisma.mod_Edit.findUnique({
-                where: whereObject,
-                select: returnAll ? undefined : defaultModEditSelect,
-            }) as Union;
-            break;
-        }
-        case "Mod_New": {
-            mod = await prisma.mod_New.findUnique({
-                where: whereObject,
-                select: returnAll ? undefined : defaultModNewSelect,
-            }) as Union;
-            break;
-        }
-        default: {
-            throw new TRPCError({
-                code: "INTERNAL_SERVER_ERROR",
-                message: customErrorMessage ?? `Invalid table name "${tableName}"`,
-            });
+    }
+    else {
+        switch (tableName) {
+            case "Mod": {
+                mod = await prisma.mod.findUnique({
+                    where: whereObject,
+                    select: defaultModSelect,
+                }) as Union;
+                break;
+            }
+            case "Mod_Archive": {
+                mod = await prisma.mod_Archive.findUnique({
+                    where: idObject,
+                    select: defaultModArchiveSelect,
+                }) as Union;
+                break;
+            }
+            case "Mod_Edit": {
+                mod = await prisma.mod_Edit.findUnique({
+                    where: idObject,
+                    select: defaultModEditSelect,
+                }) as Union;
+                break;
+            }
+            case "Mod_New": {
+                mod = await prisma.mod_New.findUnique({
+                    where: whereObject,
+                    select: defaultModNewSelect,
+                }) as Union;
+                break;
+            }
+            default: {
+                throw invalidTableNameError;
+            }
         }
     }
 
@@ -234,7 +295,7 @@ export const getModById = async<
 
         return mod as ReturnType;
     }
-}
+};
 
 
 
@@ -254,48 +315,88 @@ const getModByName = async<
     const whereObject: Prisma.ModWhereInput = { name: { contains: query } };
 
 
+    const invalidTableNameError = new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: customErrorMessage ?? `Invalid table name "${tableName}"`,
+    });
+
+
     let mods: Union[];
 
-    switch (tableName) {
-        case "Mod": {
-            mods = await prisma.mod.findMany({
-                where: whereObject,
-                select: returnAll ? undefined : defaultModSelect,
-            }) as ReturnType;
-            break;
+    if (returnAll) {
+        switch (tableName) {
+            case "Mod": {
+                mods = await prisma.mod.findMany({
+                    where: whereObject,
+                    include: includeModConnectionsObject,
+                }) as unknown as ReturnType;    //TODO!: figure out if this is safe and if it can be removed
+                break;
+            }
+            case "Mod_Archive": {
+                mods = await prisma.mod_Archive.findMany({
+                    where: whereObject,
+                    include: undefined,
+                }) as unknown as ReturnType;    //TODO!: figure out if this is safe and if it can be removed
+                break;
+            }
+            case "Mod_Edit": {
+                mods = await prisma.mod_Edit.findMany({
+                    where: whereObject,
+                    include: undefined,
+                }) as unknown as ReturnType;    //TODO!: figure out if this is safe and if it can be removed
+                break;
+            }
+            case "Mod_New": {
+                mods = await prisma.mod_New.findMany({
+                    where: whereObject,
+                    include: includeModNewConnectionsObject,
+                }) as unknown as ReturnType;    //TODO!: figure out if this is safe and if it can be removed
+                break;
+            }
+            default: {
+                throw invalidTableNameError;
+            }
         }
-        case "Mod_Archive": {
-            mods = await prisma.mod_Archive.findMany({
-                where: whereObject,
-                select: returnAll ? undefined : defaultModArchiveSelect,
-            }) as ReturnType;
-            break;
-        }
-        case "Mod_Edit": {
-            mods = await prisma.mod_Edit.findMany({
-                where: whereObject,
-                select: returnAll ? undefined : defaultModEditSelect,
-            }) as ReturnType;
-            break;
-        }
-        case "Mod_New": {
-            mods = await prisma.mod_New.findMany({
-                where: whereObject,
-                select: returnAll ? undefined : defaultModNewSelect,
-            }) as ReturnType;
-            break;
-        }
-        default: {
-            throw new TRPCError({
-                code: "INTERNAL_SERVER_ERROR",
-                message: customErrorMessage ?? `Invalid table name "${tableName}"`,
-            });
+    }
+    else {
+        switch (tableName) {
+            case "Mod": {
+                mods = await prisma.mod.findMany({
+                    where: whereObject,
+                    select: defaultModSelect,
+                }) as unknown as ReturnType;    //TODO!: figure out if this is safe and if it can be removed
+                break;
+            }
+            case "Mod_Archive": {
+                mods = await prisma.mod_Archive.findMany({
+                    where: whereObject,
+                    select: defaultModArchiveSelect,
+                }) as unknown as ReturnType;    //TODO!: figure out if this is safe and if it can be removed
+                break;
+            }
+            case "Mod_Edit": {
+                mods = await prisma.mod_Edit.findMany({
+                    where: whereObject,
+                    select: defaultModEditSelect,
+                }) as unknown as ReturnType;    //TODO!: figure out if this is safe and if it can be removed
+                break;
+            }
+            case "Mod_New": {
+                mods = await prisma.mod_New.findMany({
+                    where: whereObject,
+                    select: defaultModNewSelect,
+                }) as unknown as ReturnType;    //TODO!: figure out if this is safe and if it can be removed
+                break;
+            }
+            default: {
+                throw invalidTableNameError;
+            }
         }
     }
 
 
     return mods as ReturnType;
-}
+};
 
 
 
@@ -305,7 +406,7 @@ type GamebananaModInfo = {
     publisherName: string,
     timeCreatedGamebanana: number,
     gamebananaModName: string,
-}
+};
 
 
 const getGamebananaModInfo = async (gamebananaModID: number): Promise<GamebananaModInfo> => {
@@ -348,7 +449,7 @@ const getGamebananaModInfo = async (gamebananaModID: number): Promise<Gamebanana
             message: "Error getting gamebanana mod info.",
         });
     }
-}
+};
 
 
 
@@ -358,7 +459,7 @@ type UpdateGamebananaModIdObject = {
     gamebananaModId: number,
     timeCreatedGamebanana: number,
     Publisher: Prisma.PublisherCreateNestedOneWithoutModInput,
-}
+};
 
 
 const getUpdateGamebananaModIdObject = async (newGamebananaModId: number): Promise<UpdateGamebananaModIdObject> => {
@@ -379,7 +480,7 @@ const getUpdateGamebananaModIdObject = async (newGamebananaModId: number): Promi
             },
         },
     };
-}
+};
 
 
 
@@ -452,7 +553,7 @@ export const modRouter = createTRPCRouter({
             const currentTime = getCurrentTime();
 
 
-            let mod: (Omit<ExpandedMod, "Map"> & { Map: { id: number }[] }) | TrimmedModNew;
+            let mod: (Omit<ExpandedMod, "Map"> & { Map: { id: number; }[]; }) | TrimmedModNew;
 
             const modCreateData_base: Prisma.ModCreateInput | Prisma.Mod_NewCreateInput = {
                 type: input.type,
@@ -513,9 +614,7 @@ export const modRouter = createTRPCRouter({
                         User_ApprovedBy: { connect: { id: ctx.user.id } },
                         Map: { create: mapCreateDataArray_approved },
                     },
-                    include: {  //use include instead of select so that other Mod properties are still returned
-                        Map: { select: selectIdObject },
-                    },
+                    include: includeModConnectionsObject    //use include instead of select so that other Mod properties are still returned
                 });
 
 
@@ -534,7 +633,7 @@ export const modRouter = createTRPCRouter({
                     },
                     select: {
                         ...defaultModNewSelect,
-                        Map_NewWithMod_New: { select: selectIdObject },
+                        Map_NewWithMod_New: selectIdObject,
                     },
                 });
             }
@@ -546,7 +645,18 @@ export const modRouter = createTRPCRouter({
     approveNew: modlistModeratorProcedure
         .input(modIdSchema)
         .mutation(async ({ ctx, input }) => {
-            const newMod = await getModById("Mod_New", "mod", true, false, ctx.prisma, input.id);
+            const newMod = await ctx.prisma.mod_New.findUnique({
+                where: { id: input.id },
+                include: { Map_NewWithMod_New: true },
+            });
+
+            if (!newMod) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: `No mod exists in mod_New with id "${input.id}"`,
+                });
+            }
+
 
             const currentTime = getCurrentTime();
 
@@ -591,7 +701,7 @@ export const modRouter = createTRPCRouter({
                     },
                 },
                 include: {  //use include instead of select so that other Mod properties are still returned
-                    Map: { select: selectIdObject },
+                    Map: selectIdObject,
                 },
             });
 

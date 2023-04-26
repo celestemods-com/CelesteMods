@@ -1,1 +1,1 @@
-export const selectIdObject = { id: true };
+export const selectIdObject = { select: { id: true } };
