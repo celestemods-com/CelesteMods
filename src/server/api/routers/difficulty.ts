@@ -49,7 +49,7 @@ const difficultyOrderSchema = getCombinedSchema(
 
 
 const validateDifficulty = async (
-    prisma: MyPrismaClient, id: number | undefined, parentDifficultyId: number | null | undefined, order: number | undefined
+    prisma: MyPrismaClient, id: number | undefined, parentDifficultyId: number | undefined, order: number | undefined
 ): Promise<void> => {
     if (parentDifficultyId) {
         const parentDifficulty = await prisma.difficulty.findUnique({ where: { id: parentDifficultyId } });
@@ -171,11 +171,14 @@ export const difficultyRouter = createTRPCRouter({
     add: adminProcedure
         .input(difficultyPostSchema)
         .mutation(async ({ ctx, input }) => {
-            await validateDifficulty(ctx.prisma, undefined, input.parentDifficultyId, input.order);     //check that the new difficulty won't conflict with an existing one
+            const nonNullParentDifficultyId = input.parentDifficultyId === null ? 0 : input.parentDifficultyId;
 
-            if (!input.parentDifficultyId) throw new TRPCError({
+
+            await validateDifficulty(ctx.prisma, undefined, nonNullParentDifficultyId, input.order);     //check that the new difficulty won't conflict with an existing one
+
+            if (nonNullParentDifficultyId === undefined) throw new TRPCError({
                 code: "INTERNAL_SERVER_ERROR",
-                message: "parentDifficultyId is undefined, but it was already confirmed as defined. Please contact an admin.",
+                message: "nonNullParentDifficultyId is undefined, but it was already confirmed as defined. Please contact an admin.",
             });
 
 
@@ -184,7 +187,7 @@ export const difficultyRouter = createTRPCRouter({
                     name: input.name,
                     description: input.description,
                     order: input.order,
-                    ChildDifficulty: { connect: { id: input.parentDifficultyId } },
+                    ParentDifficulty: { connect: { id: nonNullParentDifficultyId } },
                 },
                 select: defaultDifficultySelect,
             });
@@ -196,12 +199,15 @@ export const difficultyRouter = createTRPCRouter({
     edit: adminProcedure
         .input(difficultyPostSchema.partial().merge(difficultyIdSchema))
         .mutation(async ({ ctx, input }) => {
-            await getDifficultyById(ctx.prisma, input.id);  //check that id matches an existing difficulty
-            await validateDifficulty(ctx.prisma, input.id, input.parentDifficultyId, input.order);     //check that the new difficulty won't conflict with an existing one
+            const nonNullParentDifficultyId = input.parentDifficultyId === null ? 0 : input.parentDifficultyId;
 
-            if (!input.parentDifficultyId) throw new TRPCError({
+
+            await getDifficultyById(ctx.prisma, input.id);  //check that id matches an existing difficulty
+            await validateDifficulty(ctx.prisma, input.id, nonNullParentDifficultyId, input.order);     //check that the new difficulty won't conflict with an existing one
+
+            if (nonNullParentDifficultyId === undefined) throw new TRPCError({
                 code: "INTERNAL_SERVER_ERROR",
-                message: "parentDifficultyId is undefined, but it was already confirmed as defined. Please contact an admin.",
+                message: "nonNullParentDifficultyId is undefined, but it was already confirmed as defined. Please contact an admin.",
             });
 
 
@@ -211,7 +217,7 @@ export const difficultyRouter = createTRPCRouter({
                     name: input.name,
                     description: input.description,
                     order: input.order,
-                    ChildDifficulty: { connect: { id: input.parentDifficultyId } },
+                    ParentDifficulty: { connect: { id: nonNullParentDifficultyId } },
                 },
                 select: defaultDifficultySelect,
             });
