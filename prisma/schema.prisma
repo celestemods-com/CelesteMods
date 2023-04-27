@@ -13,7 +13,7 @@ model Length {
   description        String               @db.VarChar(100)
   order              Int                  @unique @db.UnsignedTinyInt
   map                Map[]
-  ReviewMap          ReviewMap[]
+  MapReview          MapReview[]
   Map_Archive        Map_Archive[]
   Map_Edit           Map_Edit[]
   Map_NewWithMod_New Map_NewWithMod_New[]
@@ -136,7 +136,7 @@ model Map {
   approvedBy            Int?                   @db.UnsignedSmallInt
   MapsToTechs           MapsToTechs[]
   Rating                Rating[]
-  ReviewMap             ReviewMap[]
+  MapReview             MapReview[]
   UsersToCompletedMaps  UsersToCompletedMaps[]
   Map_Archive           Map_Archive[]
   Map_Edit              Map_Edit[]
@@ -457,14 +457,14 @@ model Review {
   likes              String?          @db.VarChar(1000)
   dislikes           String?          @db.VarChar(1000)
   otherComments      String?          @db.VarChar(1500)
-  ReviewMap          ReviewMap[]
+  MapReview          MapReview[]
 
   @@unique([reviewCollectionId, modId])
   @@index([modId])
   @@index([reviewCollectionId])
 }
 
-model ReviewMap {
+model MapReview {
   id                Int     @id @default(autoincrement()) @db.UnsignedInt
   Review            Review  @relation(fields: [reviewId], references: [id], onDelete: Cascade, onUpdate: Restrict)
   reviewId          Int     @db.UnsignedMediumInt

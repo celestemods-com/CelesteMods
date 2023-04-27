@@ -78,7 +78,7 @@ const defaultMapSelect = Prisma.validator<Prisma.MapSelect>()({
             fullClearOnlyBool: true,
         },
     },
-    ReviewMap: { select: { id: true } },
+    MapReview: { select: { id: true } },
     Map_Archive: { select: { id: true } },
     Map_Edit: { select: { id: true } },
 });
