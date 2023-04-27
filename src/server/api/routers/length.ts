@@ -60,7 +60,7 @@ const validateLength = async (prisma: MyPrismaClient, newName?: string): Promise
 
 
 
-const getLengthById = async (prisma: MyPrismaClient, id: number): Promise<Pick<Length, keyof typeof defaultLengthSelect>> => {
+export const getLengthById = async (prisma: MyPrismaClient, id: number): Promise<Pick<Length, keyof typeof defaultLengthSelect>> => {
     const length: Length | null = await prisma.length.findUnique({  //having type declaration here AND in function signature is safer
         where: { id: id },
         select: defaultLengthSelect,

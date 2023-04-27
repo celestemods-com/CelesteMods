@@ -105,7 +105,7 @@ const validateReview = async (prisma: MyPrismaClient, reviewCollectionId: number
 
 
 
-const getReviewById = async<
+export const getReviewById = async<
     ReturnUserIdBool extends boolean,
     ReturnType = ReturnUserIdBool extends true ? ExpandedReview : DefaultReview,
 >(
@@ -252,12 +252,12 @@ export const reviewRouter = createTRPCRouter({
             }
             catch (error) {
                 if (error && typeof error === "object" && "code" in error && error.code === "NOT_FOUND") {
-                    const message = `ReviewCollection ${reviewCollectionId} references mod ${modId}, which does not exist.`;
+                    const message = `Review ${input.id} references mod ${modId}, which does not exist.`;
 
                     console.error(message);
 
                     throw new TRPCError({
-                        code: "INTERNAL_SERVER_ERROR",
+                        code: "NOT_FOUND",
                         message: `${message} Please notify an admin. In the meantime, this can be worked around by submitting a valid replacement modId.`,
                     });
                 }
@@ -276,7 +276,8 @@ export const reviewRouter = createTRPCRouter({
             const currentTime = getCurrentTime();
 
 
-            const review = await ctx.prisma.review.create({
+            const review = await ctx.prisma.review.update({
+                where: { id: input.id },
                 data: {
                     Mod: { connect: { id: modId } },
                     ReviewCollection: { connect: { id: reviewCollectionId } },
