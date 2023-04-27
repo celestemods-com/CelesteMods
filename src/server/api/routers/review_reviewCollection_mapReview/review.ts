@@ -184,21 +184,21 @@ export const reviewRouter = createTRPCRouter({
             return await getReviewById(ctx.prisma, input.id, false);
         }),
 
-    getByModId: publicProcedure
-        .input(modIdSchemaForReview.merge(reviewOrderSchema))
-        .query(async ({ ctx, input }) => {
-            return await ctx.prisma.review.findMany({
-                where: { modId: input.modId },
-                select: defaultReviewSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
-            });
-        }),
-
     getByReviewCollectionId: publicProcedure
         .input(reviewCollectionIdSchemaForReview.merge(reviewOrderSchema))
         .query(async ({ ctx, input }) => {
             return await ctx.prisma.review.findMany({
                 where: { reviewCollectionId: input.reviewCollectionId },
+                select: defaultReviewSelect,
+                orderBy: getOrderObject(input.selectors, input.directions),
+            });
+        }),
+
+    getByModId: publicProcedure
+        .input(modIdSchemaForReview.merge(reviewOrderSchema))
+        .query(async ({ ctx, input }) => {
+            return await ctx.prisma.review.findMany({
+                where: { modId: input.modId },
                 select: defaultReviewSelect,
                 orderBy: getOrderObject(input.selectors, input.directions),
             });
