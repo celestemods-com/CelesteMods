@@ -8,6 +8,7 @@ import { modRouter } from "./routers/map_mod_publisher/mod";
 import { mapRouter } from "./routers/map_mod_publisher/map";
 import { qualityRouter } from "./routers/quality";
 import { ratingRouter } from "./routers/rating";
+import { reviewCollectionRouter } from "./routers/review_reviewCollection_mapReview/reviewCollection";
 
 /**
  * This is the primary router for your server.
@@ -25,6 +26,7 @@ export const appRouter = createTRPCRouter({
   map: mapRouter,
   quality: qualityRouter,
   rating: ratingRouter,
+  reviewCollection: reviewCollectionRouter,
 });
 
 // export type definition of API
