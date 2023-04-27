@@ -1,6 +1,0 @@
-This .sql file was produced by the PHPMyAdmin plugin for XAMPP. I don't know if it will work for other SQL clients.
-To import this file, you must have an empty database called "modslist".
-In PHPMyAdmin, select the empty "modslist" database, click "import", and upload the .sql file.
-Next, delete the contents of /node_modules/.prisma and the contents of schema.prisma after line 9.
-Open a terminal in the project's root folder and run "npx prisma db pull" followed by "npx prisma generate".
-The server is now ready to launch using "npm start".
