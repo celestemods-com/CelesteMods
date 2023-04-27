@@ -11,6 +11,15 @@ import { techVideoRouter, defaultTechVideoSelect, techVideoPostWithTechSchema } 
 
 
 
+type ExpandedTech = Tech & {
+    TechVideo: {
+        id: number;
+    }[];
+};
+
+
+
+
 const defaultTechSelect = Prisma.validator<Prisma.TechSelect>()({
     id: true,
     name: true,
@@ -58,13 +67,13 @@ const validateTech = async (prisma: MyPrismaClient, newName?: string): Promise<v
         code: "FORBIDDEN",
         message: `Conflicts with existing tech ${matchingTech.id}`,
     });
-}
+};
 
 
 
 
-const getTechById = async (prisma: MyPrismaClient, id: number) => {
-    const tech: Tech | null = await prisma.tech.findUnique({    //having type declaration here AND in function signature is safer
+const getTechById = async (prisma: MyPrismaClient, id: number): Promise<ExpandedTech> => {
+    const tech: ExpandedTech | null = await prisma.tech.findUnique({    //having type declaration here AND in function signature is safer
         where: { id: id },
         select: defaultTechSelect,
     });
@@ -77,7 +86,7 @@ const getTechById = async (prisma: MyPrismaClient, id: number) => {
     }
 
     return tech;
-}
+};
 
 
 
