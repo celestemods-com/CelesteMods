@@ -472,6 +472,7 @@ model MapReview {
   mapId             Int     @db.UnsignedMediumInt
   Length            Length  @relation(fields: [lengthId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   lengthId          Int     @db.UnsignedTinyInt
+  timeSubmitted     Int
   likes             String? @db.VarChar(500)
   dislikes          String? @db.VarChar(500)
   otherComments     String? @db.VarChar(500)
