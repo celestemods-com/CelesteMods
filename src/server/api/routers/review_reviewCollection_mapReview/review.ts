@@ -5,7 +5,7 @@ import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, Review } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
-import { intMaxSizes } from "~/consts/integerSizes";
+import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { getModById, modIdSchema_NonObject } from "../map_mod_publisher/mod";
 import { getReviewCollectionById, reviewCollectionIdSchema_NonObject } from "./reviewCollection";
 import { ADMIN_PERMISSION_STRINGS, MODLIST_MODERATOR_PERMISSION_STRINGS, checkIsPrivileged } from "../../utils/permissions";
@@ -41,7 +41,7 @@ const defaultReviewSelect = Prisma.validator<Prisma.ReviewSelect>()({
 
 
 
-export const reviewIdSchema_NonObject = z.number().int().gte(1).lte(intMaxSizes.mediumInt.unsigned);
+export const reviewIdSchema_NonObject = z.number().int().gte(1).lte(INT_MAX_SIZES.mediumInt.unsigned);
 
 const reviewIdSchema = z.object({
     id: reviewIdSchema_NonObject,

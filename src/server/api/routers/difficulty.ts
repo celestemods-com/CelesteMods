@@ -5,7 +5,7 @@ import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, Difficulty } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
-import { intMaxSizes } from "~/consts/integerSizes";
+import { INT_MAX_SIZES } from "~/consts/integerSizes";
 
 
 
@@ -24,7 +24,7 @@ const defaultDifficultySelect = Prisma.validator<Prisma.DifficultySelect>()({
 const difficultyNameSchema_NonObject = z.string().min(1).max(50);
 
 
-export const difficultyIdSchema_NonObject = z.number().int().gte(0).lte(intMaxSizes.smallInt.unsigned);
+export const difficultyIdSchema_NonObject = z.number().int().gte(0).lte(INT_MAX_SIZES.smallInt.unsigned);
 
 const difficultyIdSchema = z.object({
     id: difficultyIdSchema_NonObject,
@@ -35,7 +35,7 @@ const difficultyPostSchema = z.object({
     name: difficultyNameSchema_NonObject,
     description: z.string().min(1).max(100).nullish(),
     parentDifficultyId: difficultyIdSchema_NonObject.nullable(),
-    order: z.number().gte(1).lte(intMaxSizes.tinyInt.unsigned),
+    order: z.number().gte(1).lte(INT_MAX_SIZES.tinyInt.unsigned),
 }).strict();
 
 

@@ -5,7 +5,7 @@ import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, Publisher } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
-import { intMaxSizes } from "~/consts/integerSizes";
+import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { userIdSchema_NonObject } from "../user";
 import axios from "axios";
 import { ADMIN_PERMISSION_STRINGS, checkIsPrivileged } from "../../utils/permissions";
@@ -28,14 +28,14 @@ export const PUBLISHER_NAME_MAX_LENGTH = 20;
 const publisherNameSchema_NonObject = z.string().min(1).max(PUBLISHER_NAME_MAX_LENGTH);
 
 
-export const publisherGamebananaIdSchema_NonObject = z.number().int().gte(1).lte(intMaxSizes.mediumInt.unsigned);
+export const publisherGamebananaIdSchema_NonObject = z.number().int().gte(1).lte(INT_MAX_SIZES.mediumInt.unsigned);
 
 const publisherGamebananaIdSchema = z.object({
     gamebananaId: publisherGamebananaIdSchema_NonObject,
 }).strict();
 
 
-export const publisherIdSchema_NonObject = z.number().int().gte(1).lte(intMaxSizes.smallInt.unsigned);
+export const publisherIdSchema_NonObject = z.number().int().gte(1).lte(INT_MAX_SIZES.smallInt.unsigned);
 
 const publisherIdSchema = z.object({
     id: publisherIdSchema_NonObject,

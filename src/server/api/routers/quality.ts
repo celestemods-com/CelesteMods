@@ -5,7 +5,7 @@ import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, Quality } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
-import { intMaxSizes } from "~/consts/integerSizes";
+import { INT_MAX_SIZES } from "~/consts/integerSizes";
 
 
 
@@ -23,7 +23,7 @@ const defaultQualitySelect = Prisma.validator<Prisma.QualitySelect>()({
 const qualityNameSchema_NonObject = z.string().min(1).max(20);
 
 
-export const qualityIdSchema_NonObject = z.number().int().gte(1).lte(intMaxSizes.tinyInt.unsigned);
+export const qualityIdSchema_NonObject = z.number().int().gte(1).lte(INT_MAX_SIZES.tinyInt.unsigned);
 
 const qualityIdSchema = z.object({
     id: qualityIdSchema_NonObject,
@@ -33,7 +33,7 @@ const qualityIdSchema = z.object({
 const qualityPostSchema = z.object({
     name: qualityNameSchema_NonObject,
     description: z.string().min(1).max(100),
-    order: z.number().gte(1).lte(intMaxSizes.tinyInt.unsigned),
+    order: z.number().gte(1).lte(INT_MAX_SIZES.tinyInt.unsigned),
 }).strict();
 
 

@@ -5,7 +5,7 @@ import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, User } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
-import { intMaxSizes } from "~/consts/integerSizes";
+import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { ADMIN_PERMISSION_STRINGS, Permission, checkIsPrivileged, checkPermissions } from "../utils/permissions";
 
 
@@ -57,7 +57,7 @@ const getUserSelect = (permissions: Permission[] | undefined, overwrite?: boolea
 export const displayNameSchema_NonObject = z.string().min(1).max(50);
 
 
-export const userIdSchema_NonObject = z.number().int().gte(1).lte(intMaxSizes.smallInt.unsigned);
+export const userIdSchema_NonObject = z.number().int().gte(1).lte(INT_MAX_SIZES.smallInt.unsigned);
 
 const userIdSchema = z.object({
     id: userIdSchema_NonObject,

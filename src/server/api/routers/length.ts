@@ -5,7 +5,7 @@ import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, Length } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
-import { intMaxSizes } from "~/consts/integerSizes";
+import { INT_MAX_SIZES } from "~/consts/integerSizes";
 
 
 
@@ -23,7 +23,7 @@ const defaultLengthSelect = Prisma.validator<Prisma.LengthSelect>()({
 const lengthNameSchema_NonObject = z.string().min(1).max(20);
 
 
-export const lengthIdSchema_NonObject = z.number().int().gte(1).lte(intMaxSizes.tinyInt.unsigned);
+export const lengthIdSchema_NonObject = z.number().int().gte(1).lte(INT_MAX_SIZES.tinyInt.unsigned);
 
 const lengthIdSchema = z.object({
     id: lengthIdSchema_NonObject,
@@ -33,7 +33,7 @@ const lengthIdSchema = z.object({
 const lengthPostSchema = z.object({
     name: lengthNameSchema_NonObject,
     description: z.string().min(1).max(100),
-    order: z.number().gte(1).lte(intMaxSizes.tinyInt.unsigned),
+    order: z.number().gte(1).lte(INT_MAX_SIZES.tinyInt.unsigned),
 }).strict();
 
 

@@ -5,7 +5,7 @@ import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, Map, MapSide, Map_NewWithMod_New, Map_Edit, Map_Archive, Map_NewSolo } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
-import { intMaxSizes } from "~/consts/integerSizes";
+import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { displayNameSchema_NonObject, getUserById, userIdSchema_NonObject } from "../user";
 import { ADMIN_PERMISSION_STRINGS, MODLIST_MODERATOR_PERMISSION_STRINGS, checkIsPrivileged, checkPermissions } from "../../utils/permissions";
 import { getModById, modIdSchema_NonObject } from "./mod";
@@ -150,7 +150,7 @@ const mapSideSchema = z.object({
 }).strict();
 
 
-export const mapIdSchema_NonObject = z.number().int().gte(1).lte(intMaxSizes.mediumInt.unsigned);
+export const mapIdSchema_NonObject = z.number().int().gte(1).lte(INT_MAX_SIZES.mediumInt.unsigned);
 
 const mapIdSchema = z.object({
     id: mapIdSchema_NonObject,
@@ -179,7 +179,7 @@ const mapSchema_base = z.object({
 
 
 const mapSchema_Normal = mapSchema_base.extend({
-    chapter: z.number().int().min(1).max(intMaxSizes.tinyInt.unsigned),
+    chapter: z.number().int().min(1).max(INT_MAX_SIZES.tinyInt.unsigned),
     side: mapSideSchema_NonObject,
 }).strict();
 
@@ -187,7 +187,7 @@ const mapSchema_Normal = mapSchema_base.extend({
 const mapSchema_Collab_Contest_Lobby = mapSchema_base.extend({
     mapperUserId: userIdSchema_NonObject.nullish(),
     mapperNameString: displayNameSchema_NonObject.nullish(), /** Set to null to indicate the mod's publisher's name should be used */
-    overallRank: z.number().int().min(1).max(intMaxSizes.tinyInt.unsigned),
+    overallRank: z.number().int().min(1).max(INT_MAX_SIZES.tinyInt.unsigned),
 }).strict();
 
 const refineCollabContestLobby = (data: any) => {   //TODO: add type for data

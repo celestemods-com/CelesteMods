@@ -5,7 +5,7 @@ import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, MapReview } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
-import { intMaxSizes } from "~/consts/integerSizes";
+import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { getReviewById, reviewIdSchema_NonObject } from "./review";
 import { getMapById, mapIdSchema_NonObject } from "../map_mod_publisher/map";
 import { getLengthById, lengthIdSchema_NonObject } from "../length";
@@ -41,7 +41,7 @@ const defaultMapReviewSelect = Prisma.validator<Prisma.MapReviewSelect>()({
 
 
 
-const mapReviewIdSchema_NonObject = z.number().int().gte(1).lte(intMaxSizes.int.unsigned);
+const mapReviewIdSchema_NonObject = z.number().int().gte(1).lte(INT_MAX_SIZES.int.unsigned);
 
 const mapReviewIdSchema = z.object({
     id: mapReviewIdSchema_NonObject,

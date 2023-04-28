@@ -5,7 +5,7 @@ import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, Rating } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
-import { intMaxSizes } from "~/consts/integerSizes";
+import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { getMapById, mapIdSchema_NonObject } from "./map_mod_publisher/map";
 import { qualityIdSchema_NonObject } from "./quality";
 import { difficultyIdSchema_NonObject } from "./difficulty";
@@ -33,7 +33,7 @@ type RatingsInfo = {
 
 
 
-export const ratingIdSchema_NonObject = z.number().int().gte(1).lte(intMaxSizes.int.unsigned);
+export const ratingIdSchema_NonObject = z.number().int().gte(1).lte(INT_MAX_SIZES.int.unsigned);
 
 const ratingIdSchema = z.object({
     id: ratingIdSchema_NonObject,

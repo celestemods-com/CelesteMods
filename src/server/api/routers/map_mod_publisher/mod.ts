@@ -6,7 +6,7 @@ import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, ModType, Mod, Map, Mod_Archive, Map_Archive, Mod_Edit, Map_Edit, Mod_New, Map_NewWithMod_New } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
-import { intMaxSizes } from "~/consts/integerSizes";
+import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { MODLIST_MODERATOR_PERMISSION_STRINGS, checkPermissions } from "../../utils/permissions";
 import { mapPostWithModSchema, MapperUserId } from "./map";
 import { PUBLISHER_NAME_MAX_LENGTH } from "./publisher";
@@ -110,14 +110,14 @@ const modShortDescriptionSchema_NonObject = z.string().min(1).max(150);
 const modLongDescriptionSchema_NonObject = z.string().min(1).max(1500);
 
 
-const gamebananaModIdSchema_NonObject = z.number().int().gte(1).lte(intMaxSizes.mediumInt.unsigned);
+const gamebananaModIdSchema_NonObject = z.number().int().gte(1).lte(INT_MAX_SIZES.mediumInt.unsigned);
 
 const gamebananaModIdSchema = z.object({
     gamebananaModId: gamebananaModIdSchema_NonObject,
 }).strict();
 
 
-export const modIdSchema_NonObject = z.number().int().gte(1).lte(intMaxSizes.smallInt.unsigned);
+export const modIdSchema_NonObject = z.number().int().gte(1).lte(INT_MAX_SIZES.smallInt.unsigned);
 
 const modIdSchema = z.object({
     id: modIdSchema_NonObject,

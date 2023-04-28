@@ -5,7 +5,7 @@ import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, Tech } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
-import { intMaxSizes } from "~/consts/integerSizes";
+import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { techVideoRouter, defaultTechVideoSelect, techVideoPostWithTechSchema } from "./techVideo";
 
 
@@ -34,7 +34,7 @@ const defaultTechSelect = Prisma.validator<Prisma.TechSelect>()({
 const techNameSchema_NonObject = z.string().min(1).max(50);
 
 
-export const techIdSchema_NonObject = z.number().int().gte(1).lte(intMaxSizes.smallInt.unsigned);
+export const techIdSchema_NonObject = z.number().int().gte(1).lte(INT_MAX_SIZES.smallInt.unsigned);
 
 const techIdSchema = z.object({
     id: techIdSchema_NonObject,

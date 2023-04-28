@@ -1,4 +1,4 @@
-export const intMaxSizes = {
+export const INT_MAX_SIZES = {
     tinyInt: {
         signed: 127 - 1,
         unsigned: 255 - 1,
