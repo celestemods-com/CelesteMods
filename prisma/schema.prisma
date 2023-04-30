@@ -193,7 +193,7 @@ model Mod_Archive {
 model Map_Archive {
   id                    Int                   @id @default(autoincrement()) @db.UnsignedMediumInt
   Map                   Map                   @relation(fields: [mapId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  mapId                 Int                   @db.UnsignedSmallInt
+  mapId                 Int                   @db.UnsignedMediumInt
   User_MapperUser       User?                 @relation("Map_Archive_MapperUserIdToUser", fields: [mapperUserId], references: [id], onDelete: SetNull, onUpdate: Restrict)
   mapperUserId          Int?                  @db.UnsignedSmallInt
   mapperNameString      String                @db.VarChar(50)
@@ -262,7 +262,7 @@ model Mod_Edit {
 model Map_Edit {
   id                    Int                @id @default(autoincrement()) @db.UnsignedMediumInt
   Map                   Map                @relation(fields: [mapId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  mapId                 Int                @db.UnsignedSmallInt
+  mapId                 Int                @db.UnsignedMediumInt
   User_MapperUser       User?              @relation("Map_Edit_MapperUserIdToUser", fields: [mapperUserId], references: [id], onDelete: SetNull, onUpdate: Restrict)
   mapperUserId          Int?               @db.UnsignedSmallInt
   mapperNameString      String             @db.VarChar(50)
