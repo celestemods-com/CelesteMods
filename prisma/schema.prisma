@@ -24,8 +24,8 @@ model Difficulty {
   id                 Int                  @id @default(autoincrement()) @db.UnsignedSmallInt
   name               String               @db.VarChar(50)
   description        String?              @db.VarChar(100)
-  ParentDifficulty   Difficulty           @relation("DifficultyToDifficulty", fields: [parentDifficultyId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  parentDifficultyId Int                  @default(0) @db.UnsignedSmallInt
+  ParentDifficulty   Difficulty?          @relation("DifficultyToDifficulty", fields: [parentDifficultyId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  parentDifficultyId Int?                 @default(0) @db.UnsignedSmallInt
   order              Int                  @db.UnsignedTinyInt
   ChildDifficulty    Difficulty[]         @relation("DifficultyToDifficulty")
   Rating             Rating[]
@@ -493,7 +493,7 @@ model User {
   displayDiscord                        Boolean
   showCompletedMaps                     Boolean
   timeCreated                           Int
-  permissions                           String
+  permissions                           String                 @default("")
   accountStatus                         User_AccountStatus     @default(Active)
   timeDeletedOrBanned                   Int?
   Publisher                             Publisher[]
