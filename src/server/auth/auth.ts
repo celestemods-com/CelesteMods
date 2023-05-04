@@ -6,10 +6,11 @@ import {
 } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { env } from "~/env.mjs";
-import { User as PrismaUser } from "@prisma/client";
+import { User as PrismaUser, User_AccountStatus as PrismaUserAccountStatus } from "@prisma/client";
 import { prisma } from "~/server/prisma";
 import { Permission, assertsIsPermission } from "~/server/api/utils/permissions";
+import { discordProviderConfig } from "./discord";
+import { MyPrismaClient } from "~/server/prisma";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -24,10 +25,7 @@ declare module "next-auth" {
 
   interface User {
     id: PrismaUser["id"];
-    permissions: string;
-
-    // ...other properties
-    // role: UserRole;
+    permissions: PrismaUser["permissions"];
   }
 
   interface SessionUser extends Omit<User, "permissions"> {
@@ -50,7 +48,7 @@ const getPermissionArray = (permissionsString: string): Permission[] => {
 
 
   return permissionArray;
-}
+};
 
 
 /**
@@ -62,29 +60,15 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     session({ session, user }) {
       if (session.user) {
-        if (typeof user.id !== "number") {    //TODO: figure out if forcing the type of `id` to be `number` is going to cause problems
-          console.log('typeof user.id !== "number"');
-
-          const idAsNumber = Number(user.id);
-
-          if (isNaN(idAsNumber)) throw "user.id is NaN";
-
-          user.id = idAsNumber;
-        };
-
         session.user.id = user.id;
         session.user.permissions = getPermissionArray(user.permissions);
-        // session.user.role = user.role; <-- put other properties on the session here
       }
       return session;
     },
   },
   adapter: PrismaAdapter(prisma),
   providers: [
-    DiscordProvider({
-      clientId: env.DISCORD_CLIENT_ID,
-      clientSecret: env.DISCORD_CLIENT_SECRET,
-    }),
+    DiscordProvider(discordProviderConfig),
     /**
      * ...add more providers here.
      *
@@ -107,4 +91,21 @@ export const getServerAuthSession = (ctx: {
   res: GetServerSidePropsContext["res"];
 }) => {
   return getServerSession(ctx.req, ctx.res, authOptions);
+};
+
+
+
+
+type CommonProfileCallbackParams = {
+  showCompletedMaps: boolean;
+  permissions: string;
+  accountStatus: PrismaUserAccountStatus;
+  timeDeletedOrBanned: number | null;
+}
+
+export const commonProfileCallbackParams: CommonProfileCallbackParams = {
+  showCompletedMaps: false,
+  permissions: "",
+  accountStatus: "Active",
+  timeDeletedOrBanned: null,
 };
