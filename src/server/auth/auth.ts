@@ -5,7 +5,7 @@ import {
   type DefaultSession,
 } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { customPrismaAdapter } from "./prismaAdapter"; 
 import { User as PrismaUser, User_AccountStatus as PrismaUserAccountStatus } from "@prisma/client";
 import { prisma } from "~/server/prisma";
 import { Permission, assertsIsPermission } from "~/server/api/utils/permissions";
@@ -65,7 +65,7 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
-  adapter: PrismaAdapter(prisma),
+  adapter: customPrismaAdapter(prisma),
   providers: [
     DiscordProvider(discordProviderConfig),
     /**
