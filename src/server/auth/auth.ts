@@ -9,8 +9,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { User as PrismaUser, User_AccountStatus as PrismaUserAccountStatus } from "@prisma/client";
 import { prisma } from "~/server/prisma";
 import { Permission, assertsIsPermission } from "~/server/api/utils/permissions";
-import { discordProviderConfig } from "./discord";
-import { MyPrismaClient } from "~/server/prisma";
+import { discordProviderConfig } from "./discordProviderConfig";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
