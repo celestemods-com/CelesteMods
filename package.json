@@ -39,6 +39,19 @@
     "ts-node": "^10.9.1",
     "typescript": "^5.0.3"
   },
+  "browserslist": {
+    "production": [
+      ">0.3%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 2 chrome version"
+    ],
+    "ssr": [
+      "node 16"
+    ]
+  },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
