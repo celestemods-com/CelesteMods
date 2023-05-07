@@ -16,7 +16,7 @@ const profileCallback = (profile: DiscordProfile): Awaitable<User> => {
         profile.image_url = `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.${format}`;
     }
 
-    
+
     return {
         id: profile.id,
         name: profile.username,

@@ -5,7 +5,7 @@ import {
   type DefaultSession,
 } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
-import { customPrismaAdapter } from "./prismaAdapter"; 
+import { customPrismaAdapter } from "./prismaAdapter";
 import { User as PrismaUser, User_AccountStatus as PrismaUserAccountStatus } from "@prisma/client";
 import { prisma } from "~/server/prisma";
 import { Permission, assertsIsPermission } from "~/server/api/utils/permissions";
@@ -100,7 +100,7 @@ type CommonProfileCallbackParams = {
   permissions: string;
   accountStatus: PrismaUserAccountStatus;
   timeDeletedOrBanned: number | null;
-}
+};
 
 export const commonProfileCallbackParams: CommonProfileCallbackParams = {
   showCompletedMaps: false,
