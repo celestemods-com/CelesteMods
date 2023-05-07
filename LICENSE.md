@@ -1,3 +1,6 @@
+This license applies to the entire repo except for subfolders that have their own license file. In such cases, the license file in the subfolder takes precedence.
+
+
                     GNU AFFERO GENERAL PUBLIC LICENSE
                        Version 3, 19 November 2007
 
