@@ -28,7 +28,7 @@
     "@trpc/react-query": "^10.18.0",
     "@trpc/server": "^10.9.0",
     "axios": "^1.4.0",
-    "dayjs": "^1.11.7",
+    "dayjs": "^1.11.8",
     "embla-carousel-react": "^7.1.0",
     "next": "^13.2.1",
     "next-auth": "^4.22.1",
