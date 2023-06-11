@@ -8,35 +8,33 @@ const Home: NextPage = () => {
 
   return (
     <>
-      <div className={styles.container}>
-        <h1 className={styles.title}>
-          Create <span className={styles.pinkSpan}>T3</span> App
+      <div>
+        <h1>
+          Create <span>T3</span> App
         </h1>
-        <div className={styles.cardRow}>
+        <div>
           <Link
-            className={styles.card}
             href="https://create.t3.gg/en/usage/first-steps"
             target="_blank"
           >
-            <h3 className={styles.cardTitle}>First Steps →</h3>
-            <div className={styles.cardText}>
+            <h3>First Steps →</h3>
+            <div>
               Just the basics - Everything you need to know to set up your
               database and authentication.
             </div>
           </Link>
           <Link
-            className={styles.card}
             href="https://create.t3.gg/en/introduction"
             target="_blank"
           >
-            <h3 className={styles.cardTitle}>Documentation →</h3>
-            <div className={styles.cardText}>
+            <h3>Documentation →</h3>
+            <div>
               Learn more about Create T3 App, the libraries it uses, and how
               to deploy it.
             </div>
           </Link>
         </div>
-        <div className={styles.showcaseContainer}>
+        <div>
           <AuthShowcase />
         </div>
       </div>
@@ -60,12 +58,11 @@ const AuthShowcase: React.FC = () => {
   );
 
   return (
-    <div className={styles.authContainer}>
-      <p className={styles.showcaseText}>
+    <div>
+      <p>
         {sessionData && <span>Logged in as {sessionData.user?.name}</span>}
       </p>
       <button
-        className={styles.loginButton}
         onClick={sessionData ? () => void signOut() : () => void signIn()}
       >
         {sessionData ? "Sign out" : "Sign in"}
