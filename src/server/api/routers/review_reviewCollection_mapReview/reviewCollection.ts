@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure, adminProcedure, modReviewerProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, publicProcedure, modReviewerProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, ReviewCollection } from "@prisma/client";
@@ -61,7 +61,7 @@ const reviewCollectionOrderSchema = getCombinedSchema(
 
 
 
-const validateReviewCollection = async (prisma: MyPrismaClient, newUserId: number, newName?: string): Promise<void> => {
+const validateReviewCollection = async (prisma: MyPrismaClient, newUserId: string, newName?: string): Promise<void> => {
     if (!newName) return;
 
     

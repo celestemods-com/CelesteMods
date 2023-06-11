@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure, adminProcedure, modReviewerProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, publicProcedure, modReviewerProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, Review } from "@prisma/client";
@@ -20,7 +20,7 @@ type DefaultReview = Review & {
 
 type ExpandedReview = DefaultReview & {
     ReviewCollection: {
-        userId: number;
+        userId: string;
     };
 };
 

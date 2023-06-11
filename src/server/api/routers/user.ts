@@ -5,27 +5,56 @@ import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, User } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
-import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { ADMIN_PERMISSION_STRINGS, Permission, checkIsPrivileged, checkPermissions } from "../utils/permissions";
+import { selectIdObject } from "../utils/selectIdObject";
+
+
+
+
+type TrimmedUser = Pick<User, keyof Omit<typeof defaultPartialUserSelect, "Publisher" | "ReviewCollection">> & {
+    Publisher: { id: number; }[];
+    ReviewCollection: { id: number; }[];
+};
+
+
+type ExpandedUser = TrimmedUser & {
+    Account: {
+        providerAccountId: string;
+    }[];
+    discordUsername: string;
+    discordDiscriminator: string;
+    permissions: string[];
+    timeDeletedOrBanned?: number;
+};
+
 
 
 
 const defaultPartialUserSelectObject = {
     id: true,
-    displayName: true,
+    name: true,
+    image: true,
     displayDiscord: true,
     showCompletedMaps: true,
-    timeCreated: true,
     accountStatus: true,
+    Publisher: selectIdObject,
+    ReviewCollection: selectIdObject,
 };
 
 const defaultPartialUserSelect = Prisma.validator<Prisma.UserSelect>()(defaultPartialUserSelectObject);
 
 
 const discordUserSelectObject = {
-    discordId: true,
+    Account: {
+        where: {
+            provider: "discord",    //TODO: ensure this is the right casing
+        },
+        select: {
+            providerAccountId: true,
+        },
+    },
     discordUsername: true,
-    discordDiscrim: true,
+    discordDiscriminator: true,
 };
 
 const discordUserSelect = Prisma.validator<Prisma.UserSelect>()(discordUserSelectObject);
@@ -49,7 +78,7 @@ const getUserSelect = (permissions: Permission[] | undefined, overwrite?: boolea
 
     if (checkPermissions(ADMIN_PERMISSION_STRINGS, permissions)) return defaultFullUserSelect;
     else return defaultPartialUserSelect;
-}
+};
 
 
 
@@ -57,7 +86,7 @@ const getUserSelect = (permissions: Permission[] | undefined, overwrite?: boolea
 export const displayNameSchema_NonObject = z.string().min(1).max(50);
 
 
-export const userIdSchema_NonObject = z.number().int().gte(1).lte(INT_MAX_SIZES.smallInt.unsigned);
+export const userIdSchema_NonObject = z.string().cuid();
 
 const userIdSchema = z.object({
     id: userIdSchema_NonObject,
@@ -74,7 +103,7 @@ const userPostSchema = z.object({
 
 const userOrderSchema = getCombinedSchema(
     getNonEmptyArray(Prisma.UserScalarFieldEnum),
-    ["displayName"],
+    ["name"],
     ["asc"],
 );
 
@@ -87,12 +116,12 @@ const userOrderSchema = getCombinedSchema(
  */
 export const getUserById = async (
     prisma: MyPrismaClient,
-    id: number,
+    id: string,
     permissions: Permission[] | undefined,
     overwrite?: boolean,
 ): Promise<
-    Pick<User, keyof typeof defaultPartialUserSelect> |
-    Pick<User, keyof typeof defaultFullUserSelect>
+    TrimmedUser |
+    ExpandedUser
 > => {
     const user = await prisma.user.findUnique({    //having type declaration here AND in function signature is safer
         where: { id: id },
@@ -107,7 +136,7 @@ export const getUserById = async (
     }
 
     return user;
-}
+};
 
 
 
@@ -166,7 +195,7 @@ export const userRouter = createTRPCRouter({
         )
         .query(async ({ ctx, input }) => {
             const users = await ctx.prisma.user.findMany({
-                where: { displayName: { contains: input.query } },
+                where: { name: { contains: input.query } },
                 select: defaultPartialUserSelect,
                 orderBy: getOrderObject(input.selectors, input.directions),
             });
@@ -179,8 +208,8 @@ export const userRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             //TODO: implement procedure
             //enforce unique displayNames
-            
-            throw "not implemented"
+
+            throw "not implemented";
         }),
 
     edit: loggedInProcedure
@@ -189,7 +218,7 @@ export const userRouter = createTRPCRouter({
             //TODO: implement procedure
             //enforce unique displayNames
 
-            throw "not implemented"
+            throw "not implemented";
         }),
 
     delete: loggedInProcedure
@@ -216,6 +245,6 @@ export const userRouter = createTRPCRouter({
             //cover things like banning users or changing permissions
             //may split into multiple procedures
 
-            throw "not implemented"
+            throw "not implemented";
         }),
 });

@@ -114,7 +114,7 @@ const getRatingByMapAndUser = async <
     throwOnMatch: ThrowOnMatch,
     prisma: MyPrismaClient,
     mapId: number,
-    submittedBy: number
+    submittedBy: string,
 ): Promise<ReturnType> => {
     const rating: Rating | null = await prisma.rating.findUnique({  //having type declaration here AND in function signature is safer
         where: {

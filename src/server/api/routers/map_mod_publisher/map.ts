@@ -7,7 +7,7 @@ import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderH
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { displayNameSchema_NonObject, getUserById, userIdSchema_NonObject } from "../user";
-import { ADMIN_PERMISSION_STRINGS, MODLIST_MODERATOR_PERMISSION_STRINGS, checkIsPrivileged, checkPermissions } from "../../utils/permissions";
+import { MODLIST_MODERATOR_PERMISSION_STRINGS, checkPermissions } from "../../utils/permissions";
 import { getModById, modIdSchema_NonObject } from "./mod";
 import { difficultyIdSchema_NonObject } from "../difficulty";
 import { lengthIdSchema_NonObject } from "../length";
@@ -15,7 +15,6 @@ import { techIdSchema_NonObject } from "../tech_techVideo/tech";
 import { IfElse, ArrayIncludes } from "../../../../utils/typeHelpers";
 import { getCurrentTime } from "../../utils/getCurrentTime";
 import { getCheckedTableNames } from "../../utils/getCheckedTableNames";
-import { checkSubarray, CheckSubarray } from "~/utils/checkSubarray";
 import { getPublisherById } from "./publisher";
 
 //TODO!: check all routers to make sure disconnect/connect or set are used in any many-to-many relationships
@@ -709,7 +708,7 @@ export const mapRouter = createTRPCRouter({
                 if (nonNormalInput.mapperUserId) {
                     const userFromId = await getUserById(ctx.prisma, nonNormalInput.mapperUserId, undefined);
 
-                    mapperNameString = userFromId.displayName;
+                    mapperNameString = userFromId.name;
                 }
                 else if (nonNormalInput.mapperNameString) {
                     mapperNameString = nonNormalInput.mapperNameString;
@@ -876,20 +875,20 @@ export const mapRouter = createTRPCRouter({
                 const nonNormalInput = input as z.infer<typeof mapUpdateSchema_Collab_Contest_Lobby>;
 
 
-                let mapperUserId: number | null | undefined;
+                let mapperUserId: string | null | undefined;
                 let mapperNameString: string;
 
                 if (nonNormalInput.mapperUserId) {
                     const userFromId = await getUserById(ctx.prisma, nonNormalInput.mapperUserId, undefined);
 
                     mapperUserId = userFromId.id;
-                    mapperNameString = userFromId.displayName;
+                    mapperNameString = userFromId.name;
                 }
                 else if (nonNormalInput.mapperUserId !== null && existingMap.mapperUserId) {
                     const userFromId = await getUserById(ctx.prisma, existingMap.mapperUserId, undefined);
 
                     mapperUserId = undefined;
-                    mapperNameString = userFromId.displayName;
+                    mapperNameString = userFromId.name;
                 }
                 else {
                     if (nonNormalInput.mapperUserId === null) mapperUserId = null;

@@ -55,7 +55,7 @@ export const checkPermissions = (validPermissionsArray: readonly Permission[], u
 /**
  *  throws on failure
  */
-export const checkIsPrivileged = (validPermissionsArray: readonly Permission[], sessionUser: SessionUser, targetUserId: number): void => {
+export const checkIsPrivileged = (validPermissionsArray: readonly Permission[], sessionUser: SessionUser, targetUserId: string): void => {
   if (sessionUser.id === targetUserId) return;
 
 

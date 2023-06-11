@@ -18,7 +18,7 @@ import { getCurrentTime } from "../../utils/getCurrentTime";
 type ExpandedMapReview = MapReview & {
     Review: {
         ReviewCollection: {
-            userId: number;
+            userId: string;
         };
     };
 };
