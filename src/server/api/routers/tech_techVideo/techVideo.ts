@@ -6,7 +6,6 @@ import { Prisma, TechVideo } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
-import { techIdSchema_NonObject } from "./tech";
 
 
 
@@ -29,6 +28,8 @@ export const techVideoPostWithTechSchema = z.object({
     url: z.string().url(),
 }).strict();
 
+
+export const techIdSchema_NonObject = z.number().int().gte(1).lte(INT_MAX_SIZES.smallInt.unsigned); //this needs to be here to resolve webpack error in ~\src\pages\api\panel.ts
 
 const techIdSchema_forTechVideos = z.object({
     techId: techIdSchema_NonObject,

@@ -6,7 +6,8 @@ import { Prisma, Review } from "@prisma/client";
 import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
-import { getModById, modIdSchema_NonObject } from "../map_mod_publisher/mod";
+import { getModById } from "../map_mod_publisher/mod";
+import { modIdSchema_NonObject } from "../map_mod_publisher/map"
 import { getReviewCollectionById, reviewCollectionIdSchema_NonObject } from "./reviewCollection";
 import { ADMIN_PERMISSION_STRINGS, MODLIST_MODERATOR_PERMISSION_STRINGS, checkIsPrivileged } from "../../utils/permissions";
 import { getCurrentTime } from "../../utils/getCurrentTime";

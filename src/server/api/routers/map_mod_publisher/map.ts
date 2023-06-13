@@ -8,10 +8,10 @@ import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { displayNameSchema_NonObject, getUserById, userIdSchema_NonObject } from "../user";
 import { MODLIST_MODERATOR_PERMISSION_STRINGS, checkPermissions } from "../../utils/permissions";
-import { getModById, modIdSchema_NonObject } from "./mod";
+import { getModById } from "./mod";
 import { difficultyIdSchema_NonObject } from "../difficulty";
 import { lengthIdSchema_NonObject } from "../length";
-import { techIdSchema_NonObject } from "../tech_techVideo/tech";
+import { techIdSchema_NonObject } from "../tech_techVideo/techVideo";
 import { IfElse, ArrayIncludes } from "../../../../utils/typeHelpers";
 import { getCurrentTime } from "../../utils/getCurrentTime";
 import { getCheckedTableNames } from "../../utils/getCheckedTableNames";
@@ -198,9 +198,12 @@ const refineCollabContestLobby = (data: any) => {   //TODO: add type for data
 };
 
 
+export const modIdSchema_NonObject = z.number().int().gte(1).lte(INT_MAX_SIZES.smallInt.unsigned);
+
 const modIdForMapSchema = z.object({
     modId: modIdSchema_NonObject,
 }).strict();
+
 
 export const mapPostWithModSchema = z.union([
     mapSchema_Normal,

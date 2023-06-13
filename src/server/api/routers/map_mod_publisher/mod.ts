@@ -8,7 +8,7 @@ import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderH
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { MODLIST_MODERATOR_PERMISSION_STRINGS, checkPermissions } from "../../utils/permissions";
-import { mapPostWithModSchema, MapperUserId } from "./map";
+import { mapPostWithModSchema, MapperUserId, modIdSchema_NonObject } from "./map";
 import { PUBLISHER_NAME_MAX_LENGTH } from "./publisher";
 import { getCurrentTime } from "../../utils/getCurrentTime";
 import { selectIdObject } from "../../utils/selectIdObject";
@@ -116,8 +116,6 @@ const gamebananaModIdSchema = z.object({
     gamebananaModId: gamebananaModIdSchema_NonObject,
 }).strict();
 
-
-export const modIdSchema_NonObject = z.number().int().gte(1).lte(INT_MAX_SIZES.smallInt.unsigned);
 
 const modIdSchema = z.object({
     id: modIdSchema_NonObject,
