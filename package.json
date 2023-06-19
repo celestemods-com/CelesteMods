@@ -31,7 +31,7 @@
     "dayjs": "^1.11.8",
     "embla-carousel-react": "^7.1.0",
     "mantine-datatable": "^2.5.9",
-    "next": "^13.4.5",
+    "next": "^13.4.6",
     "next-auth": "^4.22.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
