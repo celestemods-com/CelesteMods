@@ -3,7 +3,7 @@ import { createTRPCRouter, publicProcedure, adminProcedure } from "~/server/api/
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, Length } from "@prisma/client";
-import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
+import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
 
@@ -85,7 +85,7 @@ export const lengthRouter = createTRPCRouter({
         .query(({ ctx, input }) => {
             return ctx.prisma.length.findMany({
                 select: defaultLengthSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
         }),
 
@@ -105,7 +105,7 @@ export const lengthRouter = createTRPCRouter({
                 skip: numToSkip,
                 take: pageSize,
                 select: defaultLengthSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
             return lengths;
@@ -127,7 +127,7 @@ export const lengthRouter = createTRPCRouter({
             const lengths = await ctx.prisma.length.findMany({
                 where: { name: { contains: input.query } },
                 select: defaultLengthSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
             return lengths;

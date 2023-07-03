@@ -3,7 +3,7 @@ import { createTRPCRouter, publicProcedure, adminProcedure, loggedInProcedure, m
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, Map, MapSide, Map_NewWithMod_New, Map_Edit, Map_Archive, Map_NewSolo } from "@prisma/client";
-import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
+import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { displayNameSchema_NonObject, getUserById, userIdSchema_NonObject } from "../user";
@@ -598,7 +598,7 @@ export const mapRouter = createTRPCRouter({
         .query(({ ctx, input }) => {
             return ctx.prisma.map.findMany({
                 select: defaultMapSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
         }),
 
@@ -618,7 +618,7 @@ export const mapRouter = createTRPCRouter({
                 skip: numToSkip,
                 take: pageSize,
                 select: defaultMapSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
             return maps;

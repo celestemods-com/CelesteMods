@@ -3,7 +3,7 @@ import { createTRPCRouter, publicProcedure, modReviewerProcedure } from "~/serve
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, ReviewCollection } from "@prisma/client";
-import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
+import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { userIdSchema_NonObject } from "../user";
@@ -111,7 +111,7 @@ export const reviewCollectionRouter = createTRPCRouter({
         .query(({ ctx, input }) => {
             return ctx.prisma.reviewCollection.findMany({
                 select: defaultReviewCollectionSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
         }),
 
@@ -131,7 +131,7 @@ export const reviewCollectionRouter = createTRPCRouter({
                 skip: numToSkip,
                 take: pageSize,
                 select: defaultReviewCollectionSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
             return reviewCollections;
@@ -149,7 +149,7 @@ export const reviewCollectionRouter = createTRPCRouter({
             return await ctx.prisma.reviewCollection.findMany({
                 where: { userId: input.userId },
                 select: defaultReviewCollectionSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
         }),
 
@@ -163,7 +163,7 @@ export const reviewCollectionRouter = createTRPCRouter({
             const reviewCollections = await ctx.prisma.reviewCollection.findMany({
                 where: { name: { contains: input.query } },
                 select: defaultReviewCollectionSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
             return reviewCollections;

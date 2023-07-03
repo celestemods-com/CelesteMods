@@ -3,7 +3,7 @@ import { createTRPCRouter, publicProcedure, loggedInProcedure, adminProcedure } 
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, User } from "@prisma/client";
-import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
+import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { ADMIN_PERMISSION_STRINGS, Permission, checkIsPrivileged, checkPermissions } from "../utils/permissions";
 import { selectIdObject } from "../utils/selectIdObject";
@@ -155,7 +155,7 @@ export const userRouter = createTRPCRouter({
         .query(({ ctx, input }) => {
             return ctx.prisma.user.findMany({
                 select: getUserSelect(ctx.session?.user.permissions),
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
         }),
 
@@ -175,7 +175,7 @@ export const userRouter = createTRPCRouter({
                 skip: numToSkip,
                 take: pageSize,
                 select: getUserSelect(ctx.session?.user.permissions),
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
             return users;
@@ -197,7 +197,7 @@ export const userRouter = createTRPCRouter({
             const users = await ctx.prisma.user.findMany({
                 where: { name: { contains: input.query } },
                 select: defaultPartialUserSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
             return users;

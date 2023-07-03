@@ -3,7 +3,7 @@ import { createTRPCRouter, publicProcedure, modReviewerProcedure } from "~/serve
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, Review } from "@prisma/client";
-import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
+import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { getModById } from "../map_mod_publisher/mod";
@@ -153,7 +153,7 @@ export const reviewRouter = createTRPCRouter({
         .query(({ ctx, input }) => {
             return ctx.prisma.review.findMany({
                 select: defaultReviewSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
         }),
 
@@ -173,7 +173,7 @@ export const reviewRouter = createTRPCRouter({
                 skip: numToSkip,
                 take: pageSize,
                 select: defaultReviewSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
             return reviews;
@@ -191,7 +191,7 @@ export const reviewRouter = createTRPCRouter({
             return await ctx.prisma.review.findMany({
                 where: { reviewCollectionId: input.reviewCollectionId },
                 select: defaultReviewSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
         }),
 
@@ -201,7 +201,7 @@ export const reviewRouter = createTRPCRouter({
             return await ctx.prisma.review.findMany({
                 where: { modId: input.modId },
                 select: defaultReviewSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
         }),
 

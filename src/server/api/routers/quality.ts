@@ -3,7 +3,7 @@ import { createTRPCRouter, publicProcedure, adminProcedure } from "~/server/api/
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, Quality } from "@prisma/client";
-import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
+import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
 
@@ -85,7 +85,7 @@ export const qualityRouter = createTRPCRouter({
         .query(({ ctx, input }) => {
             return ctx.prisma.quality.findMany({
                 select: defaultQualitySelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
         }),
 
@@ -105,7 +105,7 @@ export const qualityRouter = createTRPCRouter({
                 skip: numToSkip,
                 take: pageSize,
                 select: defaultQualitySelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
             return qualitys;
@@ -127,7 +127,7 @@ export const qualityRouter = createTRPCRouter({
             const qualitys = await ctx.prisma.quality.findMany({
                 where: { name: { contains: input.query } },
                 select: defaultQualitySelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
             return qualitys;

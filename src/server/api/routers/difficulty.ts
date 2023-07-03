@@ -3,7 +3,7 @@ import { createTRPCRouter, publicProcedure, adminProcedure } from "~/server/api/
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, Difficulty } from "@prisma/client";
-import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
+import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
 
@@ -44,6 +44,9 @@ const difficultyOrderSchema = getCombinedSchema(
     ["parentDifficultyId", "order"],
     ["asc"],
 );
+
+type t = z.infer<typeof difficultyOrderSchema>;
+//   ^?
 
 
 
@@ -108,7 +111,7 @@ export const difficultyRouter = createTRPCRouter({
         .query(({ ctx, input }) => {
             return ctx.prisma.difficulty.findMany({
                 select: defaultDifficultySelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
         }),
 
@@ -128,7 +131,7 @@ export const difficultyRouter = createTRPCRouter({
                 skip: numToSkip,
                 take: pageSize,
                 select: defaultDifficultySelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
             return difficulties;
@@ -146,7 +149,7 @@ export const difficultyRouter = createTRPCRouter({
             const difficulties = await ctx.prisma.difficulty.findMany({
                 where: { parentDifficultyId: input.id },
                 select: defaultDifficultySelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
             return difficulties;
@@ -162,7 +165,7 @@ export const difficultyRouter = createTRPCRouter({
             const difficulties = await ctx.prisma.difficulty.findMany({
                 where: { name: { contains: input.query } },
                 select: defaultDifficultySelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
             return difficulties;

@@ -4,7 +4,7 @@ import { createTRPCRouter, publicProcedure, adminProcedure, loggedInProcedure, m
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, ModType, Mod, Mod_Archive, Mod_Edit, Mod_New } from "@prisma/client";
-import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
+import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { MODLIST_MODERATOR_PERMISSION_STRINGS, checkPermissions } from "../../utils/permissions";
@@ -489,7 +489,7 @@ export const modRouter = createTRPCRouter({
         .query(({ ctx, input }) => {
             return ctx.prisma.mod.findMany({
                 select: defaultModSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
         }),
 
@@ -509,7 +509,7 @@ export const modRouter = createTRPCRouter({
                 skip: numToSkip,
                 take: pageSize,
                 select: defaultModSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
             return mods;

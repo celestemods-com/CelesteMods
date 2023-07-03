@@ -3,7 +3,7 @@ import { createTRPCRouter, publicProcedure, adminProcedure, loggedInProcedure } 
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, Rating } from "@prisma/client";
-import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
+import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { getMapById, mapIdSchema_NonObject } from "./map_mod_publisher/map";
@@ -350,7 +350,7 @@ export const ratingRouter = createTRPCRouter({
         .input(ratingOrderSchema)
         .query(({ ctx, input }) => {
             return ctx.prisma.rating.findMany({
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
         }),
 
@@ -369,7 +369,7 @@ export const ratingRouter = createTRPCRouter({
             const ratings = await ctx.prisma.rating.findMany({
                 skip: numToSkip,
                 take: pageSize,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
             return ratings;

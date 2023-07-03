@@ -21,7 +21,7 @@ const getSortOrderSchema = <
     return z.object({
         directions: z.enum(sortOrders).array().nonempty().default(defaultDirections),
     }).strict();
-}
+};
 
 
 const getSortBySchema = <
@@ -34,7 +34,7 @@ const getSortBySchema = <
     return z.object({
         selectors: z.enum(selectors).array().nonempty().default(defaultSelectors),
     }).strict();
-}
+};
 
 
 export const getCombinedSchema = <
@@ -50,17 +50,17 @@ export const getCombinedSchema = <
     const sortOrderSchema = getSortOrderSchema(defaultDirections);
 
     return sortBySchema.merge(sortOrderSchema);
-}
+};
 
 
-export const getOrderObject = <
+export const getOrderObjectArray = <
     SelectorArray extends [string, ...string[]],
     DirectionsArray extends [Prisma.SortOrder, ...Prisma.SortOrder[]],
 >(
     selectors: SelectorArray,
     directions: DirectionsArray,
 ) => {
-    const orderObject = {};
+    const orderObjectArray = [];
 
 
     if (!selectors.length) throw "selectors is empty";
@@ -73,12 +73,13 @@ export const getOrderObject = <
 
             if (!selector || !order) throw "a value is undefined in getOrderObject section 1";
 
-            //@ts-ignore    //TODO: figure out how to fix type error without using escape hatch
-            orderObject[selector] = order;  // No index signature with a parameter of type 'string' was found on type '{}'.
+            
+            orderObjectArray.push({ [selector]: order });
         }
     }
     else {
         if (directions.length !== 1) throw "directions.length does not match selectors.length";
+
 
         const order = directions[0];
 
@@ -86,12 +87,12 @@ export const getOrderObject = <
             const selector = selectors[index];
 
             if (!selector || !order) throw "a value is undefined in getOrderObject section 2";
+            
 
-            //@ts-ignore    //TODO: figure out how to fix type error without using escape hatch
-            orderObject[selector] = order;  // No index signature with a parameter of type 'string' was found on type '{}'.
+            orderObjectArray.push({ [selector]: order });
         }
     }
 
 
-    return orderObject;
-}
+    return orderObjectArray;
+};

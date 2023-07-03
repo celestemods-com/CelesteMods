@@ -3,7 +3,7 @@ import { createTRPCRouter, publicProcedure, adminProcedure } from "~/server/api/
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, Tech } from "@prisma/client";
-import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
+import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { techVideoRouter, defaultTechVideoSelect, techVideoPostWithTechSchema, techIdSchema_NonObject } from "./techVideo";
@@ -95,7 +95,7 @@ export const techRouter = createTRPCRouter({
         .query(({ ctx, input }) => {
             return ctx.prisma.tech.findMany({
                 select: defaultTechSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
         }),
 
@@ -115,7 +115,7 @@ export const techRouter = createTRPCRouter({
                 skip: numToSkip,
                 take: pageSize,
                 select: defaultTechSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
             return techs;
@@ -133,7 +133,7 @@ export const techRouter = createTRPCRouter({
             const techs = await ctx.prisma.tech.findMany({
                 where: { difficultyId: input.id },
                 select: defaultTechSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
             return techs;
@@ -149,7 +149,7 @@ export const techRouter = createTRPCRouter({
             const techs = await ctx.prisma.tech.findMany({
                 where: { name: { contains: input.query } },
                 select: defaultTechSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
             return techs;

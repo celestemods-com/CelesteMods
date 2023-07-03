@@ -3,7 +3,7 @@ import { createTRPCRouter, publicProcedure, adminProcedure } from "~/server/api/
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, MapReview } from "@prisma/client";
-import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
+import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { getReviewById, reviewIdSchema_NonObject } from "./review";
@@ -158,7 +158,7 @@ export const mapReviewRouter = createTRPCRouter({
         .query(({ ctx, input }) => {
             return ctx.prisma.mapReview.findMany({
                 select: defaultMapReviewSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
         }),
 
@@ -178,7 +178,7 @@ export const mapReviewRouter = createTRPCRouter({
                 skip: numToSkip,
                 take: pageSize,
                 select: defaultMapReviewSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
             return mapReviews;
@@ -196,7 +196,7 @@ export const mapReviewRouter = createTRPCRouter({
             return await ctx.prisma.mapReview.findMany({
                 where: { reviewId: input.reviewId },
                 select: defaultMapReviewSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
         }),
 
@@ -206,7 +206,7 @@ export const mapReviewRouter = createTRPCRouter({
             return await ctx.prisma.mapReview.findMany({
                 where: { mapId: input.mapId },
                 select: defaultMapReviewSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
         }),
 
@@ -216,7 +216,7 @@ export const mapReviewRouter = createTRPCRouter({
             return await ctx.prisma.mapReview.findMany({
                 where: { lengthId: input.lengthId },
                 select: defaultMapReviewSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
         }),
 

@@ -3,7 +3,7 @@ import { createTRPCRouter, publicProcedure, adminProcedure, loggedInProcedure } 
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, Publisher } from "@prisma/client";
-import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
+import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { userIdSchema_NonObject } from "../user";
@@ -134,7 +134,7 @@ export const publisherRouter = createTRPCRouter({
         .query(({ ctx, input }) => {
             return ctx.prisma.publisher.findMany({
                 select: defaultPublisherSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
         }),
 
@@ -154,7 +154,7 @@ export const publisherRouter = createTRPCRouter({
                 skip: numToSkip,
                 take: pageSize,
                 select: defaultPublisherSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
             return publishers;
@@ -182,7 +182,7 @@ export const publisherRouter = createTRPCRouter({
             const publishers = await ctx.prisma.publisher.findMany({
                 where: { name: { contains: input.query } },
                 select: defaultPublisherSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
             return publishers;

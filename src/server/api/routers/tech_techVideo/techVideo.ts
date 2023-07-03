@@ -3,7 +3,7 @@ import { createTRPCRouter, publicProcedure, adminProcedure } from "~/server/api/
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, TechVideo } from "@prisma/client";
-import { getCombinedSchema, getOrderObject } from "~/server/api/utils/sortOrderHelpers";
+import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
 
@@ -73,7 +73,7 @@ export const techVideoRouter = createTRPCRouter({
         .query(({ ctx, input }) => {
             return ctx.prisma.techVideo.findMany({
                 select: defaultTechVideoSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
         }),
 
@@ -89,7 +89,7 @@ export const techVideoRouter = createTRPCRouter({
             const techVideos = await ctx.prisma.techVideo.findMany({
                 where: { techId: input.techId },
                 select: defaultTechVideoSelect,
-                orderBy: getOrderObject(input.selectors, input.directions),
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
             return techVideos;
