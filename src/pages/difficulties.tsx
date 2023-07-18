@@ -3,7 +3,7 @@ import { DataTable } from "mantine-datatable";
 import { RouterOutputs, api } from "~/utils/api";
 import PageHeader from "~/components/pageHeader";
 import { useMemo, useState } from "react";
-import SubDifficulties from "~/components/subDifficulties";
+import ExpandedDifficulty from "~/components/expandedRows/expandedDifficulty";
 import { createStyles } from "@mantine/core";
 
 
@@ -124,7 +124,7 @@ const Difficulties: NextPage = () => {
 
 
                         return (
-                            <SubDifficulties
+                            <ExpandedDifficulty
                                 isLoading={difficultyQuery.isLoading}
                                 isExpanded={record.isExpanded}
                                 subDifficulties={childDifficulties}

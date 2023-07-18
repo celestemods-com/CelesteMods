@@ -28,7 +28,7 @@ type SubDifficultiesProps = {
 
 
 
-export default function SubDifficulties({ isLoading, isExpanded, subDifficulties }: SubDifficultiesProps) {
+export default function ExpandedDifficulty({ isLoading, isExpanded, subDifficulties }: SubDifficultiesProps) {
     const { cx, classes } = useStyles();
     return (
         <DataTable
@@ -41,11 +41,6 @@ export default function SubDifficulties({ isLoading, isExpanded, subDifficulties
             fetching={isLoading}
             records={[
                 ...subDifficulties,
-                // {
-                //     name: "extraDifficulty",
-                //     description: "description",
-                //     order: 99,
-                // },
             ]}
             columns={[
                 { accessor: "name", title: "Name", sortable: true },
