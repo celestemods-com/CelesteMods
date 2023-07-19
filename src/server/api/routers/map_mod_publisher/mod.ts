@@ -31,7 +31,7 @@ type ExpandedModArchive = Mod_Archive;
 type ExpandedModEdit = Mod_Edit;
 type ExpandedModNew = Mod_New & { Map_NewWithMod_New: IdObjectArray; };
 
-type TrimmedMod = Omit<ExpandedMod, "submittedBy" | "approvedBy">;
+export type TrimmedMod = Omit<ExpandedMod, "submittedBy" | "approvedBy">;   //TODO: remove export when no longer used in "~/types/types.ts"
 type TrimmedModArchive = Omit<ExpandedModArchive, "submittedBy" | "approvedBy">;
 type TrimmedModEdit = Omit<ExpandedModEdit, "submittedBy">;
 type TrimmedModNew = Omit<ExpandedModNew, "submittedBy">;

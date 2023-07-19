@@ -6,12 +6,12 @@ import { Prisma, Rating } from "@prisma/client";
 import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
-import { getMapById, mapIdSchema_NonObject } from "./map_mod_publisher/map";
+import { getMapById, mapIdSchema_NonObject, modIdSchema_NonObject } from "./map_mod_publisher/map";
 import { qualityIdSchema_NonObject } from "./quality";
 import { difficultyIdSchema_NonObject } from "./difficulty";
 import { getCurrentTime } from "../utils/getCurrentTime";
 import { ADMIN_PERMISSION_STRINGS, checkIsPrivileged } from "../utils/permissions";
-import { getModById, modIdSchema_NonObject } from "./map_mod_publisher/mod";
+import { getModById } from "./map_mod_publisher/mod";
 import { userIdSchema_NonObject } from "./user";
 
 
@@ -498,13 +498,16 @@ export const ratingRouter = createTRPCRouter({
 
             const ratings = await ctx.prisma.rating.findMany({ where: { Map: { modId: input.modId } } });
 
-            if (!ratings.length) return false;
+            if (!ratings.length) return { modId: input.modId};
 
 
-            const ratingsInfo = getRatingsInfo(ratings, ctx.prisma);
+            const ratingsInfo = await getRatingsInfo(ratings, ctx.prisma);
 
 
-            return ratingsInfo;
+            return {
+                ...ratingsInfo,
+                modId: input.modId,
+            };
         }),
 
     getMapRatingData: publicProcedure
@@ -519,13 +522,16 @@ export const ratingRouter = createTRPCRouter({
 
             const ratings = await ctx.prisma.rating.findMany({ where: { mapId: input.mapId } });
 
-            if (!ratings.length) return false;
+            if (!ratings.length) return { mapId: input.mapId };
 
 
-            const ratingsInfo = getRatingsInfo(ratings, ctx.prisma);
+            const ratingsInfo = await getRatingsInfo(ratings, ctx.prisma);
 
 
-            return ratingsInfo;
+            return {
+                ...ratingsInfo,
+                mapId: input.mapId,
+            };
         }),
 
     getUserRatingData: loggedInProcedure
@@ -542,12 +548,15 @@ export const ratingRouter = createTRPCRouter({
 
             const ratings = await ctx.prisma.rating.findMany({ where: { submittedBy: userId } });
 
-            if (!ratings.length) return false;
+            if (!ratings.length) return { userId: userId};
 
 
-            const ratingsInfo = getRatingsInfo(ratings, ctx.prisma);
+            const ratingsInfo = await getRatingsInfo(ratings, ctx.prisma);
 
 
-            return ratingsInfo;
+            return {
+                ...ratingsInfo,
+                userId: userId,
+            };
         }),
 });

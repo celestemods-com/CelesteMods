@@ -627,7 +627,30 @@ export const mapRouter = createTRPCRouter({
     getById: publicProcedure
         .input(mapIdSchema.merge(mapTableNameSchema.partial()))
         .query(async ({ ctx, input }) => {
-            return await getMapById(input.tableName ?? "Map", false, false, ctx.prisma, input.id);
+            return await getMapById(/*input.tableName ?? */"Map", false, false, ctx.prisma, input.id);  //TODO?: figure out how to generalize this so that table type narrowing is maintained. need some kind of generic.
+        }),
+
+    getByModId: publicProcedure
+        .input(modIdForMapSchema.merge(mapOrderSchema))
+        .query(async ({ ctx, input }) => {
+            const maps = await ctx.prisma.map.findMany({
+                where: { modId: input.modId },
+                select: defaultMapSelect,
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
+            });
+
+
+            if (!maps.length) {
+                await getModById("Mod", "mod", false, true, ctx.prisma, input.modId, `Mod ${input.modId} exists but has no maps. Please inform an admin.`)  //throw if mod exists
+
+                throw new TRPCError({   //throw if mod doesn't exist
+                    code: "NOT_FOUND",
+                    message: `No mod found with id "${input.modId}".`
+                })
+            }
+
+
+            return maps;
         }),
 
     getByName: publicProcedure
