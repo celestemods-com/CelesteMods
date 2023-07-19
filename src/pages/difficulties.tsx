@@ -3,7 +3,7 @@ import { DataTable } from "mantine-datatable";
 import { RouterOutputs, api } from "~/utils/api";
 import PageHeader from "~/components/pageHeader";
 import { useMemo, useState } from "react";
-import ExpandedDifficulty from "~/components/expandedRows/expandedDifficulty";
+import ExpandedDifficulty from "~/components/difficulties/expandedDifficulty";
 import { createStyles } from "@mantine/core";
 
 

@@ -3,7 +3,7 @@ import { DataTable } from "mantine-datatable";
 import { RouterOutputs, api } from "~/utils/api";
 import PageHeader from "~/components/pageHeader";
 import { useMemo, useState } from "react";
-import ExpandedMod from "~/components/expandedRows/expandedMod/expandedMod";
+import ExpandedMod from "~/components/mods/expandedMod";
 import { createStyles } from "@mantine/core";
 
 

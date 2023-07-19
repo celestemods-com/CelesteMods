@@ -30,9 +30,10 @@ type SubDifficultiesProps = {
 
 export default function ExpandedDifficulty({ isLoading, isExpanded, subDifficulties }: SubDifficultiesProps) {
     const { cx, classes } = useStyles();
+    
     return (
         <DataTable
-            className={cx(isExpanded && classes.subDifficulty)}
+            className={cx(/*isExpanded && */classes.subDifficulty)}
             withBorder
             borderRadius={"lg"}
             striped
