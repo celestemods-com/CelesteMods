@@ -1,8 +1,9 @@
-import { createStyles } from "@mantine/core";
+import { Box, Checkbox, Title, createStyles } from "@mantine/core";
 import { DataTable } from "mantine-datatable";
-import { Map, MapRatingData } from "~/pages/mods/types";
+import { Difficulty, Length, Map, MapRatingData, MapYesRatingData, Quality } from "~/components/mods/types";
 import { api } from "~/utils/api";
-import { useMemo } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
+import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
 
 
 
@@ -23,20 +24,127 @@ const useStyles = createStyles(
 
 
 type MapWithInfo = {
-    qualityName: string,
-    difficultyName: string,
     lengthName: string,
+    overallCount: number,
+    qualityName: string,
+    qualityCount: number,
+    difficultyName: string,
+    difficultyCount: number,
 } & Map;
 
-type MapsTableProps = {
-    isNormalMod: boolean,
-    mapIds: [number, ...number[]];
+export type MapsTableProps<
+    IsNormalMod extends boolean,
+    IsMapperNameVisible extends boolean,
+> = {
+    isLoadingMod: boolean;
+    isNormalMod: IsNormalMod;
+    isMapperNameVisible: IsMapperNameVisible;
+    mapIds: number[];
 };
 
 
 
 
-const MapsTable = ({ isNormalMod, mapIds }: MapsTableProps) => {
+const getMapsWithInfo = (isLoading: boolean, maps: Map[], ratingsFromMapIds: MapRatingData[], lengths: Length[], qualities: Quality[], difficulties: Difficulty[]): MapWithInfo[] => {
+    if (isLoading) return [];
+
+
+    const mapsWithInfo: MapWithInfo[] = maps.map((map) => {
+        const rating = ratingsFromMapIds.find((rating) => rating.mapId === map.id);
+
+        if (rating === undefined) throw `Map ${map.id} has an undefined rating - this should not happen.`;
+
+
+        //get length info from map
+        const length = lengths.find((length) => length.id === map.lengthId);
+
+        if (!length) throw `Length ${map.lengthId}, linked to by map ${map.id}, not found. This should not happen.`;
+
+
+        //get quality and difficulty info from rating. this is more complicated than lengths because ratings are optional.
+        let overallCount = 0;
+        let qualityId = -1;
+        let qualityName: string;
+        let qualityCount = 0;
+        let difficultyId = -1;
+        let difficultyName: string;
+        let difficultyCount = 0;
+
+        if ("overallCount" in rating === false) {   //no ratings exist for this map
+            qualityName = noRatingsFoundMessage;
+            difficultyName = noRatingsFoundMessage;
+        } else {                                    //ratings exist for this map        
+            const narrowedRating = rating as MapYesRatingData;
+
+            overallCount = narrowedRating.overallCount;
+            qualityCount = narrowedRating.qualityCount;
+            difficultyCount = narrowedRating.difficultyCount;
+
+            if (narrowedRating.averageQualityId) qualityId = narrowedRating.averageQualityId;
+
+            if (narrowedRating.averageDifficultyId) difficultyId = narrowedRating.averageDifficultyId;
+        }
+
+
+        if (qualityId === -1) qualityName = noRatingsFoundMessage;
+        else {
+            if (qualityCount === 0) throw `Quality count is 0 for map ${map.id} but qualityId is ${qualityId} (and not -1) - this should not happen.`;
+
+
+            const quality = qualities.find((quality) => quality.id === qualityId);
+
+            if (!quality) throw `Quality ${qualityId} not found. This should not happen.`;
+
+
+            qualityName = quality.name;
+        }
+
+
+        if (difficultyId === -1) difficultyName = noRatingsFoundMessage;
+        else {
+            if (difficultyCount === 0) throw `Difficulty count is 0 for map ${map.id} but difficultyId is ${difficultyId} (and not -1) - this should not happen.`;
+
+
+            const difficulty = difficulties.find((difficulty) => difficulty.id === difficultyId);
+
+            if (!difficulty) throw `Difficulty ${difficultyId} not found. This should not happen.`;
+
+
+            difficultyName = difficulty.name;
+        }
+
+
+        return {
+            ...map,
+            lengthName: length.name,
+            overallCount,
+            qualityName,
+            qualityCount,
+            difficultyName,
+            difficultyCount,
+        };
+    });
+
+
+    return mapsWithInfo;
+};
+
+
+
+
+const MapsTable = <
+    IsNormalMod extends boolean,
+    IsMapperNameVisible extends (
+        IsNormalMod extends true ?
+        false :
+        boolean
+    ),
+>({
+    isLoadingMod,
+    isNormalMod,
+    isMapperNameVisible,
+    mapIds,
+}: MapsTableProps<IsNormalMod, IsMapperNameVisible>) => {
     //get common data
     const qualityQuery = api.quality.getAll.useQuery({}, { queryKey: ["quality.getAll", {}] });
     const qualities = qualityQuery.data ?? [];
@@ -48,16 +156,17 @@ const MapsTable = ({ isNormalMod, mapIds }: MapsTableProps) => {
     const lengths = lengthQuery.data ?? [];
 
 
+    //get maps data
     const mapsQueries = api.useQueries(
-        (t) => mapIds.map(
-            (id) => t.map.getById(
+        (useQueriesApi) => mapIds.map(
+            (id) => useQueriesApi.map.getById(
                 { id },
                 { queryKey: ["map.getById", { id, tableName: "Map" }] },
             ),
         ),
     );
 
-    const isLoadingMaps = mapsQueries.some((query) => query.isLoading);
+    const isLoadingMaps = mapsQueries.some((query) => query.isLoading) || isLoadingMod;     //TODO!!: prove that this works
 
     const maps = useMemo(() => {
         if (isLoadingMaps) return [];
@@ -80,9 +189,10 @@ const MapsTable = ({ isNormalMod, mapIds }: MapsTableProps) => {
     }, [isLoadingMaps, mapsQueries, mapIds, isNormalMod]);
 
 
+    //get ratings data
     const ratingQueries = api.useQueries(
-        (t) => mapIds.map(
-            (id) => t.rating.getMapRatingData(
+        (useQueriesApi) => mapIds.map(
+            (id) => useQueriesApi.rating.getMapRatingData(
                 { mapId: id },
                 { queryKey: ["rating.getMapRatingData", { mapId: id }] },
             ),
@@ -91,7 +201,7 @@ const MapsTable = ({ isNormalMod, mapIds }: MapsTableProps) => {
 
     const isLoadingRatings = ratingQueries.some((query) => query.isLoading);
 
-    const ratings = useMemo(() => {
+    const ratingsFromMapIds = useMemo(() => {
         if (isLoadingRatings) return [];
 
         const ratings: MapRatingData[] = [];
@@ -108,46 +218,64 @@ const MapsTable = ({ isNormalMod, mapIds }: MapsTableProps) => {
     }, [isLoadingRatings, ratingQueries, mapIds]);
 
 
+    //check that all data is loaded
     const isLoading = isLoadingMaps || isLoadingRatings || qualityQuery.isLoading || difficultyQuery.isLoading || lengthQuery.isLoading;
 
 
-    const mapsWithInfo = useMemo(() => {
-        if (isLoading) return [];
+    //get maps with quality, difficulty, and length names
+    const mapsWithInfo = useMemo(() => getMapsWithInfo(isLoading, maps, ratingsFromMapIds, lengths, qualities, difficulties),
+        [isLoading, maps, ratingsFromMapIds, qualities, difficulties, lengths]);
 
-        const mapsWithInfo: MapWithInfo[] = [];
 
-        maps.forEach((map) => {
-            const rating = ratings.find((rating) => rating.mapId === map.id);
-            
+    //stuff //TODO!!: update this comment
+    const [isMapperNameVisibleDisabled, setIsMapperNameVisibleDisabled] = useState<boolean>(false);
+    const [isMapperNameVisibleChecked, setIsMapperNameVisibleChecked] = useState(isMapperNameVisible);
 
-            //TODO!!: continue here
-        });
 
-        return mapsWithInfo;
-    }, [isLoading, maps, qualities, difficulties, lengths, ratingQueries]);
+    useEffect(() => {
+        if (isNormalMod && !isMapperNameVisibleDisabled) setIsMapperNameVisibleDisabled(true);
+    }, [isNormalMod]);
+
+
+    //TODO!!!: continue here
+    //finish mapsTable and test it with mapsTableTest (mapsTableTest is itself untested)
+    //mapsTable should be able to be used in both /mods and /mods/[id]
+    //show what's in the picture, plus the mapper name checkbox, the mapper name column (if on /mods/[id]), and a button for trigerring a "submit rating" popover
+
 
 
     const { cx, classes } = useStyles();
 
     return (
-        <DataTable
-            className={classes.map}
-            withBorder={false}
-            fetching={isLoading}
-            defaultColumnProps={{
-                sortable: !isNormalMod,
-                textAlignment: "center",
-            }}
-            records={[
-                ...maps,
-            ]}
-            columns={[
-                { accessor: "name", title: "Name" },
-                { accessor: "qualityName", title: "Quality" },
-                { accessor: "difficultyName", title: "Difficulty" },
-                { accessor: "lengthName", title: "Length" },
-            ]}
-        />
+        <>
+            <Box>
+                <Title order={2}>Maps</Title>
+                <Checkbox
+                    label="Show mapper name"
+                    size="sm"
+                    checked={isMapperNameVisibleChecked}
+                    disabled={isMapperNameVisibleDisabled}
+                />
+            </Box>
+            <DataTable
+                className={classes.map}
+                withBorder={false}
+                fetching={isLoading}
+                defaultColumnProps={{
+                    sortable: !isNormalMod,
+                    textAlignment: "center",
+                }}
+                records={[
+                    ...mapsWithInfo,
+                ]}
+                columns={[
+                    { accessor: "name", title: "Name" },
+                    { accessor: "qualityName", title: "Quality" },
+                    { accessor: "difficultyName", title: "Difficulty" },
+                    { accessor: "lengthName", title: "Length" },
+                ]}
+            />
+        </>
     );
 };
 

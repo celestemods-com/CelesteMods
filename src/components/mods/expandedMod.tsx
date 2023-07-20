@@ -1,5 +1,5 @@
 import { Loader, LoadingOverlay, createStyles } from "@mantine/core";
-import { Mod } from "~/pages/mods/types";
+import { Mod } from "~/components/mods/types";
 import { api } from "~/utils/api";
 
 

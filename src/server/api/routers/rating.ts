@@ -20,7 +20,7 @@ import { userIdSchema_NonObject } from "./user";
 type ValuesMap = Map<number, number>;  //Map with IDs as the keys and "values" as the values
 
 
-type RatingsInfo = {
+export type RatingsInfo = {
     averageQualityId: number | undefined;
     averageQualityValue: number | undefined;
     averageDifficultyId: number | undefined;

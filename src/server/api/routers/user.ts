@@ -86,7 +86,7 @@ const getUserSelect = (permissions: Permission[] | undefined, overwrite?: boolea
 export const displayNameSchema_NonObject = z.string().min(1).max(50);
 
 
-export const userIdSchema_NonObject = z.string().cuid();
+export const userIdSchema_NonObject = z.string().cuid();    //TODO!: figure out if we need to add z.coerce before string()
 
 const userIdSchema = z.object({
     id: userIdSchema_NonObject,

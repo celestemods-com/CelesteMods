@@ -3,11 +3,13 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from "react";
 import { Layout } from "~/components/layout/layout";
 import { Navbar } from "~/components/layout/navbar";
+import MapsTable from "~/components/mods/mapsTable";
+import MapsTableTest from "../../components/componentTesters/mapsTableTest";
 
 
 
 
-export const validComponentNames = ["layout", "navbar"];
+export const validComponentNames = ["layout", "navbar", "mapstable"];
 
 export default function TestComponent() {
     const router = useRouter();
@@ -51,6 +53,11 @@ export default function TestComponent() {
                 <>
                     <Navbar pathname="test" pages={[{label: "Test Label", pathname: "/"}]}/>
                 </>
+            );
+        }
+        case validComponentNames[2]: {
+            return (
+                <MapsTableTest />
             );
         }
         default: {
