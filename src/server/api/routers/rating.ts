@@ -163,6 +163,7 @@ const getDifficultyValuesMap = async (prisma: MyPrismaClient): Promise<ValuesMap
         message: "No parent difficulties exist. Please contact an admin.",
     });
 
+    let difficultyValue = 0;
 
     const difficultyValuesMap: ValuesMap = new Map();
 
@@ -170,14 +171,15 @@ const getDifficultyValuesMap = async (prisma: MyPrismaClient): Promise<ValuesMap
         //the +1 means the last child will not reach the next whole number value. this is intentional to add greater weight to going up a difficulty tier.
         const valueIncrement = 1 / (parentDifficulty.ChildDifficulty.length + 1);
 
-        let difficultyValue = parentDifficulty.order - 1;
-
 
         for (const childDifficulty of parentDifficulty.ChildDifficulty) {
             difficultyValue += valueIncrement;
 
             difficultyValuesMap.set(childDifficulty.id, difficultyValue);
         }
+
+
+        difficultyValue = Math.ceil(difficultyValue);  //round up to the next whole number
     }
 
 
@@ -197,14 +199,16 @@ const getQualityValuesMap = async (prisma: MyPrismaClient): Promise<ValuesMap> =
 
 
     let qualityValue = 0;
+    const VALUE_INCREMENT = 1;
+
     const qualityValuesMap: ValuesMap = new Map();
 
     for (const quality of qualities) {
-        if (quality.order !== qualityValue) console.warn(`Quality "${quality.id}" has order "${quality.order}" but should have order "${qualityValue}".`);
-
+        if (quality.order - 1 !== qualityValue) console.warn(`Quality "${quality.id}" has order "${quality.order}" but should have order "${qualityValue}".`);
 
         qualityValuesMap.set(quality.id, qualityValue);
-        qualityValue++;
+
+        qualityValue += VALUE_INCREMENT;
     }
 
 
@@ -252,8 +256,19 @@ const getAverageId = (valuesMap: ValuesMap, averageValue: number): number => {
 
 
 const getRatingsInfo = async (ratings: Rating[], prisma: MyPrismaClient) => {
-    const difficultyValuesMap = await getDifficultyValuesMap(prisma);
     const qualityValuesMap = await getQualityValuesMap(prisma);
+
+    // console.log(`qualityValuesMap.size = ${qualityValuesMap.size}`);
+    // for (const [id, value] of qualityValuesMap.entries()) {
+    //     console.log(`\n${id}: ${value}`);
+    // }
+
+    const difficultyValuesMap = await getDifficultyValuesMap(prisma);
+
+    // console.log(`difficultyValuesMap.size = ${difficultyValuesMap.size}`);
+    // for (const [id, value] of difficultyValuesMap.entries()) {
+    //     console.log(`\n${id}: ${value}`);
+    // }
 
 
     let qualityCount = 0;
@@ -270,9 +285,9 @@ const getRatingsInfo = async (ratings: Rating[], prisma: MyPrismaClient) => {
             hasValuesBool = true;
 
 
-            const qualityValue = difficultyValuesMap.get(rating.qualityId);
+            const qualityValue = qualityValuesMap.get(rating.qualityId);
 
-            if (!qualityValue) throw new TRPCError({
+            if (qualityValue === undefined) throw new TRPCError({
                 code: "INTERNAL_SERVER_ERROR",
                 message: `Undefined qualityValue for quality ${rating.qualityId} from rating ${rating.id}. Please contact an admin.`,
             });
@@ -289,7 +304,7 @@ const getRatingsInfo = async (ratings: Rating[], prisma: MyPrismaClient) => {
 
             const difficultyValue = difficultyValuesMap.get(rating.difficultyId);
 
-            if (!difficultyValue) throw new TRPCError({
+            if (difficultyValue === undefined) throw new TRPCError({
                 code: "INTERNAL_SERVER_ERROR",
                 message: `Undefined difficultyValue for difficulty ${rating.difficultyId} from rating ${rating.id}. Please contact an admin.`,
             });

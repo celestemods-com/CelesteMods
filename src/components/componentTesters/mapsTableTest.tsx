@@ -13,7 +13,7 @@ const MapsTableTest = () => {
     const [isMapperNameVisible, setIsMapperNameVisible] = useState(true);
 
 
-    const [modId, setModId] = useState<number>(-1);
+    const [modId, setModId] = useState<number>(1);
 
     const [mapIds, setMapIds] = useState<number[]>([]);
 
@@ -67,7 +67,7 @@ const MapsTableTest = () => {
                     checked={isMapperNameVisible}
                     onChange={(event) => setIsMapperNameVisible(event.currentTarget.checked)}
                 />
-                <Box>
+                <Group position="center">
                     <TextInput
                         label="modId"
                         value={textInputValue}
@@ -86,7 +86,7 @@ const MapsTableTest = () => {
                     >
                         Update modId
                     </Button>
-                </Box>
+                </Group>
             </Group>
             <MapsTable
                 isLoadingMod={modQuery.isLoading}

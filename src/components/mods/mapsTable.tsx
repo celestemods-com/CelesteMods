@@ -2,7 +2,7 @@ import { Box, Checkbox, Title, createStyles } from "@mantine/core";
 import { DataTable } from "mantine-datatable";
 import { Difficulty, Length, Map, MapRatingData, MapYesRatingData, Quality } from "~/components/mods/types";
 import { api } from "~/utils/api";
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
 
 
@@ -142,7 +142,7 @@ const MapsTable = <
 >({
     isLoadingMod,
     isNormalMod,
-    isMapperNameVisible,
+    isMapperNameVisible: isMapperNameVisibleFromParent,
     mapIds,
 }: MapsTableProps<IsNormalMod, IsMapperNameVisible>) => {
     //get common data
@@ -229,11 +229,24 @@ const MapsTable = <
 
     //stuff //TODO!!: update this comment
     const [isMapperNameVisibleDisabled, setIsMapperNameVisibleDisabled] = useState<boolean>(false);
-    const [isMapperNameVisibleChecked, setIsMapperNameVisibleChecked] = useState(isMapperNameVisible);
+    const [isMapperNameVisible, setIsMapperNameVisible] = useState<boolean>();
+
+
+    useEffect(
+        () => setIsMapperNameVisible(isMapperNameVisibleFromParent),
+        [isMapperNameVisibleFromParent],
+    );
 
 
     useEffect(() => {
-        if (isNormalMod && !isMapperNameVisibleDisabled) setIsMapperNameVisibleDisabled(true);
+        if (isNormalMod && !isMapperNameVisibleDisabled) {
+            setIsMapperNameVisible(false);
+            setIsMapperNameVisibleDisabled(true);
+        }
+        else if (!isNormalMod && isMapperNameVisibleDisabled) {
+            setIsMapperNameVisible(true);
+            setIsMapperNameVisibleDisabled(false);
+        }
     }, [isNormalMod]);
 
 
@@ -253,8 +266,9 @@ const MapsTable = <
                 <Checkbox
                     label="Show mapper name"
                     size="sm"
-                    checked={isMapperNameVisibleChecked}
                     disabled={isMapperNameVisibleDisabled}
+                    checked={isMapperNameVisible}
+                    onChange={(event) => setIsMapperNameVisible(event.currentTarget.checked)}
                 />
             </Box>
             <DataTable
@@ -273,6 +287,7 @@ const MapsTable = <
                     { accessor: "qualityName", title: "Quality" },
                     { accessor: "difficultyName", title: "Difficulty" },
                     { accessor: "lengthName", title: "Length" },
+                    { accessor: "mapperNameString", title: "Mapper Name", hidden: !isMapperNameVisible }
                 ]}
             />
         </>
