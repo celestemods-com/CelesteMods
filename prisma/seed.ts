@@ -9,13 +9,13 @@ const prisma = new PrismaClient();
 async function main() {
     await prisma.user.create({
         data: {
-            displayName: "CelesteModsList",
-            discordId: "CelesteModsList",
+            id: "CelesteModsList",
+            name: "CelesteModsList",
             discordUsername: "CelesteModsList",
-            discordDiscrim: "9999",
+            discordDiscriminator: "9999",
             displayDiscord: false,
             showCompletedMaps: false,
-            timeCreated: 1,
+            accountStatus: "Unlinked",
         },
     });
 
