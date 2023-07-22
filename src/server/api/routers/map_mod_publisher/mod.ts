@@ -332,21 +332,21 @@ const getModByName = async<
             }
             case "Mod_Archive": {
                 mods = await prisma.mod_Archive.findMany({
-                    where: whereObject,
+                    where: whereObject as Prisma.Mod_ArchiveWhereInput,
                     include: undefined,
                 }) as unknown as ReturnType;    //TODO!: figure out if this is safe and if it can be removed
                 break;
             }
             case "Mod_Edit": {
                 mods = await prisma.mod_Edit.findMany({
-                    where: whereObject,
+                    where: whereObject as Prisma.Mod_EditWhereInput,
                     include: undefined,
                 }) as unknown as ReturnType;    //TODO!: figure out if this is safe and if it can be removed
                 break;
             }
             case "Mod_New": {
                 mods = await prisma.mod_New.findMany({
-                    where: whereObject,
+                    where: whereObject as Prisma.Mod_NewWhereInput,
                     include: includeModNewConnectionsObject,
                 }) as unknown as ReturnType;    //TODO!: figure out if this is safe and if it can be removed
                 break;
@@ -367,21 +367,21 @@ const getModByName = async<
             }
             case "Mod_Archive": {
                 mods = await prisma.mod_Archive.findMany({
-                    where: whereObject,
+                    where: whereObject as Prisma.Mod_ArchiveWhereInput,
                     select: defaultModArchiveSelect,
                 }) as unknown as ReturnType;    //TODO!: figure out if this is safe and if it can be removed
                 break;
             }
             case "Mod_Edit": {
                 mods = await prisma.mod_Edit.findMany({
-                    where: whereObject,
+                    where: whereObject as Prisma.Mod_EditWhereInput,
                     select: defaultModEditSelect,
                 }) as unknown as ReturnType;    //TODO!: figure out if this is safe and if it can be removed
                 break;
             }
             case "Mod_New": {
                 mods = await prisma.mod_New.findMany({
-                    where: whereObject,
+                    where: whereObject as Prisma.Mod_NewWhereInput,
                     select: defaultModNewSelect,
                 }) as unknown as ReturnType;    //TODO!: figure out if this is safe and if it can be removed
                 break;
