@@ -10,8 +10,6 @@ import { Box, Button, Checkbox, Group, TextInput } from "@mantine/core";
 const MapsTableTest = () => {
     const [isNormalMod, setIsNormalMod] = useState(false);
 
-    const [isMapperNameVisible, setIsMapperNameVisible] = useState(true);
-
 
     const [modId, setModId] = useState<number>(1);
 
@@ -45,11 +43,6 @@ const MapsTableTest = () => {
     }, [mod]);
 
 
-    useEffect(() => {
-        if (isNormalMod && !isMapperNameVisible) setIsMapperNameVisible(false);
-    }, [isNormalMod]);
-
-
     const [textInputValue, setTextInputValue] = useState(modId);
 
 
@@ -60,12 +53,6 @@ const MapsTableTest = () => {
                     description="isNormalMod"
                     checked={isNormalMod}
                     onChange={(event) => setIsNormalMod(event.currentTarget.checked)}
-                />
-                <Checkbox
-                    description="isMapperNameVisible"
-                    disabled={isNormalMod}
-                    checked={isMapperNameVisible}
-                    onChange={(event) => setIsMapperNameVisible(event.currentTarget.checked)}
                 />
                 <Group position="center">
                     <TextInput
@@ -91,7 +78,6 @@ const MapsTableTest = () => {
             <MapsTable
                 isLoadingMod={modQuery.isLoading}
                 isNormalMod={isNormalMod}
-                isMapperNameVisible={isMapperNameVisible}
                 mapIds={mapIds}
             />
         </>

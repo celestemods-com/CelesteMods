@@ -55,6 +55,7 @@ const Mods: NextPage = () => {
                 withBorder
                 borderRadius={"sm"}
                 striped
+                textSelectionDisabled
                 withColumnBorders
                 highlightOnHover
                 fetching={modQuery.isLoading}

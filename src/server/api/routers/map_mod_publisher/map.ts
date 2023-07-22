@@ -302,28 +302,28 @@ export const getMapById = async<
             }
             case "Map_Archive": {
                 map = await prisma.map_Archive.findUnique({
-                    where: whereObject,
+                    where: whereObject as Prisma.Map_ArchiveWhereUniqueInput,
                     include: { Map_ArchivesToTechs: includeTechObject },
                 }) as Union;
                 break;
             }
             case "Map_Edit": {
                 map = await prisma.map_Edit.findUnique({
-                    where: whereObject,
+                    where: whereObject as Prisma.Map_EditWhereUniqueInput,
                     include: { Map_EditsToTechs: includeTechObject },
                 }) as Union;
                 break;
             }
             case "Map_NewWithMod_New": {
                 map = await prisma.map_NewWithMod_New.findUnique({
-                    where: whereObject,
+                    where: whereObject as Prisma.Map_NewWithMod_NewWhereUniqueInput,
                     include: { Map_NewWithMod_NewToTechs: includeTechObject },
                 }) as Union;
                 break;
             }
             case "Map_NewSolo": {
                 map = await prisma.map_NewSolo.findUnique({
-                    where: whereObject,
+                    where: whereObject as Prisma.Map_NewSoloWhereUniqueInput,
                     include: { Map_NewSoloToTechs: includeTechObject },
                 }) as Union;
                 break;
@@ -344,28 +344,28 @@ export const getMapById = async<
             }
             case "Map_Archive": {
                 map = await prisma.map_Archive.findUnique({
-                    where: whereObject,
+                    where: whereObject as Prisma.Map_ArchiveWhereUniqueInput,
                     select: defaultMapArchiveSelect,
                 }) as Union;
                 break;
             }
             case "Map_Edit": {
                 map = await prisma.map_Edit.findUnique({
-                    where: whereObject,
+                    where: whereObject as Prisma.Map_EditWhereUniqueInput,
                     select: defaultMapEditSelect,
                 }) as Union;
                 break;
             }
             case "Map_NewWithMod_New": {
                 map = await prisma.map_NewWithMod_New.findUnique({
-                    where: whereObject,
+                    where: whereObject as Prisma.Map_NewWithMod_NewWhereUniqueInput,
                     select: defaultMapNewWithModNewSelect,
                 }) as Union;
                 break;
             }
             case "Map_NewSolo": {
                 map = await prisma.map_NewSolo.findUnique({
-                    where: whereObject,
+                    where: whereObject as Prisma.Map_NewSoloWhereUniqueInput,
                     select: defaultMapNewSoloSelect,
                 }) as Union;
                 break;
@@ -458,28 +458,28 @@ const getMapByName = async<
             }
             case "Map_Archive": {
                 maps = await prisma.map_Archive.findMany({
-                    where: whereObject,
+                    where: whereObject as Prisma.Map_ArchiveWhereInput,
                     include: { Map_ArchivesToTechs: includeTechObject },
                 }) as Union[];
                 break;
             }
             case "Map_Edit": {
                 maps = await prisma.map_Edit.findMany({
-                    where: whereObject,
+                    where: whereObject as Prisma.Map_EditWhereInput,
                     include: { Map_EditsToTechs: includeTechObject },
                 }) as Union[];
                 break;
             }
             case "Map_NewWithMod_New": {
                 maps = await prisma.map_NewWithMod_New.findMany({
-                    where: whereObject,
+                    where: whereObject as Prisma.Map_NewWithMod_NewWhereInput,
                     include: { Map_NewWithMod_NewToTechs: includeTechObject },
                 }) as Union[];
                 break;
             }
             case "Map_NewSolo": {
                 maps = await prisma.map_NewSolo.findMany({
-                    where: whereObject,
+                    where: whereObject as Prisma.Map_NewSoloWhereInput,
                     include: { Map_NewSoloToTechs: includeTechObject },
                 }) as Union[];
                 break;
@@ -500,28 +500,28 @@ const getMapByName = async<
             }
             case "Map_Archive": {
                 maps = await prisma.map_Archive.findMany({
-                    where: whereObject,
+                    where: whereObject as Prisma.Map_ArchiveWhereInput,
                     select: defaultMapArchiveSelect,
                 }) as Union[];
                 break;
             }
             case "Map_Edit": {
                 maps = await prisma.map_Edit.findMany({
-                    where: whereObject,
+                    where: whereObject as Prisma.Map_EditWhereInput,
                     select: defaultMapEditSelect,
                 }) as Union[];
                 break;
             }
             case "Map_NewWithMod_New": {
                 maps = await prisma.map_NewWithMod_New.findMany({
-                    where: whereObject,
+                    where: whereObject as Prisma.Map_NewWithMod_NewWhereInput,
                     select: defaultMapNewWithModNewSelect,
                 }) as Union[];
                 break;
             }
             case "Map_NewSolo": {
                 maps = await prisma.map_NewSolo.findMany({
-                    where: whereObject,
+                    where: whereObject as Prisma.Map_NewSoloWhereInput,
                     select: defaultMapNewSoloSelect,
                 }) as Union[];
                 break;

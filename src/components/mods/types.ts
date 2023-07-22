@@ -13,6 +13,7 @@ export type Mod = {
 
 
 export type Map = RouterOutputs["map"]["getById"];
+export type MapProperties = keyof Map;
 
 
 export type ModRatingData = RouterOutputs["rating"]["getModRatingData"];

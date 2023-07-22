@@ -1,8 +1,8 @@
 import { Box, Checkbox, Title, createStyles } from "@mantine/core";
-import { DataTable } from "mantine-datatable";
-import { Difficulty, Length, Map, MapRatingData, MapYesRatingData, Quality } from "~/components/mods/types";
+import { DataTable, DataTableSortStatus } from "mantine-datatable";
+import { Difficulty, Length, Map, MapProperties, MapRatingData, MapYesRatingData, Quality } from "~/components/mods/types";
 import { api } from "~/utils/api";
-import { useEffect, useMemo, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
 
 
@@ -32,13 +32,18 @@ type MapWithInfo = {
     difficultyCount: number,
 } & Map;
 
+
+type MapsTableSortStatus = {
+    columnAccessor: MapProperties;  //narrow from "typeof string"
+} & DataTableSortStatus;
+
+
 export type MapsTableProps<
     IsNormalMod extends boolean,
     IsMapperNameVisible extends boolean,
 > = {
     isLoadingMod: boolean;
     isNormalMod: IsNormalMod;
-    isMapperNameVisible: IsMapperNameVisible;
     mapIds: number[];
 };
 
@@ -142,7 +147,6 @@ const MapsTable = <
 >({
     isLoadingMod,
     isNormalMod,
-    isMapperNameVisible: isMapperNameVisibleFromParent,
     mapIds,
 }: MapsTableProps<IsNormalMod, IsMapperNameVisible>) => {
     //get common data
@@ -227,16 +231,37 @@ const MapsTable = <
         [isLoading, maps, ratingsFromMapIds, qualities, difficulties, lengths]);
 
 
-    //stuff //TODO!!: update this comment
+    //handle sorting
+    const [sortedMapsWithInfo, setSortedMapsWithInfo] = useState<MapWithInfo[]>(mapsWithInfo);
+
+    const [sortStatus, setSortStatus] = useState<MapsTableSortStatus>({
+        columnAccessor: "name",
+        direction: "asc",
+    });
+
+
+    useEffect(() => {
+        const sortedMapsWithInfo = mapsWithInfo.sort(
+            (a, b) => {
+                const columnAccessor = sortStatus.columnAccessor;
+
+
+                const propertyAString = String(a[columnAccessor]);
+                const propertyBString = String(b[columnAccessor]);
+
+
+                return sortStatus.direction === "asc" ? propertyAString.localeCompare(propertyBString) : propertyBString.localeCompare(propertyAString);
+            }
+        );
+
+
+        setSortedMapsWithInfo(sortedMapsWithInfo);
+    }, [mapsWithInfo, sortStatus]);
+
+
+    //handle state for "Show mapper name" checkbox
     const [isMapperNameVisibleDisabled, setIsMapperNameVisibleDisabled] = useState<boolean>(false);
     const [isMapperNameVisible, setIsMapperNameVisible] = useState<boolean>();
-
-
-    useEffect(
-        () => setIsMapperNameVisible(isMapperNameVisibleFromParent),
-        [isMapperNameVisibleFromParent],
-    );
-
 
     useEffect(() => {
         if (isNormalMod && !isMapperNameVisibleDisabled) {
@@ -250,11 +275,11 @@ const MapsTable = <
     }, [isNormalMod]);
 
 
-    //TODO!!!: continue here
-    //finish mapsTable and test it with mapsTableTest (mapsTableTest is itself untested)
-    //mapsTable should be able to be used in both /mods and /mods/[id]
-    //show what's in the picture, plus the mapper name checkbox, the mapper name column (if on /mods/[id]), and a button for trigerring a "submit rating" popover
-
+    //TODO!:
+        //generalize mapsTable so it can be used in both /mods and /mods/[id]
+        //add filtering (at least by name)
+        //pagination not needed in mapsTable (but is needed in the mods table on /mods)
+        //use the datatable row context menu to allow for submitting ratings? or a row actions cell?
 
 
     const { cx, classes } = useStyles();
@@ -272,15 +297,16 @@ const MapsTable = <
                 />
             </Box>
             <DataTable
+                textSelectionDisabled
                 className={classes.map}
-                withBorder={false}
                 fetching={isLoading}
                 defaultColumnProps={{
                     sortable: !isNormalMod,
                     textAlignment: "center",
+                    filtering: true,
                 }}
                 records={[
-                    ...mapsWithInfo,
+                    ...sortedMapsWithInfo,
                 ]}
                 columns={[
                     { accessor: "name", title: "Name" },
@@ -289,6 +315,8 @@ const MapsTable = <
                     { accessor: "lengthName", title: "Length" },
                     { accessor: "mapperNameString", title: "Mapper Name", hidden: !isMapperNameVisible }
                 ]}
+                sortStatus={sortStatus}
+                onSortStatusChange={setSortStatus as Dispatch<SetStateAction<DataTableSortStatus>>}     //un-narrow type to match types in DataTable
             />
         </>
     );
