@@ -1,6 +1,6 @@
-import { Box, Checkbox, Title, createStyles } from "@mantine/core";
+import { Group, Checkbox, Title, createStyles } from "@mantine/core";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
-import { Difficulty, Length, Map, MapProperties, MapRatingData, MapYesRatingData, Quality } from "~/components/mods/types";
+import { Difficulty, Length, Map, MapRatingData, MapYesRatingData, Quality } from "~/components/mods/types";
 import { api } from "~/utils/api";
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
@@ -30,20 +30,19 @@ type MapWithInfo = {
     qualityCount: number,
     difficultyName: string,
     difficultyCount: number,
+    chapterSide?: string;
 } & Map;
 
 
 type MapsTableSortStatus = {
-    columnAccessor: MapProperties;  //narrow from "typeof string"
+    columnAccessor: keyof MapWithInfo;  //narrow from "typeof string"
 } & DataTableSortStatus;
 
 
-export type MapsTableProps<
-    IsNormalMod extends boolean,
-    IsMapperNameVisible extends boolean,
-> = {
+export type MapsTableProps = {
     isLoadingMod: boolean;
-    isNormalMod: IsNormalMod;
+    isNormalMod: boolean;
+    isMapperNameVisiblePermitted: boolean;
     mapIds: number[];
 };
 
@@ -119,6 +118,9 @@ const getMapsWithInfo = (isLoading: boolean, maps: Map[], ratingsFromMapIds: Map
         }
 
 
+        const chapterSide = `${map.chapter ?? ""}${map.side ?? ""}`;
+
+
         return {
             ...map,
             lengthName: length.name,
@@ -127,6 +129,7 @@ const getMapsWithInfo = (isLoading: boolean, maps: Map[], ratingsFromMapIds: Map
             qualityCount,
             difficultyName,
             difficultyCount,
+            chapterSide,
         };
     });
 
@@ -137,18 +140,29 @@ const getMapsWithInfo = (isLoading: boolean, maps: Map[], ratingsFromMapIds: Map
 
 
 
-const MapsTable = <
-    IsNormalMod extends boolean,
-    IsMapperNameVisible extends (
-        IsNormalMod extends true ?
-        false :
-        boolean
-    ),
->({
-    isLoadingMod,
-    isNormalMod,
-    mapIds,
-}: MapsTableProps<IsNormalMod, IsMapperNameVisible>) => {
+const getSortStatusFromIsNormalMod = (isNormalMod: boolean): MapsTableSortStatus => {
+    if (isNormalMod) return {
+        columnAccessor: "chapterSide",
+        direction: "asc",
+    };
+
+    return {
+        columnAccessor: "name",
+        direction: "asc",
+    };
+};
+
+
+
+
+const MapsTable = (
+    {
+        isLoadingMod,
+        isNormalMod,
+        isMapperNameVisiblePermitted,
+        mapIds,
+    }: MapsTableProps
+) => {
     //get common data
     const qualityQuery = api.quality.getAll.useQuery({}, { queryKey: ["quality.getAll", {}] });
     const qualities = qualityQuery.data ?? [];
@@ -234,10 +248,14 @@ const MapsTable = <
     //handle sorting
     const [sortedMapsWithInfo, setSortedMapsWithInfo] = useState<MapWithInfo[]>(mapsWithInfo);
 
-    const [sortStatus, setSortStatus] = useState<MapsTableSortStatus>({
-        columnAccessor: "name",
-        direction: "asc",
-    });
+
+    const [sortStatus, setSortStatus] = useState<MapsTableSortStatus>(getSortStatusFromIsNormalMod(isNormalMod));
+
+
+    useEffect(
+        () => setSortStatus(getSortStatusFromIsNormalMod(isNormalMod)),
+        [isNormalMod],
+    );
 
 
     useEffect(() => {
@@ -256,37 +274,38 @@ const MapsTable = <
 
 
         setSortedMapsWithInfo(sortedMapsWithInfo);
-    }, [mapsWithInfo, sortStatus]);
+    }, [isNormalMod, mapsWithInfo, sortStatus]);
 
 
     //handle state for "Show mapper name" checkbox
-    const [isMapperNameVisibleDisabled, setIsMapperNameVisibleDisabled] = useState<boolean>(false);
-    const [isMapperNameVisible, setIsMapperNameVisible] = useState<boolean>();
+    const [isMapperNameVisibleDisabled, setIsMapperNameVisibleDisabled] = useState(isNormalMod || !isMapperNameVisiblePermitted);
+    const [isMapperNameVisible, setIsMapperNameVisible] = useState(!isMapperNameVisibleDisabled);
 
     useEffect(() => {
-        if (isNormalMod && !isMapperNameVisibleDisabled) {
+        if (isNormalMod || !isMapperNameVisiblePermitted) {
             setIsMapperNameVisible(false);
             setIsMapperNameVisibleDisabled(true);
         }
-        else if (!isNormalMod && isMapperNameVisibleDisabled) {
+        else {  //only executes if (!isNormalMod && isMapperNameVisiblePermitted)
             setIsMapperNameVisible(true);
             setIsMapperNameVisibleDisabled(false);
         }
-    }, [isNormalMod]);
+    }, [isNormalMod, isMapperNameVisiblePermitted]);
 
 
     //TODO!:
-        //generalize mapsTable so it can be used in both /mods and /mods/[id]
-        //add filtering (at least by name)
-        //pagination not needed in mapsTable (but is needed in the mods table on /mods)
-        //use the datatable row context menu to allow for submitting ratings? or a row actions cell?
+    //generalize mapsTable so it can be used in both /mods and /mods/[id]
+    //add support for "nested sorting"
+    //add filtering (at least by name)
+    //pagination not needed in mapsTable (but is needed in the mods table on /mods)
+    //use the datatable row context menu to allow for submitting ratings? or a row actions cell?
 
 
     const { cx, classes } = useStyles();
 
     return (
         <>
-            <Box>
+            <Group position="center">
                 <Title order={2}>Maps</Title>
                 <Checkbox
                     label="Show mapper name"
@@ -295,7 +314,7 @@ const MapsTable = <
                     checked={isMapperNameVisible}
                     onChange={(event) => setIsMapperNameVisible(event.currentTarget.checked)}
                 />
-            </Box>
+            </Group>
             <DataTable
                 textSelectionDisabled
                 className={classes.map}

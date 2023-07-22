@@ -1,6 +1,9 @@
-import { Loader, LoadingOverlay, createStyles } from "@mantine/core";
+import { Group, Loader, Text, createStyles } from "@mantine/core";
 import { Mod } from "~/components/mods/types";
 import { api } from "~/utils/api";
+import MapsTable from "./mapsTable";
+import { useMemo } from "react";
+import PublisherName from "./publisherName";
 
 
 
@@ -29,8 +32,12 @@ type ExpandedModProps = {
 
 
 const ExpandedMod = ({ isLoading, mod }: ExpandedModProps) => {
-    const isExpanded = mod.isExpanded;
-    const mapsCount = mod.Map.length;
+    const isMapperNameVisiblePermitted = false;
+
+
+    //TODO!!!: continue here
+    //add publication date, 1-click download button (own component), "more info" button, and carousel
+    //then implement /mods/[id] (also using mapsTable)
 
 
     const { cx, classes } = useStyles();
@@ -39,7 +46,15 @@ const ExpandedMod = ({ isLoading, mod }: ExpandedModProps) => {
 
     return (
         <>
-
+            <Group position="center">
+                <PublisherName publisherId={mod.publisherId}/>
+            </Group>
+            <MapsTable
+                isLoadingMod={isLoading}
+                isNormalMod={mod.type === "Normal"}
+                isMapperNameVisiblePermitted={isMapperNameVisiblePermitted}
+                mapIds={mod.Map.map(({ id }) => id)}
+            />
         </>
     );
 };

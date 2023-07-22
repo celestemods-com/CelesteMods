@@ -77,7 +77,7 @@ const Mods: NextPage = () => {
                 ]}
                 rowExpansion={{
                     trigger: "click",
-                    allowMultiple: true,
+                    allowMultiple: false,
                     expanded: {
                         recordIds: expandedRowIds,
                         onRecordIdsChange: setExpandedRowsIds,
