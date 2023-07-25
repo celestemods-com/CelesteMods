@@ -641,12 +641,12 @@ export const mapRouter = createTRPCRouter({
 
 
             if (!maps.length) {
-                await getModById("Mod", "mod", false, true, ctx.prisma, input.modId, `Mod ${input.modId} exists but has no maps. Please inform an admin.`)  //throw if mod exists
+                await getModById("Mod", "mod", false, true, ctx.prisma, input.modId, `Mod ${input.modId} exists but has no maps. Please inform an admin.`);  //throw if mod exists
 
                 throw new TRPCError({   //throw if mod doesn't exist
                     code: "NOT_FOUND",
                     message: `No mod found with id "${input.modId}".`
-                })
+                });
             }
 
 

@@ -513,7 +513,7 @@ export const ratingRouter = createTRPCRouter({
 
             const ratings = await ctx.prisma.rating.findMany({ where: { Map: { modId: input.modId } } });
 
-            if (!ratings.length) return { modId: input.modId};
+            if (!ratings.length) return { modId: input.modId };
 
 
             const ratingsInfo = await getRatingsInfo(ratings, ctx.prisma);
@@ -563,7 +563,7 @@ export const ratingRouter = createTRPCRouter({
 
             const ratings = await ctx.prisma.rating.findMany({ where: { submittedBy: userId } });
 
-            if (!ratings.length) return { userId: userId};
+            if (!ratings.length) return { userId: userId };
 
 
             const ratingsInfo = await getRatingsInfo(ratings, ctx.prisma);

@@ -874,10 +874,10 @@ export const modRouter = createTRPCRouter({
                     longDescription: modEdit.longDescription,
                     gamebananaModId: modEdit.gamebananaModId,
                     timeSubmitted: modEdit.timeSubmitted,
-                    User_SubmittedBy: 
+                    User_SubmittedBy:
                         modEdit.submittedBy === null ?
-                        { disconnect: true } :
-                        { connect: { id: modEdit.submittedBy } },
+                            { disconnect: true } :
+                            { connect: { id: modEdit.submittedBy } },
                     timeApproved: currentTime,
                     User_ApprovedBy: { connect: { id: ctx.user.id } },
                     timeCreatedGamebanana: modEdit.timeCreatedGamebanana,
