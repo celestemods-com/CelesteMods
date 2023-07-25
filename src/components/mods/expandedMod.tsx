@@ -4,6 +4,7 @@ import { api } from "~/utils/api";
 import MapsTable from "./mapsTable";
 import { useMemo } from "react";
 import PublisherName from "./publisherName";
+import PublicationDate from "./publicationDate";
 
 
 
@@ -48,6 +49,7 @@ const ExpandedMod = ({ isLoading, mod }: ExpandedModProps) => {
         <>
             <Group position="center">
                 <PublisherName publisherId={mod.publisherId}/>
+                <PublicationDate gamebananaModId={mod.gamebananaModId}/>
             </Group>
             <MapsTable
                 isLoadingMod={isLoading}

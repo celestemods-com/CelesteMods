@@ -1,5 +1,5 @@
 import { api } from "~/utils/api";
-import { Box, Text, Loader, Group } from "@mantine/core";
+import { Text, Loader, Group } from "@mantine/core";
 
 
 
@@ -10,8 +10,6 @@ type PublisherNameProps = {
 
 
 
-
-const PUBLISHER_NOT_LOADED_STRING = "Publisher not loaded";
 
 const PUBLISHER_NAME_LABEL = "Publisher: ";
 
@@ -26,7 +24,7 @@ const PublisherName = ({ publisherId }: PublisherNameProps) => {
 
     const publisherName = publisher?.name ?? (
         publisher === undefined ?
-            PUBLISHER_NOT_LOADED_STRING :
+        "Publisher not loaded" :
             "Name undefined"
     );
 
