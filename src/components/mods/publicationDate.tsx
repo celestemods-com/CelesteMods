@@ -1,7 +1,7 @@
 import { Group, Loader, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
 import useFetch from "react-fetch-hook";
-import { GamebananaResponse, getGamebananaUrl } from "~/utils/gamebananaApiHelpers";
+import { GamebananaApiResponse, useGamebananaApiUrl } from "~/hooks/gamebananaApi";
 
 
 
@@ -19,7 +19,7 @@ const PUBLICATION_DATE_LABEL = "Published: ";
 
 
 const PublicationDate = ({ gamebananaModId }: PublicationDateProps) => {
-    const queryUrl = getGamebananaUrl({
+    const queryUrl = useGamebananaApiUrl({
         itemType: "Mod",
         itemId: gamebananaModId,
         fields: "date",
@@ -29,7 +29,7 @@ const PublicationDate = ({ gamebananaModId }: PublicationDateProps) => {
     //get publication date
     const [publicationDate, setPublicationDate] = useState<Date>(new Date(0));
 
-    const publicationDateQuery = useFetch<GamebananaResponse>(queryUrl, { depends: [gamebananaModId] });    //TODO!: implement caching
+    const publicationDateQuery = useFetch<GamebananaApiResponse>(queryUrl, { depends: [gamebananaModId] });    //TODO!: implement caching
 
 
     useEffect(() => {
