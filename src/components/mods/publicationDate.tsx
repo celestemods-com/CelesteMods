@@ -37,12 +37,12 @@ const PublicationDate = ({ gamebananaModId }: PublicationDateProps) => {
 
 
         if (queryData && Array.isArray(queryData) && queryData.length === 1) {
-            const time = Number(queryData);
+            const seconds = Number(queryData);
 
-            if (isNaN(time)) return;
+            if (isNaN(seconds)) return;
 
 
-            setPublicationDate(new Date(time));
+            setPublicationDate(new Date(seconds * 1000));
         }
     }, [publicationDateQuery.data]);
 
