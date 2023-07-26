@@ -1,4 +1,5 @@
 import { Carousel } from "@mantine/carousel";
+import { useGamebananaModImageUrls } from "~/hooks/gamebananaApi";
 import { api } from "~/utils/api";
 
 
@@ -19,8 +20,10 @@ const ModCarousel = ({ modId }: modCarouselProps) => {
 
     const mod = modQuery.data;
 
+    
+    const gamebananaModId = mod?.gamebananaModId;
 
-    const images = 
+    const imageUrls = useGamebananaModImageUrls({gamebananaModId});
 };
 
 

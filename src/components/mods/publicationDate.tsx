@@ -29,7 +29,7 @@ const PublicationDate = ({ gamebananaModId }: PublicationDateProps) => {
     //get publication date
     const [publicationDate, setPublicationDate] = useState<Date>(new Date(0));
 
-    const publicationDateQuery = useFetch<GamebananaApiResponse>(queryUrl, { depends: [gamebananaModId] });    //TODO!: implement caching
+    const publicationDateQuery = useFetch<GamebananaApiResponse<false>>(queryUrl, { depends: [gamebananaModId] });    //TODO!: implement caching
 
 
     useEffect(() => {
