@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import useFetch from "react-fetch-hook";
+import { useFetch } from "~/hooks/useFetch";
 
 
 
 
-const GAMEBANANA_API_BASE_URL = "https://api.gamebanana.com/Core/Item/Data";
+const GAMEBANANA_API_BASE_URL = "api.gamebanana.com/Core/Item/Data";
 
 const GAMEBANANA_API_ERROR_STRING = "GameBanana API not responding as expected.";
 
@@ -47,8 +47,6 @@ type GamebananaItemFields<      //TODO!!!: make this work then continue below
     ItemType extends GamebananaItemType
 > = typeof GAMEBANANA_ITEM_FIELDS[ItemType];
 
-type t = GamebananaItemFields<"Mod">;
-
 export const getGamebananaItemFields = <
     ItemType extends GamebananaItemType,
     Fields extends GamebananaItemFields<ItemType>,
@@ -61,10 +59,10 @@ export const getGamebananaItemFields = <
 
 
 type GetGamebananaApiUrlProps<
-    ReturnType extends boolean
+    ReturnType extends boolean,
 > = {
     itemType: GamebananaItemType;
-    itemId: number;
+    itemId: number | undefined;
     fields: string | string[];
     returnKeys?: ReturnType;
 };
@@ -83,7 +81,12 @@ export const useGamebananaApiUrl = <
     const fieldsString = typeof fields === "string" ? fields : fields.join(",");
 
 
-    return `https://${GAMEBANANA_API_BASE_URL}?itemtype=${itemType}&itemid=${itemId}&fields=${fieldsString}${returnKeys ? "&return_keys=true" : ""}}`;
+    return (
+        itemId === undefined ? (
+            ""
+        ) :
+            `https://${GAMEBANANA_API_BASE_URL}?itemtype=${itemType}&itemid=${itemId}&fields=${fieldsString}${returnKeys ? "&return_keys=true" : ""}`
+    );
 };
 
 
@@ -137,26 +140,28 @@ type UseGamebananaModImageUrlsProps = {
 };
 
 
-const GAMEBANANA_MOD_IMAGES_BASE_URL = "https://images.gamebanana.com/img/ss/mods/";
-
+const GAMEBANANA_MOD_IMAGES_BASE_URL = "images.gamebanana.com/img/ss/mods/";
 
 export const useGamebananaModImageUrls = ({ gamebananaModId }: UseGamebananaModImageUrlsProps): string[] => {
-    if (!gamebananaModId) return [];
-
-
     //get query url
-    const queryUrl = useGamebananaApiUrl({
-        itemType: "Mod",
-        itemId: gamebananaModId,
-        fields: "date",
-        returnKeys: true,
-    });
+    const [queryUrl, setQueryUrl] = useState<string>("");
+
+    useEffect(() => {
+        const url = useGamebananaApiUrl({
+            itemType: "Mod",
+            itemId: gamebananaModId,
+            fields: "screenshot",
+            returnKeys: true,
+        });
+
+        setQueryUrl(url);
+    }, [gamebananaModId]);
 
 
     //get screenshotData
     const [screenshotData, setScreenshotData] = useState<GamebananaScreenshotData[]>([]);
 
-    const screenshotDataQuery = useFetch<GamebananaApiResponse<true, "screenshot">>(queryUrl, { depends: [gamebananaModId] });    //TODO!: implement caching
+    const screenshotDataQuery = useFetch<GamebananaApiResponse<true, "screenshot">>(queryUrl);    //TODO!: implement caching    //TODO!!!: continue here. queryUrl is being populated, but screenshotData is empty. it seems like useFetch (or useEffect) isn't re-running when queryUrl changes
 
     useEffect(() => {
         if (screenshotDataQuery.isLoading) return;
@@ -166,11 +171,14 @@ export const useGamebananaModImageUrls = ({ gamebananaModId }: UseGamebananaModI
         if (dataJSON) {
             const data: unknown = JSON.parse(dataJSON);
 
-            if (!isGamebananaScreenshotDataArray(data)) throw GAMEBANANA_API_ERROR_STRING;
+            if (!isGamebananaScreenshotDataArray(data)) throw new Error(GAMEBANANA_API_ERROR_STRING);
+
+            console.log(`screenshotData: ${JSON.stringify(data)}`);
 
             setScreenshotData(data);
         }
-    }, [screenshotDataQuery.data]);
+        else console.log(`screenshotDataQuery.data: ${JSON.stringify(screenshotDataQuery.data)}`);
+    }, [screenshotDataQuery]);
 
 
     //get image urls
@@ -179,6 +187,8 @@ export const useGamebananaModImageUrls = ({ gamebananaModId }: UseGamebananaModI
     useEffect(() => {
         if (!screenshotData) return;
 
+        console.log(`screenshotData: ${JSON.stringify(screenshotData)}`);
+
         const imageUrls: string[] = screenshotData.map(
             ({ _sFile }) => `${GAMEBANANA_MOD_IMAGES_BASE_URL}${_sFile}`,
         );
@@ -186,6 +196,10 @@ export const useGamebananaModImageUrls = ({ gamebananaModId }: UseGamebananaModI
         setImageUrls(imageUrls);
     }, [screenshotData]);
 
+
+    if (screenshotDataQuery.error) console.error(screenshotDataQuery.error);
+
+    if (screenshotDataQuery.isLoading) return [];
 
     return imageUrls;
 };

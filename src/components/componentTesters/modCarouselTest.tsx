@@ -1,19 +1,17 @@
 import { useEffect, useState } from "react";
-import MapsTable from "~/components/mods/mapsTable";
+import ModCarousel from "../mods/modCarousel";
 import { api } from "~/utils/api";
 import { Mod } from "../mods/types";
-import { Box, Button, Checkbox, Group, TextInput } from "@mantine/core";
+import { Button, Checkbox, Group, TextInput } from "@mantine/core";
 
 
 
 
-const MapsTableTest = () => {
+const ModCarouselTest = () => {
     const [isNormalMod, setIsNormalMod] = useState(false);
 
 
     const [modId, setModId] = useState<number>(1);
-
-    const [mapIds, setMapIds] = useState<number[]>([]);
 
 
     const [isLoadingNewMod, setIsLoadingNewMod] = useState<boolean>(true);
@@ -31,10 +29,6 @@ const MapsTableTest = () => {
 
     useEffect(() => {
         if (!mod) return;
-
-        const mapIds = mod.Map.map((map) => map.id);
-
-        setMapIds(mapIds);
 
 
         const newIsNormalMod = mod.type === "Normal";
@@ -75,15 +69,12 @@ const MapsTableTest = () => {
                     </Button>
                 </Group>
             </Group>
-            <MapsTable
-                isLoadingMod={modQuery.isLoading}
-                isNormalMod={isNormalMod}
-                mapIds={mapIds}
-                isMapperNameVisiblePermitted
+            <ModCarousel
+                modId={modId}
             />
         </>
     );
 };
 
 
-export default MapsTableTest;
+export default ModCarouselTest;

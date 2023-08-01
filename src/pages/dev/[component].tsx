@@ -5,11 +5,12 @@ import { Layout } from "~/components/layout/layout";
 import { Navbar } from "~/components/layout/navbar";
 import MapsTable from "~/components/mods/mapsTable";
 import MapsTableTest from "../../components/componentTesters/mapsTableTest";
+import ModCarouselTest from "~/components/componentTesters/modCarouselTest";
 
 
 
 
-export const validComponentNames = ["layout", "navbar", "mapstable"];
+export const validComponentNames = ["layout", "navbar", "mapstable", "carousel"];
 
 export default function TestComponent() {
     const router = useRouter();
@@ -51,13 +52,18 @@ export default function TestComponent() {
         case validComponentNames[1]: {
             return (
                 <>
-                    <Navbar pathname="test" pages={[{label: "Test Label", pathname: "/"}]}/>
+                    <Navbar pathname="test" pages={[{ label: "Test Label", pathname: "/" }]} />
                 </>
             );
         }
         case validComponentNames[2]: {
             return (
                 <MapsTableTest />
+            );
+        }
+        case validComponentNames[3]: {
+            return (
+                <ModCarouselTest />
             );
         }
         default: {
