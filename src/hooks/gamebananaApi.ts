@@ -144,18 +144,23 @@ const GAMEBANANA_MOD_IMAGES_BASE_URL = "images.gamebanana.com/img/ss/mods/";
 
 export const useGamebananaModImageUrls = ({ gamebananaModId }: UseGamebananaModImageUrlsProps): string[] => {
     //get query url
-    const [queryUrl, setQueryUrl] = useState<string>("");
+    const [gamebananaApiUrlProps, setGamebananaApiUrlProps] = useState<GetGamebananaApiUrlProps<boolean>>({
+        itemType: "Mod",
+        itemId: gamebananaModId,
+        fields: "screenshot",
+        returnKeys: true,
+    });
 
     useEffect(() => {
-        const url = useGamebananaApiUrl({
+        setGamebananaApiUrlProps({
             itemType: "Mod",
             itemId: gamebananaModId,
             fields: "screenshot",
             returnKeys: true,
         });
-
-        setQueryUrl(url);
     }, [gamebananaModId]);
+
+    const queryUrl = useGamebananaApiUrl(gamebananaApiUrlProps);
 
 
     //get screenshotData
