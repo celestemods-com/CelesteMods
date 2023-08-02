@@ -1,6 +1,7 @@
 import { Carousel } from "@mantine/carousel";
 import { useGamebananaModImageUrls } from "~/hooks/gamebananaApi";
-import { Image, createStyles } from "@mantine/core";
+import { createStyles } from "@mantine/core";
+import Image from "next/image";
 import { api } from "~/utils/api";
 
 
@@ -38,28 +39,34 @@ const ModCarousel = ({ modId }: modCarouselProps) => {
 
     const gamebananaModId = mod?.gamebananaModId;
 
-    const imageUrls = useGamebananaModImageUrls({ gamebananaModId });
+    const { imageUrls } = useGamebananaModImageUrls({ gamebananaModId });
 
 
     const { cx, classes } = useStyles();
 
 
     return (
-        <Carousel>
-            {imageUrls.map((imageUrl) => (
-                <Carousel.Slide
-                    key={imageUrl}
-                    gap={"md"}
-                    size={"500px"}
-                    className={classes.carousel}
-                >
-                    <Image
-                        src={imageUrl}
-                        alt="Mod image"
-                    />
-                </Carousel.Slide>
-            ))}
-        </Carousel>
+        !imageUrls ? (
+            null
+        ) : (
+            <Carousel>
+                {imageUrls.map((imageUrl) => (
+                    <Carousel.Slide
+                        key={imageUrl}
+                        gap={"md"}
+                        size={"500px"}
+                        className={classes.carousel}
+                    >
+                        <Image
+                            src={imageUrl}
+                            alt="Mod image"
+                            width={500}
+                            height={500}
+                        />
+                    </Carousel.Slide>
+                ))}
+            </Carousel>
+        )
     );
 };
 

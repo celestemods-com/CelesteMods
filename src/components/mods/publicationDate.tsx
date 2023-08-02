@@ -19,7 +19,7 @@ const PUBLICATION_DATE_LABEL = "Published: ";
 
 
 const PublicationDate = ({ gamebananaModId }: PublicationDateProps) => {
-    const queryUrl = useGamebananaApiUrl({
+    const {queryUrl} = useGamebananaApiUrl({
         itemType: "Mod",
         itemId: gamebananaModId,
         fields: "date",
