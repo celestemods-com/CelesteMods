@@ -62,7 +62,7 @@
       "last 2 chrome version"
     ],
     "ssr": [
-      "node 16"
+      "node 20"
     ]
   },
   "prisma": {
