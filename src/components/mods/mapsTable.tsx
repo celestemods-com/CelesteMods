@@ -184,7 +184,7 @@ const MapsTable = (
         ),
     );
 
-    const isLoadingMaps = mapsQueries.some((query) => query.isLoading) || isLoadingMod;     //TODO!!: prove that this works
+    const isLoadingMaps = isLoadingMod || mapsQueries.some((query) => query.isLoading);     //TODO!!: prove that this works
 
     const maps = useMemo(() => {
         if (isLoadingMaps) return [];
