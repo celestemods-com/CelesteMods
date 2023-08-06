@@ -493,7 +493,7 @@ export const modRouter = createTRPCRouter({
             });
         }),
 
-    getMany: publicProcedure
+    getIds: publicProcedure
         .input(
             z.object({
                 pageSize: z.number().int().min(1).max(100).default(50),
@@ -505,14 +505,19 @@ export const modRouter = createTRPCRouter({
 
             const numToSkip = pageSize * (pageNumber - 1);
 
+
             const mods = await ctx.prisma.mod.findMany({
                 skip: numToSkip,
                 take: pageSize,
-                select: defaultModSelect,
+                select: { id: true },
                 orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
-            return mods;
+
+            const modIds = mods.map((mod) => mod.id);
+
+
+            return modIds;
         }),
 
     getById: publicProcedure
