@@ -61,8 +61,7 @@ const ModCarousel = ({ modId }: modCarouselProps) => {
                         <Image
                             src={imageUrl}
                             alt="Mod image"
-                            width={500}
-                            height={500}
+                            height={350}     //TODO!!: add responsive image sizes
                         />
                     </Carousel.Slide>
                 ))}
