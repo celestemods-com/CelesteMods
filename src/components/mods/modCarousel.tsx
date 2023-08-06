@@ -1,7 +1,8 @@
 import { Carousel } from "@mantine/carousel";
 import { useGamebananaModImageUrls } from "~/hooks/gamebananaApi";
 import { createStyles } from "@mantine/core";
-import Image from "next/image";
+import { Image } from "@mantine/core";      //TODO!: replace with nextjs Image component once next.config.mjs is fixed
+// import Image from "next/image";          
 import { api } from "~/utils/api";
 
 
