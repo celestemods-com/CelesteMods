@@ -117,7 +117,9 @@ type GamebananaScreenshotData = {
 };
 
 
-const isGamebananaScreenshotData = (data: unknown): data is GamebananaScreenshotData => {   //tried to create as assertion, but encountered weird ts error
+const isGamebananaScreenshotData = (
+    data: unknown
+): data is GamebananaScreenshotData => {   //tried to create as assertion, but encountered weird ts error
     if (typeof data !== "object" || data === null) return false;
 
     const dataObject = data as Record<string, unknown>;
@@ -152,14 +154,16 @@ type UseGamebananaModImageUrlsProps = {
     gamebananaModId: number | undefined;
 };
 
+type UseGamebananaModImageUrlsReturn = {
+    imageUrls?: string[];
+};
+
 
 const GAMEBANANA_MOD_IMAGES_BASE_URL = "https://images.gamebanana.com/img/ss/mods/";
 
 export const useGamebananaModImageUrls = (
     { gamebananaModId }: UseGamebananaModImageUrlsProps
-): {
-    imageUrls?: string[];
-} => {
+): UseGamebananaModImageUrlsReturn => {
     //get query url
     const [gamebananaApiUrlProps, setGamebananaApiUrlProps] = useState<GetGamebananaApiUrlProps<boolean>>({
         itemType: "Mod",
@@ -186,8 +190,8 @@ export const useGamebananaModImageUrls = (
     const screenshotDataQuery = useFetch<GamebananaApiResponse<true, "screenshots">>(queryUrl);    //TODO!: implement caching    //TODO!!!: continue here. queryUrl is being populated, but screenshotData is empty. it seems like useFetch (or useEffect) isn't re-running when queryUrl changes
 
     useEffect(() => {
-        console.log(`screenshotDataQuery: ${JSON.stringify(screenshotDataQuery)}`)
-        
+        console.log(`screenshotDataQuery: ${JSON.stringify(screenshotDataQuery)}`);
+
         if (screenshotDataQuery.isLoading) return;
 
         const dataJSON = screenshotDataQuery.data?.screenshots;
@@ -226,4 +230,31 @@ export const useGamebananaModImageUrls = (
     if (screenshotDataQuery.isLoading) return {};
 
     return { imageUrls };
+};
+
+
+
+
+export const GAMEBANANA_OLYMPUS_ICON_URL = "https://images.gamebanana.com/img/ico/tools/60b506516b5dc.png";
+
+
+type UseGamebananaModDownloadUrlProps = {
+    gamebananaModId: number | undefined;
+};
+
+type UseGamebananaModDownloadUrlReturn = {
+    downloadUrl?: string;
+};
+
+
+const GAMEBANANA_MOD_DOWNLOAD_BASE_URL = ``;
+
+export const useGamebananaModDownloadUrl = (
+    { gamebananaModId }: UseGamebananaModDownloadUrlProps
+): UseGamebananaModDownloadUrlReturn => {
+    //TODO!: implement this
+
+    return {
+        downloadUrl: "",
+    };
 };

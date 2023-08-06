@@ -1,10 +1,13 @@
-import { Group, Loader, Text, createStyles } from "@mantine/core";
+import { Group, Loader, Stack, Text, createStyles } from "@mantine/core";
 import { Mod } from "~/components/mods/types";
 import { api } from "~/utils/api";
 import MapsTable from "./mapsTable";
 import { useMemo } from "react";
 import PublisherName from "./publisherName";
 import PublicationDate from "./publicationDate";
+import ModDownloadButton from "./modDownloadButton/modDownloadButton";
+import Link from "next/link";
+import ModCarousel from "./modCarousel";
 
 
 
@@ -46,10 +49,19 @@ const ExpandedMod = ({ isLoading, mod }: ExpandedModProps) => {
     if (isLoading) return <Loader />;
 
     return (
-        <>
-            <Group position="center">
-                <PublisherName publisherId={mod.publisherId}/>
-                <PublicationDate gamebananaModId={mod.gamebananaModId}/>
+        <Stack justify="center" align="center">
+            <Group position="center" align="center">
+                <PublisherName publisherId={mod.publisherId} />
+                <PublicationDate gamebananaModId={mod.gamebananaModId} />
+                <ModDownloadButton gamebananaModId={mod.gamebananaModId} />
+                <Link
+                    href={{
+                        pathname: "/mods/[id]",
+                        query: { id: mod.id },
+                    }}
+                >
+                    More Info
+                </Link>
             </Group>
             <MapsTable
                 isLoadingMod={isLoading}
@@ -57,7 +69,8 @@ const ExpandedMod = ({ isLoading, mod }: ExpandedModProps) => {
                 isMapperNameVisiblePermitted={isMapperNameVisiblePermitted}
                 mapIds={mod.Map.map(({ id }) => id)}
             />
-        </>
+            <ModCarousel gamebananaModId={mod.gamebananaModId} />
+        </Stack>
     );
 };
 

@@ -70,7 +70,7 @@ const ModCarouselTest = () => {
                 </Group>
             </Group>
             <ModCarousel
-                modId={modId}
+                gamebananaModId={modId}
             />
         </>
     );

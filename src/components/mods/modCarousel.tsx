@@ -2,7 +2,7 @@ import { Carousel } from "@mantine/carousel";
 import { useGamebananaModImageUrls } from "~/hooks/gamebananaApi";
 import { createStyles } from "@mantine/core";
 import { Image } from "@mantine/core";      //TODO!: replace with nextjs Image component once next.config.mjs is fixed
-// import Image from "next/image";          
+// import Image from "next/image";
 import { api } from "~/utils/api";
 
 
@@ -23,23 +23,13 @@ const useStyles = createStyles(
 
 
 type modCarouselProps = {
-    modId: number,
+    gamebananaModId: number,
 };
 
 
 
 
-const ModCarousel = ({ modId }: modCarouselProps) => {
-    const modQuery = api.mod.getById.useQuery(
-        { id: modId },
-        { queryKey: ["mod.getById", { id: modId }] },
-    );
-
-    const mod = modQuery.data;
-
-
-    const gamebananaModId = mod?.gamebananaModId;
-
+const ModCarousel = ({ gamebananaModId }: modCarouselProps) => {
     const { imageUrls } = useGamebananaModImageUrls({ gamebananaModId });
 
 
