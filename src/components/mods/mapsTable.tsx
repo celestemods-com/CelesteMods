@@ -217,23 +217,23 @@ const MapsTable = (
         ),
     );
 
-    const isLoadingRatings = ratingQueries.some((query) => query.isLoading);
+    const isLoadingRatings = isLoadingMaps || ratingQueries.some((query) => query.isLoading);
 
     const ratingsFromMapIds = useMemo(() => {
         if (isLoadingRatings) return [];
 
-        const ratings: MapRatingData[] = [];
+        const ratings_maybeEmpty: MapRatingData[] = [];
 
         ratingQueries.forEach((ratingQuery) => {
             const rating = ratingQuery.data;
 
-            if (rating !== undefined) ratings.push(rating);
+            if (rating !== undefined) ratings_maybeEmpty.push(rating);
         });
 
-        if (!ratings.length) console.log(`ratings_maybeEmpty is empty. mapIds = "${mapIds}"`);
+        if (!ratings_maybeEmpty.length) console.log(`ratings_maybeEmpty is empty. mapIds = "${mapIds}"`);
 
-        return ratings;
-    }, [isLoadingRatings, ratingQueries, mapIds]);
+        return ratings_maybeEmpty;
+    }, [isLoadingRatings, ratingQueries, mapIds]);  //TODO: figure out if mapIds can be removed from this dependency array
 
 
     //check that all data is loaded
@@ -241,8 +241,10 @@ const MapsTable = (
 
 
     //get maps with quality, difficulty, and length names
-    const mapsWithInfo = useMemo(() => getMapsWithInfo(isLoading, maps, ratingsFromMapIds, lengths, qualities, difficulties),
-        [isLoading, maps, ratingsFromMapIds, qualities, difficulties, lengths]);
+    const mapsWithInfo = useMemo(
+        () => getMapsWithInfo(isLoading, maps, ratingsFromMapIds, lengths, qualities, difficulties),
+        [isLoading, maps, ratingsFromMapIds, qualities, difficulties, lengths],
+    );
 
 
     //handle sorting
