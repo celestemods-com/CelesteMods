@@ -261,7 +261,7 @@ const MapsTable = (
 
 
     useEffect(() => {
-        const sortedMapsWithInfo = mapsWithInfo.sort(
+        const sortedMaps = mapsWithInfo.sort(
             (a, b) => {
                 const columnAccessor = sortStatus.columnAccessor;
 
@@ -270,12 +270,16 @@ const MapsTable = (
                 const propertyBString = String(b[columnAccessor]);
 
 
-                return sortStatus.direction === "asc" ? propertyAString.localeCompare(propertyBString) : propertyBString.localeCompare(propertyAString);
+                return (
+                    sortStatus.direction === "asc" ?
+                        propertyAString.localeCompare(propertyBString) :
+                        propertyBString.localeCompare(propertyAString)
+                );
             }
         );
 
 
-        setSortedMapsWithInfo(sortedMapsWithInfo);
+        setSortedMapsWithInfo(sortedMaps);
     }, [isNormalMod, mapsWithInfo, sortStatus]);
 
 
@@ -326,9 +330,7 @@ const MapsTable = (
                     textAlignment: "center",
                     filtering: true,
                 }}
-                records={[
-                    ...sortedMapsWithInfo,
-                ]}
+                records={[...sortedMapsWithInfo,]}
                 columns={[
                     { accessor: "name", title: "Name" },
                     { accessor: "qualityName", title: "Quality" },
