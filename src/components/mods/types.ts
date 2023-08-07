@@ -11,11 +11,14 @@ export type Mod = {
     isExpanded: boolean;
 } & TrimmedMod;
 
+export type ModRatingData = RouterOutputs["rating"]["getModRatingData"];
+export type ModNoRatingData = Pick<ModRatingData, "modId">;
+export type ModYesRatingData = {    //TODO: figure out how to do this through narrowing instead of directly referencing the type
+    modId: ModRatingData["modId"];
+} & RatingsInfo
+
 
 export type Map = RouterOutputs["map"]["getById"];
-
-
-export type ModRatingData = RouterOutputs["rating"]["getModRatingData"];
 
 export type MapRatingData = RouterOutputs["rating"]["getMapRatingData"];
 export type MapNoRatingData = Pick<MapRatingData, "mapId">;

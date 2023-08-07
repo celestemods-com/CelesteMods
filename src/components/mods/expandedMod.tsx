@@ -39,11 +39,6 @@ const ExpandedMod = ({ isLoading, mod }: ExpandedModProps) => {
     const isMapperNameVisiblePermitted = false;
 
 
-    //TODO!!!: continue here
-    //add publication date, 1-click download button (own component), "more info" button, and carousel
-    //then implement /mods/[id] (also using mapsTable)
-
-
     const { cx, classes } = useStyles();
 
     if (isLoading) return <Loader />;
