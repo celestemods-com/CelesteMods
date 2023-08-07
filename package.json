@@ -30,7 +30,7 @@
     "axios": "^1.4.0",
     "dayjs": "^1.11.9",
     "embla-carousel-react": "^7.1.0",
-    "mantine-datatable": "^2.9.3",
+    "mantine-datatable": "^2.9.7",
     "next": "^13.4.12",
     "next-auth": "^4.22.1",
     "react": "18.2.0",
