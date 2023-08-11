@@ -297,14 +297,60 @@ const Mods: NextPage = () => {
                         const propertyANum = Number(a[columnAccessor]);
                         const propertyBNum = Number(b[columnAccessor]);
 
-                        if (isNaN(propertyANum)) return -1;
-                        if (isNaN(propertyBNum)) return 1;
+                        const aIsNan = isNaN(propertyANum);
+                        const bIsNan = isNaN(propertyBNum);
+
+                        if (aIsNan && bIsNan) return 0;
+                        if (aIsNan) return -1;
+                        if (bIsNan) return 1;
 
 
                         return (
                             sortStatus.direction === "asc" ?
                                 propertyANum - propertyBNum :
                                 propertyBNum - propertyANum
+                        );
+                    },
+                ),
+            );
+        } else if (columnAccessor === "qualityName") {
+            setSortedModsWithInfo(
+                modsWithInfo.sort(
+                    (a, b) => {
+                        if (a === b) return 0;
+
+                        const aQuality = qualities.find((quality) => quality.name === a.qualityName);
+                        const bQuality = qualities.find((quality) => quality.name === b.qualityName);
+
+                        if (!aQuality && !bQuality) return 0;
+                        if (!aQuality) return 1;
+                        if (!bQuality) return -1;
+
+                        return (
+                            sortStatus.direction === "asc" ?
+                                bQuality.order - aQuality.order :   //b-a because better qualities have higher orders, but we want them to sort first when ascending
+                                aQuality.order - bQuality.order
+                        );
+                    },
+                ),
+            );
+        } else if (columnAccessor === "difficultyName") {
+            setSortedModsWithInfo(
+                modsWithInfo.sort(
+                    (a, b) => {
+                        if (a === b) return 0;
+
+                        const aDifficulty = difficulties.find((difficulty) => difficulty.name === a.difficultyName);
+                        const bDifficulty = difficulties.find((difficulty) => difficulty.name === b.difficultyName);
+
+                        if (!aDifficulty && !bDifficulty) return 0;
+                        if (!aDifficulty) return 1;
+                        if (!bDifficulty) return -1;
+
+                        return (
+                            sortStatus.direction === "asc" ?
+                                aDifficulty.order - bDifficulty.order :
+                                bDifficulty.order - aDifficulty.order
                         );
                     },
                 ),
