@@ -282,33 +282,50 @@ const Mods: NextPage = () => {
     //handle sorting
     const [sortedModsWithInfo, setSortedModsWithInfo] = useState<ModWithInfo[]>(modsWithInfo);
 
-
     const [sortStatus, setSortStatus] = useState<ModsTableSortStatus>({
         columnAccessor: "name",
         direction: "asc",
     });
 
-
     useEffect(() => {
-        const sortedMods = modsWithInfo.sort(
-            (a, b) => {
-                const columnAccessor = sortStatus.columnAccessor;
+        const columnAccessor = sortStatus.columnAccessor;
+
+        if (columnAccessor === "mapsCount") {
+            setSortedModsWithInfo(
+                modsWithInfo.sort(
+                    (a, b) => {
+                        const propertyANum = Number(a[columnAccessor]);
+                        const propertyBNum = Number(b[columnAccessor]);
+
+                        if (isNaN(propertyANum)) return -1;
+                        if (isNaN(propertyBNum)) return 1;
 
 
-                const propertyAString = String(a[columnAccessor]);
-                const propertyBString = String(b[columnAccessor]);
+                        return (
+                            sortStatus.direction === "asc" ?
+                                propertyANum - propertyBNum :
+                                propertyBNum - propertyANum
+                        );
+                    },
+                ),
+            );
+        } else {
+            setSortedModsWithInfo(
+                modsWithInfo.sort(
+                    (a, b) => {
+                        const propertyAString = String(a[columnAccessor]);
+                        const propertyBString = String(b[columnAccessor]);
 
 
-                return (
-                    sortStatus.direction === "asc" ?
-                        propertyAString.localeCompare(propertyBString) :
-                        propertyBString.localeCompare(propertyAString)
-                );
-            }
-        );
-
-
-        setSortedModsWithInfo(sortedMods);
+                        return (
+                            sortStatus.direction === "asc" ?
+                                propertyAString.localeCompare(propertyBString) :
+                                propertyBString.localeCompare(propertyAString)
+                        );
+                    },
+                ),
+            );
+        }
     }, [modsWithInfo, sortStatus]);
 
 
