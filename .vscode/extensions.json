@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "prisma.prisma",
+        "formulahendry.auto-rename-tag",
+        "visualstudioexptteam.vscodeintellicode",
+        "christian-kohler.npm-intellisense",
+        "helixquar.randomeverything"
+    ]
+}
