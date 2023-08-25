@@ -125,6 +125,17 @@ Please check out our [contributing guide](/CONTRIBUTING.md) for detailed instruc
     c. Open your web browser and navigate to `http://localhost:3000`. It may take several seconds to load, especially if the server is still booting up.
 
 
+### Local Development
+
+1. Each time you open up the project, you must start up the MySQL server and the local development server (see above).
+
+
+2. When you make changes in the code, the page in your browser will usually update automatically. Occasionally a manual page refresh will be required.
+
+
+3. You will likely need to install the [React Developer Tools](https://react.dev/learn/react-developer-tools) browser extension.
+
+
 ## Additional Documentation
 
 This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
