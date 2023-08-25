@@ -147,7 +147,7 @@ If you need a hand, please [join our Discord](https://discord.gg/HmQxs3xF3G).
 
 
 ## Terms of Use
-CelesteMods.com is licensed under [GNU AGPL v3](/LICENSE.md).
+CelesteMods.com is licensed under [GNU AGPL v3](/LICENSE.md). By contributing to this repository (by submitting an issue, submitting a pull request, or any other contribution) you certify that you own the rights to your contribution (or have the appropriate license(s)), and you agree that, by submitting your contribution, the terms of this license will irrevocably apply to your contribution.
 
 ---
 
