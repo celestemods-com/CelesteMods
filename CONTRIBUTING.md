@@ -4,7 +4,6 @@ Contributions to CelesteMods.com are always welcome but please try to follow the
 
 __Please do not ask for assistance in using the website in the Issues list.__ Use the [Discord server](https://discord.gg/HmQxs3xF3G) to ask questions and seek help.
 
----
 
 ## Filing A Bug Report
 
@@ -25,7 +24,6 @@ You're also welcome to submit feature requests. When doing so, please [search th
 
 See RStudio's [guide to writing feature requests](https://github.com/rstudio/rstudio/wiki/Writing-Good-Feature-Requests) for more on how to write a great feature request.  <!--TODO: Make our own version of this document or incorporate it into this file-->
 
----
 
 ## Submitting a pull request
 Thanks in advance for your contribution.
