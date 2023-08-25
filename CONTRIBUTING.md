@@ -2,7 +2,9 @@
 
 Contributions to CelesteMods.com are always welcome but please try to follow these guidelines when sending in something as it will help addressing the issue quicker and more smoothly.
 
-__Please do not ask for assistance in using the website in the Issues list.__ Use the [Discord server](https://discord.gg/HmQxs3xF3G) to ask questions and seek help. 
+__Please do not ask for assistance in using the website in the Issues list.__ Use the [Discord server](https://discord.gg/HmQxs3xF3G) to ask questions and seek help.
+
+---
 
 ## Filing A Bug Report
 
@@ -22,6 +24,8 @@ Feature requests are welcome.
 You're also welcome to submit feature requests. When doing so, please [search the issue list](https://github.com/celestemods-com/CelesteMods/search?type=Issues) to see if the enhancement has already been filed. If it has, vote for it (add a reaction to it) and optionally add a comment with your perspective on the idea. 
 
 See RStudio's [guide to writing feature requests](https://github.com/rstudio/rstudio/wiki/Writing-Good-Feature-Requests) for more on how to write a great feature request.  <!--TODO: Make our own version of this document or incorporate it into this file-->
+
+---
 
 ## Submitting a pull request
 Thanks in advance for your contribution.
@@ -43,5 +47,6 @@ Thanks in advance for your contribution.
 7. Do not include changes that are not related to the issue at hand.
 8. Follow the same coding style with regards to spaces, semicolons, variable naming etc.
 
-## Works Cited
-This document was based on the [Nightwatch](https://github.com/nightwatchjs/nightwatch/blob/6bd77e2246785b64786e802e8c7b682082da848c/.github/CONTRIBUTING.md) and [RStudio](https://github.com/rstudio/rstudio/blob/master/CONTRIBUTING.md) contribution guidelines.
+---
+
+>This document was based on the [Nightwatch](https://github.com/nightwatchjs/nightwatch/blob/6bd77e2246785b64786e802e8c7b682082da848c/.github/CONTRIBUTING.md) and [RStudio](https://github.com/rstudio/rstudio/blob/master/CONTRIBUTING.md) contribution guidelines.
