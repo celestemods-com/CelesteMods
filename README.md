@@ -152,6 +152,8 @@ If you are not familiar with the different technologies used in this project, pl
 
 This project does not use Tailwind CSS. Instead, most of our React components come from [Mantine](https://mantine.dev/pages/basics/). Most of the styling for a Mantine component will be inherited from the [Mantine theme](https://mantine.dev/theming/theme-object/). For any additional styling, use the [createStyles hook](https://mantine.dev/pages/basics/#createstyles) instead of the [Styles API](https://mantine.dev/pages/basics/#styling-components-internals-with-styles-api) when possible.
 
+Our datatables are created using [Mantine Datatable](https://icflorescu.github.io/mantine-datatable/).
+
 
 ## How to Get Help
 If you need a hand, please [join our Discord](https://discord.gg/HmQxs3xF3G).
