@@ -16,7 +16,7 @@ If you want to contribute in other ways, please keep reading.
 
 
 ## Contributing to CelesteMods.com
-Please check out our [contributing guide](/CONTRIBUTING.md) for detailed instructions on how to submit bug reports, request new features, and create pull requests.
+Please check out our [contributing guide](./CONTRIBUTING.md) for detailed instructions on how to submit bug reports, request new features, and create pull requests.
 
 ***Please read the guidelines before opening any issues or pull requests.***
 
@@ -66,7 +66,7 @@ Please check out our [contributing guide](/CONTRIBUTING.md) for detailed instruc
     * On Windows, use [nvm-windows](https://github.com/coreybutler/nvm-windows).
 
 
-    b. Install the version of node specified by the `engines` key in our [package.json](/package.json).
+    b. Install the version of node specified by the `engines` key in our [package.json](./package.json).
     
     * As of 2023-08-25, this is version 20.4.0.
 
@@ -111,7 +111,7 @@ Please check out our [contributing guide](/CONTRIBUTING.md) for detailed instruc
 
     * Wait. Node Package Manager (npm) will download all of the dependencies and then generate your Prisma client.
 
-    * If you installed your dependencies before configuring your `DATABASE_URL` in `.env`, you will need to manually regenerate your Prisma client. This also needs to be done after any changes to the [Prisma schema](/prisma/schema.prisma). In your terminal, type `npx prisma generate` and hit `enter`.
+    * If you installed your dependencies before configuring your `DATABASE_URL` in `.env`, you will need to manually regenerate your Prisma client. This also needs to be done after any changes to the [Prisma schema](./prisma/schema.prisma). In your terminal, type `npx prisma generate` and hit `enter`.
 
 
 5. Run Local Development Server
@@ -160,7 +160,7 @@ If you need a hand, please [join our Discord](https://discord.gg/HmQxs3xF3G).
 
 
 ## Terms of Use
-CelesteMods.com is licensed under [GNU AGPL v3](/LICENSE.md). By contributing to this repository (by submitting an issue, submitting a pull request, or any other contribution) you certify that you own the rights to your contribution (or have the appropriate license(s)), and you agree that, by submitting your contribution, the terms of this license will irrevocably apply to your contribution.
+CelesteMods.com is licensed under [GNU AGPL v3](./LICENSE.md). By contributing to this repository (by submitting an issue, submitting a pull request, or any other contribution) you certify that you own the rights to your contribution (or have the appropriate license(s)), and you agree that, by submitting your contribution, the terms of this license will irrevocably apply to your contribution.
 
 ---
 

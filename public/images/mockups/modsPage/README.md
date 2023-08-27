@@ -6,7 +6,7 @@
 
 This image shows the table with the first row expanded. The default state of the page is to have no rows expanded.
 
-Some changes have already been implemented in [the page](/src/pages/mods/index.tsx). If the page and this mockup differ in structure, assume the page is correct. Remaining changes are noted below.
+Some changes have already been implemented in [the page](./src/pages/mods/index.tsx). If the page and this mockup differ in structure, assume the page is correct. Remaining changes are noted below.
 
 The `More Info` button should have a different icon, and will link to the mod's individual page once that is implemented. For now, the button should be removed/hidden.
 
