@@ -7,7 +7,8 @@
     "dev": "next dev",
     "postinstall": "prisma generate",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "db-seed": "cross-env NODE_ENV=development prisma db seed"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",
@@ -47,6 +48,7 @@
     "@types/react-dom": "^18.2.7",
     "@typescript-eslint/eslint-plugin": "^6.2.1",
     "@typescript-eslint/parser": "^6.2.1",
+    "cross-env": "^7.0.3",
     "eslint": "^8.46.0",
     "eslint-config-next": "^13.4.12",
     "prisma": "^5.0.0",
