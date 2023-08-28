@@ -150,7 +150,7 @@ If you are not familiar with the different technologies used in this project, pl
 - [tRPC](https://trpc.io)
 
 
-This project does not use Tailwind CSS. Instead, most of our React components come from [Mantine](https://mantine.dev/pages/basics/). Most of the styling for a Mantine component will be inherited from the [Mantine theme](https://mantine.dev/theming/theme-object/). For any additional styling, use the [createStyles hook](https://mantine.dev/pages/basics/#createstyles) instead of the [Styles API](https://mantine.dev/pages/basics/#styling-components-internals-with-styles-api) when possible.
+This project does not use Tailwind CSS. Instead, most of our React components come from [Mantine](https://mantine.dev/pages/basics/). Most of the styling for a Mantine component will be inherited from the [Mantine theme](https://mantine.dev/theming/theme-object/). For any additional styling, use the [createStyles hook](https://mantine.dev/pages/basics/#createstyles) instead of the [Styles API](https://mantine.dev/pages/basics/#styling-components-internals-with-styles-api) when possible. See MantineDatatable's [source code](https://github.com/icflorescu/mantine-datatable/tree/main/package) for examples of desired formatting for styling code.
 
 Our datatables are created using [Mantine Datatable](https://icflorescu.github.io/mantine-datatable/).
 
