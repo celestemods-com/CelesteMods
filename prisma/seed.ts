@@ -1,4 +1,5 @@
 import { ModType, PrismaClient } from "@prisma/client";
+import { randomInteger, randomString, randomElement, randomIntegers } from "~/utils/randomValueGenerators";
 
 
 const prisma = new PrismaClient();
@@ -6,67 +7,10 @@ const prisma = new PrismaClient();
 
 
 
-/** Random integer from min (included) to max (excluded). */
-const randomInteger = (min: number, max: number) => {
-    return min + Math.floor(Math.random() * (max - min));
-};
-
-
-const randomString = (size: number) => {
-    const CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-
-
-    let result = '';
-
-    for (let i = 0; i < size; i++) {
-        result += CHARACTERS[randomInteger(0, CHARACTERS.length)];
-    }
-
-
-    return result;
-};
-
-
-const randomElement = <T>(array: T[]) => {
-    if (array.length === 0) {
-        return null;
-    }
-
-
-    return array[randomInteger(0, array.length)];
-};
-
-
-/**
- * List of distinct integers from min (included) to max (excluded).
- * The function keeps randomly choosing numbers until it gets a distinct number, so only use this function when n is relatively smaller than max - min.
- */
-const randomIntegers = (n: number, min: number, max: number) => {
-    const numbers: number[] = [];
-
-
-    for (let i = 0; i < n; i++) {
-        let number = randomInteger(min, max);
-
-        while (numbers.findIndex(value => value === number) !== -1) {
-            number = randomInteger(min, max);
-        }
-
-
-        numbers.push(number);
-    }
-
-
-    return numbers;
-};
-
-
-
-
 const seedRandomData = async () => {
     const difficulties = [];
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 5; i++) {
         difficulties.push(
             await prisma.difficulty.create({
                 data: {
@@ -82,7 +26,7 @@ const seedRandomData = async () => {
 
     const techs = [];
 
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 30; i++) {
         techs.push(
             await prisma.tech.create({
                 data: {
@@ -96,7 +40,7 @@ const seedRandomData = async () => {
 
     const qualities = [];
 
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 5; i++) {
         qualities.push(
             await prisma.quality.create({
                 data: {
@@ -111,7 +55,7 @@ const seedRandomData = async () => {
 
     const lengths = [];
 
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 5; i++) {
         lengths.push(
             await prisma.length.create({
                 data: {
@@ -162,7 +106,7 @@ const seedRandomData = async () => {
 
 
     const modTypes = [ModType.Normal, ModType.Collab, ModType.Contest, ModType.LobbyOther];
-    const modGameBananaIds = randomIntegers(50, 1000, 300000);  // GameBananaIds must be unique.
+    const modGameBananaIds = randomIntegers(100, 1000, 300000);  // GameBananaIds must be unique.
     const mods = [];
 
     for (let i = 0; i < modGameBananaIds.length; i++) {
@@ -269,7 +213,7 @@ const main = async () => {
 
 
     if (process.env.SEED_RANDOM_DATA) await seedRandomData();
-}
+};
 
 
 
