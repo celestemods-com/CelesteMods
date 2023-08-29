@@ -8,7 +8,7 @@
     "postinstall": "prisma generate",
     "lint": "next lint",
     "start": "next start",
-    "db-seed": "prisma db seed"
+    "db-reset": "npx prisma migrate reset"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",
