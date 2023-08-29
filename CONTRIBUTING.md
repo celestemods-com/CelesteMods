@@ -30,7 +30,7 @@ Thanks in advance for your contribution.
 
 1. Follow the usual git workflow for submitting a pull request:
     * Fork the project
-    * Follow the steps in our [README](/README.md) to get the project running locally
+    * Follow the steps in our [README](./README.md) to get the project running locally
     * Create a new branch from main (e.g. `features/my-new-feature` or `issue/123-my-bugfix`)
     * Add your changes
     * Test the new code locally
