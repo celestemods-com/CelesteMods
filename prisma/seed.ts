@@ -67,7 +67,7 @@ async function main() {
         data: { id: 0 },
     });
 
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.SEED_RANDOM_DATA === 'true') {
         const difficulties = [];
         for (let i = 0; i < 10; i++) {
             difficulties.push(
