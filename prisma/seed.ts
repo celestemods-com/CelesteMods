@@ -8,19 +8,29 @@ const prisma = new PrismaClient();
 
 
 const seedRandomData = async () => {
-    const difficulties = [];
+    const childDifficulties = [];
 
     for (let i = 0; i < 5; i++) {
-        difficulties.push(
-            await prisma.difficulty.create({
+        const difficulty = await prisma.difficulty.create({
+            data: {
+                name: "ExampleParentDifficulty" + (i + 1),
+                description: "Example parent difficulty " + (i + 1),
+                parentDifficultyId: 0,
+                order: i + 2,
+            }
+        });
+
+
+        for (let j = 0; j < 3; j++) {
+            childDifficulties.push(await prisma.difficulty.create({
                 data: {
-                    name: "ExampleDifficulty" + (i + 1),
-                    description: "Example difficulty " + (i + 1),
-                    parentDifficultyId: 0,
-                    order: i + 2,
+                    name: `ExampleChildDifficulty${i+1}-${j+1}`,
+                    description: `Example child difficulty ${i+1}-${j+1}`,
+                    parentDifficultyId: difficulty.id,
+                    order: j + 1,
                 }
-            })
-        );
+            }));
+        }
     }
 
 
@@ -31,7 +41,7 @@ const seedRandomData = async () => {
             await prisma.tech.create({
                 data: {
                     name: "ExampleTech" + i,
-                    difficultyId: randomElement(difficulties)!.id
+                    difficultyId: randomElement(childDifficulties)!.id
                 }
             })
         );
@@ -149,7 +159,7 @@ const seedRandomData = async () => {
                     mapperNameString: 'Mapper' + randomString(20),
                     timeSubmitted,
                     timeApproved,
-                    canonicalDifficultyId: randomElement(difficulties)!.id,
+                    canonicalDifficultyId: randomElement(childDifficulties)!.id,
                     modId: randomElement(mods)!.id,
                     lengthId: randomElement(lengths)!.id,
                 }
@@ -174,6 +184,7 @@ const seedRandomData = async () => {
                     submittedBy,
                     mapId: map.id,
                     qualityId: randomElement(qualities)!.id,
+                    difficultyId: randomElement(childDifficulties)!.id,
                 }
             })
         );
