@@ -27,10 +27,10 @@ export const randomString = (size: number, characters?: string) => {
 };
 
 
-/** Return random element from array. Returns `null` if array is empty. */
+/** Return random element from an non-empty array. Throws an error if the array is empty. */
 export const randomElement = <T>(array: T[]) => {
     if (array.length === 0) {
-        return null;
+        throw "array is empty.";
     }
 
 
@@ -65,4 +65,23 @@ export const randomIntegers = (n: number, min: number, max: number) => {
 
 
     return numbers;
+};
+
+/**
+ * List of distinct pairs from two non empty arrays.
+ * The function keeps randomly choosing pairs until it gets a distinct number,
+ * so only use this function when n is relatively smaller than the total number of distinct pairs.
+ * `n` is the number of pairs to return.
+ */
+export const randomPairs = <T1, T2>(n: number, array1: T1[], array2: T2[]): [T1, T2][] => {
+    if (array1.length === 0 || array2.length === 0) {
+        throw "arrays must be non empty.";
+    }
+
+
+    return randomIntegers(n, 0, array1.length * array2.length).map(index => {
+        const index1 = Math.floor(index / array2.length);
+        const index2 = index % array2.length;
+        return [array1[index1] as T1, array2[index2] as T2];
+    });
 };

@@ -1,5 +1,5 @@
-import { ModType, PrismaClient } from "@prisma/client";
-import { randomInteger, randomString, randomElement, randomIntegers } from "~/utils/randomValueGenerators";
+import { type Difficulty, ModType, PrismaClient, type Quality } from "@prisma/client";
+import { randomInteger, randomString, randomElement, randomIntegers, randomPairs } from "~/utils/randomValueGenerators";
 
 
 const prisma = new PrismaClient();
@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 
 
 const seedRandomData = async () => {
-    const childDifficulties = [];
+    const childDifficulties: Difficulty[] = [];
 
     for (let i = 0; i < 5; i++) {
         const difficulty = await prisma.difficulty.create({
@@ -41,14 +41,14 @@ const seedRandomData = async () => {
             await prisma.tech.create({
                 data: {
                     name: "ExampleTech" + i,
-                    difficultyId: randomElement(childDifficulties)!.id
+                    difficultyId: randomElement(childDifficulties).id
                 }
             })
         );
     }
 
 
-    const qualities = [];
+    const qualities: Quality[] = [];
 
     for (let i = 1; i <= 5; i++) {
         qualities.push(
@@ -101,53 +101,50 @@ const seedRandomData = async () => {
 
 
     const publisherGameBananaIds = randomIntegers(20, 0, 10000000); // GameBananaIds must be unique.
-    const publishers = [];
 
-    for (let i = 0; i < publisherGameBananaIds.length; i++) {
-        publishers.push(
+    const publishers = await Promise.all(publisherGameBananaIds.map(
+        async (gameBananaId, index) =>
             await prisma.publisher.create({
                 data: {
-                    gamebananaId: publisherGameBananaIds[i]!,
-                    name: 'ExamplePublisher' + (i + 1),
+                    gamebananaId: gameBananaId,
+                    name: 'ExamplePublisher' + (index + 1),
                 }
             })
-        );
-    }
+    ));
 
 
     const modTypes = [ModType.Normal, ModType.Collab, ModType.Contest, ModType.LobbyOther];
     const modGameBananaIds = randomIntegers(100, 1000, 300000);  // GameBananaIds must be unique.
-    const mods = [];
 
-    for (let i = 0; i < modGameBananaIds.length; i++) {
-        const timeCreatedGamebanana = randomInteger(1500000000, 160000000);
-        const timeSubmitted = randomInteger(timeCreatedGamebanana, timeCreatedGamebanana + 1000000);
-        const timeApproved = randomInteger(timeSubmitted, timeSubmitted + 1000000);
-
-
-        mods.push(
-            await prisma.mod.create({
+    const mods = await Promise.all(modGameBananaIds.map(
+        async gameBananaId => {
+            const timeCreatedGamebanana = randomInteger(1500000000, 160000000);
+            const timeSubmitted = randomInteger(timeCreatedGamebanana, timeCreatedGamebanana + 1000000);
+            const timeApproved = randomInteger(timeSubmitted, timeSubmitted + 1000000);
+    
+    
+            return await prisma.mod.create({
                 data: {
-                    type: randomElement(modTypes)!,
+                    type: randomElement(modTypes),
                     name: 'Mod' + randomString(20),
-                    publisherId: randomElement(publishers)!.id,
+                    publisherId: randomElement(publishers).id,
                     shortDescription: "A example mod",
-                    gamebananaModId: modGameBananaIds[i]!,
+                    gamebananaModId: gameBananaId,
                     timeSubmitted,
                     submittedBy: "CelesteModsList",
                     timeApproved,
                     approvedBy: "CelesteModsList",
                     timeCreatedGamebanana,
                 }
-            })
-        );
-    }
+            });
+        }
+    ));
 
 
     const maps = [];
 
     for (let i = 0; i < 30; i++) {
-        const mod = randomElement(mods)!;
+        const mod = randomElement(mods);
         const timeSubmitted = randomInteger(mod.timeApproved, mod.timeApproved + 10000000);
         const timeApproved = randomInteger(timeSubmitted, timeSubmitted + 1000000);
 
@@ -159,36 +156,30 @@ const seedRandomData = async () => {
                     mapperNameString: 'Mapper' + randomString(20),
                     timeSubmitted,
                     timeApproved,
-                    canonicalDifficultyId: randomElement(childDifficulties)!.id,
-                    modId: randomElement(mods)!.id,
-                    lengthId: randomElement(lengths)!.id,
+                    canonicalDifficultyId: randomElement(childDifficulties).id,
+                    modId: randomElement(mods).id,
+                    lengthId: randomElement(lengths).id,
                 }
             })
         );
     }
 
 
-    const ratings = [];
-    const mapsAndSubmittedBy = randomIntegers(20, 0, maps.length * users.length);   //The combination of map and submitted by must be unique.
-
-    for (let i = 0; i < mapsAndSubmittedBy.length; i++) {
-        const mapAndSubmittedBy = mapsAndSubmittedBy[i]!;
-        const map = maps[Math.floor(mapAndSubmittedBy / users.length)]!;
-        const submittedBy = users[mapAndSubmittedBy % users.length]!.id;
+    //The combination of map and submitted by must be unique.
+    const mapsAndSubmittedBy = randomPairs(20, maps, users);
 
 
-        ratings.push(
-            await prisma.rating.create({
-                data: {
-                    timeSubmitted: randomInteger(map.timeApproved, map.timeApproved + 10000000),
-                    submittedBy,
-                    mapId: map.id,
-                    qualityId: randomElement(qualities)!.id,
-                    difficultyId: randomElement(childDifficulties)!.id,
-                }
-            })
-        );
-    }
+    await Promise.all(mapsAndSubmittedBy.map(async ([map, submittedBy]) => 
+        await prisma.rating.create({
+            data: {
+                timeSubmitted: randomInteger(map.timeApproved, map.timeApproved + 10000000),
+                submittedBy: submittedBy.id,
+                mapId: map.id,
+                qualityId: randomElement(qualities).id,
+                difficultyId: randomElement(childDifficulties).id,
+            }
+        }))
+    );
 };
 
 
