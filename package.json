@@ -52,7 +52,6 @@
     "eslint-config-next": "^13.4.12",
     "prisma": "^5.0.0",
     "ts-node": "^10.9.1",
-    "tsx": "^3.12.7",
     "typescript": "^5.1.6"
   },
   "engines": {
@@ -73,7 +72,7 @@
     ]
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
   "ct3aMetadata": {
     "initVersion": "7.8.0"
