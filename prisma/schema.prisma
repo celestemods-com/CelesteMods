@@ -11,7 +11,7 @@ model Length {
   id                 Int                  @id @default(autoincrement()) @db.UnsignedTinyInt
   name               String               @unique @db.VarChar(20)
   description        String               @db.VarChar(100)
-  order              Int                  @unique @db.UnsignedTinyInt
+  order              Int                  @unique @db.UnsignedTinyInt  //1 is the shortest, higher numbers are longer
   map                Map[]
   MapReview          MapReview[]
   Map_Archive        Map_Archive[]
@@ -26,7 +26,7 @@ model Difficulty {
   description        String?              @db.VarChar(100)
   ParentDifficulty   Difficulty?          @relation("DifficultyToDifficulty", fields: [parentDifficultyId], references: [id], onDelete: Cascade, onUpdate: Restrict)
   parentDifficultyId Int?                 @default(0) @db.UnsignedSmallInt
-  order              Int                  @db.UnsignedTinyInt
+  order              Int                  @db.UnsignedTinyInt   //1 is the easiest, higher numbers are harder
   ChildDifficulty    Difficulty[]         @relation("DifficultyToDifficulty")
   Rating             Rating[]
   Tech               Tech[]
@@ -46,7 +46,7 @@ model Tech {
   name                      String                      @unique @db.VarChar(50)
   description               String?                     @db.VarChar(150)
   Difficulty                Difficulty                  @relation(fields: [difficultyId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  difficultyId              Int                         @db.UnsignedSmallInt
+  difficultyId              Int                         @db.UnsignedSmallInt  //must be a parent difficulty
   TechVideo                 TechVideo[]
   MapsToTechs               MapsToTechs[]
   Map_ArchivesToTechs       Map_ArchivesToTechs[]
@@ -119,7 +119,7 @@ model Map {
   mapperNameString      String                 @db.VarChar(50)
   name                  String                 @db.VarChar(200)
   Difficulty            Difficulty             @relation(fields: [canonicalDifficultyId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  canonicalDifficultyId Int                    @db.UnsignedSmallInt
+  canonicalDifficultyId Int                    @db.UnsignedSmallInt //must be a parent difficulty
   Length                Length                 @relation(fields: [lengthId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   lengthId              Int                    @db.UnsignedTinyInt
   description           String?                @db.VarChar(500)
@@ -199,7 +199,7 @@ model Map_Archive {
   mapperNameString      String                @db.VarChar(50)
   name                  String                @db.VarChar(200)
   Difficulty            Difficulty            @relation(fields: [canonicalDifficultyId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  canonicalDifficultyId Int                   @db.UnsignedSmallInt
+  canonicalDifficultyId Int                   @db.UnsignedSmallInt  //must be a parent difficulty
   Length                Length                @relation(fields: [lengthId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   lengthId              Int                   @db.UnsignedTinyInt
   description           String?               @db.VarChar(500)
@@ -268,7 +268,7 @@ model Map_Edit {
   mapperNameString      String             @db.VarChar(50)
   name                  String             @db.VarChar(200)
   Difficulty            Difficulty         @relation(fields: [canonicalDifficultyId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  canonicalDifficultyId Int                @db.UnsignedSmallInt
+  canonicalDifficultyId Int                @db.UnsignedSmallInt //must be a parent difficulty
   Length                Length             @relation(fields: [lengthId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   lengthId              Int                @db.UnsignedTinyInt
   description           String?            @db.VarChar(500)
@@ -331,7 +331,7 @@ model Map_NewWithMod_New {
   mapperNameString          String                      @db.VarChar(50)
   name                      String                      @db.VarChar(200)
   Difficulty                Difficulty                  @relation(fields: [canonicalDifficultyId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  canonicalDifficultyId     Int                         @db.UnsignedSmallInt
+  canonicalDifficultyId     Int                         @db.UnsignedSmallInt  //must be a parent difficulty
   Length                    Length                      @relation(fields: [lengthId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   lengthId                  Int                         @db.UnsignedTinyInt
   description               String?                     @db.VarChar(500)
@@ -374,7 +374,7 @@ model Map_NewSolo {
   mapperNameString      String               @db.VarChar(50)
   name                  String               @db.VarChar(200)
   Difficulty            Difficulty           @relation(fields: [canonicalDifficultyId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  canonicalDifficultyId Int                  @db.UnsignedSmallInt
+  canonicalDifficultyId Int                  @db.UnsignedSmallInt //must be a parent difficulty
   Length                Length               @relation(fields: [lengthId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   lengthId              Int                  @db.UnsignedTinyInt
   description           String?              @db.VarChar(500)
@@ -412,7 +412,7 @@ model Quality {
   id          Int      @id @default(autoincrement()) @db.UnsignedTinyInt
   name        String   @unique @db.VarChar(20)
   description String   @db.VarChar(100)
-  order       Int      @unique @db.UnsignedTinyInt
+  order       Int      @unique @db.UnsignedTinyInt  //1 is the worst, higher numbers are better
   Rating      Rating[]
 }
 
@@ -426,7 +426,7 @@ model Rating {
   Quality          Quality?    @relation(fields: [qualityId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   qualityId        Int?        @db.UnsignedTinyInt
   Difficulty       Difficulty? @relation(fields: [difficultyId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  difficultyId     Int?        @db.UnsignedSmallInt
+  difficultyId     Int?        @db.UnsignedSmallInt //must be a child difficulty
 
   @@unique([mapId, submittedBy])
   @@index([difficultyId])
