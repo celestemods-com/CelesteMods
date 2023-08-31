@@ -5,6 +5,8 @@
 
 /** Random integer from min (included) to max (excluded). */
 export const randomInteger = (min: number, max: number) => {
+    if (min >= max) throw "min must be smaller than max.";
+    
     return min + Math.floor(Math.random() * (max - min));
 };
 
@@ -79,9 +81,22 @@ export const randomPairs = <T1, T2>(n: number, array1: T1[], array2: T2[]): [T1,
     }
 
 
-    return randomIntegers(n, 0, array1.length * array2.length).map(index => {
-        const index1 = Math.floor(index / array2.length);
-        const index2 = index % array2.length;
-        return [array1[index1] as T1, array2[index2] as T2];
-    });
+    const pairs = randomIntegers(n, 0, array1.length * array2.length).map(
+        index => {
+            const index1 = Math.floor(index / array2.length);
+            const index2 = index % array2.length;
+
+
+            const element1 = array1[index1];
+            const element2 = array2[index2];
+
+            if (!element1 || !element2) throw "element is undefined. this should not be possible.";
+
+
+            return [element1, element2] as [T1, T2];
+        }
+    );
+
+
+    return pairs;
 };

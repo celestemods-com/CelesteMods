@@ -1,4 +1,5 @@
-import { type Difficulty, ModType, PrismaClient, type Quality } from "@prisma/client";
+import { PrismaClient, ModType, type Difficulty, type Quality, type Tech, type Length, type User } from "@prisma/client";
+import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { randomInteger, randomString, randomElement, randomIntegers, randomPairs } from "~/utils/randomValueGenerators";
 
 
@@ -8,40 +9,46 @@ const prisma = new PrismaClient();
 
 
 const seedRandomData = async () => {
+    const parentDifficulties: Difficulty[] = [];
     const childDifficulties: Difficulty[] = [];
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 1; i <= 5; i++) {
         const difficulty = await prisma.difficulty.create({
             data: {
-                name: "ExampleParentDifficulty" + (i + 1),
-                description: "Example parent difficulty " + (i + 1),
+                name: "ExampleParentDifficulty" + i,
+                description: "Example parent difficulty " + i,
                 parentDifficultyId: 0,
-                order: i + 2,
+                order: i,
             }
         });
 
 
-        for (let j = 0; j < 3; j++) {
-            childDifficulties.push(await prisma.difficulty.create({
-                data: {
-                    name: `ExampleChildDifficulty${i+1}-${j+1}`,
-                    description: `Example child difficulty ${i+1}-${j+1}`,
-                    parentDifficultyId: difficulty.id,
-                    order: j + 1,
-                }
-            }));
+        for (let j = 1; j <= 3; j++) {
+            childDifficulties.push(
+                await prisma.difficulty.create({
+                    data: {
+                        name: `ExampleChildDifficulty${i}-${j}`,
+                        description: `Example child difficulty ${i}-${j}`,
+                        parentDifficultyId: difficulty.id,
+                        order: j,
+                    }
+                })
+            );
         }
+
+
+        parentDifficulties.push(difficulty);
     }
 
 
-    const techs = [];
+    const techs: Tech[] = [];
 
     for (let i = 1; i <= 30; i++) {
         techs.push(
             await prisma.tech.create({
                 data: {
                     name: "ExampleTech" + i,
-                    difficultyId: randomElement(childDifficulties).id
+                    difficultyId: randomElement(parentDifficulties).id,
                 }
             })
         );
@@ -56,14 +63,14 @@ const seedRandomData = async () => {
                 data: {
                     name: "ExampleQuality" + i,
                     description: "Example quality " + i,
-                    order: i
+                    order: i,
                 }
             })
         );
     }
 
 
-    const lengths = [];
+    const lengths: Length[] = [];
 
     for (let i = 1; i <= 5; i++) {
         lengths.push(
@@ -78,7 +85,7 @@ const seedRandomData = async () => {
     }
 
 
-    const users = [];
+    const users: User[] = [];
 
     for (let i = 0; i < 200; i++) {
         const name = 'User' + randomString(30);
@@ -102,27 +109,28 @@ const seedRandomData = async () => {
 
     const publisherGameBananaIds = randomIntegers(20, 0, 10000000); // GameBananaIds must be unique.
 
-    const publishers = await Promise.all(publisherGameBananaIds.map(
-        async (gameBananaId, index) =>
-            await prisma.publisher.create({
+    const publishers = await Promise.all(
+        publisherGameBananaIds.map(
+            async (gameBananaId, index) => await prisma.publisher.create({
                 data: {
                     gamebananaId: gameBananaId,
                     name: 'ExamplePublisher' + (index + 1),
                 }
             })
-    ));
+        )
+    );
 
 
-    const modTypes = [ModType.Normal, ModType.Collab, ModType.Contest, ModType.LobbyOther];
+    const modTypes = getNonEmptyArray(ModType);
     const modGameBananaIds = randomIntegers(100, 1000, 300000);  // GameBananaIds must be unique.
 
     const mods = await Promise.all(modGameBananaIds.map(
         async gameBananaId => {
-            const timeCreatedGamebanana = randomInteger(1500000000, 160000000);
+            const timeCreatedGamebanana = randomInteger(1500000000, 1600000000);
             const timeSubmitted = randomInteger(timeCreatedGamebanana, timeCreatedGamebanana + 1000000);
             const timeApproved = randomInteger(timeSubmitted, timeSubmitted + 1000000);
-    
-    
+
+
             return await prisma.mod.create({
                 data: {
                     type: randomElement(modTypes),
@@ -156,7 +164,7 @@ const seedRandomData = async () => {
                     mapperNameString: 'Mapper' + randomString(20),
                     timeSubmitted,
                     timeApproved,
-                    canonicalDifficultyId: randomElement(childDifficulties).id,
+                    canonicalDifficultyId: randomElement(parentDifficulties).id,
                     modId: randomElement(mods).id,
                     lengthId: randomElement(lengths).id,
                 }
@@ -168,8 +176,7 @@ const seedRandomData = async () => {
     //The combination of map and submitted by must be unique.
     const mapsAndSubmittedBy = randomPairs(20, maps, users);
 
-
-    await Promise.all(mapsAndSubmittedBy.map(async ([map, submittedBy]) => 
+    await Promise.all(mapsAndSubmittedBy.map(async ([map, submittedBy]) =>
         await prisma.rating.create({
             data: {
                 timeSubmitted: randomInteger(map.timeApproved, map.timeApproved + 10000000),
