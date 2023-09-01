@@ -13,5 +13,5 @@ updates:
     versioning-strategy: increase
     ignore:
     #   For all packages, ignore all patch updates
-      - dependency-name: "*"
-        update-types: ["version-update:semver-patch"]
+    #  - dependency-name: "*"
+    #    update-types: ["version-update:semver-patch"]
