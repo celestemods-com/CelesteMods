@@ -50,7 +50,7 @@
     "@typescript-eslint/parser": "^6.5.0",
     "eslint": "^8.46.0",
     "eslint-config-next": "^13.4.12",
-    "prisma": "^5.0.0",
+    "prisma": "^5.2.0",
     "tsx": "^3.12.7",
     "typescript": "^5.1.6"
   },
