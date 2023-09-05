@@ -7,16 +7,15 @@
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
-  // images: {    //TODO!: figure out how to fix crash on next.config.mjs change
-  //   remotePatterns: [
-  //     {
-  //       protocol: "https",
-  //       hostname: "images.gamebanana.com",
-  //       port: "443",
-  //       pathname: "/img/ss/mods/*.webp",
-  //     }
-  //   ],
-  // },
+  images: {    //TODO!: figure out how to fix crash on next.config.mjs change
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**.gamebanana.com",
+        pathname: "**/img/ss/mods/**",
+      }
+    ],
+  },
 
   /**
    * If you have the "experimental: { appDir: true }" setting enabled, then you
