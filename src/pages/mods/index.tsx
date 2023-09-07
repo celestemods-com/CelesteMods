@@ -539,7 +539,7 @@ const Mods: NextPage = () => {
     const { cx, classes } = useStyles();
 
     return (
-        <Layout pageTitle="Home" pageDescription="Home" pathname="/mods">
+        <Layout pageTitle="Mods" pageDescription="Mods" pathname="/mods">
             <PageHeader title="Mods" />
             <DataTable
                 defaultColumnProps={{
