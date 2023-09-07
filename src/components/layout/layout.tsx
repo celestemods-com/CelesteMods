@@ -78,7 +78,7 @@ export function Layout({
                     />
                 </Grid.Col>
                 <Grid.Col span={8}>
-                    <div className={classes.children}>{children}</div>
+                    <main className={classes.children}>{children}</main>
                 </Grid.Col>
                 <Grid.Col span={2}></Grid.Col>
                 <Grid.Col span={2}></Grid.Col>
