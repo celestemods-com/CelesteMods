@@ -12,6 +12,7 @@ import { modTypes } from "~/components/mods/consts";
 import { type ModType } from "@prisma/client";
 import StringSearch from "~/components/filterPopovers/stringSearch";
 import NumberSearch from "~/components/filterPopovers/numberSearch";
+import { Layout } from "~/components/layout/layout";
 
 
 
@@ -538,7 +539,7 @@ const Mods: NextPage = () => {
     const { cx, classes } = useStyles();
 
     return (
-        <>
+        <Layout pageTitle="Home" pageDescription="Home" pathname="/mods">
             <PageHeader title="Mods" />
             <DataTable
                 defaultColumnProps={{
@@ -657,7 +658,7 @@ const Mods: NextPage = () => {
                 recordsPerPageOptions={PAGE_SIZES}
                 onRecordsPerPageChange={setPageSize}
             />
-        </>
+        </Layout>
     );
 };
 

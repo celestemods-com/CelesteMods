@@ -1,9 +1,23 @@
-import Head from 'next/head';
-import Image from 'next/image';
-import Link from 'next/link';
+import Head from "next/head";
 import { CustomHead } from "./customHead";
+import { BackgroundImage, Grid, createStyles } from "@mantine/core";
+import { Header } from "./header";
+import { Navbar } from "./navbar";
+import { Footer } from "./footer";
 
 
+const useStyles = createStyles((_) => ({
+    backgroundImage: {
+        minWidth: "750px",
+        minHeight: "100vh",
+        padding: "20px",
+    },
+    children: {
+        backgroundColor: "rgba(1.0, 1.0, 1.0, 0.9)",
+        minHeight: "100%",
+        padding: "5px 45px",
+    },
+}));
 
 
 export type LayoutProps = {
@@ -18,8 +32,6 @@ export type LayoutProps = {
 };
 
 
-
-
 export function Layout({
     children,
     pageTitle,
@@ -30,53 +42,52 @@ export function Layout({
     socialMediaImageUrl = "https://celestemods.com/img/cml_icon.png",
     socialMediaImageAlt = "Celeste Mods List Logo",
 }: LayoutProps) {
-    return (
-        <>
-            <Head>
-                <CustomHead
-                    pageTitle={pageTitle}
-                    pageDescription={pageDescription}
-                    pathname={pathname}
-                    siteName={siteName}
-                    robotsText={robotsText}
-                    socialMediaImageUrl={socialMediaImageUrl}
-                    socialMediaImageAlt={socialMediaImageAlt}
-                />
-            </Head>
-            <header>
-                {home ? (
-                    <>
-                        <Image
-                            priority
-                            src="/images/cml_icon.png"
-                            className={utilStyles.borderCircle}
-                            height={144}
-                            width={144}
-                            alt={name}
-                        />
-                        <h1 className={utilStyles.heading2Xl}>{name}</h1>
-                    </>
-                ) : (
-                    <>
-                        <Link href="/">
-                            <Image
-                                priority
-                                src="/images/cml_icon.png"
-                                className={utilStyles.borderCircle}
-                                height={108}
-                                width={108}
-                                alt={name}
-                            />
-                        </Link>
-                        <h2 className={utilStyles.headingLg}>
-                            <Link href="/" className={utilStyles.colorInherit}>
-                                {name}
-                            </Link>
-                        </h2>
-                    </>
-                )}
-            </header>
-            <main>{children}</main>
-        </>
-    );
+  const { classes } = useStyles();
+
+
+  return (
+    <>
+        <Head>
+            <CustomHead
+                pageTitle={pageTitle}
+                pageDescription={pageDescription}
+                pathname={pathname}
+                siteName={siteName}
+                robotsText={robotsText}
+                socialMediaImageUrl={socialMediaImageUrl}
+                socialMediaImageAlt={socialMediaImageAlt}
+            />
+        </Head>
+        <BackgroundImage
+            src="/images/cml_background1.png"
+            className={classes.backgroundImage}
+        >
+            <Grid gutter="0">
+                <Grid.Col span={2}></Grid.Col>
+                <Grid.Col span={8}>
+                    <Header />
+                </Grid.Col>
+                <Grid.Col span={2}></Grid.Col>
+                <Grid.Col span={2}>
+                    <Navbar
+                        pathname={pathname}
+                        pages={[
+                            { label: "Home", pathname: "/" },
+                            { label: "Mods", pathname: "/mods" },
+                        ]}
+                    />
+                </Grid.Col>
+                <Grid.Col span={8}>
+                    <div className={classes.children}>{children}</div>
+                </Grid.Col>
+                <Grid.Col span={2}></Grid.Col>
+                <Grid.Col span={2}></Grid.Col>
+                <Grid.Col span={8}>
+                    <Footer />
+                </Grid.Col>
+                <Grid.Col span={2}></Grid.Col>
+            </Grid>
+        </BackgroundImage>
+    </>
+  );
 }
