@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { logger } from "~/logger/logger";
+import { logger } from "logger/logger.cjs";
 
 
 export default function (_req: NextApiRequest, res: NextApiResponse) {
