@@ -2,7 +2,9 @@ import { Flex, createStyles } from "@mantine/core";
 import Image from "next/image";
 
 
-const useStyles = createStyles((_) => ({
+
+
+const useStyles = createStyles(() => ({
     header: {
         color: "white",
         backgroundColor: "rgba(1.0, 1.0, 1.0, 0.9)",
@@ -11,8 +13,11 @@ const useStyles = createStyles((_) => ({
 }));
 
 
-export function Header() {
+
+
+export const Header = () => {
     const { classes } = useStyles();
+    const height = 150;
 
 
     return (
@@ -21,12 +26,12 @@ export function Header() {
                 <Image
                     priority
                     src="/images/logo/cml_logo.png"
-                    height={100}
-                    width={110}
-                    alt="logo"
+                    height={height}
+                    width={height / 694 * 774}
+                    alt="CML Logo"
                 />
                 <h1>Celeste Mods List</h1>
             </Flex>
         </header>
     );
-}
+};

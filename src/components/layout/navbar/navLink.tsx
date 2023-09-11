@@ -1,5 +1,7 @@
-import { Flex, Stack, createStyles } from "@mantine/core";
+import { Flex, createStyles } from "@mantine/core";
 import Link from "next/link";
+
+
 
 
 const useStyles = createStyles((theme) => ({
@@ -24,14 +26,22 @@ const useStyles = createStyles((theme) => ({
 }));
 
 
-type NavLinkProps = {
+
+
+export type NavLinkData = {
     label: string;
     pathname: string;
-    active: boolean;
 };
 
 
-const NavLink = ({ label, pathname, active }: NavLinkProps) => {
+type NavLinkProps = {
+    active: boolean;
+} & NavLinkData;
+
+
+
+
+export const NavLink = ({ label, pathname, active }: NavLinkProps) => {
     const { classes } = useStyles();
 
 
@@ -47,7 +57,9 @@ const NavLink = ({ label, pathname, active }: NavLinkProps) => {
                 >
                     <polygon points="0,0 100,0 100,100 0,100 100,50" />
                 </svg>
-                <span className={classes.navLinkLabel}>{label}</span>
+                <span className={classes.navLinkLabel}>
+                    {label}
+                </span>
                 {active && (
                     <svg
                         viewBox="0 0 100 100"
@@ -64,35 +76,3 @@ const NavLink = ({ label, pathname, active }: NavLinkProps) => {
         </Link>
     );
 };
-
-
-type NavLinkData = {
-    label: string;
-    pathname: string;
-};
-
-
-export type NavbarProps = {
-    pathname: string;
-    pages: [NavLinkData, ...NavLinkData[]];
-};
-
-
-export function Navbar({ pathname, pages }: NavbarProps) {
-    return (
-        <nav>
-            <Stack spacing="xs" align="end">
-                {pages.map((page, i) => {
-                    return (
-                        <NavLink
-                        key={i}
-                        label={page.label}
-                        pathname={page.pathname}
-                        active={pathname === page.pathname}
-                        />
-                    );
-                })}
-            </Stack>
-        </nav>
-    );
-}

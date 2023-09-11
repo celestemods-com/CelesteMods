@@ -1,8 +1,11 @@
 import { Box, Flex, Stack, createStyles } from "@mantine/core";
 import Link from "next/link";
+import { cmlDiscordInviteUrl } from "~/consts/cmlDiscordInviteUrl";
 
 
-const useStyles = createStyles((_) => ({
+
+
+const useStyles = createStyles(() => ({
     footer: {
         backgroundColor: "rgba(1.0, 1.0, 1.0, 0.9)",
         padding: "10px",
@@ -16,7 +19,9 @@ const useStyles = createStyles((_) => ({
 }));
 
 
-export function Footer() {
+
+
+export const Footer = () => {
     const { classes } = useStyles();
 
 
@@ -29,7 +34,7 @@ export function Footer() {
                         <Link href="">My account</Link>
                         <Link href="">Settings</Link>
                     </Stack>
-                    <Link href="" className={classes.discordLink}>
+                    <Link href={cmlDiscordInviteUrl} className={classes.discordLink}>
                         Join our Discord!
                     </Link>
                     <Stack spacing="1px">
@@ -40,4 +45,4 @@ export function Footer() {
             </footer>
         </Box>
     );
-}
+};

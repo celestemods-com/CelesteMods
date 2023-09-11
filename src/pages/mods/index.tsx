@@ -602,7 +602,7 @@ const Mods: NextPage = () => {
                         title: "Type",
                         sortable: true,
                         filter: (
-                            <MultiSelect
+                            <div
                                 
                             />
                         ),
@@ -614,7 +614,7 @@ const Mods: NextPage = () => {
                         sortable: true,
                         render: (modWithInfo) => modWithInfo.Quality.name,
                         filter: (
-                            <MultiSelect
+                            <div
                                 
                             />
                         ),
@@ -626,7 +626,7 @@ const Mods: NextPage = () => {
                         sortable: true,
                         render: (modWithInfo) => modWithInfo.Difficulty.name,
                         filter: (
-                            <MultiSelect
+                            <div
                                 
                             />
                         ),
