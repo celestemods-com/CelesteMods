@@ -8,7 +8,7 @@ import { cmlDiscordInviteUrl } from "~/consts/cmlDiscordInviteUrl";
 const useStyles = createStyles(() => ({
     footer: {
         backgroundColor: "rgba(1.0, 1.0, 1.0, 0.9)",
-        padding: "10px",
+        padding: "25px",
     },
     horizontalRule: {
         border: "2px solid #5b8bb3",

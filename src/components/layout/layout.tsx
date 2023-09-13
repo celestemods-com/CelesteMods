@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { CustomHead } from "./customHead";
-import { BackgroundImage, Grid, createStyles } from "@mantine/core";
+import { BackgroundImage, Grid, ScrollArea, createStyles } from "@mantine/core";
 import { Header } from "./header";
 import { Navbar } from "./navbar/navbar";
 import { Footer } from "./footer";
@@ -17,7 +17,7 @@ const useStyles = createStyles(() => ({
     children: {
         backgroundColor: "rgba(1.0, 1.0, 1.0, 0.9)",
         minHeight: "100%",
-        padding: "5px 45px",
+        padding: "5px 50px",
     },
 }));
 
@@ -84,7 +84,11 @@ export const Layout = ({
                         />
                     </Grid.Col>
                     <Grid.Col span={8}>
-                        <main className={classes.children}>{children}</main>
+                        <main className={classes.children}>
+                            <ScrollArea h={350}>
+                                {children}
+                            </ScrollArea>
+                        </main>
                     </Grid.Col>
                     <Grid.Col span={2}></Grid.Col>
                     <Grid.Col span={2}></Grid.Col>

@@ -10,6 +10,11 @@ const useStyles = createStyles(() => ({
         backgroundColor: "rgba(1.0, 1.0, 1.0, 0.9)",
         padding: "10px 45px",
     },
+    siteTitle: {
+        fontSize: '45px',
+        flexGrow: 1,
+        textAlign: 'center',
+    }
 }));
 
 
@@ -30,7 +35,7 @@ export const Header = () => {
                     width={height / 694 * 774}
                     alt="CML Logo"
                 />
-                <h1>Celeste Mods List</h1>
+                <h1 className={classes.siteTitle}>Celeste Mods List</h1>
             </Flex>
         </header>
     );
