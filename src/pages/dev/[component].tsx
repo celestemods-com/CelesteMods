@@ -1,6 +1,8 @@
 import { Loader } from "@mantine/core";
 import { useRouter } from 'next/router';
 import { useEffect, useState } from "react";
+import { Layout } from "~/components/layout/layout";
+import { Navbar } from "~/components/layout/navbar";
 import MapsTable from "~/components/mods/mapsTable";
 import MapsTableTest from "../../components/componentTesters/mapsTableTest";
 import ModCarouselTest from "~/components/componentTesters/modCarouselTest";
@@ -50,7 +52,7 @@ export default function TestComponent() {
         case validComponentNames[1]: {
             return (
                 <>
-                    Removed.
+                    <Navbar pathname="test" pages={[{ label: "Test Label", pathname: "/" }]} />
                 </>
             );
         }
