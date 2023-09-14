@@ -55,7 +55,8 @@ const transport = pino.transport({ targets });
 
 
 
-export const logger = pino(
+/**This logger can only be used in server-side code - it will NOT function in the browser. */
+export const serverLogger = pino(
     {
         base: undefined,
         nestedKey: "payload",
