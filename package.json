@@ -7,8 +7,7 @@
     "dev": "next dev",
     "postinstall": "prisma generate",
     "lint": "next lint",
-    "start": "node --require next-logger ./node_modules/.bin/next start",
-    "windows-start": "set NODE_OPTIONS='-r next-logger' next start",
+    "start": "next start",
     "db-reset": "npx prisma migrate reset"
   },
   "dependencies": {
