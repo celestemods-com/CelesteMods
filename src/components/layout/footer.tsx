@@ -1,4 +1,4 @@
-import { Box, Flex, Stack, createStyles } from "@mantine/core";
+import { Box, Group, Stack, createStyles } from "@mantine/core";
 import Link from "next/link";
 import { cmlDiscordInviteUrl } from "~/consts/cmlDiscordInviteUrl";
 
@@ -6,15 +6,19 @@ import { cmlDiscordInviteUrl } from "~/consts/cmlDiscordInviteUrl";
 
 
 const useStyles = createStyles(() => ({
-    footer: {
+    outerFooter: {
         backgroundColor: "rgba(1.0, 1.0, 1.0, 0.9)",
-        padding: "25px",
+        padding: "10px",
+    },
+    footer: {
+        padding: "0 12px",
     },
     horizontalRule: {
         border: "2px solid #5b8bb3",
     },
     discordLink: {
         fontWeight: "bold",
+        textAlign: "center",
     },
 }));
 
@@ -26,22 +30,35 @@ export const Footer = () => {
 
 
     return (
-        <Box className={classes.footer}>
+        <Box className={classes.outerFooter}>
             <hr className={classes.horizontalRule} />
-            <footer>
-                <Flex justify="space-between" align="center">
-                    <Stack spacing="1px">
+            <footer className={classes.footer}>
+                <Group
+                    align="center"
+                    grow
+                    position="apart"
+                >
+                    <Stack
+                        align="start"
+                        spacing="1px"
+                    >
                         <Link href="">My account</Link>
                         <Link href="">Settings</Link>
                     </Stack>
-                    <Link href={cmlDiscordInviteUrl} className={classes.discordLink}>
-                        Join our Discord!
+                    <Link
+                        href={cmlDiscordInviteUrl}
+                        className={classes.discordLink}
+                    >
+                        Join Our Discord Server!
                     </Link>
-                    <Stack spacing="1px">
+                    <Stack
+                        align="end"
+                        spacing="1px"
+                    >
                         <Link href="">Cookie policy</Link>
                         <Link href="">Privacy policy</Link>
                     </Stack>
-                </Flex>
+                </Group>
             </footer>
         </Box>
     );
