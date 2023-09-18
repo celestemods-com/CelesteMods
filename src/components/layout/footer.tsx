@@ -42,7 +42,7 @@ export const Footer = () => {
                         align="start"
                         spacing="1px"
                     >
-                        <Link href="">My account</Link>
+                        <Link href="">My Account</Link>
                         <Link href="">Settings</Link>
                     </Stack>
                     <Link
@@ -55,8 +55,8 @@ export const Footer = () => {
                         align="end"
                         spacing="1px"
                     >
-                        <Link href="">Cookie policy</Link>
-                        <Link href="">Privacy policy</Link>
+                        <Link href="">Cookie Policy</Link>
+                        <Link href="">Privacy Policy</Link>
                     </Stack>
                 </Group>
             </footer>
