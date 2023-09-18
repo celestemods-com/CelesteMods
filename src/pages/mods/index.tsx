@@ -12,6 +12,7 @@ import { modTypes } from "~/components/mods/consts";
 import { type ModType } from "@prisma/client";
 import StringSearch from "~/components/filterPopovers/stringSearch";
 import NumberSearch from "~/components/filterPopovers/numberSearch";
+import { Layout } from "~/components/layout/layout";
 
 
 
@@ -538,7 +539,7 @@ const Mods: NextPage = () => {
     const { cx, classes } = useStyles();
 
     return (
-        <>
+        <Layout pageTitle="Mods" pageDescription="Mods" pathname="/mods">
             <PageHeader title="Mods" />
             <DataTable
                 defaultColumnProps={{
@@ -549,6 +550,7 @@ const Mods: NextPage = () => {
                         );
                     },
                 }}
+                height={550}
                 withBorder
                 borderRadius={"sm"}
                 striped
@@ -601,7 +603,7 @@ const Mods: NextPage = () => {
                         title: "Type",
                         sortable: true,
                         filter: (
-                            <MultiSelect
+                            <div
                                 
                             />
                         ),
@@ -613,7 +615,7 @@ const Mods: NextPage = () => {
                         sortable: true,
                         render: (modWithInfo) => modWithInfo.Quality.name,
                         filter: (
-                            <MultiSelect
+                            <div
                                 
                             />
                         ),
@@ -625,7 +627,7 @@ const Mods: NextPage = () => {
                         sortable: true,
                         render: (modWithInfo) => modWithInfo.Difficulty.name,
                         filter: (
-                            <MultiSelect
+                            <div
                                 
                             />
                         ),
@@ -657,7 +659,7 @@ const Mods: NextPage = () => {
                 recordsPerPageOptions={PAGE_SIZES}
                 onRecordsPerPageChange={setPageSize}
             />
-        </>
+        </Layout>
     );
 };
 

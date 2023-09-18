@@ -2,7 +2,7 @@ import { Loader } from "@mantine/core";
 import { useRouter } from 'next/router';
 import { useEffect, useState } from "react";
 import { Layout } from "~/components/layout/layout";
-import { Navbar } from "~/components/layout/navbar";
+import { Navbar } from "~/components/layout/navbar/navbar";
 import MapsTable from "~/components/mods/mapsTable";
 import MapsTableTest from "../../components/componentTesters/mapsTableTest";
 import ModCarouselTest from "~/components/componentTesters/modCarouselTest";

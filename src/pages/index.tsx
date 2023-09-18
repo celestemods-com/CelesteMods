@@ -3,11 +3,12 @@ import Link from "next/link";
 import { signIn, signOut, useSession } from "next-auth/react";
 
 import { api } from "~/utils/api";
+import { Layout } from "~/components/layout/layout";
 
 const Home: NextPage = () => {
 
   return (
-    <>
+    <Layout pageTitle="Home" pageDescription="Home" pathname="/">
       <div>
         <h1>
           Create <span>T3</span> App
@@ -38,7 +39,7 @@ const Home: NextPage = () => {
           <AuthShowcase />
         </div>
       </div>
-    </>
+    </Layout>
   );
 };
 

@@ -1,0 +1,1 @@
+export const cmlDiscordInviteUrl = "https://discord.gg/HmQxs3xF3G";
