@@ -550,6 +550,7 @@ const Mods: NextPage = () => {
                         );
                     },
                 }}
+                height={550}
                 withBorder
                 borderRadius={"sm"}
                 striped

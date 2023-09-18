@@ -19,13 +19,13 @@ const PAGES = getNonEmptyArray([
 
 const useStyles = createStyles(() => ({
     backgroundImage: {
-        minWidth: "750px",
+        minWidth: "100vw",
         minHeight: "100vh",
         padding: "20px",
     },
     children: {
         backgroundColor: "rgba(1.0, 1.0, 1.0, 0.9)",
-        minHeight: "100%",
+        height: "600px",
         padding: "5px 45px",
     },
 }));
