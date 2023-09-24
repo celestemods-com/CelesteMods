@@ -11,9 +11,9 @@ const useStyles = createStyles(() => ({
         padding: "10px 45px",
     },
     siteTitle: {
-        fontSize: '45px',
+        fontSize: "45px",
         flexGrow: 1,
-        textAlign: 'center',
+        textAlign: "center",
     }
 }));
 
