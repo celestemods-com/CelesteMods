@@ -21,8 +21,6 @@ const DEFAULT_PAGE_SIZE_INDEX = 1;
 
 
 
-// https://stackoverflow.com/questions/351058/space-between-two-rows-in-a-table
-
 const useStyles = createStyles(
     (theme) => ({
         table: {

@@ -32,7 +32,8 @@ const useStyles = createStyles(
         },
         control: {
             backgroundColor: "#263972",
-            color: "white"
+            color: "white",
+            opacity: "0.9"
         },
     }),
 );

@@ -25,6 +25,9 @@ const useStyles = createStyles(
             backgroundColor: "#e1e1e2",
             color: "black",
             borderRadius: "0 0 50px 50px",
+        },
+        modDetails: {
+            padding: "25px",
         }
     }),
 );
@@ -50,7 +53,7 @@ const ExpandedMod = ({ isLoading, mod }: ExpandedModProps) => {
 
     return (
         <Stack justify="center" align="stretch" className={classes.expandedMod}>
-            <Group position="center" align="center">
+            <Group position="apart" align="center" className={classes.modDetails}>
                 <PublisherName publisherId={mod.publisherId} />
                 <PublicationDate gamebananaModId={mod.gamebananaModId} />
                 <ModDownloadButton gamebananaModId={mod.gamebananaModId} />

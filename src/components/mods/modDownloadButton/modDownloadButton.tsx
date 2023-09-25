@@ -14,8 +14,18 @@ const useStyles = createStyles(
             // double ampersand to increase selectivity of class to ensure it overrides any other css
             "&&": {
                 maxWidth: "550px",
+                backgroundColor: "rgba(1.0, 1.0, 1.0, 0.9)",
+                padding: "3px",
+                borderRadius: "2px"
             },
         },
+        olympusText: {
+            color: "rgb(235, 207, 52)",
+        },
+        clickText: {
+            color: "white",
+            fontWeight: "bold",
+        }
     }),
 );
 
@@ -38,21 +48,22 @@ const ModDownloadButton = ({ gamebananaModId }: ModDownloadButtonProps) => {
 
     return (        //TODO: add popover with info about the installer
         <a href={downloadUrl    /*TODO!: implement useGamebananaModDownloadUrl */}>      
-            <Group position="center" align="center">
+            <Group position="center" align="center" className={classes.modDownloadButton}>
                 <Image
                     src={GAMEBANANA_OLYMPUS_ICON_URL}
                     alt="Olympus Icon"
-                    width={32}
-                    height={32}
+                    width={40}
+                    height={40}
                 />
-                <Stack>
+                <Stack spacing="0">
                     <Title
-                        order={3}
+                        order={4}
                         align="left"
+                        className={classes.olympusText}
                     >
                         Olympus - Everest Installer
                     </Title>
-                    <Text align="left">
+                    <Text align="left" className={classes.clickText}>
                         1-CLICK INSTALL
                     </Text>
                 </Stack>

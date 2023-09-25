@@ -1,9 +1,10 @@
-import { Stack, Title, createStyles } from "@mantine/core";
+import { ActionIcon, Stack, Title, createStyles } from "@mantine/core";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { Difficulty, Length, Map, MapRatingData, MapYesRatingData, Quality } from "~/components/mods/types";
 import { api } from "~/utils/api";
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
+import { CirclePlus } from "tabler-icons-react";
 
 
 
@@ -357,7 +358,7 @@ const MapsTable = (
     const { cx, classes } = useStyles();
 
     return (
-        <Stack>
+        <Stack align="center" justify="flex-start" spacing="0">
             <Title order={3}>Maps</Title>
             <DataTable
                 textSelectionDisabled
@@ -391,13 +392,24 @@ const MapsTable = (
                     {
                         accessor: "lengthName",
                         title: "Length",
-                        titleClassName: isMapperNameVisible ? classes.columnTitle : cx(classes.columnTitle, classes.rightColumnTitle),
-                        cellsClassName: isMapperNameVisible ? classes.columnCells : classes.rightColumnCells
+                        titleClassName: classes.columnTitle,
+                        cellsClassName: classes.columnCells
                     },
                     {
                         accessor: "mapperNameString",
                         title: "Mapper Name",
                         hidden: !isMapperNameVisible,
+                        titleClassName: classes.columnTitle,
+                        cellsClassName: classes.columnCells
+                    },
+                    {
+                        accessor: "rate",
+                        title: "Rate",
+                        render: (map) => (
+                            <ActionIcon>
+                                <CirclePlus color="black"/>
+                            </ActionIcon>
+                        ),
                         titleClassName: cx(classes.columnTitle, classes.rightColumnTitle),
                         cellsClassName: classes.rightColumnCells
                     }
