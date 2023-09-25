@@ -1,4 +1,4 @@
-import { Group, Checkbox, Stack, Title, createStyles } from "@mantine/core";
+import { Stack, Title, createStyles } from "@mantine/core";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { Difficulty, Length, Map, MapRatingData, MapYesRatingData, Quality } from "~/components/mods/types";
 import { api } from "~/utils/api";
@@ -333,18 +333,15 @@ const MapsTable = (
     }, [isNormalMod, mapsWithInfo, sortStatus]);
 
 
-    //handle state for "Show mapper name" checkbox
-    const [isMapperNameVisibleDisabled, setIsMapperNameVisibleDisabled] = useState(isNormalMod || !isMapperNameVisiblePermitted);
-    const [isMapperNameVisible, setIsMapperNameVisible] = useState(!isMapperNameVisibleDisabled);
+    //handle mapper name visibility
+    const [isMapperNameVisible, setIsMapperNameVisible] = useState(!isNormalMod && isMapperNameVisiblePermitted);
 
     useEffect(() => {
         if (isNormalMod || !isMapperNameVisiblePermitted) {
             setIsMapperNameVisible(false);
-            setIsMapperNameVisibleDisabled(true);
         }
-        else {  //only executes if (!isNormalMod && isMapperNameVisiblePermitted)
+        else {
             setIsMapperNameVisible(true);
-            setIsMapperNameVisibleDisabled(false);
         }
     }, [isNormalMod, isMapperNameVisiblePermitted]);
 
@@ -361,16 +358,7 @@ const MapsTable = (
 
     return (
         <Stack>
-            <Group position="center">
-                <Title order={2}>Maps</Title>
-                <Checkbox
-                    label="Show mapper name"
-                    size="sm"
-                    disabled={isMapperNameVisibleDisabled}
-                    checked={isMapperNameVisible}
-                    onChange={(event) => setIsMapperNameVisible(event.currentTarget.checked)}
-                />
-            </Group>
+            <Title order={3}>Maps</Title>
             <DataTable
                 textSelectionDisabled
                 className={classes.map}

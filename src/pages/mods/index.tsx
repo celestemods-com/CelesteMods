@@ -1,10 +1,9 @@
 import { type NextPage } from "next";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { RouterOutputs, api } from "~/utils/api";
-import PageHeader from "~/components/pageHeader";
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import ExpandedMod from "~/components/mods/expandedMod";
-import { createStyles, MultiSelect } from "@mantine/core";
+import { createStyles, MultiSelect, Title } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 import { Difficulty, Mod, ModRatingData, ModYesRatingData, Quality } from "~/components/mods/types";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
@@ -30,6 +29,11 @@ const useStyles = createStyles(
             "&&&& table": {
                 borderSpacing: "0 20px",
             },
+        },
+        pageTitle: {
+            color: "white",
+            fontSize: "35px",
+            textAlign: "center",
         },
         modCell: {
             //4 ampersands to increase selectivity of class to ensure it overrides any other css
@@ -585,7 +589,7 @@ const Mods: NextPage = () => {
 
     return (
         <Layout pageTitle="Mods" pageDescription="Mods" pathname="/mods">
-            <PageHeader title="Mods" />
+            <Title className={classes.pageTitle} order={2}>Mods List</Title>
             <DataTable
                 className={classes.table}
                 defaultColumnProps={{
