@@ -13,8 +13,26 @@ const useStyles = createStyles(
         carousel: {
             // double ampersand to increase selectivity of class to ensure it overrides any other css
             "&&": {
-                maxWidth: "550px",
+                width: "200px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "stretch",
+                gap: "10px",
             },
+        },
+        viewport: {
+            border: "3px solid #263972",
+        },
+        slide: {
+            width: "200px",
+        },
+        controls: {
+            transform: "translate(0, 0)",
+            position: "unset"
+        },
+        control: {
+            backgroundColor: "#263972",
+            color: "white"
         },
     }),
 );
@@ -40,18 +58,24 @@ const ModCarousel = ({ gamebananaModId }: modCarouselProps) => {
         !imageUrls ? (
             null
         ) : (
-            <Carousel>
+            <Carousel classNames={{
+                root: classes.carousel,
+                viewport: classes.viewport,
+                slide: classes.slide,
+                controls: classes.controls,
+                control:classes.control,
+            }}>
                 {imageUrls.map((imageUrl) => (
                     <Carousel.Slide
                         key={imageUrl}
                         gap={"md"}
-                        size={"500px"}
-                        className={classes.carousel}
+                        size={"200px"}
                     >
                         <Image
                             src={imageUrl}
                             alt="Mod image"
-                            height={350}     //TODO!!: add responsive image sizes
+                            width={200}
+                            height={150}     //TODO!!: add responsive image sizes
                         />
                     </Carousel.Slide>
                 ))}

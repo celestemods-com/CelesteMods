@@ -1,4 +1,4 @@
-import { Group, Checkbox, Title, createStyles } from "@mantine/core";
+import { Group, Checkbox, Stack, Title, createStyles } from "@mantine/core";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { Difficulty, Length, Map, MapRatingData, MapYesRatingData, Quality } from "~/components/mods/types";
 import { api } from "~/utils/api";
@@ -14,9 +14,59 @@ const useStyles = createStyles(
             // double ampersand to increase selectivity of class to ensure it overrides any other css
             "&&": {
                 /* top | left and right | bottom */
-                margin: `${theme.spacing.xs} ${theme.spacing.sm} ${theme.spacing.xl}`
+                margin: `${theme.spacing.xs} ${theme.spacing.sm} ${theme.spacing.xl}`,
+                backgroundColor: "#e1e1e2",
             },
         },
+        columnTitle: {
+            "&&": {
+                fontWeight: "bold",
+                backgroundColor: "#263972",
+                color: "white",
+                border: "none"
+            }
+        },
+        leftColumnTitle: {
+            "&&": {
+                borderRadius: "20px 0 0 20px",
+            }
+        },
+        rightColumnTitle: {
+            "&&": {
+                borderRadius: "0 20px 20px 0"
+            }
+        },
+        columnCells: {
+            "&&&&": {
+                fontWeight: "bold",
+                backgroundColor: "white",
+                color: "black",
+                borderLeft: "none",
+                borderRight: "none",
+                borderTop: "2px solid #263972",
+                borderBottom: "2px solid #263972",
+            }
+        },
+        leftColumnCells: {
+            "&&&&": {
+                fontWeight: "bold",
+                backgroundColor: "white",
+                color: "black",
+                borderRadius: "20px 0 0 20px",
+                border: "2px solid #263972",
+                borderRight: "none",
+            }
+        },
+        rightColumnCells: {
+            "&&&&": {
+                fontWeight: "bold",
+                backgroundColor: "white",
+                color: "black",
+                borderRadius: "0 20px 20px 0",
+                border: "2px solid #263972",
+                borderLeft: "none",
+            }
+        }
     }),
 );
 
@@ -310,7 +360,7 @@ const MapsTable = (
     const { cx, classes } = useStyles();
 
     return (
-        <>
+        <Stack>
             <Group position="center">
                 <Title order={2}>Maps</Title>
                 <Checkbox
@@ -332,16 +382,42 @@ const MapsTable = (
                 }}
                 records={[...sortedMapsWithInfo,]}
                 columns={[
-                    { accessor: "name", title: "Name" },
-                    { accessor: "qualityName", title: "Quality" },
-                    { accessor: "difficultyName", title: "Difficulty" },
-                    { accessor: "lengthName", title: "Length" },
-                    { accessor: "mapperNameString", title: "Mapper Name", hidden: !isMapperNameVisible }
+                    {
+                        accessor: "name",
+                        title: "Name",
+                        titleClassName: cx(classes.columnTitle, classes.leftColumnTitle),
+                        cellsClassName: classes.leftColumnCells
+                    },
+                    {
+                        accessor: "qualityName",
+                        title: "Quality",
+                        titleClassName: classes.columnTitle,
+                        cellsClassName: classes.columnCells
+                    },
+                    {
+                        accessor: "difficultyName",
+                        title: "Difficulty",
+                        titleClassName: classes.columnTitle,
+                        cellsClassName: classes.columnCells
+                    },
+                    {
+                        accessor: "lengthName",
+                        title: "Length",
+                        titleClassName: isMapperNameVisible ? classes.columnTitle : cx(classes.columnTitle, classes.rightColumnTitle),
+                        cellsClassName: isMapperNameVisible ? classes.columnCells : classes.rightColumnCells
+                    },
+                    {
+                        accessor: "mapperNameString",
+                        title: "Mapper Name",
+                        hidden: !isMapperNameVisible,
+                        titleClassName: cx(classes.columnTitle, classes.rightColumnTitle),
+                        cellsClassName: classes.rightColumnCells
+                    }
                 ]}
                 sortStatus={sortStatus}
                 onSortStatusChange={setSortStatus as Dispatch<SetStateAction<DataTableSortStatus>>}     //un-narrow type to match types in DataTable
             />
-        </>
+        </Stack>
     );
 };
 

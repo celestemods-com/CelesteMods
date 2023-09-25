@@ -1,4 +1,4 @@
-import { Group, Loader, Stack, Text, createStyles } from "@mantine/core";
+import { Flex, Group, Loader, Stack, Text, createStyles } from "@mantine/core";
 import { Mod } from "~/components/mods/types";
 import { api } from "~/utils/api";
 import MapsTable from "./mapsTable";
@@ -21,6 +21,11 @@ const useStyles = createStyles(
                 margin: `${theme.spacing.xs} ${theme.spacing.sm} ${theme.spacing.xl}`
             },
         },
+        expandedMod: {
+            backgroundColor: "#e1e1e2",
+            color: "black",
+            borderRadius: "0 0 50px 50px",
+        }
     }),
 );
 
@@ -44,7 +49,7 @@ const ExpandedMod = ({ isLoading, mod }: ExpandedModProps) => {
     if (isLoading) return <Loader />;
 
     return (
-        <Stack justify="center" align="center">
+        <Stack justify="center" align="stretch" className={classes.expandedMod}>
             <Group position="center" align="center">
                 <PublisherName publisherId={mod.publisherId} />
                 <PublicationDate gamebananaModId={mod.gamebananaModId} />
@@ -58,13 +63,15 @@ const ExpandedMod = ({ isLoading, mod }: ExpandedModProps) => {
                     More Info
                 </Link>
             </Group>
-            <MapsTable
-                isLoadingMod={isLoading}
-                isNormalMod={mod.type === "Normal"}
-                isMapperNameVisiblePermitted={isMapperNameVisiblePermitted}
-                mapIds={mod.Map.map(({ id }) => id)}
-            />
-            <ModCarousel gamebananaModId={mod.gamebananaModId} />
+            <Flex align="center" justify="space-around">
+                <MapsTable
+                    isLoadingMod={isLoading}
+                    isNormalMod={mod.type === "Normal"}
+                    isMapperNameVisiblePermitted={isMapperNameVisiblePermitted}
+                    mapIds={mod.Map.map(({ id }) => id)}
+                />
+                <ModCarousel gamebananaModId={mod.gamebananaModId} />
+            </Flex>
         </Stack>
     );
 };

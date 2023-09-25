@@ -22,21 +22,66 @@ const DEFAULT_PAGE_SIZE_INDEX = 1;
 
 
 
+// https://stackoverflow.com/questions/351058/space-between-two-rows-in-a-table
 
 const useStyles = createStyles(
     (theme) => ({
-        modCell: {
-            //double ampersand to increase selectivity of class to ensure it overrides any other css
-            "&&": {
-                /* top | left and right | bottom */
-                padding: `${theme.spacing.xl} ${theme.spacing.xl} ${theme.spacing.xl}`,
+        table: {
+            "&&&& table": {
+                borderSpacing: "0 20px",
             },
         },
-        expandedModCell: {
-            "&&": {
-                paddingBottom: 0,
+        modCell: {
+            //4 ampersands to increase selectivity of class to ensure it overrides any other css
+            "&&&&": {
+                /* top | left and right | bottom */
+                padding: `${theme.spacing.xl} ${theme.spacing.xl} ${theme.spacing.xl}`,
+                backgroundColor: "#e1e1e2",
+                color: theme.black,
+                borderWidth: 0,
+                fontWeight: "bold",
+            },
+        },
+        expandedRow: {
+            // We move the expanded mod up to make it look like a single row.
+            "&&& + tr + tr": {
+                transform: "translate(0, -55px)",
+                backgroundColor: "transparent",
+                "td": {
+                    border: "none",
+                }
             }
-        }
+        },
+        expandedModCell: {
+            borderBottomLeftRadius: 0,
+            borderBottomRightRadius: 0,
+        },
+        columnHeader: {
+            "&&": {
+                backgroundColor: "#263972",
+                fontWeight: "bold",
+                color: theme.white,
+                fontSize: "17px",
+                padding: "10px",
+                textAlign: "center",
+            }
+        },
+        leftColumnHeader: {
+            borderTopLeftRadius: "50px",
+            borderBottomLeftRadius: "50px",
+        },
+        rightColumnHeader: {
+            borderTopRightRadius: "50px",
+            borderBottomRightRadius: "50px",
+        },
+        leftColumnCell: {
+            borderTopLeftRadius: "50px",
+            borderBottomLeftRadius: "50px",
+        },
+        rightColumnCell: {
+            borderTopRightRadius: "50px",
+            borderBottomRightRadius: "50px",
+        },
     }),
 );
 
@@ -542,6 +587,7 @@ const Mods: NextPage = () => {
         <Layout pageTitle="Mods" pageDescription="Mods" pathname="/mods">
             <PageHeader title="Mods" />
             <DataTable
+                className={classes.table}
                 defaultColumnProps={{
                     cellsClassName: (record) => {
                         return cx(
@@ -550,9 +596,14 @@ const Mods: NextPage = () => {
                         );
                     },
                 }}
+                rowClassName={(record) => {
+                    if (record.isExpanded) {
+                        return classes.expandedRow;
+                    } else {
+                        return undefined;
+                    }
+                }}
                 height={550}
-                withBorder
-                borderRadius={"sm"}
                 striped
                 textSelectionDisabled
                 withColumnBorders
@@ -575,6 +626,14 @@ const Mods: NextPage = () => {
                             />
                         ),
                         filtering: nameQuery !== "",
+                        titleClassName: cx(classes.columnHeader, classes.leftColumnHeader),
+                        cellsClassName: (record) => {
+                            return cx(
+                                classes.modCell,
+                                classes.leftColumnCell,
+                                record.isExpanded && classes.expandedModCell,
+                            );
+                        },
                     },
                     {
                         accessor: "Map",
@@ -597,6 +656,7 @@ const Mods: NextPage = () => {
                             />
                         ),
                         filtering: mapCountRange[0] !== undefined || mapCountRange[1] !== undefined,
+                        titleClassName: classes.columnHeader,
                     },
                     {
                         accessor: "type",
@@ -604,10 +664,11 @@ const Mods: NextPage = () => {
                         sortable: true,
                         filter: (
                             <div
-                                
+
                             />
                         ),
                         filtering: !!selectedModTypes.length,
+                        titleClassName: classes.columnHeader,
                     },
                     {
                         accessor: "Quality",
@@ -620,6 +681,7 @@ const Mods: NextPage = () => {
                             />
                         ),
                         filtering: !!selectedQualities.length,
+                        titleClassName: classes.columnHeader,
                     },
                     {
                         accessor: "Difficulty",
@@ -632,6 +694,14 @@ const Mods: NextPage = () => {
                             />
                         ),
                         filtering: !!selectedDifficulties.length,
+                        titleClassName: cx(classes.columnHeader, classes.rightColumnHeader),
+                        cellsClassName: (record) => {
+                            return cx(
+                                classes.modCell,
+                                classes.rightColumnCell,
+                                record.isExpanded && classes.expandedModCell,
+                            );
+                        },
                     },
                 ]}
                 sortStatus={sortStatus}
