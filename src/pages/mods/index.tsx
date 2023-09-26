@@ -9,9 +9,11 @@ import { Difficulty, Mod, ModRatingData, ModYesRatingData, Quality } from "~/com
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
 import { modTypes } from "~/components/mods/consts";
 import { type ModType } from "@prisma/client";
-import StringSearch from "~/components/filterPopovers/stringSearch";
-import NumberSearch from "~/components/filterPopovers/numberSearch";
+import { StringSearch } from "~/components/filterPopovers/stringSearch";
+import { NumberSearch } from "~/components/filterPopovers/numberSearch";
+import { ListSelect } from "~/components/filterPopovers/listSelect";
 import { Layout } from "~/components/layout/layout";
+import { getNonEmptyArray, type NonEmptyArray } from "~/utils/getNonEmptyArray";
 
 
 
@@ -607,8 +609,10 @@ const Mods: NextPage = () => {
                         title: "Type",
                         sortable: true,
                         filter: (
-                            <div
-                                
+                            <ListSelect 
+                                permittedStrings={modTypes as NonEmptyArray<typeof modTypes>}
+                                selectedStrings={selectedModTypes}
+                                setSelectedStrings={setSelectedModTypes}
                             />
                         ),
                         filtering: !!selectedModTypes.length,
@@ -620,7 +624,7 @@ const Mods: NextPage = () => {
                         render: (modWithInfo) => modWithInfo.Quality.name,
                         filter: (
                             <div
-                                
+
                             />
                         ),
                         filtering: !!selectedQualities.length,
@@ -632,7 +636,7 @@ const Mods: NextPage = () => {
                         render: (modWithInfo) => modWithInfo.Difficulty.name,
                         filter: (
                             <div
-                                
+
                             />
                         ),
                         filtering: !!selectedDifficulties.length,
