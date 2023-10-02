@@ -25,6 +25,9 @@ const useStyles = createStyles(
             backgroundColor: "#e1e1e2",
             color: "black",
             borderRadius: "0 0 50px 50px",
+            // We move the expanded mod up to make
+            // the mod row and expanded mod look like a single row.
+            transform: "translate(0, -55px)",
         },
         modDetails: {
             padding: "25px",

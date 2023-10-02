@@ -27,6 +27,9 @@ const useStyles = createStyles(
             "&&&& table": {
                 borderSpacing: "0 20px",
             },
+            "&&&& tr": {
+                backgroundColor: "transparent",
+            }
         },
         pageTitle: {
             color: "white",
@@ -43,16 +46,6 @@ const useStyles = createStyles(
                 borderWidth: 0,
                 fontWeight: "bold",
             },
-        },
-        expandedRow: {
-            // We move the expanded mod up to make it look like a single row.
-            "&&& + tr + tr": {
-                transform: "translate(0, -55px)",
-                backgroundColor: "transparent",
-                "td": {
-                    border: "none",
-                }
-            }
         },
         expandedModCell: {
             borderBottomLeftRadius: 0,
@@ -597,13 +590,6 @@ const Mods: NextPage = () => {
                             record.isExpanded && classes.expandedModCell,
                         );
                     },
-                }}
-                rowClassName={(record) => {
-                    if (record.isExpanded) {
-                        return classes.expandedRow;
-                    } else {
-                        return undefined;
-                    }
                 }}
                 height={550}
                 striped
