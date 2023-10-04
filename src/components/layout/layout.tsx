@@ -25,7 +25,7 @@ const useStyles = createStyles(() => ({
     },
     children: {
         backgroundColor: "rgba(1.0, 1.0, 1.0, 0.9)",
-        height: "600px",
+        height: "630px",
         padding: "5px 45px",
     },
 }));
