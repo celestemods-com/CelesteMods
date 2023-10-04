@@ -13,6 +13,8 @@ import { type ModType } from "@prisma/client";
 import StringSearch from "~/components/filterPopovers/stringSearch";
 import NumberSearch from "~/components/filterPopovers/numberSearch";
 import { Layout } from "~/components/layout/layout";
+import { useRouter } from "next/router";
+import Link from "next/link";
 
 
 
@@ -299,12 +301,9 @@ const Mods: NextPage = () => {
 
 
     //get mods with map count, and quality and difficulty names
-    const [modsWithInfo, setModsWithInfo] = useState<ModWithInfo[]>(getModWithInfo(isLoading, mods, ratingsFromModIds, qualities, difficulties));
-
-    useEffect(() => {
-        const newModsWithInfo = getModWithInfo(isLoading, mods, ratingsFromModIds, qualities, difficulties);
-
-        setModsWithInfo(newModsWithInfo);
+    const modsWithInfo = useMemo(() => {
+        console.log(1);
+        return getModWithInfo(isLoading, mods, ratingsFromModIds, qualities, difficulties);
     }, [isLoading, mods, ratingsFromModIds, qualities, difficulties]);
 
 
@@ -319,85 +318,80 @@ const Mods: NextPage = () => {
     const [selectedQualities, setSelectedQualities] = useState<string[]>([]);
     const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([]);
 
-    const [filteredModsWithInfo, setFilteredModsWithInfo] = useState<ModWithInfo[]>(modsWithInfo);
+    const filteredModsWithInfo = useMemo(() => {
+        console.log(2);
+        return modsWithInfo.filter((modWithInfo) => {
+            if (
+                debouncedNameQuery &&
+                !modWithInfo.name.toLowerCase().includes(debouncedNameQuery.trim().toLowerCase())
+            ) {
+                return false;
+            }
 
-    useEffect(() => {
-        setFilteredModsWithInfo(
-            modsWithInfo.filter((modWithInfo) => {
+
+            if (
+                mapCountRange[0] !== undefined ||
+                mapCountRange[1] !== undefined
+            ) {
                 if (
-                    debouncedNameQuery &&
-                    !modWithInfo.name.toLowerCase().includes(debouncedNameQuery.trim().toLowerCase())
+                    mapCountRange[0] !== undefined &&
+                    modWithInfo.Map.length < mapCountRange[0]
                 ) {
                     return false;
                 }
 
-
                 if (
-                    mapCountRange[0] !== undefined ||
-                    mapCountRange[1] !== undefined
-                ) {
-                    if (
-                        mapCountRange[0] !== undefined &&
-                        modWithInfo.Map.length < mapCountRange[0]
-                    ) {
-                        return false;
-                    }
-
-                    if (
-                        mapCountRange[1] !== undefined &&
-                        modWithInfo.Map.length > mapCountRange[1]
-                    ) {
-                        return false;
-                    }
-                }
-
-
-                if (
-                    selectedModTypes.length &&
-                    !selectedModTypes.includes(modWithInfo.type)
+                    mapCountRange[1] !== undefined &&
+                    modWithInfo.Map.length > mapCountRange[1]
                 ) {
                     return false;
                 }
+            }
 
 
-                if (
-                    selectedQualities.length &&
-                    !selectedQualities.includes(modWithInfo.Quality.name)
-                ) {
-                    return false;
-                }
+            if (
+                selectedModTypes.length &&
+                !selectedModTypes.includes(modWithInfo.type)
+            ) {
+                return false;
+            }
 
 
-                if (
-                    selectedDifficulties.length &&
-                    !selectedDifficulties.includes(modWithInfo.Difficulty.name)
-                ) {
-                    return false;
-                }
+            if (
+                selectedQualities.length &&
+                !selectedQualities.includes(modWithInfo.Quality.name)
+            ) {
+                return false;
+            }
 
 
-                return true;
-            }),
-        );
+            if (
+                selectedDifficulties.length &&
+                !selectedDifficulties.includes(modWithInfo.Difficulty.name)
+            ) {
+                return false;
+            }
+
+
+            return true;
+        });
     }, [modsWithInfo, debouncedNameQuery, mapCountRange, selectedModTypes, selectedQualities, selectedDifficulties]);
 
 
 
 
     //handle sorting
-    const [sortedModsWithInfo, setSortedModsWithInfo] = useState<ModWithInfo[]>(filteredModsWithInfo);
-
     const [sortStatus, setSortStatus] = useState<ModsTableSortStatus>({
         columnAccessor: "name",
         direction: "asc",
     });
 
-    useEffect(() => {
+    const sortedModsWithInfo = useMemo(() => {
+        console.log(3);
         const columnAccessor = sortStatus.columnAccessor;
 
         if (columnAccessor === "Map") {
-            setSortedModsWithInfo(
-                filteredModsWithInfo.sort(
+                return filteredModsWithInfo.sort(
                     (a, b) => {
                         const propertyANum = Number(a.Map.length);
                         const propertyBNum = Number(b.Map.length);
@@ -415,11 +409,9 @@ const Mods: NextPage = () => {
                                 propertyBNum - propertyANum
                         );
                     },
-                ),
-            );
+                );
         } else if (columnAccessor === "Quality") {
-            setSortedModsWithInfo(
-                filteredModsWithInfo.sort(
+                return filteredModsWithInfo.sort(
                     (a, b) => {
                         if (a === b) return 0;
 
@@ -436,11 +428,9 @@ const Mods: NextPage = () => {
                                 aQuality.order - bQuality.order
                         );
                     },
-                ),
-            );
+                );
         } else if (columnAccessor === "Difficulty") {
-            setSortedModsWithInfo(
-                filteredModsWithInfo.sort(
+                return filteredModsWithInfo.sort(
                     (a, b) => {
                         if (a === b) return 0;
 
@@ -457,11 +447,9 @@ const Mods: NextPage = () => {
                                 bDifficulty.order - aDifficulty.order
                         );
                     },
-                ),
-            );
+                );
         } else {
-            setSortedModsWithInfo(
-                filteredModsWithInfo.sort(
+                return filteredModsWithInfo.sort(
                     (a, b) => {
                         const propertyAString = String(a[columnAccessor]);
                         const propertyBString = String(b[columnAccessor]);
@@ -472,8 +460,7 @@ const Mods: NextPage = () => {
                                 propertyBString.localeCompare(propertyAString)
                         );
                     },
-                ),
-            );
+                );
         }
     }, [filteredModsWithInfo, sortStatus]);
 
@@ -482,10 +469,9 @@ const Mods: NextPage = () => {
 
     //handle row expansion
     const [expandedRowIds, setExpandedRowsIds] = useState<number[]>([]);
-    const [sortedModsWithIsExpanded, setSortedModsWithIsExpanded] = useState<ModWithInfo[]>(modsWithInfo);
-
-    useEffect(() => {
-        if (!sortedModsWithInfo.length) return;
+    const sortedModsWithIsExpanded = useMemo(() => {
+        console.log(4);
+        if (!sortedModsWithInfo.length) return modsWithInfo; // NOTE: Changes the value compared to using state
 
         const modsWithExpansion = sortedModsWithInfo.map(
             (mod) => {
@@ -498,7 +484,7 @@ const Mods: NextPage = () => {
             },
         );
 
-        setSortedModsWithIsExpanded(modsWithExpansion);
+        return modsWithExpansion;
     }, [sortedModsWithInfo, expandedRowIds]);
 
 
@@ -514,15 +500,16 @@ const Mods: NextPage = () => {
     }, [sortStatus, pageSize, debouncedNameQuery, mapCountRange, selectedModTypes, selectedQualities, selectedDifficulties]);
 
     //handle providing datatable with correct subset of data
-    const [records, setRecords] = useState<ModWithInfo[]>(sortedModsWithIsExpanded.slice(0, pageSize));
+    // const [records, setRecords] = useState<ModWithInfo[]>(sortedModsWithIsExpanded.slice(0, pageSize));
 
-    useEffect(() => {
+    const records = useMemo(() => {
+        console.log(5);
         const startIndex = (page - 1) * pageSize;
         const endIndex = startIndex + pageSize;
 
         const newRecords = sortedModsWithIsExpanded.slice(startIndex, endIndex);
 
-        setRecords(newRecords);
+        return newRecords;
     }, [page, pageSize, sortedModsWithIsExpanded]);
 
 
