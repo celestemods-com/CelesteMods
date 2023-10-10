@@ -9,8 +9,13 @@ const Home: NextPage = () => {
 
   return (
     <Layout pageTitle="Home" pageDescription="Home" pathname="/">
-        <h1>Celeste Mods List</h1>
-        <p>Welcome! The site is currently in early beta. You can only browse mods for now.</p>
+      <h1>Celeste Mods List</h1>
+      <p>Welcome! The site is currently in early beta.</p>
+      <Link
+        href={"/mods"}
+      >
+        You can only browse mods for now.
+      </Link>
     </Layout>
   );
 };
