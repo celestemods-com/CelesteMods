@@ -112,9 +112,18 @@ Please check out our [contributing guide](./CONTRIBUTING.md) for detailed instru
     * Wait. Node Package Manager (npm) will download all of the dependencies and then generate your Prisma client.
 
     * If you installed your dependencies before configuring your `DATABASE_URL` in `.env`, you will need to manually regenerate your Prisma client. This also needs to be done after any changes to the [Prisma schema](./prisma/schema.prisma). In your terminal, type `npx prisma generate` and hit `enter`.
+  
+
+    d. Setup the local database.
+
+    * Open a terminal in the project's root directory.
+  
+    * Type `npm run db-reset` and hit `enter`.
+  
+    * Wait. Say `yes` to any prompts in the terminal. Prisma will add tables to the `modslist` database that you created and seed it with initial data.
 
 
-5. Run Local Development Server
+6. Run Local Development Server
 
     a. Open a terminal in the project's root directory.
 
