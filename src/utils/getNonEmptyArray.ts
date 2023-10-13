@@ -1,4 +1,4 @@
-//export type NonEmptyArray<T, IsReadonly extends boolean = true> = IsReadonly extends true ? readonly [T, ...T[]] : [T, ...T[]];
+export type NonEmptyArray<T extends any[] | readonly any[]> = [T[number], ...T[number][]];
 
 
 export const getNonEmptyArray = <
