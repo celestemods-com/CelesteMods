@@ -2,7 +2,7 @@ import type { Dispatch, SetStateAction } from "react";
 import { MultiSelect } from "@mantine/core";
 
 type ListSearchProps<T extends string> = {
-    permittedStrings: [T, ...T[]];
+    permittedStrings: T[];
     selectedStrings: T[];
     setSelectedStrings: Dispatch<SetStateAction<T[]>>;
     maxDropdownHeight?: number;
