@@ -14,7 +14,7 @@ type StringSearchProps = {
 
 
 
-const StringSearch = (props: StringSearchProps) => {
+export const StringSearch = (props: StringSearchProps) => {
     return (
         <TextInput
             {...props}
@@ -35,6 +35,3 @@ const StringSearch = (props: StringSearchProps) => {
         />
     );
 };
-
-
-export default StringSearch;
