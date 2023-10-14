@@ -13,18 +13,19 @@ const useStyles = createStyles(
         carousel: {
             // double ampersand to increase selectivity of class to ensure it overrides any other css
             "&&": {
-                width: "200px",
+                width: "400px",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "stretch",
                 gap: "10px",
+                padding: "20px",
             },
         },
         viewport: {
             border: "3px solid #263972",
         },
         slide: {
-            width: "200px",
+            width: "400px",
         },
         controls: {
             transform: "translate(0, 0)",
@@ -70,13 +71,13 @@ const ModCarousel = ({ gamebananaModId }: modCarouselProps) => {
                     <Carousel.Slide
                         key={imageUrl}
                         gap={"md"}
-                        size={"200px"}
+                        size={"400px"}
                     >
                         <Image
                             src={imageUrl}
                             alt="Mod image"
-                            width={200}
-                            height={150}     //TODO!!: add responsive image sizes
+                            width={400}
+                            height={300}     //TODO!!: add responsive image sizes
                         />
                     </Carousel.Slide>
                 ))}

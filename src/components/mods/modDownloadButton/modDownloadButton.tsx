@@ -21,10 +21,12 @@ const useStyles = createStyles(
         },
         olympusText: {
             color: "rgb(235, 207, 52)",
+            fontSize: "0.9rem",
         },
         clickText: {
             color: "white",
             fontWeight: "bold",
+            fontSize: "0.9rem",
         }
     }),
 );

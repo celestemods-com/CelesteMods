@@ -26,6 +26,7 @@ const useStyles = createStyles(
         table: {
             "&&&& table": {
                 borderSpacing: "0 20px",
+                padding: "0 15px"
             },
             "&&&& tr": {
                 backgroundColor: "transparent",
@@ -40,7 +41,7 @@ const useStyles = createStyles(
             //4 ampersands to increase selectivity of class to ensure it overrides any other css
             "&&&&": {
                 /* top | left and right | bottom */
-                padding: `${theme.spacing.xl} ${theme.spacing.xl} ${theme.spacing.xl}`,
+                padding: `${theme.spacing.sm} ${theme.spacing.xl} ${theme.spacing.sm}`,
                 backgroundColor: "#e1e1e2",
                 color: theme.black,
                 borderWidth: 0,
@@ -61,14 +62,6 @@ const useStyles = createStyles(
                 textAlign: "center",
             }
         },
-        leftColumnHeader: {
-            borderTopLeftRadius: "50px",
-            borderBottomLeftRadius: "50px",
-        },
-        rightColumnHeader: {
-            borderTopRightRadius: "50px",
-            borderBottomRightRadius: "50px",
-        },
         leftColumnCell: {
             borderTopLeftRadius: "50px",
             borderBottomLeftRadius: "50px",
@@ -77,6 +70,9 @@ const useStyles = createStyles(
             borderTopRightRadius: "50px",
             borderBottomRightRadius: "50px",
         },
+        pagination: {
+            backgroundColor: "#263972",
+        }
     }),
 );
 
@@ -582,7 +578,7 @@ const Mods: NextPage = () => {
         <Layout pageTitle="Mods" pageDescription="Mods" pathname="/mods">
             <Title className={classes.pageTitle} order={2}>Mods List</Title>
             <DataTable
-                className={classes.table}
+                classNames={{root: classes.table, pagination: classes.pagination}}
                 defaultColumnProps={{
                     cellsClassName: (record) => {
                         return cx(
@@ -614,7 +610,7 @@ const Mods: NextPage = () => {
                             />
                         ),
                         filtering: nameQuery !== "",
-                        titleClassName: cx(classes.columnHeader, classes.leftColumnHeader),
+                        titleClassName: classes.columnHeader,
                         cellsClassName: (record) => {
                             return cx(
                                 classes.modCell,
@@ -682,7 +678,7 @@ const Mods: NextPage = () => {
                             />
                         ),
                         filtering: !!selectedDifficulties.length,
-                        titleClassName: cx(classes.columnHeader, classes.rightColumnHeader),
+                        titleClassName: classes.columnHeader,
                         cellsClassName: (record) => {
                             return cx(
                                 classes.modCell,

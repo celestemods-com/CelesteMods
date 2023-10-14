@@ -27,10 +27,13 @@ const useStyles = createStyles(
             borderRadius: "0 0 50px 50px",
             // We move the expanded mod up to make
             // the mod row and expanded mod look like a single row.
-            transform: "translate(0, -55px)",
+            transform: "translate(0, -45px)",
+        },
+        moreInfo: {
+            fontSize: "1rem",
         },
         modDetails: {
-            padding: "25px",
+            padding: "10px 25px",
         }
     }),
 );
@@ -55,7 +58,7 @@ const ExpandedMod = ({ isLoading, mod }: ExpandedModProps) => {
     if (isLoading) return <Loader />;
 
     return (
-        <Stack justify="center" align="stretch" className={classes.expandedMod}>
+        <Stack justify="center" align="stretch" className={classes.expandedMod} spacing="0">
             <Group position="apart" align="center" className={classes.modDetails}>
                 <PublisherName publisherId={mod.publisherId} />
                 <PublicationDate gamebananaModId={mod.gamebananaModId} />
@@ -65,6 +68,7 @@ const ExpandedMod = ({ isLoading, mod }: ExpandedModProps) => {
                         pathname: "/mods/[id]",
                         query: { id: mod.id },
                     }}
+                    className={classes.moreInfo}
                 >
                     More Info
                 </Link>

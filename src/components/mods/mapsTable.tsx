@@ -15,7 +15,7 @@ const useStyles = createStyles(
             // double ampersand to increase selectivity of class to ensure it overrides any other css
             "&&": {
                 /* top | left and right | bottom */
-                margin: `${theme.spacing.xs} ${theme.spacing.sm} ${theme.spacing.xl}`,
+                margin: `0 ${theme.spacing.sm} ${theme.spacing.xl}`,
                 backgroundColor: "#e1e1e2",
             },
         },
