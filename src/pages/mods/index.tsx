@@ -7,13 +7,12 @@ import { createStyles, MultiSelect, Title } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 import { Difficulty, Mod, ModRatingData, ModYesRatingData, Quality } from "~/components/mods/types";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
-import { modTypes } from "~/components/mods/consts";
-import { type ModType } from "@prisma/client";
-import StringSearch from "~/components/filterPopovers/stringSearch";
-import NumberSearch from "~/components/filterPopovers/numberSearch";
+import { type ModType, ModType as modTypes } from "@prisma/client";
+import { StringSearch } from "~/components/filterPopovers/stringSearch";
+import { NumberSearch } from "~/components/filterPopovers/numberSearch";
+import { ListSelect } from "~/components/filterPopovers/listSelect";
 import { Layout } from "~/components/layout/layout";
-import { useRouter } from "next/router";
-import Link from "next/link";
+import { getNonEmptyArray, type NonEmptyArray } from "~/utils/getNonEmptyArray";
 
 
 
@@ -163,10 +162,11 @@ const Mods: NextPage = () => {
     const qualityQuery = api.quality.getAll.useQuery({}, { queryKey: ["quality.getAll", {}] });
     const qualities = qualityQuery.data ?? [];
 
-    const qualityNames = useMemo(
+    const qualityNames = useMemo(   //get quality names for filter component
         () => qualities
             .sort((a, b) => b.order - a.order)  //better qualities have higher orders, so we want them to sort first
-            .map((quality) => quality.name),
+            .map((quality) => quality.name)
+            .slice(0, -1),  //remove "Not Recommended" from the selectable list, as no mods will ever publicly show as "Not Recommended"
         [qualities],
     );
 
@@ -174,12 +174,14 @@ const Mods: NextPage = () => {
     const difficultyQuery = api.difficulty.getAll.useQuery({}, { queryKey: ["difficulty.getAll", {}] });
     const difficulties = difficultyQuery.data ?? [];
 
-    const difficultyNames = useMemo(
+    const parentDifficultyNames = useMemo(  //get parent difficulty names for filter component
         () => difficulties
+            .filter((difficulty) => difficulty.parentDifficultyId === 0)    //parent difficulties all have the nullParent difficulty, with id = 0, as their parent
             .sort((a, b) => a.order - b.order)  //easier difficulties have lower orders, and we want them to sort first
             .map((difficulty) => difficulty.name),
         [difficulties],
     );
+    
 
     /*
         //get all mod ids   //not using pagination because backend pagination is awkward with mantine-datatable     //TODO: implement this
@@ -320,7 +322,7 @@ const Mods: NextPage = () => {
     const [mapCountRange, setMapCountRange] = useState<[number | undefined, number | undefined]>([undefined, undefined]);     //[min, max]
     const [selectedModTypes, setSelectedModTypes] = useState<ModType[]>([]);
     const [selectedQualities, setSelectedQualities] = useState<string[]>([]);
-    const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([]);
+    const [selectedParentDifficulties, setSelectedParentDifficulties] = useState<string[]>([]);
 
     const filteredModsWithInfo = useMemo(() => {
         console.log(2);
@@ -370,8 +372,8 @@ const Mods: NextPage = () => {
 
 
             if (
-                selectedDifficulties.length &&
-                !selectedDifficulties.includes(modWithInfo.Difficulty.name)
+                selectedParentDifficulties.length &&
+                !selectedParentDifficulties.some((parentDifficulty) => modWithInfo.Difficulty.name.startsWith(parentDifficulty))
             ) {
                 return false;
             }
@@ -379,7 +381,7 @@ const Mods: NextPage = () => {
 
             return true;
         });
-    }, [modsWithInfo, debouncedNameQuery, mapCountRange, selectedModTypes, selectedQualities, selectedDifficulties]);
+    }, [modsWithInfo, debouncedNameQuery, mapCountRange, selectedModTypes, selectedQualities, selectedParentDifficulties]);
 
 
 
@@ -501,7 +503,7 @@ const Mods: NextPage = () => {
     //reset page when sortStatus or page size changes
     useEffect(() => {
         setPage(1);
-    }, [sortStatus, pageSize, debouncedNameQuery, mapCountRange, selectedModTypes, selectedQualities, selectedDifficulties]);
+    }, [sortStatus, pageSize, debouncedNameQuery, mapCountRange, selectedModTypes, selectedQualities, selectedParentDifficulties]);
 
     //handle providing datatable with correct subset of data
     // const [records, setRecords] = useState<ModWithInfo[]>(sortedModsWithIsExpanded.slice(0, pageSize));
@@ -551,7 +553,7 @@ const Mods: NextPage = () => {
                 fetching={isLoading}
                 records={records}
                 idAccessor={(record) => record.id}
-                columns={[      //TODO!!!: add filtering. create searchString, searchRange, and searchSet components to use here.
+                columns={[
                     {
                         accessor: "name",
                         title: "Name",
@@ -594,8 +596,10 @@ const Mods: NextPage = () => {
                         title: "Type",
                         sortable: true,
                         filter: (
-                            <div
-                                
+                            <ListSelect 
+                                permittedStrings={getNonEmptyArray(modTypes)}
+                                selectedStrings={selectedModTypes}
+                                setSelectedStrings={setSelectedModTypes}
                             />
                         ),
                         filtering: !!selectedModTypes.length,
@@ -606,8 +610,10 @@ const Mods: NextPage = () => {
                         sortable: true,
                         render: (modWithInfo) => modWithInfo.Quality.name,
                         filter: (
-                            <div
-                                
+                            <ListSelect
+                                permittedStrings={qualityNames}
+                                selectedStrings={selectedQualities}
+                                setSelectedStrings={setSelectedQualities}
                             />
                         ),
                         filtering: !!selectedQualities.length,
@@ -618,11 +624,13 @@ const Mods: NextPage = () => {
                         sortable: true,
                         render: (modWithInfo) => modWithInfo.Difficulty.name,
                         filter: (
-                            <div
-                                
+                            <ListSelect
+                                permittedStrings={parentDifficultyNames}
+                                selectedStrings={selectedParentDifficulties}
+                                setSelectedStrings={setSelectedParentDifficulties}
                             />
                         ),
-                        filtering: !!selectedDifficulties.length,
+                        filtering: !!selectedParentDifficulties.length,
                     },
                 ]}
                 sortStatus={sortStatus}

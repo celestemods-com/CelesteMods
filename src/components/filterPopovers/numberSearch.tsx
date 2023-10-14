@@ -16,7 +16,7 @@ type NumberSearchProps = {
 
 
 
-const NumberSearch = ({ range, setRange, maxProps, minProps }: NumberSearchProps) => {
+export const NumberSearch = ({ range, setRange, maxProps, minProps }: NumberSearchProps) => {
 
 
     return (
@@ -44,6 +44,3 @@ const NumberSearch = ({ range, setRange, maxProps, minProps }: NumberSearchProps
         </Stack>
     );
 };
-
-
-export default NumberSearch;
