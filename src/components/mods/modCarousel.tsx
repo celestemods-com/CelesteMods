@@ -8,12 +8,20 @@ import { api } from "~/utils/api";
 
 
 
+const SLIDE_HEIGHT_NUM = 300;
+const SLIDE_HEIGHT_UNIT = "px";
+
+const slideHeight = `${SLIDE_HEIGHT_NUM}${SLIDE_HEIGHT_UNIT}`;
+
+
+
+
 const useStyles = createStyles(
     (_theme) => ({
         carousel: {
             // double ampersand to increase selectivity of class to ensure it overrides any other css
             "&&": {
-                width: "400px",
+                height: slideHeight,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "stretch",
@@ -25,7 +33,7 @@ const useStyles = createStyles(
             border: "3px solid #263972",
         },
         slide: {
-            width: "400px",
+            height: slideHeight,
         },
         controls: {
             transform: "translate(0, 0)",
@@ -53,7 +61,7 @@ const ModCarousel = ({ gamebananaModId }: modCarouselProps) => {
     const { imageUrls } = useGamebananaModImageUrls({ gamebananaModId });
 
 
-    const { cx, classes } = useStyles();
+    const { classes } = useStyles();
 
 
     return (
@@ -76,8 +84,7 @@ const ModCarousel = ({ gamebananaModId }: modCarouselProps) => {
                         <Image
                             src={imageUrl}
                             alt="Mod image"
-                            width={400}
-                            height={300}     //TODO!!: add responsive image sizes
+                            height={slideHeight}     //TODO!!: add responsive image sizes
                         />
                     </Carousel.Slide>
                 ))}
