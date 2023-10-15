@@ -76,8 +76,7 @@ const ModCarousel = ({ gamebananaModId }: modCarouselProps) => {
                         <Image
                             src={imageUrl}
                             alt="Mod image"
-                            width={400}
-                            height={300}     //TODO!!: add responsive image sizes
+                            height={250}     //TODO!!: add responsive image sizes
                         />
                     </Carousel.Slide>
                 ))}
