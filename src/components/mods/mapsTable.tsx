@@ -11,7 +11,7 @@ import { CirclePlus } from "tabler-icons-react";
 
 const useStyles = createStyles(
     (theme) => ({
-        map: {
+        mapTable: {
             // double ampersand to increase selectivity of class to ensure it overrides any other css
             "&&": {
                 /* top | left and right | bottom */
@@ -362,7 +362,7 @@ const MapsTable = (
             <Title order={3}>Maps</Title>
             <DataTable
                 textSelectionDisabled
-                className={classes.map}
+                className={classes.mapTable}
                 fetching={isLoading}
                 defaultColumnProps={{
                     sortable: !isNormalMod,
