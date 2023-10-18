@@ -31,6 +31,10 @@ const useStyles = createStyles(
             },
             "&&&& tr": {
                 backgroundColor: "transparent",
+            },
+            "&&&& table + div": {
+                // Removes the shadow below the table header
+                display: "none",
             }
         },
         pageTitle: {

@@ -18,6 +18,11 @@ const useStyles = createStyles(
                 margin: `0 ${theme.spacing.sm} ${theme.spacing.xl}`,
                 backgroundColor: "#e1e1e2",
             },
+            "&&&& table": {
+                borderSpacing: "0 20px",
+                // Border spacing adds space before the header, so we move the table up
+                transform: 'translate(0, -20px)',
+            }
         },
         columnTitle: {
             "&&": {
