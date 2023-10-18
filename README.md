@@ -24,7 +24,7 @@ Please check out our [contributing guide](./CONTRIBUTING.md) for detailed instru
 ### Setup CelesteMods.com Locally
 1. Install and configure MySQL
     
-    a. We recommend using XAMPP (only tested on Windows 10). It provides a built-in webserver and GUI for troubleshooting the MySQL server. If you wish to use another solution, skip to step ##. 
+    a. We recommend using XAMPP (only tested on Windows 10). It provides a built-in webserver and GUI for troubleshooting the MySQL server. If you wish to use another solution, skip to step 2. 
     
 
     b. Download and install [XAMPP](https://www.apachefriends.org/download.html).
