@@ -16,7 +16,7 @@ const ModDownloadButton = ({ gamebananaModId }: ModDownloadButtonProps) => {
     const { downloadUrl } = useGamebananaModDownloadUrl({ gamebananaModId });
 
 
-    return (        //TODO: add popover with info about the installer
+    return (        //TODO: add popover with info about Olympus/Everest and 1-click install
         <a href={downloadUrl    /*TODO!: implement useGamebananaModDownloadUrl */}>
             <Text size={"md"}>
                 Olympus: 1-Click Install
