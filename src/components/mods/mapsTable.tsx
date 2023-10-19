@@ -1,22 +1,78 @@
-import { Title, createStyles } from "@mantine/core";
+import { ActionIcon, Stack, Title, createStyles } from "@mantine/core";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { Difficulty, Length, Map, MapRatingData, MapYesRatingData, Quality } from "~/components/mods/types";
 import { api } from "~/utils/api";
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
+import { CirclePlus } from "tabler-icons-react";
 
 
 
 
 const useStyles = createStyles(
     (theme) => ({
-        map: {
+        mapTable: {
             // double ampersand to increase selectivity of class to ensure it overrides any other css
             "&&": {
                 /* top | left and right | bottom */
-                margin: `${theme.spacing.xs} ${theme.spacing.sm} ${theme.spacing.xl}`
+                margin: `0 ${theme.spacing.sm} ${theme.spacing.xl}`,
+                backgroundColor: "#e1e1e2",
             },
+            "&&&& table": {
+                borderSpacing: "0 20px",
+                // Border spacing adds space before the header, so we move the table up
+                transform: 'translate(0, -20px)',
+            }
         },
+        columnTitle: {
+            "&&": {
+                fontWeight: "bold",
+                backgroundColor: "#263972",
+                color: "white",
+                border: "none"
+            }
+        },
+        leftColumnTitle: {
+            "&&": {
+                borderRadius: "20px 0 0 20px",
+            }
+        },
+        rightColumnTitle: {
+            "&&": {
+                borderRadius: "0 20px 20px 0"
+            }
+        },
+        columnCells: {
+            "&&&&": {
+                fontWeight: "bold",
+                backgroundColor: "white",
+                color: "black",
+                borderLeft: "none",
+                borderRight: "none",
+                borderTop: "2px solid #263972",
+                borderBottom: "2px solid #263972",
+            }
+        },
+        leftColumnCells: {
+            "&&&&": {
+                fontWeight: "bold",
+                backgroundColor: "white",
+                color: "black",
+                borderRadius: "20px 0 0 20px",
+                border: "2px solid #263972",
+                borderRight: "none",
+            }
+        },
+        rightColumnCells: {
+            "&&&&": {
+                fontWeight: "bold",
+                backgroundColor: "white",
+                color: "black",
+                borderRadius: "0 20px 20px 0",
+                border: "2px solid #263972",
+                borderLeft: "none",
+            }
+        }
     }),
 );
 
@@ -307,11 +363,11 @@ const MapsTable = (
     const { cx, classes } = useStyles();
 
     return (
-        <>
+        <Stack align="center" justify="flex-start" spacing="0">
             <Title order={3}>Maps</Title>
             <DataTable
                 textSelectionDisabled
-                className={classes.map}
+                className={classes.mapTable}
                 fetching={isLoading}
                 defaultColumnProps={{
                     sortable: !isNormalMod,
@@ -320,16 +376,53 @@ const MapsTable = (
                 }}
                 records={[...sortedMapsWithInfo,]}
                 columns={[
-                    { accessor: "name", title: "Name" },
-                    { accessor: "qualityName", title: "Quality" },
-                    { accessor: "difficultyName", title: "Difficulty" },
-                    { accessor: "lengthName", title: "Length" },
-                    { accessor: "mapperNameString", title: "Mapper Name", hidden: !isMapperNameVisible }
+                    {
+                        accessor: "name",
+                        title: "Name",
+                        titleClassName: cx(classes.columnTitle, classes.leftColumnTitle),
+                        cellsClassName: classes.leftColumnCells
+                    },
+                    {
+                        accessor: "qualityName",
+                        title: "Quality",
+                        titleClassName: classes.columnTitle,
+                        cellsClassName: classes.columnCells
+                    },
+                    {
+                        accessor: "difficultyName",
+                        title: "Difficulty",
+                        titleClassName: classes.columnTitle,
+                        cellsClassName: classes.columnCells
+                    },
+                    {
+                        accessor: "lengthName",
+                        title: "Length",
+                        titleClassName: classes.columnTitle,
+                        cellsClassName: classes.columnCells
+                    },
+                    {
+                        accessor: "mapperNameString",
+                        title: "Mapper Name",
+                        hidden: !isMapperNameVisible,
+                        titleClassName: classes.columnTitle,
+                        cellsClassName: classes.columnCells
+                    },
+                    {
+                        accessor: "rate",
+                        title: "Rate",
+                        render: (map) => (
+                            <ActionIcon>
+                                <CirclePlus color="black"/>
+                            </ActionIcon>
+                        ),
+                        titleClassName: cx(classes.columnTitle, classes.rightColumnTitle),
+                        cellsClassName: classes.rightColumnCells
+                    }
                 ]}
                 sortStatus={sortStatus}
                 onSortStatusChange={setSortStatus as Dispatch<SetStateAction<DataTableSortStatus>>}     //un-narrow type to match types in DataTable
             />
-        </>
+        </Stack>
     );
 };
 
