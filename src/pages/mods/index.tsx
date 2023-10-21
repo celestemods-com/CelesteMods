@@ -91,7 +91,7 @@ const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModR
         if ("overallCount" in rating === false) {   //no ratings exist for this map
             qualityName = noRatingsFoundMessage;
             difficultyName = noRatingsFoundMessage;
-        } else {                                    //ratings exist for this map  
+        } else {                                    //ratings exist for this map
             const narrowedRating = rating as ModYesRatingData;
 
             overallCount = narrowedRating.overallCount;
@@ -155,13 +155,17 @@ const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModR
 };
 
 
+type ModsTableProps = {
+    qualities: Quality[];
+    difficulties: Difficulty[];
+    modsWithInfo: ModWithInfo[];
+    isLoading: boolean;
+};
 
 
-const Mods: NextPage = () => {
-    //get common data
-    const qualityQuery = api.quality.getAll.useQuery({}, { queryKey: ["quality.getAll", {}] });
-    const qualities = qualityQuery.data ?? [];
-
+// We create a seperate ModsTable component to prevent the Mods queries
+// running again when the ModsTable state changes.
+const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: ModsTableProps) => {
     const qualityNames = useMemo(   //get quality names for filter component
         () => qualities
             .sort((a, b) => b.order - a.order)  //better qualities have higher orders, so we want them to sort first
@@ -170,10 +174,6 @@ const Mods: NextPage = () => {
         [qualities],
     );
 
-
-    const difficultyQuery = api.difficulty.getAll.useQuery({}, { queryKey: ["difficulty.getAll", {}] });
-    const difficulties = difficultyQuery.data ?? [];
-
     const parentDifficultyNames = useMemo(  //get parent difficulty names for filter component
         () => difficulties
             .filter((difficulty) => difficulty.parentDifficultyId === 0)    //parent difficulties all have the nullParent difficulty, with id = 0, as their parent
@@ -181,139 +181,6 @@ const Mods: NextPage = () => {
             .map((difficulty) => difficulty.name),
         [difficulties],
     );
-    
-
-    /*
-        //get all mod ids   //not using pagination because backend pagination is awkward with mantine-datatable     //TODO: implement this
-        const modIdsQuery = api.mod.getIds.useQuery({}, { queryKey: ["mod.getIds", {}] });
-    
-        const isLoadingModIds = modIdsQuery.isLoading;
-    
-        const modIds = useMemo(() => {
-            if (isLoadingModIds) return [];
-    
-    
-            const modIds_maybeEmpty: number[] = modIdsQuery.data ?? [];
-    
-            if (!modIds_maybeEmpty.length) console.log(`modIds_maybeEmpty is empty. modIds = "${modIds}"`);
-    
-    
-            return modIds_maybeEmpty;
-        }, [isLoadingModIds, modIdsQuery.data]);
-    
-    
-        //get mods data
-        const modsQueries = api.useQueries(
-            (useQueriesApi) => modIds.map(
-                (id) => useQueriesApi.mod.getById(
-                    {
-                        id,
-                        tableName: "Mod",
-                    },
-                    {
-                        queryKey: [
-                            "mod.getById",
-                            { id, tableName: "Mod" },
-                        ],
-                    },
-                ),
-            ),
-        );
-    
-        const isLoadingMods = isLoadingModIds || modsQueries.some((query) => query.isLoading);
-        
-    
-        const mods = useMemo(() => {
-            if (isLoadingMods) return [];
-    
-    
-            const mods_maybeEmpty: Mod[] = [];
-    
-            modsQueries.forEach((modQuery) => {
-                if (!modQuery.data) return;
-    
-                const mod = {
-                    ...modQuery.data,
-                    isExpanded: false,
-                } as Mod;   //TODO!: prove this cast is safe
-    
-                if (mod) mods_maybeEmpty.push(mod);
-            });
-    
-            if (!mods_maybeEmpty.length) console.log(`mods_maybeEmpty is empty. modIds = "${modIds}"`);
-    
-    
-            return mods_maybeEmpty;
-        }, [isLoadingMods, modsQueries]);
-        */
-
-    const modsQuery = api.mod.getAll.useQuery({}, { queryKey: ["mod.getAll", {}] });
-
-    const isLoadingMods = modsQuery.isLoading;
-
-    const mods = useMemo(() => {
-        if (isLoadingMods || !modsQuery.data || !modsQuery.data.length) return [];
-
-
-        const mods_maybeEmpty: Mod[] = [];
-
-        modsQuery.data.forEach((mod) => {
-            const modWithIsExpanded = {
-                ...mod,
-                isExpanded: false,
-            };   //TODO!: prove this cast is safe
-
-            mods_maybeEmpty.push(modWithIsExpanded);
-        });
-
-        if (!mods_maybeEmpty.length) console.log(`mods_maybeEmpty is empty.`);
-
-
-        return mods_maybeEmpty;
-    }, [isLoadingMods, modsQuery.data]);
-
-
-    //get ratings data
-    const ratingQueries = api.useQueries(
-        (useQueriesApi) => mods.map(
-            (mod) => useQueriesApi.rating.getModRatingData(
-                { modId: mod.id },
-                { queryKey: ["rating.getModRatingData", { modId: mod.id }] },
-            ),
-        ),
-    );
-
-    const isLoadingRatings = isLoadingMods || ratingQueries.some((query) => query.isLoading);
-
-    const ratingsFromModIds = useMemo(() => {
-        if (isLoadingRatings) return [];
-
-        const ratings_maybeEmpty: ModRatingData[] = [];
-
-        ratingQueries.forEach((ratingQuery) => {
-            const rating = ratingQuery.data;
-
-            if (rating !== undefined) ratings_maybeEmpty.push(rating);
-        });
-
-        if (!ratings_maybeEmpty.length) console.log(`ratings_maybeEmpty is empty. mods = "${JSON.stringify(mods)}"`);
-
-        return ratings_maybeEmpty;
-    }, [isLoadingRatings, ratingQueries, /*modIds,*/ mods]);  //TODO: figure out if modIds/mods can be removed from this dependency array
-
-
-    //check that all data is loaded
-    const isLoading = isLoadingMods || isLoadingRatings || qualityQuery.isLoading || difficultyQuery.isLoading;
-
-
-    //get mods with map count, and quality and difficulty names
-    const modsWithInfo = useMemo(() => {
-        console.log(1);
-        return getModWithInfo(isLoading, mods, ratingsFromModIds, qualities, difficulties);
-    }, [isLoading, mods, ratingsFromModIds, qualities, difficulties]);
-
-
-
 
     //handle filtering
     const [nameQuery, setNameQuery] = useState<string>("");
@@ -325,7 +192,6 @@ const Mods: NextPage = () => {
     const [selectedParentDifficulties, setSelectedParentDifficulties] = useState<string[]>([]);
 
     const filteredModsWithInfo = useMemo(() => {
-        console.log(2);
         return modsWithInfo.filter((modWithInfo) => {
             if (
                 debouncedNameQuery &&
@@ -393,7 +259,6 @@ const Mods: NextPage = () => {
     });
 
     const sortedModsWithInfo = useMemo(() => {
-        console.log(3);
         const columnAccessor = sortStatus.columnAccessor;
 
         if (columnAccessor === "Map") {
@@ -468,7 +333,7 @@ const Mods: NextPage = () => {
                     },
                 );
         }
-    }, [filteredModsWithInfo, sortStatus]);
+    }, [filteredModsWithInfo, sortStatus, qualities, difficulties]);
 
 
 
@@ -476,9 +341,6 @@ const Mods: NextPage = () => {
     //handle row expansion
     const [expandedRowIds, setExpandedRowsIds] = useState<number[]>([]);
     const sortedModsWithIsExpanded = useMemo(() => {
-        console.log(4);
-        if (!sortedModsWithInfo.length) return modsWithInfo; // NOTE: Changes the value compared to using state
-
         const modsWithExpansion = sortedModsWithInfo.map(
             (mod) => {
                 return ({
@@ -509,7 +371,6 @@ const Mods: NextPage = () => {
     // const [records, setRecords] = useState<ModWithInfo[]>(sortedModsWithIsExpanded.slice(0, pageSize));
 
     const records = useMemo(() => {
-        console.log(5);
         const startIndex = (page - 1) * pageSize;
         const endIndex = startIndex + pageSize;
 
@@ -523,7 +384,9 @@ const Mods: NextPage = () => {
 
     //reset expanded rows when sortStatus, page, or page size changes
     useEffect(() => {
-        setExpandedRowsIds([]);
+        // If expandedRowIds is already empty, we return it instead of a new array
+        // to prevent the sortedModsWithIsExpanded memo function from running again.
+        setExpandedRowsIds(expandedRowIds => expandedRowIds.length === 0 ? expandedRowIds : []);
     }, [sortStatus, page, pageSize]);
 
 
@@ -596,7 +459,7 @@ const Mods: NextPage = () => {
                         title: "Type",
                         sortable: true,
                         filter: (
-                            <ListSelect 
+                            <ListSelect
                                 permittedStrings={getNonEmptyArray(modTypes)}
                                 selectedStrings={selectedModTypes}
                                 setSelectedStrings={setSelectedModTypes}
@@ -660,6 +523,148 @@ const Mods: NextPage = () => {
             />
         </Layout>
     );
+};
+
+
+const Mods: NextPage = () => {
+    //get common data
+    const qualityQuery = api.quality.getAll.useQuery({}, { queryKey: ["quality.getAll", {}] });
+    const qualities = qualityQuery.data ?? [];
+
+
+    const difficultyQuery = api.difficulty.getAll.useQuery({}, { queryKey: ["difficulty.getAll", {}] });
+    const difficulties = difficultyQuery.data ?? [];
+    
+
+    /*
+        //get all mod ids   //not using pagination because backend pagination is awkward with mantine-datatable     //TODO: implement this
+        const modIdsQuery = api.mod.getIds.useQuery({}, { queryKey: ["mod.getIds", {}] });
+
+        const isLoadingModIds = modIdsQuery.isLoading;
+
+        const modIds = useMemo(() => {
+            if (isLoadingModIds) return [];
+
+
+            const modIds_maybeEmpty: number[] = modIdsQuery.data ?? [];
+
+            if (!modIds_maybeEmpty.length) console.log(`modIds_maybeEmpty is empty. modIds = "${modIds}"`);
+
+
+            return modIds_maybeEmpty;
+        }, [isLoadingModIds, modIdsQuery.data]);
+
+
+        //get mods data
+        const modsQueries = api.useQueries(
+            (useQueriesApi) => modIds.map(
+                (id) => useQueriesApi.mod.getById(
+                    {
+                        id,
+                        tableName: "Mod",
+                    },
+                    {
+                        queryKey: [
+                            "mod.getById",
+                            { id, tableName: "Mod" },
+                        ],
+                    },
+                ),
+            ),
+        );
+
+        const isLoadingMods = isLoadingModIds || modsQueries.some((query) => query.isLoading);
+
+
+        const mods = useMemo(() => {
+            if (isLoadingMods) return [];
+
+
+            const mods_maybeEmpty: Mod[] = [];
+
+            modsQueries.forEach((modQuery) => {
+                if (!modQuery.data) return;
+
+                const mod = {
+                    ...modQuery.data,
+                    isExpanded: false,
+                } as Mod;   //TODO!: prove this cast is safe
+
+                if (mod) mods_maybeEmpty.push(mod);
+            });
+
+            if (!mods_maybeEmpty.length) console.log(`mods_maybeEmpty is empty. modIds = "${modIds}"`);
+
+
+            return mods_maybeEmpty;
+        }, [isLoadingMods, modsQueries]);
+        */
+
+    const modsQuery = api.mod.getAll.useQuery({}, { queryKey: ["mod.getAll", {}] });
+
+    const isLoadingMods = modsQuery.isLoading;
+
+    const mods = useMemo(() => {
+        if (isLoadingMods || !modsQuery.data || !modsQuery.data.length) return [];
+
+
+        const mods_maybeEmpty: Mod[] = [];
+
+        modsQuery.data.forEach((mod) => {
+            const modWithIsExpanded = {
+                ...mod,
+                isExpanded: false,
+            };   //TODO!: prove this cast is safe
+
+            mods_maybeEmpty.push(modWithIsExpanded);
+        });
+
+        if (!mods_maybeEmpty.length) console.log(`mods_maybeEmpty is empty.`);
+
+
+        return mods_maybeEmpty;
+    }, [isLoadingMods, modsQuery.data]);
+
+
+    //get ratings data
+    const ratingQueries = api.useQueries(
+        (useQueriesApi) => mods.map(
+            (mod) => useQueriesApi.rating.getModRatingData(
+                { modId: mod.id },
+                { queryKey: ["rating.getModRatingData", { modId: mod.id }] },
+            ),
+        ),
+    );
+
+    const isLoadingRatings = isLoadingMods || ratingQueries.some((query) => query.isLoading);
+
+    const ratingsFromModIds = useMemo(() => {
+        if (isLoadingRatings) return [];
+
+        const ratings_maybeEmpty: ModRatingData[] = [];
+
+        ratingQueries.forEach((ratingQuery) => {
+            const rating = ratingQuery.data;
+
+            if (rating !== undefined) ratings_maybeEmpty.push(rating);
+        });
+
+        if (!ratings_maybeEmpty.length) console.log(`ratings_maybeEmpty is empty. mods = "${JSON.stringify(mods)}"`);
+
+        return ratings_maybeEmpty;
+    }, [isLoadingRatings, ratingQueries, /*modIds,*/ mods]);  //TODO: figure out if modIds/mods can be removed from this dependency array
+
+
+    //check that all data is loaded
+    const isLoading = isLoadingMods || isLoadingRatings || qualityQuery.isLoading || difficultyQuery.isLoading;
+
+
+    //get mods with map count, and quality and difficulty names
+    const modsWithInfo = useMemo(() => {
+        return getModWithInfo(isLoading, mods, ratingsFromModIds, qualities, difficulties);
+    }, [isLoading, mods, ratingsFromModIds, qualities, difficulties]);
+
+    return <ModsTable qualities={qualities} difficulties={difficulties} modsWithInfo={modsWithInfo} isLoading={isLoading}/>;
 };
 
 export default Mods;
