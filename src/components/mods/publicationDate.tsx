@@ -49,7 +49,7 @@ const PublicationDate = ({ gamebananaModId }: PublicationDateProps) => {
 
     if (publicationDateQuery.isLoading) return (
         <Group position="center">
-            <Text>
+            <Text size="md">
                 {PUBLICATION_DATE_LABEL}
             </Text>
             <Loader
@@ -60,7 +60,7 @@ const PublicationDate = ({ gamebananaModId }: PublicationDateProps) => {
 
 
     return (
-        <Text>
+        <Text size="md">
             {PUBLICATION_DATE_LABEL + publicationDate.toLocaleDateString()}
         </Text>
     );

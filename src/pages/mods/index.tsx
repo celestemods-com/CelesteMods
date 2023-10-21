@@ -22,25 +22,61 @@ const DEFAULT_PAGE_SIZE_INDEX = 1;
 
 
 
-
 const useStyles = createStyles(
     (theme) => ({
+        table: {
+            "&&&& table": {
+                borderSpacing: "0 20px",
+                padding: "0 15px"
+            },
+            "&&&& tr": {
+                backgroundColor: "transparent",
+            },
+            "&&&& table + div": {
+                // Removes the shadow below the table header
+                display: "none",
+            }
+        },
         pageTitle: {
             color: "white",
             fontSize: "35px",
             textAlign: "center",
         },
         modCell: {
-            //double ampersand to increase selectivity of class to ensure it overrides any other css
-            "&&": {
+            //4 ampersands to increase selectivity of class to ensure it overrides any other css
+            "&&&&": {
                 /* top | left and right | bottom */
-                padding: `${theme.spacing.xl} ${theme.spacing.xl} ${theme.spacing.xl}`,
+                padding: `${theme.spacing.sm} ${theme.spacing.xl} ${theme.spacing.sm}`,
+                backgroundColor: "#e1e1e2",
+                color: theme.black,
+                borderWidth: 0,
+                fontWeight: "bold",
             },
         },
         expandedModCell: {
+            borderBottomLeftRadius: 0,
+            borderBottomRightRadius: 0,
+        },
+        columnHeader: {
             "&&": {
-                paddingBottom: 0,
+                backgroundColor: "#263972",
+                fontWeight: "bold",
+                color: theme.white,
+                fontSize: "17px",
+                padding: "10px",
+                textAlign: "center",
             }
+        },
+        leftColumnCell: {
+            borderTopLeftRadius: "50px",
+            borderBottomLeftRadius: "50px",
+        },
+        rightColumnCell: {
+            borderTopRightRadius: "50px",
+            borderBottomRightRadius: "50px",
+        },
+        pagination: {
+            backgroundColor: "#263972",
         }
     }),
 );
@@ -398,6 +434,7 @@ const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: ModsTab
         <Layout pageTitle="Mods" pageDescription="Mods" pathname="/mods">
             <Title className={classes.pageTitle} order={2}>Mods List</Title>
             <DataTable
+                classNames={{root: classes.table, pagination: classes.pagination}}
                 defaultColumnProps={{
                     cellsClassName: (record) => {
                         return cx(
@@ -407,8 +444,6 @@ const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: ModsTab
                     },
                 }}
                 height={550}
-                withBorder
-                borderRadius={"sm"}
                 striped
                 textSelectionDisabled
                 withColumnBorders
@@ -431,6 +466,14 @@ const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: ModsTab
                             />
                         ),
                         filtering: nameQuery !== "",
+                        titleClassName: classes.columnHeader,
+                        cellsClassName: (record) => {
+                            return cx(
+                                classes.modCell,
+                                classes.leftColumnCell,
+                                record.isExpanded && classes.expandedModCell,
+                            );
+                        },
                     },
                     {
                         accessor: "Map",
@@ -453,6 +496,7 @@ const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: ModsTab
                             />
                         ),
                         filtering: mapCountRange[0] !== undefined || mapCountRange[1] !== undefined,
+                        titleClassName: classes.columnHeader,
                     },
                     {
                         accessor: "type",
@@ -466,6 +510,7 @@ const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: ModsTab
                             />
                         ),
                         filtering: !!selectedModTypes.length,
+                        titleClassName: classes.columnHeader,
                     },
                     {
                         accessor: "Quality",
@@ -480,6 +525,7 @@ const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: ModsTab
                             />
                         ),
                         filtering: !!selectedQualities.length,
+                        titleClassName: classes.columnHeader,
                     },
                     {
                         accessor: "Difficulty",
@@ -494,6 +540,14 @@ const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: ModsTab
                             />
                         ),
                         filtering: !!selectedParentDifficulties.length,
+                        titleClassName: classes.columnHeader,
+                        cellsClassName: (record) => {
+                            return cx(
+                                classes.modCell,
+                                classes.rightColumnCell,
+                                record.isExpanded && classes.expandedModCell,
+                            );
+                        },
                     },
                 ]}
                 sortStatus={sortStatus}

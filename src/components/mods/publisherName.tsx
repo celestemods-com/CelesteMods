@@ -31,7 +31,7 @@ const PublisherName = ({ publisherId }: PublisherNameProps) => {
 
     if (publisherQuery.isLoading) return (
         <Group position="center">
-            <Text>
+            <Text size="md">
                 {PUBLISHER_NAME_LABEL}
             </Text>
             <Loader 
@@ -42,7 +42,7 @@ const PublisherName = ({ publisherId }: PublisherNameProps) => {
 
 
     return (
-        <Text>
+        <Text size="md">
             {PUBLISHER_NAME_LABEL + publisherName}
         </Text>
     );
