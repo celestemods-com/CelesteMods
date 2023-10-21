@@ -203,7 +203,7 @@ type ModsTableProps = {
 // running again when the ModsTable state changes.
 const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: ModsTableProps) => {
     const qualityNames = useMemo(   //get quality names for filter component
-        () => qualities
+        () => [...qualities]
             .sort((a, b) => b.order - a.order)  //better qualities have higher orders, so we want them to sort first
             .map((quality) => quality.name)
             .slice(0, -1),  //remove "Not Recommended" from the selectable list, as no mods will ever publicly show as "Not Recommended"
@@ -297,8 +297,10 @@ const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: ModsTab
     const sortedModsWithInfo = useMemo(() => {
         const columnAccessor = sortStatus.columnAccessor;
 
+        const sortedModsWithInfo = [...filteredModsWithInfo];
+
         if (columnAccessor === "Map") {
-                return filteredModsWithInfo.sort(
+                sortedModsWithInfo.sort(
                     (a, b) => {
                         const propertyANum = Number(a.Map.length);
                         const propertyBNum = Number(b.Map.length);
@@ -318,7 +320,7 @@ const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: ModsTab
                     },
                 );
         } else if (columnAccessor === "Quality") {
-                return filteredModsWithInfo.sort(
+                sortedModsWithInfo.sort(
                     (a, b) => {
                         if (a === b) return 0;
 
@@ -337,7 +339,7 @@ const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: ModsTab
                     },
                 );
         } else if (columnAccessor === "Difficulty") {
-                return filteredModsWithInfo.sort(
+                sortedModsWithInfo.sort(
                     (a, b) => {
                         if (a === b) return 0;
 
@@ -356,7 +358,7 @@ const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: ModsTab
                     },
                 );
         } else {
-                return filteredModsWithInfo.sort(
+                sortedModsWithInfo.sort(
                     (a, b) => {
                         const propertyAString = String(a[columnAccessor]);
                         const propertyBString = String(b[columnAccessor]);
@@ -369,6 +371,8 @@ const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: ModsTab
                     },
                 );
         }
+
+        return sortedModsWithInfo;
     }, [filteredModsWithInfo, sortStatus, qualities, difficulties]);
 
 
