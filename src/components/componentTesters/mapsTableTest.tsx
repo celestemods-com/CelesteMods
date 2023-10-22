@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Maps from "~/components/mods/maps";
+import Maps from "~/components/mods/maps/maps";
 import { api } from "~/utils/api";
 import { Mod } from "../mods/types";
 import { Box, Button, Checkbox, Group, TextInput } from "@mantine/core";

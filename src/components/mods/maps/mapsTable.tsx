@@ -1,6 +1,6 @@
 import { ActionIcon, createStyles } from "@mantine/core";
 import { DataTable, type DataTableSortStatus } from "mantine-datatable";
-import { type Map } from "~/components/mods/types";
+import type { Map } from "~/components/mods/types";
 import { type Dispatch, type SetStateAction, useEffect, useMemo, useState } from "react";
 import { CirclePlus } from "tabler-icons-react";
 
@@ -126,15 +126,14 @@ const MapsTable = (
         isLoading,
     }: MapsTableProps
 ) => {
+    //handle sorting
     const [sortStatus, setSortStatus] = useState<MapsTableSortStatus>(getSortStatusFromIsNormalMod(isNormalMod));
-
 
     useEffect(
         () => setSortStatus(getSortStatusFromIsNormalMod(isNormalMod)),
         [isNormalMod],
     );
 
-    //handle sorting
     const sortedMapsWithInfo = useMemo(() => {
         const sortedMaps = [...mapsWithInfo].sort(
             (a, b) => {
@@ -160,14 +159,6 @@ const MapsTable = (
 
     //handle mapper name visibility
     const isMapperNameVisible = !isNormalMod && isMapperNameVisiblePermitted;
-
-
-    //TODO!:
-    //generalize mapsTable so it can be used in both /mods and /mods/[id]
-    //add support for "nested sorting"
-    //add filtering (at least by name)
-    //pagination not needed in mapsTable (but is needed in the mods table on /mods)
-    //use the datatable row context menu to allow for submitting ratings? or a row actions cell?
 
 
     const { cx, classes } = useStyles();
@@ -220,7 +211,7 @@ const MapsTable = (
                     title: "Rate",
                     render: (_) => (
                         <ActionIcon>
-                            <CirclePlus color="black"/>
+                            <CirclePlus color="black" />
                         </ActionIcon>
                     ),
                     titleClassName: cx(classes.columnTitle, classes.rightColumnTitle),

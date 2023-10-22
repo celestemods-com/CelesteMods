@@ -1,8 +1,6 @@
-import { Flex, Group, Loader, Stack, Text, createStyles } from "@mantine/core";
+import { Flex, Group, Loader, Stack, createStyles } from "@mantine/core";
 import { Mod } from "~/components/mods/types";
-import { api } from "~/utils/api";
-import Maps from "./maps";
-import { useMemo } from "react";
+import Maps from "./maps/maps";
 import PublisherName from "./publisherName";
 import PublicationDate from "./publicationDate";
 import ModDownloadButton from "./modDownloadButton/modDownloadButton";
@@ -53,7 +51,7 @@ const ExpandedMod = ({ isLoading, mod }: ExpandedModProps) => {
     const isMapperNameVisiblePermitted = false;
 
 
-    const { cx, classes } = useStyles();
+    const { classes } = useStyles();
 
     if (isLoading) return <Loader />;
 
@@ -85,6 +83,5 @@ const ExpandedMod = ({ isLoading, mod }: ExpandedModProps) => {
         </Stack>
     );
 };
-
 
 export default ExpandedMod;

@@ -7,6 +7,7 @@ import MapsTable from "./mapsTable";
 
 
 
+
 type MapWithInfo = {
     lengthName: string,
     overallCount: number,
@@ -24,6 +25,8 @@ export type MapsProps = {
     isMapperNameVisiblePermitted: boolean;
     mapIds: number[];
 };
+
+
 
 
 const getMapsWithInfo = (isLoading: boolean, maps: Map[], ratingsFromMapIds: MapRatingData[], lengths: Length[], qualities: Quality[], difficulties: Difficulty[]): MapWithInfo[] => {
@@ -145,7 +148,7 @@ const Maps = ({
         ),
     );
 
-    const isLoadingMaps = isLoadingMod || mapsQueries.some((query) => query.isLoading);     //TODO!!: prove that this works
+    const isLoadingMaps = isLoadingMod || mapsQueries.some((query) => query.isLoading);
 
     const maps = useMemo(() => {
         if (isLoadingMaps) return [];
