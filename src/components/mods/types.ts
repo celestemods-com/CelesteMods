@@ -30,3 +30,18 @@ export type MapYesRatingData = {    //TODO: figure out how to do this through na
 export type Quality = RouterOutputs["quality"]["getAll"][number];
 export type Difficulty = RouterOutputs["difficulty"]["getAll"][number];
 export type Length = RouterOutputs["length"]["getAll"][number];
+
+
+
+
+type RatingInfo = {
+    id: number;
+    name: string;
+    count: number;
+};
+
+export type ModWithInfo = {
+    overallCount: number;
+    Quality: RatingInfo;
+    Difficulty: RatingInfo;
+} & Mod;
