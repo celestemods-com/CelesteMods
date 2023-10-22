@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useFetch } from "~/hooks/useFetch";
 
 
@@ -184,17 +184,13 @@ export const useGamebananaModImageUrls = (
     const { queryUrl } = useGamebananaApiUrl(gamebananaApiUrlProps);
 
 
+    const { data, isLoading, error } = useFetch<GamebananaApiResponse<true, "screenshots">>(queryUrl);    //TODO!: implement caching    //TODO!!!: continue here. queryUrl is being populated, but screenshotData is empty. it seems like useFetch (or useEffect) isn't re-running when queryUrl changes
+
     //get screenshotData
-    const [screenshotData, setScreenshotData] = useState<GamebananaScreenshotData[]>([]);
+    const screenshotData = useMemo(() => {
+        if (isLoading) return [];
 
-    const screenshotDataQuery = useFetch<GamebananaApiResponse<true, "screenshots">>(queryUrl);    //TODO!: implement caching    //TODO!!!: continue here. queryUrl is being populated, but screenshotData is empty. it seems like useFetch (or useEffect) isn't re-running when queryUrl changes
-
-    useEffect(() => {
-        console.log(`screenshotDataQuery: ${JSON.stringify(screenshotDataQuery)}`);
-
-        if (screenshotDataQuery.isLoading) return;
-
-        const dataJSON = screenshotDataQuery.data?.screenshots;
+        const dataJSON = data?.screenshots;
 
         if (dataJSON) {
             const data: unknown = JSON.parse(dataJSON);
@@ -203,31 +199,28 @@ export const useGamebananaModImageUrls = (
 
             console.log(`screenshotData: ${JSON.stringify(data)}`);
 
-            setScreenshotData(data);
+            return data;
         }
-        else console.log(`screenshotDataQuery.data: ${JSON.stringify(screenshotDataQuery.data)}`);
-    }, [screenshotDataQuery]);
+        else {
+            console.log(`screenshotDataQuery.data: ${JSON.stringify(data)}`);
+            return [];
+        }
+    }, [data, isLoading]);
 
 
     //get image urls
-    const [imageUrls, setImageUrls] = useState<string[]>([]);
-
-    useEffect(() => {
-        if (!screenshotData) return;
-
+    const imageUrls = useMemo(() => {
         console.log(`screenshotData: ${JSON.stringify(screenshotData)}`);
 
-        const imageUrls: string[] = screenshotData.map(
+        return screenshotData.map(
             ({ _sFile }) => `${GAMEBANANA_MOD_IMAGES_BASE_URL}${_sFile}`,
         );
-
-        setImageUrls(imageUrls);
     }, [screenshotData]);
 
 
-    if (screenshotDataQuery.error) console.error(screenshotDataQuery.error);
+    if (error) console.error(error);
 
-    if (screenshotDataQuery.isLoading) return {};
+    if (isLoading) return {};
 
     return { imageUrls };
 };
