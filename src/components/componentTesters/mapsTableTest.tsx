@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import MapsTable from "~/components/mods/mapsTable";
+import Maps from "~/components/mods/maps";
 import { api } from "~/utils/api";
 import { Mod } from "../mods/types";
 import { Box, Button, Checkbox, Group, TextInput } from "@mantine/core";
@@ -75,7 +75,7 @@ const MapsTableTest = () => {
                     </Button>
                 </Group>
             </Group>
-            <MapsTable
+            <Maps
                 isLoadingMod={modQuery.isLoading}
                 isNormalMod={isNormalMod}
                 mapIds={mapIds}

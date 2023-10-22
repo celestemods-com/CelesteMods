@@ -1,7 +1,7 @@
 import { Flex, Group, Loader, Stack, Text, createStyles } from "@mantine/core";
 import { Mod } from "~/components/mods/types";
 import { api } from "~/utils/api";
-import MapsTable from "./mapsTable";
+import Maps from "./maps";
 import { useMemo } from "react";
 import PublisherName from "./publisherName";
 import PublicationDate from "./publicationDate";
@@ -74,7 +74,7 @@ const ExpandedMod = ({ isLoading, mod }: ExpandedModProps) => {
                 </Link>
             </Group>
             <Flex align="center" justify="space-around">
-                <MapsTable
+                <Maps
                     isLoadingMod={isLoading}
                     isNormalMod={mod.type === "Normal"}
                     isMapperNameVisiblePermitted={isMapperNameVisiblePermitted}
