@@ -25,10 +25,11 @@ export type GamebananaApiResponse<
         string :
         never
     ),
+    ReturnType = unknown,
 > = (
         ReturnKeys extends true ?
-        Record<Key, string> :
-        string[]
+        Record<Key, ReturnType> :
+        ReturnType[]
     );
 
 
@@ -198,6 +199,8 @@ export const useGamebananaModImageUrls = (
         const dataJSON = data?.screenshots;
 
         if (dataJSON) {
+            if (typeof dataJSON !== "string") throw new Error(GAMEBANANA_API_ERROR_STRING);
+
             const data: unknown = JSON.parse(dataJSON);
 
             if (!isGamebananaScreenshotDataArray(data)) throw new Error(GAMEBANANA_API_ERROR_STRING);
@@ -324,35 +327,36 @@ export const useGamebananaModDownloadUrl = (
     const { data, isLoading, error } = useFetch<GamebananaApiResponse<true, "Files().aFiles()">>(queryUrl);    //TODO!: implement caching
 
 
-    //get filesData
-    const filesData = useMemo(() => {
-        if (isLoading) return [];
+    //get download url
+    const downloadUrl = useMemo(() => {
+        if (isLoading) return undefined;
 
         const filesObject = data ? data["Files().aFiles()"] : undefined;
 
         if (filesObject) {
             if (!isGamebananaFilesObject(filesObject)) throw new Error(GAMEBANANA_API_ERROR_STRING);
-
-            return filesObject;
         }
         else {
-            return [];
+            return undefined;
         }
+
+
+        let newestFileId = "";
+        let newestFileDateAdded = 0;
+
+        for (const [fileId, fileData] of Object.entries(filesObject)) {
+            if (fileData._tsDateAdded > newestFileDateAdded) {
+                newestFileId = fileId;
+                newestFileDateAdded = fileData._tsDateAdded;
+            }
+        }
+
+        return (
+            newestFileId === "" ?
+                "" :
+                `${GAMEBANANA_MOD_DOWNLOAD_BASE_URL}${newestFileId},Mod,${gamebananaModId}`
+        );
     }, [data, isLoading]);
-
-
-    //get download url
-    let newestFileId = "";
-    let newestFileDateAdded = 0;
-
-    for (const [fileId, fileData] of Object.entries(filesData)) {
-        if (fileData._tsDateAdded > newestFileDateAdded) {
-            newestFileId = fileId;
-            newestFileDateAdded = fileData._tsDateAdded;
-        }
-    }
-
-    const downloadUrl = newestFileId === "" ? "" : `${GAMEBANANA_MOD_DOWNLOAD_BASE_URL}${newestFileId},Mod,${gamebananaModId}`;
 
 
     if (error) console.error(error);
