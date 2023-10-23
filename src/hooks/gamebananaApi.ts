@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useFetch } from "~/hooks/useFetch";
+import type { Mod } from "~/components/mods/types";
 
 
 
@@ -9,6 +10,12 @@ const GAMEBANANA_API_BASE_URL = "api.gamebanana.com/Core/Item/Data" as const;
 const GAMEBANANA_API_ERROR_STRING = "GameBanana API not responding as expected." as const;
 
 
+export const GAMEBANANA_OLYMPUS_ICON_URL = "https://images.gamebanana.com/img/ico/tools/60b506516b5dc.png";
+
+
+
+
+type GamebananaModId = Mod["gamebananaModId"];
 
 
 export type GamebananaApiResponse<
@@ -62,7 +69,7 @@ type GetGamebananaApiUrlProps<
     ReturnType extends boolean,
 > = {
     itemType: GamebananaItemType;
-    itemId: number | undefined;
+    itemId: GamebananaModId | undefined;
     fields: string | string[];
     returnKeys?: ReturnType;
 };
@@ -151,7 +158,7 @@ const isGamebananaScreenshotDataArray = (data: unknown): data is GamebananaScree
 
 
 type UseGamebananaModImageUrlsProps = {
-    gamebananaModId: number | undefined;
+    gamebananaModId: GamebananaModId | undefined;
 };
 
 type UseGamebananaModImageUrlsReturn = {
@@ -165,26 +172,24 @@ export const useGamebananaModImageUrls = (
     { gamebananaModId }: UseGamebananaModImageUrlsProps
 ): UseGamebananaModImageUrlsReturn => {
     //get query url
-    const [gamebananaApiUrlProps, setGamebananaApiUrlProps] = useState<GetGamebananaApiUrlProps<boolean>>({
+    const DEFAULT_GAMEBANANA_API_URL_PROPS = {
         itemType: "Mod",
         itemId: gamebananaModId,
         fields: "screenshots",
         returnKeys: true,
-    });
+    } as const;
+
+    const [gamebananaApiUrlProps, setGamebananaApiUrlProps] = useState<GetGamebananaApiUrlProps<boolean>>(DEFAULT_GAMEBANANA_API_URL_PROPS);
 
     useEffect(() => {
-        setGamebananaApiUrlProps({
-            itemType: "Mod",
-            itemId: gamebananaModId,
-            fields: "screenshots",
-            returnKeys: true,
-        });
+        setGamebananaApiUrlProps(DEFAULT_GAMEBANANA_API_URL_PROPS);
     }, [gamebananaModId]);
 
     const { queryUrl } = useGamebananaApiUrl(gamebananaApiUrlProps);
 
 
-    const { data, isLoading, error } = useFetch<GamebananaApiResponse<true, "screenshots">>(queryUrl);    //TODO!: implement caching    //TODO!!!: continue here. queryUrl is being populated, but screenshotData is empty. it seems like useFetch (or useEffect) isn't re-running when queryUrl changes
+    const { data, isLoading, error } = useFetch<GamebananaApiResponse<true, "screenshots">>(queryUrl);    //TODO!: implement caching
+
 
     //get screenshotData
     const screenshotData = useMemo(() => {
@@ -197,12 +202,9 @@ export const useGamebananaModImageUrls = (
 
             if (!isGamebananaScreenshotDataArray(data)) throw new Error(GAMEBANANA_API_ERROR_STRING);
 
-            console.log(`screenshotData: ${JSON.stringify(data)}`);
-
             return data;
         }
         else {
-            console.log(`screenshotDataQuery.data: ${JSON.stringify(data)}`);
             return [];
         }
     }, [data, isLoading]);
@@ -210,8 +212,6 @@ export const useGamebananaModImageUrls = (
 
     //get image urls
     const imageUrls = useMemo(() => {
-        console.log(`screenshotData: ${JSON.stringify(screenshotData)}`);
-
         return screenshotData.map(
             ({ _sFile }) => `${GAMEBANANA_MOD_IMAGES_BASE_URL}${_sFile}`,
         );
@@ -228,11 +228,70 @@ export const useGamebananaModImageUrls = (
 
 
 
-export const GAMEBANANA_OLYMPUS_ICON_URL = "https://images.gamebanana.com/img/ico/tools/60b506516b5dc.png";
+type GamebananaFileMetadata = {
+    "_idRow": string,
+    "_sFile": string,
+    "_nFilesize": number,
+    "_sDescription": string,
+    "_tsDateAdded": number,
+    "_nDownloadCount": number,
+    "_sAnalysisState": string,
+    "_sDownloadUrl": string,
+    "_sMd5Checksum": string,
+    "_sClamAvResult": string,
+    "_sAnalysisResult": string,
+    "_bContainsExe": boolean;
+};
+
+
+const isGamebananaFileMetadata = (
+    data: unknown
+): data is GamebananaFileMetadata => {
+    if (typeof data !== "object" || data === null) return false;
+
+    const dataObject = data as Record<string, unknown>;
+
+
+    if (
+        typeof dataObject._idRow === "string" &&
+        typeof dataObject._sFile === "string" &&
+        typeof dataObject._nFilesize === "number" &&
+        typeof dataObject._sDescription === "string" &&
+        typeof dataObject._tsDateAdded === "number" &&
+        typeof dataObject._nDownloadCount === "number" &&
+        typeof dataObject._sAnalysisState === "string" &&
+        typeof dataObject._sDownloadUrl === "string" &&
+        typeof dataObject._sMd5Checksum === "string" &&
+        typeof dataObject._sClamAvResult === "string" &&
+        typeof dataObject._sAnalysisResult === "string" &&
+        typeof dataObject._bContainsExe === "boolean"
+    ) return true;
+
+
+    return false;
+};
+
+
+const isGamebananaFilesObject = (data: unknown): data is Record<string, GamebananaFileMetadata> => {
+    console.log(data);
+    if (typeof data !== "object" || data === null) return false;
+
+    const dataObject = data as Record<string, unknown>;
+
+
+    for (const [key, value] of Object.entries(dataObject)) {
+        if (typeof key !== "string" || !isGamebananaFileMetadata(value)) return false;
+    }
+
+
+    return true;
+};
+
+
 
 
 type UseGamebananaModDownloadUrlProps = {
-    gamebananaModId: number | undefined;
+    gamebananaModId: GamebananaModId | undefined;
 };
 
 type UseGamebananaModDownloadUrlReturn = {
@@ -240,14 +299,65 @@ type UseGamebananaModDownloadUrlReturn = {
 };
 
 
-const GAMEBANANA_MOD_DOWNLOAD_BASE_URL = ``;
+const GAMEBANANA_MOD_DOWNLOAD_BASE_URL = "everest:https://gamebanana.com/mmdl/";
 
 export const useGamebananaModDownloadUrl = (
     { gamebananaModId }: UseGamebananaModDownloadUrlProps
 ): UseGamebananaModDownloadUrlReturn => {
-    //TODO!: implement this
+    //get query url
+    const DEFAULT_GAMEBANANA_API_URL_PROPS = {
+        itemType: "Mod",
+        itemId: gamebananaModId,
+        fields: "Files().aFiles()",
+        returnKeys: true,
+    } as const;
 
-    return {
-        downloadUrl: "",
-    };
+    const [gamebananaApiUrlProps, setGamebananaApiUrlProps] = useState<GetGamebananaApiUrlProps<boolean>>(DEFAULT_GAMEBANANA_API_URL_PROPS);
+
+    useEffect(() => {
+        setGamebananaApiUrlProps(DEFAULT_GAMEBANANA_API_URL_PROPS);
+    }, [gamebananaModId]);
+
+    const { queryUrl } = useGamebananaApiUrl(gamebananaApiUrlProps);
+
+
+    const { data, isLoading, error } = useFetch<GamebananaApiResponse<true, "Files().aFiles()">>(queryUrl);    //TODO!: implement caching
+
+
+    //get filesData
+    const filesData = useMemo(() => {
+        if (isLoading) return [];
+
+        const filesObject = data ? data["Files().aFiles()"] : undefined;
+
+        if (filesObject) {
+            if (!isGamebananaFilesObject(filesObject)) throw new Error(GAMEBANANA_API_ERROR_STRING);
+
+            return filesObject;
+        }
+        else {
+            return [];
+        }
+    }, [data, isLoading]);
+
+
+    //get download url
+    let newestFileId = "";
+    let newestFileDateAdded = 0;
+
+    for (const [fileId, fileData] of Object.entries(filesData)) {
+        if (fileData._tsDateAdded > newestFileDateAdded) {
+            newestFileId = fileId;
+            newestFileDateAdded = fileData._tsDateAdded;
+        }
+    }
+
+    const downloadUrl = newestFileId === "" ? "" : `${GAMEBANANA_MOD_DOWNLOAD_BASE_URL}${newestFileId},Mod,${gamebananaModId}`;
+
+
+    if (error) console.error(error);
+
+    if (isLoading) return {};
+
+    return { downloadUrl };
 };
