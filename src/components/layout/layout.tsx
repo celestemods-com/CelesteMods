@@ -5,13 +5,14 @@ import { Header } from "./header";
 import { Navbar } from "./navbar/navbar";
 import { Footer } from "./footer";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
+import { MODS_PAGE_PATHNAME } from "~/consts/pathnames";
 
 
 
 
 const PAGES = getNonEmptyArray([
     { label: "Home", pathname: "/" },
-    { label: "Mods", pathname: "/mods" },
+    { label: "Mods", pathname: MODS_PAGE_PATHNAME },
 ]);
 
 

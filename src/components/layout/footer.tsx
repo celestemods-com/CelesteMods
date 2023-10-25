@@ -1,6 +1,7 @@
 import { Box, Group, Stack, createStyles } from "@mantine/core";
 import Link from "next/link";
 import { cmlDiscordInviteUrl } from "~/consts/cmlDiscordInviteUrl";
+import { COMING_SOON_PATHNAME } from "~/consts/pathnames";
 
 
 
@@ -43,8 +44,8 @@ export const Footer = () => {
                         align="start"
                         spacing="1px"
                     >
-                        <Link href="">My Account</Link>
-                        <Link href="">Settings</Link>
+                        <Link href={COMING_SOON_PATHNAME}>My Account</Link>
+                        <Link href={COMING_SOON_PATHNAME}>Settings</Link>
                     </Stack>
                     <Link
                         href={cmlDiscordInviteUrl}
@@ -56,8 +57,8 @@ export const Footer = () => {
                         align="end"
                         spacing="1px"
                     >
-                        <Link href="">Cookie Policy</Link>
-                        <Link href="">Privacy Policy</Link>
+                        <Link href={COMING_SOON_PATHNAME}>Cookie Policy</Link>
+                        <Link href={COMING_SOON_PATHNAME}>Privacy Policy</Link>
                     </Stack>
                 </Group>
             </footer>
