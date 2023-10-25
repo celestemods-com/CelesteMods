@@ -1,4 +1,4 @@
-import { Flex, createStyles, Title } from "@mantine/core";
+import { Flex, createStyles, Title, Box } from "@mantine/core";
 import Image from "next/image";
 
 
@@ -25,6 +25,7 @@ const useStyles = createStyles(() => ({
 export const Header = () => {
     const { classes } = useStyles();
     const height = 150;
+    const width = height / 694 * 774;
 
 
     return (
@@ -34,10 +35,11 @@ export const Header = () => {
                     priority
                     src="/images/logo/cml_logo.png"
                     height={height}
-                    width={height / 694 * 774}
+                    width={width}
                     alt="CML Logo"
                 />
                 <Title className={classes.siteTitle} order={1}>Celeste Mods List</Title>
+                <Box w={width}/>
             </Flex>
         </header>
     );
