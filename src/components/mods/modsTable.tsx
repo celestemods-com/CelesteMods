@@ -16,7 +16,6 @@ import type { ModWithInfo } from "~/components/mods/types";
 
 const PAGE_SIZES = [5, 10, 15, 20, 25, 50, 100, 250, 500, 1000];
 const DEFAULT_PAGE_SIZE_INDEX = 1;
-const TAB_COLORS = ["#a7a7a7", "#b7c3dc", "#92a6c5", "#527da2", "#263972"];
 
 
 const useStyles = createStyles(
@@ -35,6 +34,21 @@ const useStyles = createStyles(
             fontSize: "medium",
             cursor: "pointer",
             fontWeight: "bold",
+        },
+        tab1: {
+            backgroundColor: "#263972"
+        },
+        tab2: {
+            backgroundColor: "#0b6aba"
+        },
+        tab3: {
+            backgroundColor: "#413a98"
+        },
+        tab4: {
+            backgroundColor: "#84419e"
+        },
+        tab5: {
+            backgroundColor: "#6f057e"
         },
         table: {
             "&&&& table": {
@@ -68,14 +82,14 @@ const useStyles = createStyles(
             borderBottomLeftRadius: 0,
             borderBottomRightRadius: 0,
         },
-        columnHeader: {
-            "&&": {
-                backgroundColor: "#263972",
+        header: {
+            "&&&& th": {
                 fontWeight: "bold",
                 color: theme.white,
                 fontSize: "17px",
                 padding: "10px",
                 textAlign: "center",
+                border: "none",
             }
         },
         leftColumnCell: {
@@ -86,9 +100,6 @@ const useStyles = createStyles(
             borderTopRightRadius: "50px",
             borderBottomRightRadius: "50px",
         },
-        pagination: {
-            backgroundColor: "#263972",
-        }
     }),
 );
 
@@ -130,8 +141,24 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
         [difficulties],
     );
 
+    const [currentTabIndex, setCurrentTabIndex] = useState(null as null | number);
 
+    const childDifficultyNames = useMemo(  //get child difficulty names for filter component
+        () => {
+            if (currentTabIndex === null) {
+                return [];
+            }
 
+            const parentDifficultyName = parentDifficultyNames[currentTabIndex];
+            if (parentDifficultyName === undefined) throw `Tab index ${currentTabIndex} is outside the range of ${parentDifficultyNames.length} tabs.`;
+            
+            return difficulties
+                .filter((difficulty) => difficulty.parentDifficultyId !== 0 && difficulty.name.startsWith(parentDifficultyName))
+                .sort((a, b) => a.order - b.order)  //easier difficulties have lower orders, and we want them to sort first
+                .map((difficulty) => difficulty.name);
+        },
+        [difficulties, parentDifficultyNames, currentTabIndex],
+    );
 
     //handle filtering
     const [nameQuery, setNameQuery] = useState<string>("");
@@ -140,7 +167,13 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
     const [mapCountRange, setMapCountRange] = useState<[number | undefined, number | undefined]>([undefined, undefined]);     //[min, max]
     const [selectedModTypes, setSelectedModTypes] = useState<ModType[]>([]);
     const [selectedQualities, setSelectedQualities] = useState<string[]>([]);
-    const [selectedParentDifficulties, setSelectedParentDifficulties] = useState<string[]>([]);
+    const [selectedChildDifficulties, setSelectedChildDifficulties] = useState<string[]>([]);
+
+    // Reset tab index and selected child difficulties if the difficulties change.
+    useEffect(() => {
+        setCurrentTabIndex(parentDifficultyNames.length > 0 ? 0 : null);
+        setSelectedChildDifficulties([]);
+    }, [difficulties, parentDifficultyNames]);
 
     const filteredModsWithInfo = useMemo(() => {
         return modsWithInfo.filter((modWithInfo) => {
@@ -188,9 +221,19 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
             }
 
 
+            if (currentTabIndex !== null) {
+                // Check parent difficulty
+                const parentDifficultyName = parentDifficultyNames[currentTabIndex];
+                if (parentDifficultyName === undefined) throw `Tab index ${currentTabIndex} is outside the range of the ${parentDifficultyNames.length} tabs.`;
+
+                if (!modWithInfo.Difficulty.name.startsWith(parentDifficultyName)) {
+                    return false;
+                }
+            }
+
             if (
-                selectedParentDifficulties.length &&
-                !selectedParentDifficulties.some((parentDifficulty) => modWithInfo.Difficulty.name.startsWith(parentDifficulty))
+                selectedChildDifficulties.length &&
+                !selectedChildDifficulties.includes(modWithInfo.Difficulty.name)
             ) {
                 return false;
             }
@@ -198,7 +241,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
 
             return true;
         });
-    }, [modsWithInfo, debouncedNameQuery, mapCountRange, selectedModTypes, selectedQualities, selectedParentDifficulties]);
+    }, [modsWithInfo, debouncedNameQuery, mapCountRange, selectedModTypes, selectedQualities, selectedChildDifficulties, currentTabIndex, parentDifficultyNames]);
 
 
 
@@ -320,7 +363,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
     //reset page when sortStatus or page size changes
     useEffect(() => {
         setPage(1);
-    }, [sortStatus, pageSize, debouncedNameQuery, mapCountRange, selectedModTypes, selectedQualities, selectedParentDifficulties]);
+    }, [sortStatus, pageSize, debouncedNameQuery, mapCountRange, selectedModTypes, selectedQualities, selectedChildDifficulties]);
 
     //handle providing datatable with correct subset of data
     // const [records, setRecords] = useState<ModWithInfo[]>(sortedModsWithIsExpanded.slice(0, pageSize));
@@ -349,6 +392,8 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
 
     const { cx, classes } = useStyles();
 
+    const tabColors = [classes.tab1, classes.tab2, classes.tab3, classes.tab4, classes.tab5];
+
     return (
         <div>
             <div className={classes.tabContainer}>
@@ -356,18 +401,16 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                     [...parentDifficultyNames].reverse().map((name, index) =>
                         <span
                             key={name}
-                            className={classes.tab}
-                            style={{
-                                backgroundColor: TAB_COLORS[index]
-                            }}
+                            className={cx(classes.tab, tabColors[parentDifficultyNames.length - 1 - index])}
                             onClick={() => {
-                                setSelectedParentDifficulties([name]);
+                                setCurrentTabIndex(parentDifficultyNames.length - 1 - index);
+                                setSelectedChildDifficulties([]);
                             }}>{name}</span>
                     )
                 }
             </div>
             <DataTable
-                classNames={{ root: classes.table, pagination: classes.pagination }}
+                classNames={{ root: classes.table, header: currentTabIndex !== null ? cx(classes.header, tabColors[currentTabIndex]) : classes.header, pagination: currentTabIndex !== null ? tabColors[currentTabIndex] : "" }}
                 defaultColumnProps={{
                     cellsClassName: (record) => {
                         return cx(
@@ -399,7 +442,6 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                             />
                         ),
                         filtering: nameQuery !== "",
-                        titleClassName: classes.columnHeader,
                         cellsClassName: (record) => {
                             return cx(
                                 classes.modCell,
@@ -429,7 +471,6 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                             />
                         ),
                         filtering: mapCountRange[0] !== undefined || mapCountRange[1] !== undefined,
-                        titleClassName: classes.columnHeader,
                     },
                     {
                         accessor: "type",
@@ -443,7 +484,6 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                             />
                         ),
                         filtering: !!selectedModTypes.length,
-                        titleClassName: classes.columnHeader,
                     },
                     {
                         accessor: "Quality",
@@ -458,7 +498,6 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                             />
                         ),
                         filtering: !!selectedQualities.length,
-                        titleClassName: classes.columnHeader,
                     },
                     {
                         accessor: "Difficulty",
@@ -467,13 +506,12 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                         render: (modWithInfo) => modWithInfo.Difficulty.name,
                         filter: (
                             <ListSelect
-                                permittedStrings={parentDifficultyNames}
-                                selectedStrings={selectedParentDifficulties}
-                                setSelectedStrings={setSelectedParentDifficulties}
+                                permittedStrings={childDifficultyNames}
+                                selectedStrings={selectedChildDifficulties}
+                                setSelectedStrings={setSelectedChildDifficulties}
                             />
                         ),
-                        filtering: !!selectedParentDifficulties.length,
-                        titleClassName: classes.columnHeader,
+                        filtering: !!selectedChildDifficulties.length,
                         cellsClassName: (record) => {
                             return cx(
                                 classes.modCell,
