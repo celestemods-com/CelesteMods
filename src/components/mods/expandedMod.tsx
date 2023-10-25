@@ -63,8 +63,7 @@ const ExpandedMod = ({ isLoading, mod }: ExpandedModProps) => {
                 <ModDownloadButton gamebananaModId={mod.gamebananaModId} />
                 <Link
                     href={{
-                        pathname: "/mods/[id]",
-                        query: { id: mod.id },
+                        pathname: "/comingSoon",
                     }}
                     className={classes.moreInfo}
                 >
