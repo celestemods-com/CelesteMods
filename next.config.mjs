@@ -6,6 +6,7 @@
 
 /** @type {import("next").NextConfig} */
 const config = {
+  basePath: process.env.BASE_PATH,
   reactStrictMode: true,
   images: {    //TODO!: figure out how to fix crash on next.config.mjs change
     remotePatterns: [

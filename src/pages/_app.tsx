@@ -17,7 +17,7 @@ const MyApp: AppType<{ session: Session | null; }> = ({
   pageProps: { session, ...pageProps },
 }) => {
   return (
-    <SessionProvider session={session}>
+    <SessionProvider session={session} basePath={process.env.BASE_PATH}>
       <MantineProvider
         emotionCache={emotionCache}
         withGlobalStyles
