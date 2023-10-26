@@ -155,7 +155,13 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
             return difficulties
                 .filter((difficulty) => difficulty.parentDifficultyId !== 0 && difficulty.name.startsWith(parentDifficultyName))
                 .sort((a, b) => a.order - b.order)  //easier difficulties have lower orders, and we want them to sort first
-                .map((difficulty) => difficulty.name);
+                .map((difficulty) => {
+                    const childDifficulty = difficulty.name.split(' ')[1];
+
+                    if (childDifficulty === undefined) throw `${difficulty.name} is not of the form '<parentDifficulty>: <childDifficulty>'.`;
+                
+                    return childDifficulty;
+                });
         },
         [difficulties, parentDifficultyNames, currentTabIndex],
     );
@@ -233,7 +239,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
 
             if (
                 selectedChildDifficulties.length &&
-                !selectedChildDifficulties.includes(modWithInfo.Difficulty.name)
+                !selectedChildDifficulties.some(childDifficulty => modWithInfo.Difficulty.name.endsWith(childDifficulty))
             ) {
                 return false;
             }
@@ -404,7 +410,6 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                             className={cx(classes.tab, tabColors[parentDifficultyNames.length - 1 - index])}
                             onClick={() => {
                                 setCurrentTabIndex(parentDifficultyNames.length - 1 - index);
-                                setSelectedChildDifficulties([]);
                             }}>{name}</span>
                     )
                 }

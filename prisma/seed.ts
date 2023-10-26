@@ -27,7 +27,7 @@ const seedRandomData = async () => {
             childDifficulties.push(
                 await prisma.difficulty.create({
                     data: {
-                        name: `Difficulty${i}-${j}`,
+                        name: `Difficulty${i}: ChildDifficulty${j}`,
                         description: `Example child difficulty ${i}-${j}`,
                         parentDifficultyId: difficulty.id,
                         order: j,
