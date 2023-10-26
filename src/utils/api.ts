@@ -7,14 +7,15 @@
 import { httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCNext } from "@trpc/next";
 import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server";
+import axios from "axios";
 import superjson from "superjson";
 
 import { type AppRouter } from "~/server/api/root";
 
 const getBaseUrl = () => {
   if (typeof window !== "undefined") return ""; // browser should use relative url
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`; // SSR should use vercel url
-  return `http://localhost:${process.env.PORT ?? 3000}`; // dev SSR should use localhost
+  if (process.env.NODE_ENV === "production") return `https://celestemods.com${process.env.NEXT_PUBLIC_BASE_PATH}`;
+  return `http://localhost:${process.env.PORT ?? 3000}${process.env.NEXT_PUBLIC_BASE_PATH}`; // dev SSR should use localhost
 };
 
 /** A set of type-safe react-query hooks for your tRPC API. */
@@ -44,6 +45,21 @@ export const api = createTRPCNext<AppRouter>({
           maxURLLength: 2083,
         }),
       ],
+      queryClientConfig: {
+        defaultOptions: {
+          queries: {
+            queryFn: async ({ queryKey: [url] }) => {
+              if (typeof url === "string") {
+                const { data } = await axios.get(`${process.env.NEXT_PUBLIC_BASE_PATH}/${url.toLowerCase()}`);
+                
+                return data;
+              }
+
+              throw new Error ("Invalid QueryKey");
+            },
+          },
+        },
+      },
     };
   },
   /**
