@@ -6,6 +6,7 @@ import PublicationDate from "./publicationDate";
 import ModDownloadButton from "./modDownloadButton/modDownloadButton";
 import Link from "next/link";
 import ModCarousel from "./modCarousel";
+import { COMING_SOON_PATHNAME } from "~/consts/pathnames";
 
 
 
@@ -63,8 +64,7 @@ const ExpandedMod = ({ isLoading, mod }: ExpandedModProps) => {
                 <ModDownloadButton gamebananaModId={mod.gamebananaModId} />
                 <Link
                     href={{
-                        pathname: "/mods/[id]",
-                        query: { id: mod.id },
+                        pathname: COMING_SOON_PATHNAME,
                     }}
                     className={classes.moreInfo}
                 >
