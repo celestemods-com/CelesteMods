@@ -75,7 +75,7 @@ export const Layout = ({
                 />
             </Head>
             <BackgroundImage
-                src={`${process.env.BASE_PATH}/images/cml_background1.png`}
+                src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/cml_background1.png`}
                 className={classes.backgroundImage}
             >
                 <Grid gutter="0">
