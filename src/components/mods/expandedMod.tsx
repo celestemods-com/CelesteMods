@@ -78,7 +78,7 @@ const ExpandedMod = ({ isLoading, mod }: ExpandedModProps) => {
                     isMapperNameVisiblePermitted={isMapperNameVisiblePermitted}
                     mapIds={mod.Map.map(({ id }) => id)}
                 />
-                <ModCarousel gamebananaModId={mod.gamebananaModId} />
+                <ModCarousel gamebananaModId={mod.gamebananaModId} numberOfMaps={mod.Map.length}/>
             </Flex>
         </Stack>
     );
