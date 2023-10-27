@@ -151,8 +151,13 @@ const seedRandomData = async () => {
 
     const maps = [];
 
-    for (let i = 0; i < 30; i++) {
-        const mod = randomElement(mods);
+    for (let i = 0; i < mods.length + 50; i++) {
+        // We assign at least one map to each mod, and another 50 maps to random mods.
+        let mod = mods.at(i);
+        if (!mod) {
+            mod = randomElement(mods);
+        }
+
         const timeSubmitted = randomInteger(mod.timeApproved, mod.timeApproved + 10000000);
         const timeApproved = randomInteger(timeSubmitted, timeSubmitted + 1000000);
 
@@ -165,7 +170,7 @@ const seedRandomData = async () => {
                     timeSubmitted,
                     timeApproved,
                     canonicalDifficultyId: randomElement(parentDifficulties).id,
-                    modId: randomElement(mods).id,
+                    modId: mod.id,
                     lengthId: randomElement(lengths).id,
                 }
             })

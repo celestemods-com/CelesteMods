@@ -10,6 +10,7 @@ import { NumberSearch } from "~/components/filterPopovers/numberSearch";
 import { ListSelect } from "~/components/filterPopovers/listSelect";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import type { ModWithInfo } from "~/components/mods/types";
+import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
 
 
 
@@ -152,7 +153,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
             const parentDifficultyName = parentDifficultyNames[currentTabIndex];
             if (parentDifficultyName === undefined) throw `Tab index ${currentTabIndex} is outside the range of ${parentDifficultyNames.length} tabs.`;
             
-            return difficulties
+            const childDifficulties = difficulties
                 .filter((difficulty) => difficulty.parentDifficultyId !== 0 && difficulty.name.startsWith(parentDifficultyName))
                 .sort((a, b) => a.order - b.order)  //easier difficulties have lower orders, and we want them to sort first
                 .map((difficulty) => {
@@ -162,8 +163,28 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                 
                     return childDifficulty;
                 });
+
+            const hasNoRating = modsWithInfo.some(mod => {
+                if (mod.Difficulty.name !== noRatingsFoundMessage) {
+                    return false;
+                }
+
+                const lowestCannonicalDifficulty = mod.lowestCannonicalDifficulty;
+                if (lowestCannonicalDifficulty === undefined) throw `Mod ${mod.id} has no difficulty/lowestCannonicalDifficulty.`;
+
+                const difficulty = difficulties.find(difficulty => difficulty.id === lowestCannonicalDifficulty);
+                if (!difficulty) throw `Difficulty ${lowestCannonicalDifficulty} doesn't exist.`;
+
+                return difficulty.name.startsWith(parentDifficultyName);
+            });
+
+            if (hasNoRating) {
+                return [...childDifficulties, noRatingsFoundMessage];
+            } else {
+                return childDifficulties;
+            }
         },
-        [difficulties, parentDifficultyNames, currentTabIndex],
+        [difficulties, modsWithInfo, parentDifficultyNames, currentTabIndex],
     );
 
     //handle filtering
@@ -175,11 +196,15 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
     const [selectedQualities, setSelectedQualities] = useState<string[]>([]);
     const [selectedChildDifficulties, setSelectedChildDifficulties] = useState<string[]>([]);
 
-    // Reset tab index and selected child difficulties if the difficulties change.
+    // Reset tab index if the difficulties change.
     useEffect(() => {
         setCurrentTabIndex(parentDifficultyNames.length > 0 ? 0 : null);
-        setSelectedChildDifficulties([]);
     }, [difficulties, parentDifficultyNames]);
+
+    // Check child difficulties when childDifficultyNames changes.
+    useEffect(() => {
+        setSelectedChildDifficulties(selectedChildDifficulties => selectedChildDifficulties.filter(childDifficulty => childDifficultyNames.includes(childDifficulty)));
+    }, [childDifficultyNames]);
 
     const filteredModsWithInfo = useMemo(() => {
         return modsWithInfo.filter((modWithInfo) => {
@@ -232,7 +257,20 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                 const parentDifficultyName = parentDifficultyNames[currentTabIndex];
                 if (parentDifficultyName === undefined) throw `Tab index ${currentTabIndex} is outside the range of the ${parentDifficultyNames.length} tabs.`;
 
-                if (!modWithInfo.Difficulty.name.startsWith(parentDifficultyName)) {
+                if (modWithInfo.Difficulty.name === noRatingsFoundMessage) {
+                    // Mod doesn't have a difficulty rating, so we check if the lowestCannonicalDifficulty is a child of parentDifficulty.
+                    const lowestCannonicalDifficulty = modWithInfo.lowestCannonicalDifficulty;
+                    if (lowestCannonicalDifficulty === undefined) throw `Mod ${modWithInfo.id} has no difficulty/lowestCannonicalDifficulty.`;
+
+                    const difficulty = difficulties.find(difficulty => difficulty.id === lowestCannonicalDifficulty);
+                    if (!difficulty) throw `Difficulty ${lowestCannonicalDifficulty} doesn't exist.`;
+
+                    if (!difficulty.name.startsWith(parentDifficultyName)) {
+                        return false;
+                    }
+                }
+                // Mod has a difficulty rating, so we check if it's difficulty is a child of parentDifficulty.
+                else if (!modWithInfo.Difficulty.name.startsWith(parentDifficultyName)) {
                     return false;
                 }
             }
@@ -247,7 +285,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
 
             return true;
         });
-    }, [modsWithInfo, debouncedNameQuery, mapCountRange, selectedModTypes, selectedQualities, selectedChildDifficulties, currentTabIndex, parentDifficultyNames]);
+    }, [modsWithInfo, difficulties, debouncedNameQuery, mapCountRange, selectedModTypes, selectedQualities, selectedChildDifficulties, currentTabIndex, parentDifficultyNames]);
 
 
 

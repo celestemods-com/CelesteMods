@@ -44,4 +44,5 @@ export type ModWithInfo = {
     overallCount: number;
     Quality: RatingInfo;
     Difficulty: RatingInfo;
+    lowestCannonicalDifficulty: number | undefined;
 } & Mod;
