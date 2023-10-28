@@ -77,14 +77,17 @@ const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModR
         // We set lowestCannonicalDifficulty on mods which have no difficulty rating.
         // This works as every mod has at least one map.
         // Thus every mod will either have a difficulty rating or a lowestCannonicalDifficulty.
-        let lowestCannonicalDifficulty = undefined as number | undefined;
+        let lowestCannonicalDifficulty: number | undefined = undefined;
+
         if (difficultyId === -1) {
             difficultyName = noRatingsFoundMessage;
 
             mod.Map.forEach(mapId => {
                 const mapDifficulty = cannonicalMapDifficulty.get(mapId.id);
+
                 if (mapDifficulty === undefined) throw `Cannonical difficulty for map ${mapId.id} not found. This should not happen.`;
     
+
                 if (lowestCannonicalDifficulty === undefined || mapDifficulty < lowestCannonicalDifficulty) {
                     lowestCannonicalDifficulty = mapDifficulty;
                 }
@@ -301,7 +304,7 @@ const Mods: NextPage = () => {
     }, [isLoadingMaps, mapQuery]);
 
     //check that all data is loaded
-    const isLoading = isLoadingMods || isLoadingRatings || qualityQuery.isLoading || difficultyQuery.isLoading || isLoadingMaps;
+    const isLoading = isLoadingMods || isLoadingRatings || isLoadingMaps || qualityQuery.isLoading || difficultyQuery.isLoading;
 
 
     //get mods with map count, and quality and difficulty names

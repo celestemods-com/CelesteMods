@@ -125,6 +125,9 @@ type ModsTableProps = {
 // We create a seperate ModsTable component to prevent the Mods queries
 // running again when the ModsTable state changes.
 export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: ModsTableProps) => {
+    const [currentTabIndex, setCurrentTabIndex] = useState<number | null>(null);    //track the currently selected parent difficulty
+
+
     const qualityNames = useMemo(   //get quality names for filter component
         () => [...qualities]
             .sort((a, b) => b.order - a.order)  //better qualities have higher orders, so we want them to sort first
@@ -141,8 +144,6 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
             .map((difficulty) => difficulty.name),
         [difficulties],
     );
-
-    const [currentTabIndex, setCurrentTabIndex] = useState(null as null | number);
 
     const childDifficultyNames = useMemo(  //get child difficulty names for filter component
         () => {
@@ -439,7 +440,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
     const tabColors = [classes.tab1, classes.tab2, classes.tab3, classes.tab4, classes.tab5];
 
     return (
-        <div>
+        <>
             <div className={classes.tabContainer}>
                 {
                     [...parentDifficultyNames].reverse().map((name, index) =>
@@ -589,6 +590,6 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                 recordsPerPageOptions={PAGE_SIZES}
                 onRecordsPerPageChange={setPageSize}
             />
-        </div>
+        </>
     );
 };
