@@ -76,6 +76,7 @@ const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModR
 
         // We set lowestCannonicalDifficulty on mods which have no difficulty rating.
         // This works as every mod has at least one map.
+        // Thus every mod will either have a difficulty rating or a lowestCannonicalDifficulty.
         let lowestCannonicalDifficulty = undefined as number | undefined;
         if (difficultyId === -1) {
             difficultyName = noRatingsFoundMessage;
@@ -254,6 +255,9 @@ const Mods: NextPage = () => {
 
 
     // We only query maps for which the corresponding mod doesn't have a difficulty rating.
+    // We later set lowestCannonicalDifficulty on mods which have no difficulty rating.
+    // This works as every mod has at least one map.
+    // Thus every mod will either have a difficulty rating or a lowestCannonicalDifficulty.
     const mapQuery = api.useQueries(
         (useQueriesApi) => {
             if (isLoadingRatings) return [];
@@ -264,7 +268,7 @@ const Mods: NextPage = () => {
                 if (rating === undefined) throw `Mod ${mod.id} has an undefined rating - this should not happen.`;
 
                 // We only query maps for which the corresponding mod doesn't have a difficulty rating.
-                if (!("averageDifficultyId" in rating) || rating.averageDifficultyId === -1) {
+                if (!("averageDifficultyId" in rating) || rating.averageDifficultyId === undefined || rating.averageDifficultyId === -1) {
                     mod.Map.forEach(mapId => {
                         mapIds.push(mapId.id);
                     });
