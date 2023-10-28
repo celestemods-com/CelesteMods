@@ -5,13 +5,14 @@ import { Header } from "./header";
 import { Navbar } from "./navbar/navbar";
 import { Footer } from "./footer";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
+import { MODS_PAGE_PATHNAME } from "~/consts/pathnames";
 
 
 
 
 const PAGES = getNonEmptyArray([
     { label: "Home", pathname: "/" },
-    { label: "Mods", pathname: "/mods" },
+    { label: "Mods", pathname: MODS_PAGE_PATHNAME },
 ]);
 
 
@@ -74,7 +75,7 @@ export const Layout = ({
                 />
             </Head>
             <BackgroundImage
-                src="/images/cml_background1.png"
+                src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/cml_background1.png`}
                 className={classes.backgroundImage}
             >
                 <Grid gutter="0">

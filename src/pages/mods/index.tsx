@@ -7,6 +7,7 @@ import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
 import { Layout } from "~/components/layout/layout";
 import { ModsTable } from "~/components/mods/modsTable";
 import type { ModWithInfo } from "~/components/mods/types";
+import { MODS_PAGE_PATHNAME } from "~/consts/pathnames";
 
 
 
@@ -314,7 +315,7 @@ const Mods: NextPage = () => {
 
 
     return (
-        <Layout pageTitle="Mods" pageDescription="Mods" pathname="/mods">
+        <Layout pageTitle="Mods" pageDescription="Mods" pathname={MODS_PAGE_PATHNAME}>
             <Title className={classes.pageTitle} order={2}>Mods List</Title>
             <ModsTable qualities={qualities} difficulties={difficulties} modsWithInfo={modsWithInfo} isLoading={isLoading} />
         </Layout>
