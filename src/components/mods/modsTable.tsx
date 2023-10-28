@@ -10,6 +10,7 @@ import { NumberSearch } from "~/components/filterPopovers/numberSearch";
 import { ListSelect } from "~/components/filterPopovers/listSelect";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import type { ModWithInfo } from "~/components/mods/types";
+import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
 
 
 
@@ -18,13 +19,46 @@ const PAGE_SIZES = [5, 10, 15, 20, 25, 50, 100, 250, 500, 1000];
 const DEFAULT_PAGE_SIZE_INDEX = 1;
 
 
-
 const useStyles = createStyles(
     (theme) => ({
+        tabContainer: {
+            padding: "0 15px",
+            display: "flex",
+            justifyContent: "end",
+        },
+        tab: {
+            color: "white",
+            padding: "1px 20px",
+            display: "inline-block",
+            borderTopLeftRadius: "5px",
+            borderTopRightRadius: "5px",
+            fontSize: "medium",
+            cursor: "pointer",
+            fontWeight: "bold",
+        },
+        tab1: {
+            backgroundColor: "#263972"
+        },
+        tab2: {
+            backgroundColor: "#0b6aba"
+        },
+        tab3: {
+            backgroundColor: "#413a98"
+        },
+        tab4: {
+            backgroundColor: "#84419e"
+        },
+        tab5: {
+            backgroundColor: "#6f057e"
+        },
         table: {
             "&&&& table": {
+                transform: "translate(0, -21px)",
                 borderSpacing: "0 20px",
                 padding: "0 15px"
+            },
+            "&&&& thead": {
+                top: "20px",
             },
             "&&&& tr": {
                 backgroundColor: "transparent",
@@ -49,14 +83,14 @@ const useStyles = createStyles(
             borderBottomLeftRadius: 0,
             borderBottomRightRadius: 0,
         },
-        columnHeader: {
-            "&&": {
-                backgroundColor: "#263972",
+        header: {
+            "&&&& th": {
                 fontWeight: "bold",
                 color: theme.white,
                 fontSize: "17px",
                 padding: "10px",
                 textAlign: "center",
+                border: "none",
             }
         },
         leftColumnCell: {
@@ -67,9 +101,6 @@ const useStyles = createStyles(
             borderTopRightRadius: "50px",
             borderBottomRightRadius: "50px",
         },
-        pagination: {
-            backgroundColor: "#263972",
-        }
     }),
 );
 
@@ -94,6 +125,9 @@ type ModsTableProps = {
 // We create a seperate ModsTable component to prevent the Mods queries
 // running again when the ModsTable state changes.
 export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: ModsTableProps) => {
+    const [currentTabIndex, setCurrentTabIndex] = useState<number | null>(null);    //track the currently selected parent difficulty
+
+
     const qualityNames = useMemo(   //get quality names for filter component
         () => [...qualities]
             .sort((a, b) => b.order - a.order)  //better qualities have higher orders, so we want them to sort first
@@ -111,8 +145,48 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
         [difficulties],
     );
 
+    const childDifficultyNames = useMemo(  //get child difficulty names for filter component
+        () => {
+            if (currentTabIndex === null) {
+                return [];
+            }
 
+            const parentDifficultyName = parentDifficultyNames[currentTabIndex];
+            if (parentDifficultyName === undefined) throw `Tab index ${currentTabIndex} is outside the range of ${parentDifficultyNames.length} tabs.`;
+            
+            const childDifficulties = difficulties
+                .filter((difficulty) => difficulty.parentDifficultyId !== 0 && difficulty.name.startsWith(parentDifficultyName))
+                .sort((a, b) => a.order - b.order)  //easier difficulties have lower orders, and we want them to sort first
+                .map((difficulty) => {
+                    const childDifficulty = difficulty.name.split(' ')[1];
 
+                    if (childDifficulty === undefined) throw `${difficulty.name} is not of the form '<parentDifficulty>: <childDifficulty>'.`;
+                
+                    return childDifficulty;
+                });
+
+            const hasNoRating = modsWithInfo.some(mod => {
+                if (mod.Difficulty.name !== noRatingsFoundMessage) {
+                    return false;
+                }
+
+                const lowestCannonicalDifficulty = mod.lowestCannonicalDifficulty;
+                if (lowestCannonicalDifficulty === undefined) throw `Mod ${mod.id} has no difficulty/lowestCannonicalDifficulty.`;
+
+                const difficulty = difficulties.find(difficulty => difficulty.id === lowestCannonicalDifficulty);
+                if (!difficulty) throw `Difficulty ${lowestCannonicalDifficulty} doesn't exist.`;
+
+                return difficulty.name.startsWith(parentDifficultyName);
+            });
+
+            if (hasNoRating) {
+                return [...childDifficulties, noRatingsFoundMessage];
+            } else {
+                return childDifficulties;
+            }
+        },
+        [difficulties, modsWithInfo, parentDifficultyNames, currentTabIndex],
+    );
 
     //handle filtering
     const [nameQuery, setNameQuery] = useState<string>("");
@@ -121,7 +195,17 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
     const [mapCountRange, setMapCountRange] = useState<[number | undefined, number | undefined]>([undefined, undefined]);     //[min, max]
     const [selectedModTypes, setSelectedModTypes] = useState<ModType[]>([]);
     const [selectedQualities, setSelectedQualities] = useState<string[]>([]);
-    const [selectedParentDifficulties, setSelectedParentDifficulties] = useState<string[]>([]);
+    const [selectedChildDifficulties, setSelectedChildDifficulties] = useState<string[]>([]);
+
+    // Reset tab index if the difficulties change.
+    useEffect(() => {
+        setCurrentTabIndex(parentDifficultyNames.length > 0 ? 0 : null);
+    }, [difficulties, parentDifficultyNames]);
+
+    // Check child difficulties when childDifficultyNames changes.
+    useEffect(() => {
+        setSelectedChildDifficulties(selectedChildDifficulties => selectedChildDifficulties.filter(childDifficulty => childDifficultyNames.includes(childDifficulty)));
+    }, [childDifficultyNames]);
 
     const filteredModsWithInfo = useMemo(() => {
         return modsWithInfo.filter((modWithInfo) => {
@@ -169,9 +253,32 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
             }
 
 
+            if (currentTabIndex !== null) {
+                // Check parent difficulty
+                const parentDifficultyName = parentDifficultyNames[currentTabIndex];
+                if (parentDifficultyName === undefined) throw `Tab index ${currentTabIndex} is outside the range of the ${parentDifficultyNames.length} tabs.`;
+
+                if (modWithInfo.Difficulty.name === noRatingsFoundMessage) {
+                    // Mod doesn't have a difficulty rating, so we check if the lowestCannonicalDifficulty is a child of parentDifficulty.
+                    const lowestCannonicalDifficulty = modWithInfo.lowestCannonicalDifficulty;
+                    if (lowestCannonicalDifficulty === undefined) throw `Mod ${modWithInfo.id} has no difficulty/lowestCannonicalDifficulty.`;
+
+                    const difficulty = difficulties.find(difficulty => difficulty.id === lowestCannonicalDifficulty);
+                    if (!difficulty) throw `Difficulty ${lowestCannonicalDifficulty} doesn't exist.`;
+
+                    if (!difficulty.name.startsWith(parentDifficultyName)) {
+                        return false;
+                    }
+                }
+                // Mod has a difficulty rating, so we check if it's difficulty is a child of parentDifficulty.
+                else if (!modWithInfo.Difficulty.name.startsWith(parentDifficultyName)) {
+                    return false;
+                }
+            }
+
             if (
-                selectedParentDifficulties.length &&
-                !selectedParentDifficulties.some((parentDifficulty) => modWithInfo.Difficulty.name.startsWith(parentDifficulty))
+                selectedChildDifficulties.length &&
+                !selectedChildDifficulties.some(childDifficulty => modWithInfo.Difficulty.name.endsWith(childDifficulty))
             ) {
                 return false;
             }
@@ -179,7 +286,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
 
             return true;
         });
-    }, [modsWithInfo, debouncedNameQuery, mapCountRange, selectedModTypes, selectedQualities, selectedParentDifficulties]);
+    }, [modsWithInfo, difficulties, debouncedNameQuery, mapCountRange, selectedModTypes, selectedQualities, selectedChildDifficulties, currentTabIndex, parentDifficultyNames]);
 
 
 
@@ -301,7 +408,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
     //reset page when sortStatus or page size changes
     useEffect(() => {
         setPage(1);
-    }, [sortStatus, pageSize, debouncedNameQuery, mapCountRange, selectedModTypes, selectedQualities, selectedParentDifficulties]);
+    }, [sortStatus, pageSize, debouncedNameQuery, mapCountRange, selectedModTypes, selectedQualities, selectedChildDifficulties]);
 
     //handle providing datatable with correct subset of data
     // const [records, setRecords] = useState<ModWithInfo[]>(sortedModsWithIsExpanded.slice(0, pageSize));
@@ -330,148 +437,159 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
 
     const { cx, classes } = useStyles();
 
+    const tabColors = [classes.tab1, classes.tab2, classes.tab3, classes.tab4, classes.tab5];
+
     return (
-        <DataTable
-            classNames={{ root: classes.table, pagination: classes.pagination }}
-            defaultColumnProps={{
-                cellsClassName: (record) => {
-                    return cx(
-                        classes.modCell,
-                        record.isExpanded && classes.expandedModCell,
-                    );
-                },
-            }}
-            height={550}
-            striped
-            textSelectionDisabled
-            withColumnBorders
-            highlightOnHover
-            fetching={isLoading}
-            records={records}
-            idAccessor={(record) => record.id}
-            columns={[
+        <>
+            <div className={classes.tabContainer}>
                 {
-                    accessor: "name",
-                    title: "Name",
-                    sortable: true,
-                    filter: (
-                        <StringSearch
-                            value={nameQuery}
-                            setValue={setNameQuery}
-                            label="Name"
-                            description="Show mods whose names include the specified text"
-                            placeholder="Search names..."
-                        />
-                    ),
-                    filtering: nameQuery !== "",
-                    titleClassName: classes.columnHeader,
-                    cellsClassName: (record) => {
-                        return cx(
-                            classes.modCell,
-                            classes.leftColumnCell,
-                            record.isExpanded && classes.expandedModCell,
-                        );
-                    },
-                },
-                {
-                    accessor: "Map",
-                    title: "# Maps",
-                    sortable: true,
-                    render: (modWithInfo) => modWithInfo.Map.length,
-                    filter: (
-                        <NumberSearch
-                            range={mapCountRange}
-                            setRange={setMapCountRange}
-                            maxProps={{
-                                label: "Map Count",
-                                description: "Maximum",
-                                placeholder: "Set maximum..."
-                            }}
-                            minProps={{
-                                description: "Minimum",
-                                placeholder: "Set minimum..."
-                            }}
-                        />
-                    ),
-                    filtering: mapCountRange[0] !== undefined || mapCountRange[1] !== undefined,
-                    titleClassName: classes.columnHeader,
-                },
-                {
-                    accessor: "type",
-                    title: "Type",
-                    sortable: true,
-                    filter: (
-                        <ListSelect
-                            permittedStrings={getNonEmptyArray(modTypes)}
-                            selectedStrings={selectedModTypes}
-                            setSelectedStrings={setSelectedModTypes}
-                        />
-                    ),
-                    filtering: !!selectedModTypes.length,
-                    titleClassName: classes.columnHeader,
-                },
-                {
-                    accessor: "Quality",
-                    title: "Quality",
-                    sortable: true,
-                    render: (modWithInfo) => modWithInfo.Quality.name,
-                    filter: (
-                        <ListSelect
-                            permittedStrings={qualityNames}
-                            selectedStrings={selectedQualities}
-                            setSelectedStrings={setSelectedQualities}
-                        />
-                    ),
-                    filtering: !!selectedQualities.length,
-                    titleClassName: classes.columnHeader,
-                },
-                {
-                    accessor: "Difficulty",
-                    title: "Difficulty",
-                    sortable: true,
-                    render: (modWithInfo) => modWithInfo.Difficulty.name,
-                    filter: (
-                        <ListSelect
-                            permittedStrings={parentDifficultyNames}
-                            selectedStrings={selectedParentDifficulties}
-                            setSelectedStrings={setSelectedParentDifficulties}
-                        />
-                    ),
-                    filtering: !!selectedParentDifficulties.length,
-                    titleClassName: classes.columnHeader,
-                    cellsClassName: (record) => {
-                        return cx(
-                            classes.modCell,
-                            classes.rightColumnCell,
-                            record.isExpanded && classes.expandedModCell,
-                        );
-                    },
-                },
-            ]}
-            sortStatus={sortStatus}
-            onSortStatusChange={setSortStatus as Dispatch<SetStateAction<DataTableSortStatus>>}     //un-narrow type to match types in DataTable
-            rowExpansion={{
-                trigger: "click",
-                allowMultiple: false,
-                expanded: {
-                    recordIds: expandedRowIds,
-                    onRecordIdsChange: setExpandedRowsIds,
-                },
-                content: ({ record }) => {
-                    return (
-                        <ExpandedMod
-                            isLoading={isLoading}
-                            mod={record}
-                        />
-                    );
+                    [...parentDifficultyNames].reverse().map((name, index) =>
+                        <span
+                            key={name}
+                            className={cx(classes.tab, tabColors[parentDifficultyNames.length - 1 - index])}
+                            onClick={() => {
+                                setCurrentTabIndex(parentDifficultyNames.length - 1 - index);
+                            }}>{name}</span>
+                    )
                 }
-            }}
-            totalRecords={sortedModsWithIsExpanded.length}
-            recordsPerPage={pageSize}
-            page={page}
-            onPageChange={setPage}
-            recordsPerPageOptions={PAGE_SIZES}
-            onRecordsPerPageChange={setPageSize}
-        />
+            </div>
+            <DataTable
+                classNames={{ root: classes.table, header: currentTabIndex !== null ? cx(classes.header, tabColors[currentTabIndex]) : classes.header, pagination: currentTabIndex !== null ? tabColors[currentTabIndex] : "" }}
+                defaultColumnProps={{
+                    cellsClassName: (record) => {
+                        return cx(
+                            classes.modCell,
+                            record.isExpanded && classes.expandedModCell,
+                        );
+                    },
+                }}
+                height={550}
+                striped
+                textSelectionDisabled
+                withColumnBorders
+                highlightOnHover
+                fetching={isLoading}
+                records={records}
+                idAccessor={(record) => record.id}
+                columns={[
+                    {
+                        accessor: "name",
+                        title: "Name",
+                        sortable: true,
+                        filter: (
+                            <StringSearch
+                                value={nameQuery}
+                                setValue={setNameQuery}
+                                label="Name"
+                                description="Show mods whose names include the specified text"
+                                placeholder="Search names..."
+                            />
+                        ),
+                        filtering: nameQuery !== "",
+                        cellsClassName: (record) => {
+                            return cx(
+                                classes.modCell,
+                                classes.leftColumnCell,
+                                record.isExpanded && classes.expandedModCell,
+                            );
+                        },
+                    },
+                    {
+                        accessor: "Map",
+                        title: "# Maps",
+                        sortable: true,
+                        render: (modWithInfo) => modWithInfo.Map.length,
+                        filter: (
+                            <NumberSearch
+                                range={mapCountRange}
+                                setRange={setMapCountRange}
+                                maxProps={{
+                                    label: "Map Count",
+                                    description: "Maximum",
+                                    placeholder: "Set maximum..."
+                                }}
+                                minProps={{
+                                    description: "Minimum",
+                                    placeholder: "Set minimum..."
+                                }}
+                            />
+                        ),
+                        filtering: mapCountRange[0] !== undefined || mapCountRange[1] !== undefined,
+                    },
+                    {
+                        accessor: "type",
+                        title: "Type",
+                        sortable: true,
+                        filter: (
+                            <ListSelect
+                                permittedStrings={getNonEmptyArray(modTypes)}
+                                selectedStrings={selectedModTypes}
+                                setSelectedStrings={setSelectedModTypes}
+                            />
+                        ),
+                        filtering: !!selectedModTypes.length,
+                    },
+                    {
+                        accessor: "Quality",
+                        title: "Quality",
+                        sortable: true,
+                        render: (modWithInfo) => modWithInfo.Quality.name,
+                        filter: (
+                            <ListSelect
+                                permittedStrings={qualityNames}
+                                selectedStrings={selectedQualities}
+                                setSelectedStrings={setSelectedQualities}
+                            />
+                        ),
+                        filtering: !!selectedQualities.length,
+                    },
+                    {
+                        accessor: "Difficulty",
+                        title: "Difficulty",
+                        sortable: true,
+                        render: (modWithInfo) => modWithInfo.Difficulty.name,
+                        filter: (
+                            <ListSelect
+                                permittedStrings={childDifficultyNames}
+                                selectedStrings={selectedChildDifficulties}
+                                setSelectedStrings={setSelectedChildDifficulties}
+                            />
+                        ),
+                        filtering: !!selectedChildDifficulties.length,
+                        cellsClassName: (record) => {
+                            return cx(
+                                classes.modCell,
+                                classes.rightColumnCell,
+                                record.isExpanded && classes.expandedModCell,
+                            );
+                        },
+                    },
+                ]}
+                sortStatus={sortStatus}
+                onSortStatusChange={setSortStatus as Dispatch<SetStateAction<DataTableSortStatus>>}     //un-narrow type to match types in DataTable
+                rowExpansion={{
+                    trigger: "click",
+                    allowMultiple: false,
+                    expanded: {
+                        recordIds: expandedRowIds,
+                        onRecordIdsChange: setExpandedRowsIds,
+                    },
+                    content: ({ record }) => {
+                        return (
+                            <ExpandedMod
+                                isLoading={isLoading}
+                                mod={record}
+                            />
+                        );
+                    }
+                }}
+                totalRecords={sortedModsWithIsExpanded.length}
+                recordsPerPage={pageSize}
+                page={page}
+                onPageChange={setPage}
+                recordsPerPageOptions={PAGE_SIZES}
+                onRecordsPerPageChange={setPageSize}
+            />
+        </>
     );
 };
