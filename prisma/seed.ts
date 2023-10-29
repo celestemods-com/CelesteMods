@@ -226,7 +226,7 @@ const main = async () => {
     });
 
 
-    if (process.env.SEED_RANDOM_DATA) await seedRandomData();
+    if (process.env.SEED_RANDOM_DATA === "true") await seedRandomData();
 };
 
 
