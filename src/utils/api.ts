@@ -13,7 +13,7 @@ import superjson from "superjson";
 import { type AppRouter } from "~/server/api/root";
 
 const getBaseUrl = () => {
-  if (typeof window !== "undefined") return ""; // browser should use relative url
+  if (typeof window !== "undefined") return process.env.NEXT_PUBLIC_BASE_PATH ?? ''; // browser should use relative url     
   if (process.env.NODE_ENV === "production") return `https://celestemods.com${process.env.NEXT_PUBLIC_BASE_PATH}`;
   return `http://localhost:${process.env.PORT ?? 3000}${process.env.NEXT_PUBLIC_BASE_PATH}`; // dev SSR should use localhost
 };
