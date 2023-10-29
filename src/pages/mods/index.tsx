@@ -25,7 +25,7 @@ const useStyles = createStyles(
 
 
 
-const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModRatingData[], qualities: Quality[], difficulties: Difficulty[], cannonicalMapDifficulty: Map<number, number>): ModWithInfo[] => {
+const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModRatingData[], qualities: Quality[], difficulties: Difficulty[], mapCanonicalDifficulty: Map<number, number>): ModWithInfo[] => {
     if (isLoading) return [];
 
 
@@ -84,7 +84,7 @@ const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModR
             difficultyName = noRatingsFoundMessage;
 
             mod.Map.forEach(mapId => {
-                const mapDifficulty = cannonicalMapDifficulty.get(mapId.id);
+                const mapDifficulty = mapCanonicalDifficulty.get(mapId.id);
 
                 if (mapDifficulty === undefined) throw `Cannonical difficulty for map ${mapId.id} not found. This should not happen.`;
     
@@ -288,20 +288,21 @@ const Mods: NextPage = () => {
 
     const isLoadingMaps = isLoadingRatings || mapQuery.some((query) => query.isLoading);
 
-    const cannonicalMapDifficulty = useMemo(() => {
+    /**Map<mapId, canonicalDifficultyId> */
+    const mapCanonicalDifficulty = useMemo(() => {
         if (isLoadingMaps) return new Map<number, number>();
 
-        const cannonicalMapDifficulty = new Map<number, number>();
+        const mapCanonicalDifficulty = new Map<number, number>();
 
         mapQuery.forEach(mapRatingQuery => {
-            const rating = mapRatingQuery.data;
+            const map = mapRatingQuery.data;
 
-            if (rating !== undefined) {
-                cannonicalMapDifficulty.set(rating.id, rating.canonicalDifficultyId);
+            if (map !== undefined) {
+                mapCanonicalDifficulty.set(map.id, map.canonicalDifficultyId);
             }
         });
 
-        return cannonicalMapDifficulty;
+        return mapCanonicalDifficulty;
     }, [isLoadingMaps, mapQuery]);
 
     //check that all data is loaded
@@ -310,8 +311,8 @@ const Mods: NextPage = () => {
 
     //get mods with map count, and quality and difficulty names
     const modsWithInfo = useMemo(() => {
-        return getModWithInfo(isLoading, mods, ratingsFromModIds, qualities, difficulties, cannonicalMapDifficulty);
-    }, [isLoading, mods, ratingsFromModIds, qualities, difficulties, cannonicalMapDifficulty]);
+        return getModWithInfo(isLoading, mods, ratingsFromModIds, qualities, difficulties, mapCanonicalDifficulty);
+    }, [isLoading, mods, ratingsFromModIds, qualities, difficulties, mapCanonicalDifficulty]);
 
 
     const { classes } = useStyles();
