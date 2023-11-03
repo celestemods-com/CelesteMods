@@ -25,7 +25,7 @@ const useStyles = createStyles(
 
 
 
-const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModRatingData[], qualities: Quality[], difficulties: Difficulty[]): ModWithInfo[] => {
+const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModRatingData[], qualities: Quality[], difficulties: Difficulty[], mapCanonicalDifficulty: Map<number, number>): ModWithInfo[] => {
     if (isLoading) return [];
 
 
@@ -75,7 +75,25 @@ const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModR
         }
 
 
-        if (difficultyId === -1) difficultyName = noRatingsFoundMessage;
+        // We set lowestCannonicalDifficulty on mods which have no difficulty rating.
+        // This works as every mod has at least one map.
+        // Thus every mod will either have a difficulty rating or a lowestCannonicalDifficulty.
+        let lowestCannonicalDifficulty: number | undefined = undefined;
+
+        if (difficultyId === -1) {
+            difficultyName = noRatingsFoundMessage;
+
+            mod.Map.forEach(mapId => {
+                const mapDifficulty = mapCanonicalDifficulty.get(mapId.id);
+
+                if (mapDifficulty === undefined) throw `Cannonical difficulty for map ${mapId.id} not found. This should not happen.`;
+    
+
+                if (lowestCannonicalDifficulty === undefined || mapDifficulty < lowestCannonicalDifficulty) {
+                    lowestCannonicalDifficulty = mapDifficulty;
+                }
+            });
+        }
         else {
             if (difficultyCount === 0) throw `Difficulty count is 0 for mod ${mod.id} but difficultyId is ${difficultyId} (and not -1) - this should not happen.`;
 
@@ -88,10 +106,10 @@ const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModR
             difficultyName = difficulty.name;
         }
 
-
         return {
             ...mod,
             overallCount,
+            lowestCannonicalDifficulty,
             Quality: {
                 id: qualityId,
                 name: qualityName,
@@ -104,7 +122,6 @@ const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModR
             },
         };
     });
-
 
     return modsWithInfo;
 };
@@ -241,14 +258,61 @@ const Mods: NextPage = () => {
     }, [isLoadingRatings, ratingQueries, /*modIds,*/ mods]);  //TODO: figure out if modIds/mods can be removed from this dependency array
 
 
+    // We only query maps for which the corresponding mod doesn't have a difficulty rating.
+    // We later set lowestCannonicalDifficulty on mods which have no difficulty rating.
+    // This works as every mod has at least one map.
+    // Thus every mod will either have a difficulty rating or a lowestCannonicalDifficulty.
+    const mapQuery = api.useQueries(
+        (useQueriesApi) => {
+            if (isLoadingRatings) return [];
+
+            const mapIds: number[] = [];
+            mods.forEach(mod => {
+                const rating = ratingsFromModIds.find((rating) => rating.modId === mod.id);
+                if (rating === undefined) throw `Mod ${mod.id} has an undefined rating - this should not happen.`;
+
+                // We only query maps for which the corresponding mod doesn't have a difficulty rating.
+                if (!("averageDifficultyId" in rating) || rating.averageDifficultyId === undefined || rating.averageDifficultyId === -1) {
+                    mod.Map.forEach(mapId => {
+                        mapIds.push(mapId.id);
+                    });
+                }
+            });
+
+            return mapIds.map((id) => (useQueriesApi.map.getById(
+                { id },
+                { queryKey: ["map.getById", { id, tableName: "Map" }] },
+            )));
+        },
+    );
+
+    const isLoadingMaps = isLoadingRatings || mapQuery.some((query) => query.isLoading);
+
+    /**Map<mapId, canonicalDifficultyId> */
+    const mapCanonicalDifficulty = useMemo(() => {
+        if (isLoadingMaps) return new Map<number, number>();
+
+        const mapCanonicalDifficulty = new Map<number, number>();
+
+        mapQuery.forEach(mapRatingQuery => {
+            const map = mapRatingQuery.data;
+
+            if (map !== undefined) {
+                mapCanonicalDifficulty.set(map.id, map.canonicalDifficultyId);
+            }
+        });
+
+        return mapCanonicalDifficulty;
+    }, [isLoadingMaps, mapQuery]);
+
     //check that all data is loaded
-    const isLoading = isLoadingMods || isLoadingRatings || qualityQuery.isLoading || difficultyQuery.isLoading;
+    const isLoading = isLoadingMods || isLoadingRatings || isLoadingMaps || qualityQuery.isLoading || difficultyQuery.isLoading;
 
 
     //get mods with map count, and quality and difficulty names
     const modsWithInfo = useMemo(() => {
-        return getModWithInfo(isLoading, mods, ratingsFromModIds, qualities, difficulties);
-    }, [isLoading, mods, ratingsFromModIds, qualities, difficulties]);
+        return getModWithInfo(isLoading, mods, ratingsFromModIds, qualities, difficulties, mapCanonicalDifficulty);
+    }, [isLoading, mods, ratingsFromModIds, qualities, difficulties, mapCanonicalDifficulty]);
 
 
     const { classes } = useStyles();
