@@ -202,10 +202,14 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
         setCurrentTabIndex(parentDifficultyNames.length > 0 ? 0 : null);
     }, [difficulties, parentDifficultyNames]);
 
-    // Check child difficulties when childDifficultyNames changes.
+    // Check selected child difficulties when childDifficultyNames changes.
     useEffect(() => {
-        setSelectedChildDifficulties(selectedChildDifficulties => selectedChildDifficulties.filter(childDifficulty => childDifficultyNames.includes(childDifficulty)));
-    }, [childDifficultyNames]);
+        const newSelectedChildDifficulties = selectedChildDifficulties.filter(childDifficulty => childDifficultyNames.includes(childDifficulty));
+        // Only set when the list actually reduces.
+        if (newSelectedChildDifficulties.length !== selectedChildDifficulties.length) {
+            setSelectedChildDifficulties(newSelectedChildDifficulties);
+        }
+    }, [selectedChildDifficulties, childDifficultyNames]);
 
     const filteredModsWithInfo = useMemo(() => {
         return modsWithInfo.filter((modWithInfo) => {
