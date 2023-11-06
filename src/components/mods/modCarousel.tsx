@@ -22,7 +22,9 @@ const useStyles = createStyles(
             },
         },
         viewport: {
-            border: "3px solid #263972",
+            "div": {
+                alignItems: 'center',
+            }
         },
         slide: {
             width: "400px",
