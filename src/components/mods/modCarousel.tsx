@@ -22,10 +22,22 @@ const useStyles = createStyles(
             },
         },
         viewport: {
-            border: "3px solid #263972",
+            "div": {
+                alignItems: 'center',
+            }
         },
         slide: {
             width: "400px",
+        },
+        imgMaxHeight250: {
+            "img": {
+                maxHeight: "250px",
+            }
+        },
+        imgMaxHeight400: {
+            "img": {
+                maxHeight: "400px",
+            }
         },
         controls: {
             transform: "translate(0, 0)",
@@ -44,12 +56,13 @@ const useStyles = createStyles(
 
 type modCarouselProps = {
     gamebananaModId: number,
+    numberOfMaps: number,
 };
 
 
 
 
-const ModCarousel = ({ gamebananaModId }: modCarouselProps) => {
+const ModCarousel = ({ gamebananaModId, numberOfMaps }: modCarouselProps) => {
     const { imageUrls } = useGamebananaModImageUrls({ gamebananaModId });
 
 
@@ -63,7 +76,7 @@ const ModCarousel = ({ gamebananaModId }: modCarouselProps) => {
             <Carousel classNames={{
                 root: classes.carousel,
                 viewport: classes.viewport,
-                slide: classes.slide,
+                slide: cx(classes.slide, numberOfMaps >= 4 ? classes.imgMaxHeight400 : classes.imgMaxHeight250),
                 controls: classes.controls,
                 control:classes.control,
             }}>
@@ -76,7 +89,6 @@ const ModCarousel = ({ gamebananaModId }: modCarouselProps) => {
                         <Image
                             src={imageUrl}
                             alt="Mod image"
-                            height={250}     //TODO!!: add responsive image sizes
                         />
                     </Carousel.Slide>
                 ))}
