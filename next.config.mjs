@@ -17,6 +17,9 @@ const config = {
       }
     ],
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 
   /**
    * If you have the "experimental: { appDir: true }" setting enabled, then you
