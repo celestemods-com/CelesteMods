@@ -18,6 +18,7 @@ model Length {
   Map_Edit           Map_Edit[]
   Map_NewWithMod_New Map_NewWithMod_New[]
   Map_NewSolo        Map_NewSolo[]
+  @@map("length")
 }
 
 model Difficulty {
@@ -39,6 +40,7 @@ model Difficulty {
   @@unique([parentDifficultyId, name])
   @@unique([parentDifficultyId, order])
   @@index([parentDifficultyId])
+  @@map("difficulty")
 }
 
 model Tech {
@@ -55,6 +57,7 @@ model Tech {
   Map_NewSoloToTechs        Map_NewSoloToTechs[]
 
   @@index([difficultyId])
+  @@map("tech")
 }
 
 model TechVideo {
@@ -64,6 +67,7 @@ model TechVideo {
   url    String @db.VarChar(100)
 
   @@index([techId])
+  @@map("tech-video")
 }
 
 model Publisher {
@@ -78,6 +82,7 @@ model Publisher {
   Mod_New      Mod_New[]
 
   @@index([userId])
+  @@map("publisher")
 }
 
 model Mod {
@@ -108,6 +113,7 @@ model Mod {
   @@index([contentWarning])
   @@index([publisherId])
   @@index([submittedBy])
+  @@map("mod")
 }
 
 model Map {
@@ -149,6 +155,7 @@ model Map {
   @@index([mapperUserId])
   @@index([modId])
   @@index([submittedBy])
+  @@map("map")
 }
 
 model MapsToTechs {
@@ -160,6 +167,7 @@ model MapsToTechs {
 
   @@id([mapId, techId])
   @@index([techId])
+  @@map("maps-to-techs")
 }
 
 model Mod_Archive {
@@ -188,6 +196,7 @@ model Mod_Archive {
   @@index([contentWarning])
   @@index([publisherId])
   @@index([submittedBy])
+  @@map("mod-archive")
 }
 
 model Map_Archive {
@@ -223,6 +232,7 @@ model Map_Archive {
   @@index([mapperUserId])
   @@index([mapId])
   @@index([submittedBy])
+  @@map("map-archive")
 }
 
 model Map_ArchivesToTechs {
@@ -234,6 +244,7 @@ model Map_ArchivesToTechs {
 
   @@id([map_ArchiveId, techId])
   @@index([techId])
+  @@map("mod-archives-to-techs")
 }
 
 model Mod_Edit {
@@ -257,6 +268,7 @@ model Mod_Edit {
   @@index([contentWarning])
   @@index([publisherId])
   @@index([submittedBy])
+  @@map("mod-edit")
 }
 
 model Map_Edit {
@@ -287,6 +299,7 @@ model Map_Edit {
   @@index([mapperUserId])
   @@index([mapId])
   @@index([submittedBy])
+  @@map("map-edit")
 }
 
 model Map_EditsToTechs {
@@ -298,6 +311,7 @@ model Map_EditsToTechs {
 
   @@id([map_editId, techId])
   @@index([techId])
+  @@map("map-edits-to-techs")
 }
 
 model Mod_New {
@@ -320,6 +334,7 @@ model Mod_New {
   @@index([contentWarning])
   @@index([publisherId])
   @@index([submittedBy])
+  @@map("mod-new")
 }
 
 model Map_NewWithMod_New {
@@ -352,6 +367,7 @@ model Map_NewWithMod_New {
   @@index([mapperUserId])
   @@index([mod_NewId])
   @@index([submittedBy])
+  @@map("map-new-with-mod-new")
 }
 
 model Map_NewWithMod_NewToTechs {
@@ -363,6 +379,7 @@ model Map_NewWithMod_NewToTechs {
 
   @@id([map_NewWithMod_NewId, techId])
   @@index([techId])
+  @@map("map-new-with-mod-new-to-techs")
 }
 
 model Map_NewSolo {
@@ -395,6 +412,7 @@ model Map_NewSolo {
   @@index([mapperUserId])
   @@index([modId])
   @@index([submittedBy])
+  @@map("map-new-solo")
 }
 
 model Map_NewSoloToTechs {
@@ -406,6 +424,7 @@ model Map_NewSoloToTechs {
 
   @@id([map_NewSoloId, techId])
   @@index([techId])
+  @@map("map-new-solo-to-techs")
 }
 
 model Quality {
@@ -414,6 +433,8 @@ model Quality {
   description String   @db.VarChar(100)
   order       Int      @unique @db.UnsignedTinyInt  //1 is the worst, higher numbers are better
   Rating      Rating[]
+  
+  @@map("quality")
 }
 
 model Rating {
@@ -433,6 +454,7 @@ model Rating {
   @@index([mapId])
   @@index([qualityId])
   @@index([submittedBy])
+  @@map("rating")
 }
 
 model ReviewCollection {
@@ -445,6 +467,7 @@ model ReviewCollection {
 
   @@unique([userId, name])
   @@index([userId])
+  @@map("review-collection")
 }
 
 model Review {
@@ -462,6 +485,7 @@ model Review {
   @@unique([reviewCollectionId, modId])
   @@index([modId])
   @@index([reviewCollectionId])
+  @@map("review")
 }
 
 model MapReview {
@@ -482,6 +506,7 @@ model MapReview {
   @@index([lengthId])
   @@index([mapId])
   @@index([reviewId])
+  @@map("map-review")
 }
 
 model UsersToCompletedMaps {
@@ -492,6 +517,7 @@ model UsersToCompletedMaps {
 
   @@id([userId, mapId])
   @@index([mapId])
+  @@map("users-to-completed-maps")
 }
 
 // Next auth models
@@ -532,6 +558,7 @@ model User {
   Map_NewSolo_submittedByToUser         Map_NewSolo[]          @relation("Map_NewSolo_SubmittedByToUser")
 
   @@unique([discordUsername, discordDiscriminator])
+  @@map("user")
 }
 
 model Account {
@@ -550,6 +577,7 @@ model Account {
   session_state     String? @map("sessionState")
 
   @@unique([provider, providerAccountId])
+  @@map("account")
 }
 
 model Session {
@@ -558,6 +586,8 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
   userId       String
   expires      DateTime
+  
+  @@map("session")
 }
 
 model VerificationToken {
@@ -566,6 +596,7 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+  @@map("verification-token")
 }
 
 //End Next Auth models
