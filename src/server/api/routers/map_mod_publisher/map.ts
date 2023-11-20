@@ -31,9 +31,9 @@ type TrimmedMapNewSolo = Omit<Map_NewSolo, "submittedBy">;
 
 type MapToTechRelation = { techId: number, fullClearOnlyBool: boolean; }[];
 
-type ExpandedMap = Map & { MapsToTechs: MapToTechRelation; };
-type ExpandedMapArchive = Map_Archive & { Map_ArchivesToTechs: MapToTechRelation; };
-type ExpandedMapEdit = Map_Edit & { Map_EditsToTechs: MapToTechRelation; };
+type ExpandedMap = Map & { MapToTechs: MapToTechRelation; };
+type ExpandedMapArchive = Map_Archive & { Map_ArchiveToTechs: MapToTechRelation; };
+type ExpandedMapEdit = Map_Edit & { Map_EditToTechs: MapToTechRelation; };
 type ExpandedMapNewWithModNew = Map_NewWithMod_New & { Map_NewWithMod_NewToTechs: MapToTechRelation; };
 type ExpandedMapNewSolo = Map_NewSolo & { Map_NewSoloToTechs: MapToTechRelation; };
 
@@ -71,7 +71,7 @@ const defaultMapSelect = Prisma.validator<Prisma.MapSelect>()({
     ...baseMapSelectObject,
     modId: true,
     timeApproved: true,
-    MapsToTechs: {
+    MapToTechs: {
         select: {
             techId: true,
             fullClearOnlyBool: true,
@@ -88,7 +88,7 @@ const defaultMapArchiveSelect = Prisma.validator<Prisma.Map_ArchiveSelect>()({
     mapId: true,
     timeApproved: true,
     timeArchived: true,
-    Map_ArchivesToTechs: {
+    Map_ArchiveToTechs: {
         select: {
             techId: true,
             fullClearOnlyBool: true,
@@ -100,7 +100,7 @@ const defaultMapArchiveSelect = Prisma.validator<Prisma.Map_ArchiveSelect>()({
 const defaultMapEditSelect = Prisma.validator<Prisma.Map_EditSelect>()({
     ...baseMapSelectObject,
     mapId: true,
-    Map_EditsToTechs: {
+    Map_EditToTechs: {
         select: {
             techId: true,
             fullClearOnlyBool: true,
@@ -296,21 +296,21 @@ export const getMapById = async<
             case "Map": {
                 map = await prisma.map.findUnique({
                     where: whereObject,
-                    include: { MapsToTechs: includeTechObject },
+                    include: { MapToTechs: includeTechObject },
                 }) as Union;
                 break;
             }
             case "Map_Archive": {
                 map = await prisma.map_Archive.findUnique({
                     where: whereObject as Prisma.Map_ArchiveWhereUniqueInput,
-                    include: { Map_ArchivesToTechs: includeTechObject },
+                    include: { Map_ArchiveToTechs: includeTechObject },
                 }) as Union;
                 break;
             }
             case "Map_Edit": {
                 map = await prisma.map_Edit.findUnique({
                     where: whereObject as Prisma.Map_EditWhereUniqueInput,
-                    include: { Map_EditsToTechs: includeTechObject },
+                    include: { Map_EditToTechs: includeTechObject },
                 }) as Union;
                 break;
             }
@@ -452,21 +452,21 @@ const getMapByName = async<
             case "Map": {
                 maps = await prisma.map.findMany({
                     where: whereObject,
-                    include: { MapsToTechs: includeTechObject },
+                    include: { MapToTechs: includeTechObject },
                 }) as Union[];
                 break;
             }
             case "Map_Archive": {
                 maps = await prisma.map_Archive.findMany({
                     where: whereObject as Prisma.Map_ArchiveWhereInput,
-                    include: { Map_ArchivesToTechs: includeTechObject },
+                    include: { Map_ArchiveToTechs: includeTechObject },
                 }) as Union[];
                 break;
             }
             case "Map_Edit": {
                 maps = await prisma.map_Edit.findMany({
                     where: whereObject as Prisma.Map_EditWhereInput,
-                    include: { Map_EditsToTechs: includeTechObject },
+                    include: { Map_EditToTechs: includeTechObject },
                 }) as Union[];
                 break;
             }
@@ -567,8 +567,8 @@ const getMapByName = async<
 
 
 
-const getTechConnectObject = (input: z.infer<typeof mapSoloPostSchema> | z.infer<typeof mapUpdateSchema>): Prisma.MapsToTechsCreateWithoutMapInput[] => {
-    const techConnectObject: Prisma.MapsToTechsCreateWithoutMapInput[] = [];
+const getTechConnectObject = (input: z.infer<typeof mapSoloPostSchema> | z.infer<typeof mapUpdateSchema>): Prisma.MapToTechsCreateWithoutMapInput[] => {
+    const techConnectObject: Prisma.MapToTechsCreateWithoutMapInput[] = [];
 
 
     input.techAnyIds?.forEach((techId) => {
@@ -768,7 +768,7 @@ export const mapRouter = createTRPCRouter({
                         ...mapCreateData,
                         timeApproved: currentTime,
                         User_ApprovedBy: { connect: { id: ctx.user.id } },
-                        MapsToTechs: { create: techConnectObject },
+                        MapToTechs: { create: techConnectObject },
                     },
                 });
 
@@ -808,7 +808,7 @@ export const mapRouter = createTRPCRouter({
             const currentTime = getCurrentTime();
 
 
-            const techConnectObject: Prisma.MapsToTechsCreateWithoutMapInput[] = linkedTechIds.map(
+            const techConnectObject: Prisma.MapToTechsCreateWithoutMapInput[] = linkedTechIds.map(
                 (techConnection) => ({
                     Tech: { connect: { id: techConnection.techId } },
                     fullClearOnlyBool: techConnection.fullClearOnlyBool,
@@ -834,7 +834,7 @@ export const mapRouter = createTRPCRouter({
                     User_SubmittedBy: { connect: { id: newMap.submittedBy ?? undefined } },
                     timeApproved: currentTime,
                     User_ApprovedBy: { connect: { id: ctx.user.id } },
-                    MapsToTechs: { create: techConnectObject },
+                    MapToTechs: { create: techConnectObject },
                 },
             });
 
@@ -974,7 +974,7 @@ export const mapRouter = createTRPCRouter({
                         timeApproved: existingMap.timeApproved,
                         User_ApprovedBy: { connect: { id: existingMap.approvedBy ?? undefined } },
                         timeArchived: currentTime,
-                        Map_ArchivesToTechs: { create: techConnectObject },
+                        Map_ArchiveToTechs: { create: techConnectObject },
                     },
                 });
 
@@ -986,14 +986,14 @@ export const mapRouter = createTRPCRouter({
                         timeApproved: currentTime,
                         User_ApprovedBy: { connect: { id: ctx.user.id } },
                     },
-                    include: { MapsToTechs: includeTechObject },
+                    include: { MapToTechs: includeTechObject },
                 });
             }
             else {
                 const mapEditCreateData: Prisma.Map_EditCreateInput = {
-                    ...mapUpdateData as Omit<Prisma.Map_EditCreateInput, "Map" | "Map_EditsToTechs">,
+                    ...mapUpdateData as Omit<Prisma.Map_EditCreateInput, "Map" | "Map_EditToTechs">,
                     Map: { connect: { id: existingMap.id } },
-                    Map_EditsToTechs: { create: techConnectObject },
+                    Map_EditToTechs: { create: techConnectObject },
                 };
 
 
@@ -1039,7 +1039,7 @@ export const mapRouter = createTRPCRouter({
                     timeApproved: existingMap.timeApproved,
                     User_ApprovedBy: { connect: { id: existingMap.approvedBy ?? undefined } },
                     timeArchived: currentTime,
-                    Map_ArchivesToTechs: { create: techConnectObject },
+                    Map_ArchiveToTechs: { create: techConnectObject },
                 },
             });
 
@@ -1071,8 +1071,8 @@ export const mapRouter = createTRPCRouter({
                             { connect: { id: mapEdit.submittedBy } },   //connect new
                     timeApproved: currentTime,
                     User_ApprovedBy: { connect: { id: ctx.user.id } },
-                    MapsToTechs: {
-                        set: mapEdit.Map_EditsToTechs.map(
+                    MapToTechs: {
+                        set: mapEdit.Map_EditToTechs.map(
                             (mapToTech) => ({
                                 mapId_techId: {
                                     mapId: mapEdit.mapId,
@@ -1082,7 +1082,7 @@ export const mapRouter = createTRPCRouter({
                         ),
                     },
                 },
-                include: { MapsToTechs: includeTechObject },  //this procedure is moderator only, so we can return everything
+                include: { MapToTechs: includeTechObject },  //this procedure is moderator only, so we can return everything
             });
 
 
@@ -1138,8 +1138,8 @@ export const mapRouter = createTRPCRouter({
                         mapArchive.approvedBy === null ?
                             { disconnect: true } :  //disconnect existing
                             { connect: { id: mapArchive.approvedBy } },  //connect new
-                    MapsToTechs: {
-                        set: mapArchive.Map_ArchivesToTechs.map(
+                    MapToTechs: {
+                        set: mapArchive.Map_ArchiveToTechs.map(
                             (mapToTech) => ({
                                 mapId_techId: {
                                     mapId: mapArchive.mapId,
@@ -1149,7 +1149,7 @@ export const mapRouter = createTRPCRouter({
                         ),
                     },
                 },
-                include: { MapsToTechs: includeTechObject },  //this procedure is moderator only, so we can return everything
+                include: { MapToTechs: includeTechObject },  //this procedure is moderator only, so we can return everything
             });
 
 
