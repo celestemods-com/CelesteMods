@@ -71,6 +71,7 @@ const ModCarouselTest = () => {
             </Group>
             <ModCarousel
                 gamebananaModId={modId}
+                numberOfMaps={5}
             />
         </>
     );
