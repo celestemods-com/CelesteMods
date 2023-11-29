@@ -4,7 +4,7 @@ the property of CML and the CML logo is the trademark of CML.
 Third parties may use the CML logos under these conditions:
 
 1. The CML logos can only be used to point to CML. When used with a
-   link on a web page, it should point to the URL https://celestemodslist.com/.
+   link on a web page, it should point to the URL https://celestemods.com/.
 2. You will visualize and promote your own branding more prominent than you use
    the CML logos. The CML logos only can be used as a secondary
    brand, which means it has to be clear for an average viewer that this is not
