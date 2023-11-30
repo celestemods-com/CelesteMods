@@ -60,6 +60,15 @@ CREATE TABLE `publisher` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `tag` (
+    `id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(50) NOT NULL,
+
+    UNIQUE INDEX `tag_name_key`(`name`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `mod` (
     `id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `type` ENUM('Normal', 'Collab', 'Contest', 'LobbyOther') NOT NULL DEFAULT 'Normal',
@@ -82,6 +91,15 @@ CREATE TABLE `mod` (
     INDEX `mod_publisherId_idx`(`publisherId`),
     INDEX `mod_submittedBy_idx`(`submittedBy`),
     PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `mod-to-tags` (
+    `modId` SMALLINT UNSIGNED NOT NULL,
+    `tagId` TINYINT UNSIGNED NOT NULL,
+
+    INDEX `mod-to-tags_tagId_idx`(`tagId`),
+    PRIMARY KEY (`modId`, `tagId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -116,12 +134,12 @@ CREATE TABLE `map` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `maps-to-techs` (
+CREATE TABLE `map-to-techs` (
     `mapId` MEDIUMINT UNSIGNED NOT NULL,
     `techId` SMALLINT UNSIGNED NOT NULL,
     `fullClearOnlyBool` BOOLEAN NOT NULL DEFAULT false,
 
-    INDEX `maps-to-techs_techId_idx`(`techId`),
+    INDEX `map-to-techs_techId_idx`(`techId`),
     PRIMARY KEY (`mapId`, `techId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -149,6 +167,15 @@ CREATE TABLE `mod-archive` (
     INDEX `mod-archive_publisherId_idx`(`publisherId`),
     INDEX `mod-archive_submittedBy_idx`(`submittedBy`),
     PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `mod-archive-to-tags` (
+    `mod_ArchiveId` SMALLINT UNSIGNED NOT NULL,
+    `tagId` TINYINT UNSIGNED NOT NULL,
+
+    INDEX `mod-archive-to-tags_tagId_idx`(`tagId`),
+    PRIMARY KEY (`mod_ArchiveId`, `tagId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -182,12 +209,12 @@ CREATE TABLE `map-archive` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `mod-archives-to-techs` (
+CREATE TABLE `mod-archive-to-techs` (
     `map_ArchiveId` MEDIUMINT UNSIGNED NOT NULL,
     `techId` SMALLINT UNSIGNED NOT NULL,
     `fullClearOnlyBool` BOOLEAN NOT NULL DEFAULT false,
 
-    INDEX `mod-archives-to-techs_techId_idx`(`techId`),
+    INDEX `mod-archive-to-techs_techId_idx`(`techId`),
     PRIMARY KEY (`map_ArchiveId`, `techId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -211,6 +238,15 @@ CREATE TABLE `mod-edit` (
     INDEX `mod-edit_publisherId_idx`(`publisherId`),
     INDEX `mod-edit_submittedBy_idx`(`submittedBy`),
     PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `mod-edit-to-tags` (
+    `mod_EditId` SMALLINT UNSIGNED NOT NULL,
+    `tagId` TINYINT UNSIGNED NOT NULL,
+
+    INDEX `mod-edit-to-tags_tagId_idx`(`tagId`),
+    PRIMARY KEY (`mod_EditId`, `tagId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -240,12 +276,12 @@ CREATE TABLE `map-edit` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `map-edits-to-techs` (
+CREATE TABLE `map-edit-to-techs` (
     `map_editId` MEDIUMINT UNSIGNED NOT NULL,
     `techId` SMALLINT UNSIGNED NOT NULL,
     `fullClearOnlyBool` BOOLEAN NOT NULL DEFAULT false,
 
-    INDEX `map-edits-to-techs_techId_idx`(`techId`),
+    INDEX `map-edit-to-techs_techId_idx`(`techId`),
     PRIMARY KEY (`map_editId`, `techId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -269,6 +305,15 @@ CREATE TABLE `mod-new` (
     INDEX `mod-new_publisherId_idx`(`publisherId`),
     INDEX `mod-new_submittedBy_idx`(`submittedBy`),
     PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `mod-new-to-tags` (
+    `mod_NewId` SMALLINT UNSIGNED NOT NULL,
+    `tagId` TINYINT UNSIGNED NOT NULL,
+
+    INDEX `mod-new-to-tags_tagId_idx`(`tagId`),
+    PRIMARY KEY (`mod_NewId`, `tagId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -510,6 +555,12 @@ ALTER TABLE `mod` ADD CONSTRAINT `mod_submittedBy_fkey` FOREIGN KEY (`submittedB
 ALTER TABLE `mod` ADD CONSTRAINT `mod_approvedBy_fkey` FOREIGN KEY (`approvedBy`) REFERENCES `user`(`id`) ON DELETE SET NULL ON UPDATE RESTRICT;
 
 -- AddForeignKey
+ALTER TABLE `mod-to-tags` ADD CONSTRAINT `mod-to-tags_modId_fkey` FOREIGN KEY (`modId`) REFERENCES `mod`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `mod-to-tags` ADD CONSTRAINT `mod-to-tags_tagId_fkey` FOREIGN KEY (`tagId`) REFERENCES `tag`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+
+-- AddForeignKey
 ALTER TABLE `map` ADD CONSTRAINT `map_modId_fkey` FOREIGN KEY (`modId`) REFERENCES `mod`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
 
 -- AddForeignKey
@@ -528,10 +579,10 @@ ALTER TABLE `map` ADD CONSTRAINT `map_submittedBy_fkey` FOREIGN KEY (`submittedB
 ALTER TABLE `map` ADD CONSTRAINT `map_approvedBy_fkey` FOREIGN KEY (`approvedBy`) REFERENCES `user`(`id`) ON DELETE SET NULL ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `maps-to-techs` ADD CONSTRAINT `maps-to-techs_mapId_fkey` FOREIGN KEY (`mapId`) REFERENCES `map`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+ALTER TABLE `map-to-techs` ADD CONSTRAINT `map-to-techs_mapId_fkey` FOREIGN KEY (`mapId`) REFERENCES `map`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `maps-to-techs` ADD CONSTRAINT `maps-to-techs_techId_fkey` FOREIGN KEY (`techId`) REFERENCES `tech`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+ALTER TABLE `map-to-techs` ADD CONSTRAINT `map-to-techs_techId_fkey` FOREIGN KEY (`techId`) REFERENCES `tech`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
 
 -- AddForeignKey
 ALTER TABLE `mod-archive` ADD CONSTRAINT `mod-archive_modId_fkey` FOREIGN KEY (`modId`) REFERENCES `mod`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
@@ -544,6 +595,12 @@ ALTER TABLE `mod-archive` ADD CONSTRAINT `mod-archive_submittedBy_fkey` FOREIGN 
 
 -- AddForeignKey
 ALTER TABLE `mod-archive` ADD CONSTRAINT `mod-archive_approvedBy_fkey` FOREIGN KEY (`approvedBy`) REFERENCES `user`(`id`) ON DELETE SET NULL ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `mod-archive-to-tags` ADD CONSTRAINT `mod-archive-to-tags_mod_ArchiveId_fkey` FOREIGN KEY (`mod_ArchiveId`) REFERENCES `mod-archive`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `mod-archive-to-tags` ADD CONSTRAINT `mod-archive-to-tags_tagId_fkey` FOREIGN KEY (`tagId`) REFERENCES `tag`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
 
 -- AddForeignKey
 ALTER TABLE `map-archive` ADD CONSTRAINT `map-archive_mapId_fkey` FOREIGN KEY (`mapId`) REFERENCES `map`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
@@ -564,10 +621,10 @@ ALTER TABLE `map-archive` ADD CONSTRAINT `map-archive_submittedBy_fkey` FOREIGN 
 ALTER TABLE `map-archive` ADD CONSTRAINT `map-archive_approvedBy_fkey` FOREIGN KEY (`approvedBy`) REFERENCES `user`(`id`) ON DELETE SET NULL ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `mod-archives-to-techs` ADD CONSTRAINT `mod-archives-to-techs_map_ArchiveId_fkey` FOREIGN KEY (`map_ArchiveId`) REFERENCES `map-archive`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+ALTER TABLE `mod-archive-to-techs` ADD CONSTRAINT `mod-archive-to-techs_map_ArchiveId_fkey` FOREIGN KEY (`map_ArchiveId`) REFERENCES `map-archive`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `mod-archives-to-techs` ADD CONSTRAINT `mod-archives-to-techs_techId_fkey` FOREIGN KEY (`techId`) REFERENCES `tech`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+ALTER TABLE `mod-archive-to-techs` ADD CONSTRAINT `mod-archive-to-techs_techId_fkey` FOREIGN KEY (`techId`) REFERENCES `tech`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
 
 -- AddForeignKey
 ALTER TABLE `mod-edit` ADD CONSTRAINT `mod-edit_modId_fkey` FOREIGN KEY (`modId`) REFERENCES `mod`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
@@ -577,6 +634,12 @@ ALTER TABLE `mod-edit` ADD CONSTRAINT `mod-edit_publisherId_fkey` FOREIGN KEY (`
 
 -- AddForeignKey
 ALTER TABLE `mod-edit` ADD CONSTRAINT `mod-edit_submittedBy_fkey` FOREIGN KEY (`submittedBy`) REFERENCES `user`(`id`) ON DELETE SET NULL ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `mod-edit-to-tags` ADD CONSTRAINT `mod-edit-to-tags_mod_EditId_fkey` FOREIGN KEY (`mod_EditId`) REFERENCES `mod-edit`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `mod-edit-to-tags` ADD CONSTRAINT `mod-edit-to-tags_tagId_fkey` FOREIGN KEY (`tagId`) REFERENCES `tag`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
 
 -- AddForeignKey
 ALTER TABLE `map-edit` ADD CONSTRAINT `map-edit_mapId_fkey` FOREIGN KEY (`mapId`) REFERENCES `map`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
@@ -594,16 +657,22 @@ ALTER TABLE `map-edit` ADD CONSTRAINT `map-edit_lengthId_fkey` FOREIGN KEY (`len
 ALTER TABLE `map-edit` ADD CONSTRAINT `map-edit_submittedBy_fkey` FOREIGN KEY (`submittedBy`) REFERENCES `user`(`id`) ON DELETE SET NULL ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `map-edits-to-techs` ADD CONSTRAINT `map-edits-to-techs_map_editId_fkey` FOREIGN KEY (`map_editId`) REFERENCES `map-edit`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+ALTER TABLE `map-edit-to-techs` ADD CONSTRAINT `map-edit-to-techs_map_editId_fkey` FOREIGN KEY (`map_editId`) REFERENCES `map-edit`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `map-edits-to-techs` ADD CONSTRAINT `map-edits-to-techs_techId_fkey` FOREIGN KEY (`techId`) REFERENCES `tech`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+ALTER TABLE `map-edit-to-techs` ADD CONSTRAINT `map-edit-to-techs_techId_fkey` FOREIGN KEY (`techId`) REFERENCES `tech`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
 
 -- AddForeignKey
 ALTER TABLE `mod-new` ADD CONSTRAINT `mod-new_publisherId_fkey` FOREIGN KEY (`publisherId`) REFERENCES `publisher`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
 
 -- AddForeignKey
 ALTER TABLE `mod-new` ADD CONSTRAINT `mod-new_submittedBy_fkey` FOREIGN KEY (`submittedBy`) REFERENCES `user`(`id`) ON DELETE SET NULL ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `mod-new-to-tags` ADD CONSTRAINT `mod-new-to-tags_mod_NewId_fkey` FOREIGN KEY (`mod_NewId`) REFERENCES `mod-edit`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `mod-new-to-tags` ADD CONSTRAINT `mod-new-to-tags_tagId_fkey` FOREIGN KEY (`tagId`) REFERENCES `tag`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
 
 -- AddForeignKey
 ALTER TABLE `map-new-with-mod-new` ADD CONSTRAINT `map-new-with-mod-new_mod_NewId_fkey` FOREIGN KEY (`mod_NewId`) REFERENCES `mod-new`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
