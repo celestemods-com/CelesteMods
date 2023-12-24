@@ -167,7 +167,7 @@ model Map {
   MapToTechs            MapToTechs[]
   Rating                Rating[]
   MapReview             MapReview[]
-  UserToCompletedMaps  UserToCompletedMaps[]
+  UsersToCompletedMaps  UsersToCompletedMaps[]
   Map_Archive           Map_Archive[]
   Map_Edit              Map_Edit[]
 
@@ -569,7 +569,7 @@ model MapReview {
   @@map("map-review")
 }
 
-model UserToCompletedMaps {
+model UsersToCompletedMaps {
   User   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
   userId String
   Map    Map    @relation(fields: [mapId], references: [id], onDelete: Cascade, onUpdate: Restrict)
@@ -595,7 +595,7 @@ model User {
   Publisher                             Publisher[]
   Rating                                Rating[]
   ReviewCollection                      ReviewCollection[]
-  CompletedMaps                         UserToCompletedMaps[]
+  CompletedMaps                         UsersToCompletedMaps[]
   Account                               Account[]
   Session                               Session[]
   Mod_submittedByToUser                 Mod[]                  @relation("Mod_SubmittedByToUser")
