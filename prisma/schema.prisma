@@ -215,7 +215,7 @@ model Mod_Archive {
   User_ApprovedBy       User?               @relation("Mod_Archive_ApprovedByToUser", fields: [approvedBy], references: [id], onDelete: SetNull, onUpdate: Restrict)
   approvedBy            String?
   timeArchived          Int
-  Mod_ArchiveToTags    Mod_ArchiveToTags[]
+  Mod_ArchiveToTags     Mod_ArchiveToTags[]
 
   @@index([approvedBy])
   @@index([contentWarning])
@@ -260,7 +260,7 @@ model Map_Archive {
   User_ApprovedBy       User?                @relation("Map_Archive_ApprovedByToUser", fields: [approvedBy], references: [id], onDelete: SetNull, onUpdate: Restrict)
   approvedBy            String?
   timeArchived          Int
-  Map_ArchiveToTechs   Map_ArchiveToTechs[]
+  Map_ArchiveToTechs    Map_ArchiveToTechs[]
 
   @@index([approvedBy])
   @@index([canonicalDifficultyId])
@@ -300,7 +300,7 @@ model Mod_Edit {
   timeSubmitted         Int
   User_SubmittedBy      User?            @relation(fields: [submittedBy], references: [id], onDelete: SetNull, onUpdate: Restrict)
   submittedBy           String?
-  Mod_EditToTags       Mod_EditToTags[]
+  Mod_EditToTags        Mod_EditToTags[]
   Mod_NewToTags         Mod_NewToTags[]
 
   @@index([contentWarning])
@@ -341,7 +341,7 @@ model Map_Edit {
   timeSubmitted         Int
   User_SubmittedBy      User?             @relation("Map_Edit_SubmittedByToUser", fields: [submittedBy], references: [id], onDelete: SetNull, onUpdate: Restrict)
   submittedBy           String?
-  Map_EditToTechs      Map_EditToTechs[]
+  Map_EditToTechs       Map_EditToTechs[]
 
   @@index([canonicalDifficultyId])
   @@index([lengthId])
