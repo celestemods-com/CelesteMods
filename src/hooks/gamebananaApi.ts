@@ -114,14 +114,14 @@ export const useGamebananaApiUrl = <
 
 
 type GamebananaScreenshotData = {
-    _nFilesize: number;
-    _sCaption: string;
+    _nFilesize?: number;
+    _sCaption?: string;
     _sFile: string;
-    _sFile100: string;
+    _sFile100?: string;
     _sFile220?: string;
     _sFile530?: string;
     _sFile800?: string;
-    _sTicketId: string;
+    _sTicketId?: string;
 };
 
 
@@ -134,18 +134,18 @@ const isGamebananaScreenshotData = (
 
 
     if (
-        typeof dataObject._nFilesize === "number" &&
-        typeof dataObject._sCaption === "string" &&
+        (!dataObject._nFilesize || typeof dataObject._nFilesize === "number") &&
+        (!dataObject._sCaption || typeof dataObject._sCaption === "string") &&
         typeof dataObject._sFile === "string" &&
-        typeof dataObject._sFile100 === "string" &&
+        (!dataObject._sFile100 || typeof dataObject._sFile100 === "string") &&
         (!dataObject._sFile220 || typeof dataObject._sFile220 === "string") &&
         (!dataObject._sFile530 || typeof dataObject._sFile530 === "string") &&
         (!dataObject._sFile800 || typeof dataObject._sFile800 === "string") &&
-        typeof dataObject._sTicketId === "string"
-    ) return false;
+        (!dataObject._sTicketId || typeof dataObject._sTicketId === "string")
+    ) return true;
 
 
-    return true;
+    return false;
 };
 
 
