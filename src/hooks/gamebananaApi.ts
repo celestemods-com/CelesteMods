@@ -113,15 +113,9 @@ export const useGamebananaApiUrl = <
 
 
 
+/** Contains other properties, but we don't use them so they aren't specified or checked. */
 type GamebananaScreenshotData = {
-    _nFilesize: number;
-    _sCaption: string;
     _sFile: string;
-    _sFile100: string;
-    _sFile220?: string;
-    _sFile530?: string;
-    _sFile800?: string;
-    _sTicketId: string;
 };
 
 
@@ -132,20 +126,9 @@ const isGamebananaScreenshotData = (
 
     const dataObject = data as Record<string, unknown>;
 
+    if (typeof dataObject._sFile === "string") return true;
 
-    if (
-        typeof dataObject._nFilesize === "number" &&
-        typeof dataObject._sCaption === "string" &&
-        typeof dataObject._sFile === "string" &&
-        typeof dataObject._sFile100 === "string" &&
-        (!dataObject._sFile220 || typeof dataObject._sFile220 === "string") &&
-        (!dataObject._sFile530 || typeof dataObject._sFile530 === "string") &&
-        (!dataObject._sFile800 || typeof dataObject._sFile800 === "string") &&
-        typeof dataObject._sTicketId === "string"
-    ) return false;
-
-
-    return true;
+    return false;
 };
 
 
