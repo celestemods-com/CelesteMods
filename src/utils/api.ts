@@ -44,6 +44,14 @@ export const api = createTRPCNext<AppRouter>({
           maxURLLength: 2083,
         }),
       ],
+      queryClientConfig: {
+        defaultOptions: {
+          queries: {
+            refetchOnWindowFocus: false,
+            refetchInterval: 15 * 60 * 1000,
+          }
+        }
+      }
     };
   },
   /**
