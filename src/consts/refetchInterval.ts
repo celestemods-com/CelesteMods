@@ -1,0 +1,1 @@
+export const REFETCH_INTERVAL_SECONDS = 5 * 60;
