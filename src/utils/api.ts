@@ -8,6 +8,7 @@ import { httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCNext } from "@trpc/next";
 import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server";
 import superjson from "superjson";
+import { REFETCH_INTERVAL_SECONDS } from "~/consts/refetchInterval";
 
 import { type AppRouter } from "~/server/api/root";
 
@@ -44,6 +45,14 @@ export const api = createTRPCNext<AppRouter>({
           maxURLLength: 2083,
         }),
       ],
+      queryClientConfig: {
+        defaultOptions: {
+          queries: {
+            refetchOnWindowFocus: false,
+            refetchInterval: REFETCH_INTERVAL_SECONDS * 1000,
+          },
+        },
+      },
     };
   },
   /**
