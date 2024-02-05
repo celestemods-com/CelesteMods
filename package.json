@@ -11,7 +11,7 @@
     "db-reset": "npx prisma migrate reset"
   },
   "dependencies": {
-    "@emotion/react": "^11.11.1",
+    "@emotion/react": "^11.11.3",
     "@emotion/server": "^11.11.0",
     "@mantine/carousel": "^6.0.16",
     "@mantine/core": "^6.0.16",
