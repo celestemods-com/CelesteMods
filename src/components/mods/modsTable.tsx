@@ -11,6 +11,7 @@ import { ListSelect } from "~/components/filterPopovers/listSelect";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import type { ModWithInfo } from "~/components/mods/types";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
+import { colorsForDifficultyIndex, difficultyColors } from "~/styles/colors";
 
 
 
@@ -20,88 +21,127 @@ const DEFAULT_PAGE_SIZE_INDEX = 1;
 
 
 const useStyles = createStyles(
-    (theme) => ({
-        tabContainer: {
-            padding: "0 15px",
-            display: "flex",
-            justifyContent: "end",
-        },
-        tab: {
-            color: "white",
-            padding: "1px 20px",
-            display: "inline-block",
-            borderTopLeftRadius: "5px",
-            borderTopRightRadius: "5px",
-            fontSize: "medium",
-            cursor: "pointer",
-            fontWeight: "bold",
-        },
-        tab1: {
-            backgroundColor: "#263972"
-        },
-        tab2: {
-            backgroundColor: "#0b6aba"
-        },
-        tab3: {
-            backgroundColor: "#413a98"
-        },
-        tab4: {
-            backgroundColor: "#84419e"
-        },
-        tab5: {
-            backgroundColor: "#6f057e"
-        },
-        table: {
-            "&&&& table": {
-                transform: "translate(0, -21px)",
-                borderSpacing: "0 20px",
-                padding: "0 15px"
+    (theme, { difficultyIndex }: { difficultyIndex: number | null }) => {
+        let colors;
+        if (difficultyIndex === null) {
+            colors = null;
+        }
+        else {
+            colors = colorsForDifficultyIndex(difficultyIndex);
+        }
+
+        return ({
+            tabContainer: {
+                padding: "0 15px",
+                display: "flex",
+                justifyContent: "end",
             },
-            "&&&& thead": {
-                top: "20px",
-            },
-            "&&&& tr": {
-                backgroundColor: "transparent",
-            },
-            "&&&& table + div": {
-                // Removes the shadow below the table header
-                display: "none",
-            }
-        },
-        modCell: {
-            //4 ampersands to increase selectivity of class to ensure it overrides any other css
-            "&&&&": {
-                /* top | left and right | bottom */
-                padding: `${theme.spacing.sm} ${theme.spacing.xl} ${theme.spacing.sm}`,
-                backgroundColor: "#e1e1e2",
-                color: theme.black,
-                borderWidth: 0,
+            tab: {
+                color: "white",
+                padding: "1px 20px",
+                display: "inline-block",
+                borderTopLeftRadius: "5px",
+                borderTopRightRadius: "5px",
+                fontSize: "medium",
+                cursor: "pointer",
                 fontWeight: "bold",
             },
-        },
-        expandedModCell: {
-            borderBottomLeftRadius: 0,
-            borderBottomRightRadius: 0,
-        },
-        header: {
-            "&&&& th": {
-                fontWeight: "bold",
-                color: theme.white,
-                fontSize: "17px",
-                padding: "10px",
-                textAlign: "center",
-                border: "none",
-            }
-        },
-        leftColumnCell: {
-            borderTopLeftRadius: "50px",
-            borderBottomLeftRadius: "50px",
-        },
-        rightColumnCell: {
-            borderTopRightRadius: "50px",
-            borderBottomRightRadius: "50px",
-        },
-    }),
+            pagination: {
+                "button": {
+                    border: "none",
+                },
+                backgroundColor: colors ? colors.primary : "black",
+                color: "white",
+                "&&&& button": {
+                    backgroundColor: colors ? colors.secondary : "black",
+                },
+                "&&&& button:hover": {
+                    backgroundColor: colors ? colors.secondaryHover : "black",
+                },
+                '&&&&& button[data-active]': {
+                    backgroundColor: colors ? colors.primaryHover1 : "black",
+                },
+                '&&&&& button[data-active]:hover': {
+                    backgroundColor: colors ? colors.primaryHover2 : "black",
+                },
+                '&&&&&& button[data-disabled]': {
+                    backgroundColor: colors ? colors.secondaryDisabled : "black",
+                },
+            },
+            beginner: {
+                backgroundColor: difficultyColors.beginner.primary,
+            },
+            intermediate: {
+                backgroundColor: difficultyColors.intermediate.primary,
+            },
+            advanced: {
+                backgroundColor: difficultyColors.advanced.primary,
+            },
+            expert: {
+                backgroundColor: difficultyColors.expert.primary,
+            },
+            grandmaster: {
+                backgroundColor: difficultyColors.grandmaster.primary,
+            },
+            table: {
+                "&&&& table": {
+                    transform: "translate(0, -21px)",
+                    borderSpacing: "0 20px",
+                    padding: "0 15px"
+                },
+                "&&&& thead": {
+                    top: "20px",
+                },
+                "&&&& tr": {
+                    backgroundColor: "transparent",
+                },
+                "&&&& table + div": {
+                    // Removes the shadow below the table header
+                    display: "none",
+                }
+            },
+            modCell: {
+                //4 ampersands to increase selectivity of class to ensure it overrides any other css
+                "&&&&": {
+                    /* top | left and right | bottom */
+                    padding: `${theme.spacing.sm} ${theme.spacing.xl} ${theme.spacing.sm}`,
+                    backgroundColor: "#e1e1e2",
+                    color: theme.black,
+                    borderWidth: 0,
+                    fontWeight: "bold",
+                },
+            },
+            expandedModCell: {
+                borderBottomLeftRadius: 0,
+                borderBottomRightRadius: 0,
+            },
+            header: {
+                "&&&& th": {
+                    fontWeight: "bold",
+                    color: theme.white,
+                    fontSize: "17px",
+                    padding: "10px",
+                    textAlign: "center",
+                    border: "none",
+                    backgroundColor: colors ? colors.primary : "black",
+                    "svg": {
+                        color: "white",
+                    }
+                },
+                "&&&& th:hover": {
+                    backgroundColor: colors ? colors.primaryHover1 : "black",
+                },
+            },
+            leftColumnCell: {
+                borderTopLeftRadius: "50px",
+                borderBottomLeftRadius: "50px",
+            },
+            rightColumnCell: {
+                borderTopRightRadius: "50px",
+                borderBottomRightRadius: "50px",
+            },
+        });
+    }
 );
 
 
@@ -438,10 +478,37 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
 
 
 
+    const { cx, classes } = useStyles({ difficultyIndex: currentTabIndex });
 
-    const { cx, classes } = useStyles();
+    const tabColors = [
+        classes.beginner,
+        classes.intermediate,
+        classes.advanced,
+        classes.expert,
+        classes.grandmaster
+    ];
 
-    const tabColors = [classes.tab1, classes.tab2, classes.tab3, classes.tab4, classes.tab5];
+    useEffect(() => {
+        const menuClassNames = [
+            "beginnerMenu",
+            "intermediateMenu",
+            "advancedMenu",
+            "expertMenu",
+            "grandmasterMenu",
+        ];
+        if (currentTabIndex !== null) {
+            const body = document.querySelector('body')!;
+            const menuClassName = menuClassNames[currentTabIndex];
+            if (!menuClassName) {
+                throw 'Difficulty index is outside the range of colors.';
+            }
+
+            body.classList.add(menuClassName);
+            return () => {
+                body.classList.remove(menuClassName);
+            };
+        }
+    }, [currentTabIndex]);
 
     return (
         <>
@@ -458,7 +525,11 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                 }
             </div>
             <DataTable
-                classNames={{ root: classes.table, header: currentTabIndex !== null ? cx(classes.header, tabColors[currentTabIndex]) : classes.header, pagination: currentTabIndex !== null ? tabColors[currentTabIndex] : "" }}
+                classNames={{
+                    root: classes.table,
+                    header: classes.header,
+                    pagination: classes.pagination,
+                }}
                 defaultColumnProps={{
                     cellsClassName: (record) => {
                         return cx(
@@ -487,6 +558,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                                 label="Name"
                                 description="Show mods whose names include the specified text"
                                 placeholder="Search names..."
+                                difficultyIndex={currentTabIndex}
                             />
                         ),
                         filtering: nameQuery !== "",
@@ -516,6 +588,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                                     description: "Minimum",
                                     placeholder: "Set minimum..."
                                 }}
+                                difficultyIndex={currentTabIndex}
                             />
                         ),
                         filtering: mapCountRange[0] !== undefined || mapCountRange[1] !== undefined,
@@ -529,6 +602,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                                 permittedStrings={getNonEmptyArray(modTypes)}
                                 selectedStrings={selectedModTypes}
                                 setSelectedStrings={setSelectedModTypes}
+                                difficultyIndex={currentTabIndex}
                             />
                         ),
                         filtering: !!selectedModTypes.length,
@@ -543,6 +617,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                                 permittedStrings={qualityNames}
                                 selectedStrings={selectedQualities}
                                 setSelectedStrings={setSelectedQualities}
+                                difficultyIndex={currentTabIndex}
                             />
                         ),
                         filtering: !!selectedQualities.length,
@@ -557,6 +632,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                                 permittedStrings={childDifficultyNames}
                                 selectedStrings={selectedChildDifficulties}
                                 setSelectedStrings={setSelectedChildDifficulties}
+                                difficultyIndex={currentTabIndex}
                             />
                         ),
                         filtering: !!selectedChildDifficulties.length,
