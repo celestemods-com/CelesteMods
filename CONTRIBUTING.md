@@ -17,13 +17,13 @@ If you're experiencing behavior that appears to be a bug in the CML website/serv
 
 When you're ready to file an issue, please use the [bug report template](https://github.com/celestemods-com/CelesteMods/issues/new?labels=type%3A+bug&template=bug_report.md).
 
-## Requesting a Feature
+## Requesting A Feature
 You're also welcome to submit [feature requests](https://github.com/celestemods-com/CelesteMods/issues/new?template=feature_request.md). When doing so, please [search the issue list](https://github.com/celestemods-com/CelesteMods/search?type=Issues) to see if the enhancement has already been filed. If it has, vote for it (add a reaction to it) and optionally add a comment with your perspective on the idea. 
 
 See RStudio's [guide to writing feature requests](https://github.com/rstudio/rstudio/wiki/Writing-Good-Feature-Requests) for more on how to write a great feature request.  <!--TODO: Make our own version of this document or incorporate it into this file-->
 
 
-## Submitting a Pull Request
+## Submitting A Pull Request
 Thanks in advance for your contribution.
 
 1. Follow the usual git workflow for submitting a pull request:
