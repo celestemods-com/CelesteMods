@@ -22,13 +22,7 @@ const DEFAULT_PAGE_SIZE_INDEX = 1;
 
 const useStyles = createStyles(
     (theme, { difficultyIndex }: { difficultyIndex: number | null }) => {
-        let colors;
-        if (difficultyIndex === null) {
-            colors = null;
-        }
-        else {
-            colors = colorsForDifficultyIndex(difficultyIndex);
-        }
+        const colors = colorsForDifficultyIndex(difficultyIndex);
 
         return ({
             tabContainer: {

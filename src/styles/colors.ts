@@ -39,9 +39,12 @@ export const difficultyColors = {
         secondaryHover: "#c362cd",
         secondaryDisabled: "#833d70",
     },
-};
+} as const; // defined `as const` for more useful intellisense
 
-export function colorsForDifficultyIndex(difficultyIndex: number) {
+
+
+
+export function colorsForDifficultyIndex(difficultyIndex: number | null) {
     const listOfColors = [
         difficultyColors.beginner,
         difficultyColors.intermediate,
@@ -49,10 +52,18 @@ export function colorsForDifficultyIndex(difficultyIndex: number) {
         difficultyColors.expert,
         difficultyColors.grandmaster,
     ];
-    const colors = listOfColors[difficultyIndex];
+
+    const greatestValidDifficultyIndex = listOfColors.length - 1;
+
+    const validDifficultyIndex = (difficultyIndex === null || difficultyIndex > greatestValidDifficultyIndex) ? greatestValidDifficultyIndex : difficultyIndex;
+
+
+    const colors = listOfColors[validDifficultyIndex];
 
     if (!colors) {
-        throw 'Difficulty index is outside the range of colors.';
+        throw "colors is undefined";
     }
+
+
     return colors;
 }
