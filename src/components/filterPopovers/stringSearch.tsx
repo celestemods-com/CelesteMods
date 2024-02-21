@@ -1,20 +1,16 @@
 import { ActionIcon, TextInput, createStyles, type TextInputProps } from "@mantine/core";
-import { type Dispatch, type SetStateAction } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { X, type IconProps } from "tabler-icons-react";
 import { colorsForDifficultyIndex } from "~/styles/colors";
 
 
 
 
-type StringSearchProps = {
-    value: string;
-    setValue: Dispatch<SetStateAction<string>>;
-    iconProps?: IconProps;
-    difficultyIndex: number | null,
-} & TextInputProps;
-
-
-const useStyles = createStyles((_, { difficultyIndex }: { difficultyIndex: number | null }) => {
+const useStyles = createStyles(
+    (
+        _theme,
+        { difficultyIndex }: { difficultyIndex: number | null; }
+    ) => {
         if (difficultyIndex === null) {
             return {
                 box: {},
@@ -26,7 +22,10 @@ const useStyles = createStyles((_, { difficultyIndex }: { difficultyIndex: numbe
             };
         }
 
+
         const colors = colorsForDifficultyIndex(difficultyIndex);
+
+
         return {
             box: {
                 padding: '10px',
@@ -71,8 +70,22 @@ const useStyles = createStyles((_, { difficultyIndex }: { difficultyIndex: numbe
     }
 );
 
+
+
+
+type StringSearchProps = {
+    value: string;
+    setValue: Dispatch<SetStateAction<string>>;
+    iconProps?: IconProps;
+    difficultyIndex: number | null,
+} & TextInputProps;
+
+
+
+
 export const StringSearch = (props: StringSearchProps) => {
     const { classes } = useStyles({ difficultyIndex: props.difficultyIndex });
+
 
     return (
         <div className={classes.box}>

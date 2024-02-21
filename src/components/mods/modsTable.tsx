@@ -21,9 +21,13 @@ const DEFAULT_PAGE_SIZE_INDEX = 1;
 
 
 const useStyles = createStyles(
-    (theme, { difficultyIndex }: { difficultyIndex: number | null }) => {
+    (
+        theme,
+        { difficultyIndex }: { difficultyIndex: number | null; }
+    ) => {
         const colors = colorsForDifficultyIndex(difficultyIndex);
 
+        
         return ({
             tabContainer: {
                 padding: "0 15px",
@@ -209,7 +213,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
 
             const parentDifficultyName = parentDifficultyNames[currentTabIndex];
             if (parentDifficultyName === undefined) throw `Tab index ${currentTabIndex} is outside the range of ${parentDifficultyNames.length} tabs.`;
-            
+
             const childDifficulties = difficulties
                 .filter((difficulty) => difficulty.parentDifficultyId !== 0 && difficulty.name.startsWith(parentDifficultyName))
                 .sort((a, b) => a.order - b.order)  //easier difficulties have lower orders, and we want them to sort first
@@ -217,7 +221,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                     const childDifficulty = difficulty.name.split(' ')[1];
 
                     if (childDifficulty === undefined) throw `${difficulty.name} is not of the form '<parentDifficulty>: <childDifficulty>'.`;
-                
+
                     return childDifficulty;
                 });
 
@@ -502,16 +506,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
 
 
 
-    const { cx, classes } = useStyles({ difficultyIndex: currentTabIndex });
-
-    const tabColors = [
-        classes.beginner,
-        classes.intermediate,
-        classes.advanced,
-        classes.expert,
-        classes.grandmaster
-    ];
-
+    // apply the correct class to the body element to change the background color of the pagination dropdown
     useEffect(() => {
         const menuClassNames = [
             "beginnerMenu",
@@ -533,6 +528,17 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
             };
         }
     }, [currentTabIndex]);
+
+
+    const { cx, classes } = useStyles({ difficultyIndex: currentTabIndex });
+
+    const tabColors = [
+        classes.beginner,
+        classes.intermediate,
+        classes.advanced,
+        classes.expert,
+        classes.grandmaster
+    ];
 
     return (
         <>

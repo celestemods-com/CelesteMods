@@ -1,11 +1,85 @@
-import { type Dispatch, type SetStateAction } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { NumberInput, Stack, type NumberInputProps, createStyles } from "@mantine/core";
 import { colorsForDifficultyIndex } from "~/styles/colors";
 
 
 
 
-type MapCountRange = [number | undefined, number | undefined];  //[min, max]
+const useStyles = createStyles(
+    (
+        _theme,
+        { difficultyIndex }: { difficultyIndex: number | null; }
+    ) => {
+        if (difficultyIndex === null) {
+            return {
+                box: {},
+                root: {},
+                label: {},
+                description: {},
+                input: {},
+                control: {},
+            };
+        }
+
+
+        const colors = colorsForDifficultyIndex(difficultyIndex);
+
+
+        return {
+            box: {
+                padding: '10px',
+                backgroundColor: colors.primary,
+                "label": {
+                    color: "white",
+                },
+                // Style the arrow on top of the box.
+                "+ div": {
+                    backgroundColor: colors.primary,
+                }
+            },
+            root: {
+                "&&&&": {
+                    color: "white",
+                }
+            },
+            label: {
+                "&&&&": {
+                    color: "white",
+                }
+            },
+            description: {
+                "&&&&": {
+                    color: "white",
+                }
+            },
+            input: {
+                "&&&&": {
+                    color: 'white',
+                    borderColor: 'white',
+                    backgroundColor: 'transparent',
+                },
+                "::placeholder": {
+                    color: "white",
+                },
+            },
+            control: {
+                "&&&&": {
+                    color: "white",
+                    border: "none",
+                    ":hover": {
+                        backgroundColor: colors.primaryHover2,
+                    }
+                },
+            }
+        };
+    }
+);
+
+
+
+
+/** [min, max] */
+type MapCountRange = [number | undefined, number | undefined];
 
 type NumberSearchProps = {
     range: MapCountRange;
@@ -15,72 +89,12 @@ type NumberSearchProps = {
     difficultyIndex: number | null;
 };
 
-const useStyles = createStyles((_, { difficultyIndex }: { difficultyIndex: number | null }) => {
-    if (difficultyIndex === null) {
-        return {
-            box: {},
-            root: {},
-            label: {},
-            description: {},
-            input: {},
-            control: {},
-        };
-    }
 
-    const colors = colorsForDifficultyIndex(difficultyIndex);
-    return {
-        box: {
-            padding: '10px',
-            backgroundColor: colors.primary,
-            "label": {
-                color: "white",
-            },
-            // Style the arrow on top of the box.
-            "+ div": {
-                backgroundColor: colors.primary,
-            }
-        },
-        root: {
-            "&&&&": {
-                color: "white",
-            }
-        },
-        label: {
-            "&&&&": {
-                color: "white",
-            }
-        },
-        description: {
-            "&&&&": {
-                color: "white",
-            }
-        },
-        input: {
-            "&&&&": {
-                color: 'white',
-                borderColor: 'white',
-                backgroundColor: 'transparent',
-            },
-            "::placeholder": {
-                color: "white",
-            },
-        },
-        control: {
-            "&&&&": {
-                color: "white",
-                border: "none",
-                ":hover": {
-                    backgroundColor: colors.primaryHover2,
-                }
-            },
-        }
-    };
-}
-);
 
 
 export const NumberSearch = ({ range, setRange, maxProps, minProps, difficultyIndex }: NumberSearchProps) => {
     const { classes } = useStyles({ difficultyIndex });
+
 
     return (
         <div className={classes.box}>
