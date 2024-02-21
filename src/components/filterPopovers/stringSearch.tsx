@@ -1,7 +1,7 @@
 import { ActionIcon, TextInput, createStyles, type TextInputProps } from "@mantine/core";
 import type { Dispatch, SetStateAction } from "react";
 import { X, type IconProps } from "tabler-icons-react";
-import { colorsForDifficultyIndex } from "~/styles/colors";
+import { colorsForDifficultyIndex } from "~/styles/mods-colors";
 
 
 
