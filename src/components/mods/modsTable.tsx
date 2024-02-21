@@ -11,7 +11,7 @@ import { ListSelect } from "~/components/filterPopovers/listSelect";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import type { ModWithInfo } from "~/components/mods/types";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
-import { colorsForDifficultyIndex, difficultyColors } from "~/styles/mods-colors";
+import { colorsForDifficultyIndex, difficultyColors, greatestValidDifficultyIndex } from "~/styles/mods-colors";
 
 
 
@@ -27,7 +27,7 @@ const useStyles = createStyles(
     ) => {
         const colors = colorsForDifficultyIndex(difficultyIndex);
 
-        
+
         return ({
             tabContainer: {
                 padding: "0 15px",
@@ -515,14 +515,27 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
             "expertMenu",
             "grandmasterMenu",
         ];
+
+
         if (currentTabIndex !== null) {
-            const body = document.querySelector('body')!;
-            const menuClassName = menuClassNames[currentTabIndex];
+            const body = document.querySelector('body');
+
+            if (body === null) return;  // body is null in SSR
+
+
+            const validTabIndex = currentTabIndex > greatestValidDifficultyIndex ? greatestValidDifficultyIndex : currentTabIndex;
+
+
+            const menuClassName = menuClassNames[validTabIndex];
+
             if (!menuClassName) {
-                throw 'Difficulty index is outside the range of colors.';
+                throw "menuClassName is undefined";
             }
 
+
             body.classList.add(menuClassName);
+
+
             return () => {
                 body.classList.remove(menuClassName);
             };
@@ -544,13 +557,22 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
         <>
             <div className={classes.tabContainer}>
                 {
-                    [...parentDifficultyNames].reverse().map((name, index) =>
-                        <span
-                            key={name}
-                            className={cx(classes.tab, tabColors[parentDifficultyNames.length - 1 - index])}
-                            onClick={() => {
-                                setCurrentTabIndex(parentDifficultyNames.length - 1 - index);
-                            }}>{name}</span>
+                    [...parentDifficultyNames].reverse().map(
+                        (name, index) =>
+                            <span
+                                key={name}
+                                className={
+                                    cx(
+                                        classes.tab,
+                                        tabColors[parentDifficultyNames.length - 1 - index],
+                                    )
+                                }
+                                onClick={() => {
+                                    setCurrentTabIndex(parentDifficultyNames.length - 1 - index);
+                                }}
+                            >
+                                {name}
+                            </span>
                     )
                 }
             </div>
