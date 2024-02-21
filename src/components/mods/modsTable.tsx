@@ -252,12 +252,20 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
 
     //handle filtering
     const [nameQuery, setNameQuery] = useState<string>("");
-    const [debouncedNameQuery, cancelDebouncedNameQueryChange] = useDebouncedValue(nameQuery, 200);
+    const [debouncedNameQuery, _cancelDebouncedNameQueryChange] = useDebouncedValue(nameQuery, 200);
+    const isNameFiltered = nameQuery !== "";
 
     const [mapCountRange, setMapCountRange] = useState<[number | undefined, number | undefined]>([undefined, undefined]);     //[min, max]
+    const isMapCountFiltered = mapCountRange[0] !== undefined || mapCountRange[1] !== undefined;
+
     const [selectedModTypes, setSelectedModTypes] = useState<ModType[]>([]);
+    const isModTypeFiltered = selectedModTypes.length > 0;
+
     const [selectedQualities, setSelectedQualities] = useState<string[]>([]);
+    const isQualityFiltered = selectedQualities.length > 0;
+
     const [selectedChildDifficulties, setSelectedChildDifficulties] = useState<string[]>([]);
+    const isChildDifficultyFiltered = selectedChildDifficulties.length > 0;
 
     // Reset tab index if the difficulties change.
     useEffect(() => {
@@ -583,8 +591,8 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                                 difficultyIndex={currentTabIndex}
                             />
                         ),
-                        filtering: nameQuery !== "",
-                        titleClassName: nameQuery !== "" ? classes.filteredColumnTitle : classes.columnTitle,
+                        filtering: isNameFiltered,
+                        titleClassName: isNameFiltered ? classes.filteredColumnTitle : classes.columnTitle,
                         cellsClassName: (record) => {
                             return cx(
                                 classes.modCell,
@@ -614,8 +622,8 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                                 difficultyIndex={currentTabIndex}
                             />
                         ),
-                        filtering: mapCountRange[0] !== undefined || mapCountRange[1] !== undefined,
-                        titleClassName: (mapCountRange[0] !== undefined || mapCountRange[1] !== undefined) ? classes.filteredColumnTitle : classes.columnTitle
+                        filtering: isMapCountFiltered,
+                        titleClassName: isMapCountFiltered ? classes.filteredColumnTitle : classes.columnTitle,
                     },
                     {
                         accessor: "type",
@@ -629,8 +637,8 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                                 difficultyIndex={currentTabIndex}
                             />
                         ),
-                        filtering: !!selectedModTypes.length,
-                        titleClassName: !!selectedModTypes.length ? classes.filteredColumnTitle : classes.columnTitle
+                        filtering: isModTypeFiltered,
+                        titleClassName: isModTypeFiltered ? classes.filteredColumnTitle : classes.columnTitle
                     },
                     {
                         accessor: "Quality",
@@ -645,8 +653,8 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                                 difficultyIndex={currentTabIndex}
                             />
                         ),
-                        filtering: !!selectedQualities.length,
-                        titleClassName: !!selectedQualities.length ? classes.filteredColumnTitle : classes.columnTitle
+                        filtering: isQualityFiltered,
+                        titleClassName: isQualityFiltered ? classes.filteredColumnTitle : classes.columnTitle
                     },
                     {
                         accessor: "Difficulty",
@@ -661,8 +669,8 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                                 difficultyIndex={currentTabIndex}
                             />
                         ),
-                        filtering: !!selectedChildDifficulties.length,
-                        titleClassName: !!selectedChildDifficulties.length ? classes.filteredColumnTitle : classes.columnTitle,
+                        filtering: isChildDifficultyFiltered,
+                        titleClassName: isChildDifficultyFiltered ? classes.filteredColumnTitle : classes.columnTitle,
                         cellsClassName: (record) => {
                             return cx(
                                 classes.modCell,
