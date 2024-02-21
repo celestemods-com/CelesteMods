@@ -1,4 +1,4 @@
-# Contributing to CelesteMods.com
+# Contributing To CelesteMods.com
 
 Contributions to CelesteMods.com are always welcome but please try to follow these guidelines when sending in something as it will help addressing the issue quicker and more smoothly.
 
