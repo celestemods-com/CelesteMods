@@ -14,3 +14,61 @@ a {
 * {
   box-sizing: border-box;
 }
+
+
+
+.mantine-Popover-dropdown.mantine-Popover-dropdown {
+  padding: 0;
+  border: 0;
+}
+
+.beginnerMenu .mantine-Menu-dropdown.mantine-Menu-dropdown {
+  background-color: #263972;
+  border: 0;
+}
+.beginnerMenu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
+  background-color: #576ba9;
+}
+.beginnerMenu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
+  background-color: #6a86b9;
+}
+
+.intermediateMenu .mantine-Menu-dropdown.mantine-Menu-dropdown {
+  background-color: #0b6aba;
+}
+.intermediateMenu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
+  background-color: #2a83c8;
+}
+.intermediateMenu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
+  background-color: #3f9bd2;
+}
+
+.advancedMenu .mantine-Menu-dropdown.mantine-Menu-dropdown {
+  background-color: #413a98;
+}
+.advancedMenu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
+  background-color: #605bba;
+}
+.advancedMenu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
+  background-color: #776fd2;
+}
+
+.expertMenu .mantine-Menu-dropdown.mantine-Menu-dropdown {
+  background-color: #84419e;
+}
+.expertMenu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
+  background-color: #a966bb;
+}
+.expertMenu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
+  background-color: #bd82d3;
+}
+
+.grandmasterMenu .mantine-Menu-dropdown.mantine-Menu-dropdown {
+  background-color: #6f057e;
+}
+.grandmasterMenu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
+  background-color: #8f1b9b;
+}
+.grandmasterMenu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
+  background-color: #a238b4;
+}
