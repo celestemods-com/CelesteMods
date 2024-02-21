@@ -124,6 +124,11 @@ const useStyles = createStyles(
                     textAlign: "center",
                     border: "none",
                     backgroundColor: colors ? colors.primary : "black",
+                    // The down arrow appears blurry due to rotation, so we zoom in to fix that.
+                    // https://stackoverflow.com/a/53556981
+                    ".mantine-Center-root": {
+                        zoom: 1.05,
+                    },
                     "svg": {
                         color: "white",
                     }
@@ -131,6 +136,23 @@ const useStyles = createStyles(
                 "&&&& th:hover": {
                     backgroundColor: colors ? colors.primaryHover1 : "black",
                 },
+            },
+            columnTitle: {
+                "&&&& .mantine-UnstyledButton-root": {
+                    border: "none",
+                    ":hover": {
+                        backgroundColor: colors ? colors.primaryHover2 : "black",
+                    }
+                }
+            },
+            filteredColumnTitle: {
+                "&&&& .mantine-UnstyledButton-root": {
+                    border: "none",
+                    backgroundColor: colors ? colors.primaryHover1 : "black",
+                    ":hover": {
+                        backgroundColor: colors ? colors.primaryHover2 : "black",
+                    }
+                }
             },
             leftColumnCell: {
                 borderTopLeftRadius: "50px",
@@ -562,6 +584,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                             />
                         ),
                         filtering: nameQuery !== "",
+                        titleClassName: nameQuery !== "" ? classes.filteredColumnTitle : classes.columnTitle,
                         cellsClassName: (record) => {
                             return cx(
                                 classes.modCell,
@@ -592,6 +615,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                             />
                         ),
                         filtering: mapCountRange[0] !== undefined || mapCountRange[1] !== undefined,
+                        titleClassName: (mapCountRange[0] !== undefined || mapCountRange[1] !== undefined) ? classes.filteredColumnTitle : classes.columnTitle
                     },
                     {
                         accessor: "type",
@@ -606,6 +630,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                             />
                         ),
                         filtering: !!selectedModTypes.length,
+                        titleClassName: !!selectedModTypes.length ? classes.filteredColumnTitle : classes.columnTitle
                     },
                     {
                         accessor: "Quality",
@@ -621,6 +646,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                             />
                         ),
                         filtering: !!selectedQualities.length,
+                        titleClassName: !!selectedQualities.length ? classes.filteredColumnTitle : classes.columnTitle
                     },
                     {
                         accessor: "Difficulty",
@@ -636,6 +662,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                             />
                         ),
                         filtering: !!selectedChildDifficulties.length,
+                        titleClassName: !!selectedChildDifficulties.length ? classes.filteredColumnTitle : classes.columnTitle,
                         cellsClassName: (record) => {
                             return cx(
                                 classes.modCell,
