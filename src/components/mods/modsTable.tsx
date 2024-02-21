@@ -127,7 +127,7 @@ const useStyles = createStyles(
                     // The down arrow appears blurry due to rotation, so we zoom in to fix that.
                     // https://stackoverflow.com/a/53556981
                     ".mantine-Center-root": {
-                        zoom: 1.05,
+                        zoom: 1.1,
                     },
                     "svg": {
                         color: "white",
