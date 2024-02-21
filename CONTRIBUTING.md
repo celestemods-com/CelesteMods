@@ -7,7 +7,7 @@ __Please do not ask for assistance in using the website in the Issues list.__ Us
 
 ## Filing A Bug Report
 
-If you're experiencing behavior that appears to be a bug in the CML website/server, you're welcome to [file an issue](https://github.com/celestemods-com/CelesteMods/issues/new). Before you do, please go through this pre-flight checklist:
+If you're experiencing behavior that appears to be a bug in the CML website/server, you're welcome to [file an issue](https://github.com/celestemods-com/CelesteMods/issues/new?template=bug_report.md). Before you do, please go through this pre-flight checklist:
 
 1. Is the source of the error or problem the CML website/server itself? Please confirm this by reproducing the issue with all browser extensions disabled. Bonus points if you reproduce it in at least 2 browsers.
 
@@ -20,7 +20,7 @@ When you're ready to file an issue, please use the [bug report template](https:/
 ## Requesting a feature
 Feature requests are welcome.
 
-You're also welcome to submit feature requests. When doing so, please [search the issue list](https://github.com/celestemods-com/CelesteMods/search?type=Issues) to see if the enhancement has already been filed. If it has, vote for it (add a reaction to it) and optionally add a comment with your perspective on the idea. 
+You're also welcome to submit [feature requests](https://github.com/celestemods-com/CelesteMods/issues/new?template=feature_request.md). When doing so, please [search the issue list](https://github.com/celestemods-com/CelesteMods/search?type=Issues) to see if the enhancement has already been filed. If it has, vote for it (add a reaction to it) and optionally add a comment with your perspective on the idea. 
 
 See RStudio's [guide to writing feature requests](https://github.com/rstudio/rstudio/wiki/Writing-Good-Feature-Requests) for more on how to write a great feature request.  <!--TODO: Make our own version of this document or incorporate it into this file-->
 
