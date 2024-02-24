@@ -477,14 +477,13 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(PAGE_SIZES[DEFAULT_PAGE_SIZE_INDEX] ?? 10);
 
-    //reset page when sortStatus or page size changes
+    //reset page when required
     useEffect(() => {
         setPage(1);
-    }, [sortStatus, pageSize, debouncedNameQuery, mapCountRange, selectedModTypes, selectedQualities, selectedChildDifficulties]);
+    }, [sortStatus, pageSize, debouncedNameQuery, mapCountRange, selectedModTypes, selectedQualities, selectedChildDifficulties, currentTabIndex]);
 
     //handle providing datatable with correct subset of data
     // const [records, setRecords] = useState<ModWithInfo[]>(sortedModsWithIsExpanded.slice(0, pageSize));
-
     const records = useMemo(() => {
         const startIndex = (page - 1) * pageSize;
         const endIndex = startIndex + pageSize;
@@ -503,6 +502,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
         // to prevent the sortedModsWithIsExpanded memo function from running again.
         setExpandedRowsIds(expandedRowIds => expandedRowIds.length === 0 ? expandedRowIds : []);
     }, [sortStatus, page, pageSize]);
+
 
 
 
