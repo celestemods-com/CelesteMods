@@ -52,6 +52,10 @@ const ExpandedMod = ({ isLoading, mod }: ExpandedModProps) => {
     const isMapperNameVisiblePermitted = false;
 
 
+    const publicationDateInSeconds = mod.timeCreatedGamebanana;
+    const publicationDate = publicationDateInSeconds > 0 ? new Date(publicationDateInSeconds * 1000) : undefined;
+
+
     const { classes } = useStyles();
 
     if (isLoading) return <Loader />;
@@ -60,7 +64,7 @@ const ExpandedMod = ({ isLoading, mod }: ExpandedModProps) => {
         <Stack justify="center" align="stretch" className={classes.expandedMod} spacing="0">
             <Group position="apart" align="center" className={classes.modDetails}>
                 <PublisherName publisherId={mod.publisherId} />
-                <PublicationDate gamebananaModId={mod.gamebananaModId} />
+                <PublicationDate publicationDate={publicationDate} />
                 <ModDownloadButton gamebananaModId={mod.gamebananaModId} />
                 <Link
                     href={{

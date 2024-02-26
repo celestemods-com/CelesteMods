@@ -1,13 +1,10 @@
-import { Group, Loader, Text } from "@mantine/core";
-import { useEffect, useState } from "react";
-import { useFetch } from "~/hooks/useFetch";
-import { GamebananaApiResponse, useGamebananaApiUrl } from "~/hooks/gamebananaApi";
+import { Text } from "@mantine/core";
 
 
 
 
 type PublicationDateProps = {
-    gamebananaModId: number;
+    publicationDate: Date | undefined;
 };
 
 
@@ -18,50 +15,10 @@ const PUBLICATION_DATE_LABEL = "Published: ";
 
 
 
-const PublicationDate = ({ gamebananaModId }: PublicationDateProps) => {
-    const {queryUrl} = useGamebananaApiUrl({
-        itemType: "Mod",
-        itemId: gamebananaModId,
-        fields: "date",
-    });
-
-
-    //get publication date
-    const [publicationDate, setPublicationDate] = useState<Date>(new Date(0));
-
-    const publicationDateQuery = useFetch<GamebananaApiResponse<false>>(queryUrl);    //TODO!: implement caching
-
-
-    useEffect(() => {
-        const queryData = publicationDateQuery.data;
-
-
-        if (queryData && Array.isArray(queryData) && queryData.length === 1) {
-            const seconds = Number(queryData);
-
-            if (isNaN(seconds)) return;
-
-
-            setPublicationDate(new Date(seconds * 1000));
-        }
-    }, [publicationDateQuery.data]);
-
-
-    if (publicationDateQuery.isLoading) return (
-        <Group position="center">
-            <Text size="md">
-                {PUBLICATION_DATE_LABEL}
-            </Text>
-            <Loader
-                size="sm"
-            />
-        </Group>
-    );
-
-
+const PublicationDate = ({ publicationDate }: PublicationDateProps) => {
     return (
         <Text size="md">
-            {PUBLICATION_DATE_LABEL + publicationDate.toLocaleDateString()}
+            {PUBLICATION_DATE_LABEL + publicationDate === undefined ? "Undefined" : publicationDate?.toLocaleDateString()}
         </Text>
     );
 };
