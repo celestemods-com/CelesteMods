@@ -9,7 +9,7 @@
     "lint": "next lint",
     "start": "next start",
     "db-reset": "npx prisma migrate reset",
-    "deploy": "git fetch && git pull && npm i && npm run build && pm2 restart celestemods --watch"
+    "deploy": "git fetch && pm2 stop celestemods && git pull && npm i && npm run build && pm2 restart celestemods --watch"
   },
   "dependencies": {
     "@emotion/react": "^11.11.3",
