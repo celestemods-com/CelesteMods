@@ -17,7 +17,7 @@ export function CustomHead({
     socialMediaImageUrl,
     socialMediaImageAlt,
 }: CustomHeadProps) {
-    const url = `https://celestemods.com/${pathname}`;
+    const url = `https://celestemods.com/${process.env.NEXT_PUBLIC_BASE_PATH ? `${process.env.NEXT_PUBLIC_BASE_PATH}/` : "" }${pathname}`;
 
 
     return (
@@ -40,14 +40,14 @@ export function CustomHead({
 
             {/* generated using https://realfavicongenerator.net */}
             {/*favicons*/}
-            <link rel="apple-touch-icon" sizes="180x180" href="/images/logo/icon/apple-touch-icon.png" />
-            <link rel="icon" type="image/png" sizes="32x32" href="/images/logo/icon/favicon-32x32.png" />
-            <link rel="icon" type="image/png" sizes="16x16" href="/images/logo/icon/favicon-16x16.png" />
-            <link rel="manifest" href="/images/logo/icon/site.webmanifest" />
-            <link rel="mask-icon" href="/images/logo/icon/safari-pinned-tab.svg" color="#5bbad5" />
-            <link rel="shortcut icon" href="/images/logo/icon/favicon.ico" />
+            <link rel="apple-touch-icon" sizes="180x180" href={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/logo/icon/apple-touch-icon.png`} />
+            <link rel="icon" type="image/png" sizes="32x32" href={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/logo/icon/favicon-32x32.png`} />
+            <link rel="icon" type="image/png" sizes="16x16" href={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/logo/icon/favicon-16x16.png`} />
+            <link rel="manifest" href={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/logo/icon/site.webmanifest`} />
+            <link rel="mask-icon" href={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/logo/icon/safari-pinned-tab.svg`} color="#5bbad5" />
+            <link rel="shortcut icon" href={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/logo/icon/favicon.ico`} />
             <meta name="msapplication-TileColor" content="#2d89ef" />
-            <meta name="msapplication-config" content="/images/logo/icon/browserconfig.xml" />
+            <meta name="msapplication-config" content={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/logo/icon/browserconfig.xml`} />
             <meta name="theme-color" content="#2d89ef" />
 
             {/*Facebook embed stuff*/}
