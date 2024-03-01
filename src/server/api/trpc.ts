@@ -66,11 +66,10 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
  * errors on the backend.
  */
 import { initTRPC, TRPCError } from "@trpc/server";
-import superjson from "superjson";
+import { OpenApiMeta } from 'trpc-openapi';
 import { ZodError } from "zod";
 
-const t = initTRPC.context<typeof createTRPCContext>().create({
-  transformer: superjson,
+const t = initTRPC.context<typeof createTRPCContext>().meta<OpenApiMeta>().create({
   errorFormatter({ shape, error }) {
     return {
       ...shape,

@@ -601,6 +601,16 @@ export const mapRouter = createTRPCRouter({
                 orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
         }),
+    
+    restGetAll: publicProcedure
+        .meta({ openapi: { method: "GET", path: "/map" }})
+        .input(z.void())
+        .output(z.any())
+        .query(({ ctx }) => {
+            return ctx.prisma.map.findMany({
+                select: defaultMapSelect,
+            });
+        }),
 
     getMany: publicProcedure
         .input(

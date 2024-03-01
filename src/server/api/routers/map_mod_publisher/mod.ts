@@ -493,6 +493,16 @@ export const modRouter = createTRPCRouter({
             });
         }),
 
+    restGetAll: publicProcedure
+        .meta({ openapi: { method: "GET", path: "/mod", } })
+        .input(z.void())
+        .output(z.any())
+        .query(({ ctx }) => {
+            return ctx.prisma.mod.findMany({
+                select: defaultModSelect,
+            });
+        }),
+
     getIds: publicProcedure
         .input(modOrderSchema)
         .query(async ({ ctx, input }) => {
