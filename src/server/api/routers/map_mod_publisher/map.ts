@@ -238,6 +238,32 @@ const mapTableNameSchema = z.object({
     tableName: z.enum(mapTableNameArray)
 }).strict();
 
+// Schema for map returned by the REST API.
+const restMapSchema = z.object({
+    id: z.number(),
+    mapperUserId: z.string().nullable(),
+    mapperNameString: z.string(),
+    name: z.string(),
+    canonicalDifficultyId: z.number(),
+    lengthId: z.number(),
+    description: z.string().nullable(),
+    notes: z.string().nullable(),
+    chapter: z.number().nullable(),
+    side: mapSideSchema_NonObject.nullable(),
+    overallRank: z.number().nullable(),
+    mapRemovedFromModBool: z.boolean(),
+    timeSubmitted: z.number(),
+    modId: z.number(),
+    timeApproved: z.number(),
+    MapToTechs: z.object({
+        techId: z.number(),
+        fullClearOnlyBool: z.boolean(),
+    }).array(),
+    MapReview: z.object({ id: z.number() }).array(),
+    Map_Archive: z.object({ id: z.number() }).array(),
+    Map_Edit: z.object({ id: z.number() }).array(),
+});
+
 type MapTableName = typeof mapTableNameArray[number];
 
 
@@ -605,7 +631,7 @@ export const mapRouter = createTRPCRouter({
     restGetAll: publicProcedure
         .meta({ openapi: { method: "GET", path: "/map" }})
         .input(z.void())
-        .output(z.any())
+        .output(restMapSchema.array())
         .query(({ ctx }) => {
             return ctx.prisma.map.findMany({
                 select: defaultMapSelect,

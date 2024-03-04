@@ -149,6 +149,27 @@ const modTableNameSchema = z.object({
     tableName: z.enum(modTableNameArray)
 }).strict();
 
+// Schema for mod returned by the REST API.
+const restModSchema = z.object({
+    id: z.number(),
+    type: modTypeSchema_NonObject,
+    name: z.string(),
+    publisherId: z.number(),
+    contentWarning: z.boolean(),
+    notes: z.string().nullish(),
+    shortDescription: z.string(),
+    longDescription: z.string().nullish(),
+    gamebananaModId: z.number(),
+    timeSubmitted: z.number(),
+    timeCreatedGamebanana: z.number(),
+    timeApproved: z.number(),
+    Map: z.object({ id: z.number() }).array(),
+    Review: z.object({ id: z.number() }).array(),
+    Mod_Archive: z.object({ id: z.number() }).array(),
+    Mod_Edit: z.object({ id: z.number() }).array(),
+    Map_NewSolo: z.object({ id: z.number() }).array(),
+});
+
 type ModTableName = typeof modTableNameArray[number];
 
 
@@ -496,7 +517,7 @@ export const modRouter = createTRPCRouter({
     restGetAll: publicProcedure
         .meta({ openapi: { method: "GET", path: "/mod", } })
         .input(z.void())
-        .output(z.any())
+        .output(restModSchema.array())
         .query(({ ctx }) => {
             return ctx.prisma.mod.findMany({
                 select: defaultModSelect,
