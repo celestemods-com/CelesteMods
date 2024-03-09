@@ -136,10 +136,13 @@ const modPostSchema = z.object({
 }).strict();
 
 
+const modDefaultSelectors = getNonEmptyArray(["publisherId", "timeCreatedGamebanana", "name"] as const);
+const modDefaultDirection = getNonEmptyArray(["asc"] as const);
+
 const modOrderSchema = getCombinedSchema(
     getNonEmptyArray(Prisma.ModScalarFieldEnum),
-    ["publisherId", "timeCreatedGamebanana", "name"],
-    ["asc"],
+    modDefaultSelectors,
+    modDefaultDirection,
 );
 
 
@@ -149,7 +152,7 @@ const modTableNameSchema = z.object({
     tableName: z.enum(modTableNameArray)
 }).strict();
 
-// Schema for mod returned by the REST API.
+/** Schema for mod returned by the REST API. */
 const restModSchema = z.object({
     id: z.number(),
     type: modTypeSchema_NonObject,
@@ -514,13 +517,14 @@ export const modRouter = createTRPCRouter({
             });
         }),
 
-    restGetAll: publicProcedure
-        .meta({ openapi: { method: "GET", path: "/mod", } })
+    rest_getAll: publicProcedure
+        .meta({ openapi: { method: "GET", path: "/mod" } })
         .input(z.void())
         .output(restModSchema.array())
         .query(({ ctx }) => {
             return ctx.prisma.mod.findMany({
                 select: defaultModSelect,
+                orderBy: getOrderObjectArray(modDefaultSelectors, modDefaultDirection),
             });
         }),
 

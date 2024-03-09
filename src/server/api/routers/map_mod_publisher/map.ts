@@ -225,10 +225,13 @@ const mapUpdateSchema = z.union([
 ]);
 
 
+const mapDefaultSelectors = getNonEmptyArray(["modId", "mapRemovedFromModBool", "chapter", "side", "overallRank", "mapperNameString", "id"] as const);
+const mapDefaultDirection = getNonEmptyArray(["asc"] as const);
+
 export const mapOrderSchema = getCombinedSchema(
     getNonEmptyArray(Prisma.MapScalarFieldEnum),
-    ["modId", "mapRemovedFromModBool", "chapter", "side", "overallRank", "mapperNameString", "id"],
-    ["asc"],
+    mapDefaultSelectors,
+    mapDefaultDirection,
 );
 
 
@@ -238,7 +241,7 @@ const mapTableNameSchema = z.object({
     tableName: z.enum(mapTableNameArray)
 }).strict();
 
-// Schema for map returned by the REST API.
+/** Schema for map returned by the REST API. */
 const restMapSchema = z.object({
     id: z.number(),
     mapperUserId: z.string().nullable(),
@@ -628,13 +631,14 @@ export const mapRouter = createTRPCRouter({
             });
         }),
     
-    restGetAll: publicProcedure
+    rest_getAll: publicProcedure
         .meta({ openapi: { method: "GET", path: "/map" }})
         .input(z.void())
         .output(restMapSchema.array())
         .query(({ ctx }) => {
             return ctx.prisma.map.findMany({
                 select: defaultMapSelect,
+                orderBy: getOrderObjectArray(mapDefaultSelectors, mapDefaultDirection),
             });
         }),
 
