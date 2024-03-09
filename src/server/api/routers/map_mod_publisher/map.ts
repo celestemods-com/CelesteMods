@@ -9,13 +9,14 @@ import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { displayNameSchema_NonObject, getUserById, userIdSchema_NonObject } from "../user";
 import { MODLIST_MODERATOR_PERMISSION_STRINGS, checkPermissions } from "../../utils/permissions";
 import { getModById } from "./mod";
+import { getPublisherById } from "./publisher";
 import { difficultyIdSchema_NonObject } from "../difficulty";
 import { lengthIdSchema_NonObject } from "../length";
 import { techIdSchema_NonObject } from "../tech_techVideo/techVideo";
 import { IfElse, ArrayIncludes } from "../../../../utils/typeHelpers";
 import { getCurrentTime } from "../../utils/getCurrentTime";
 import { getCheckedTableNames } from "../../utils/getCheckedTableNames";
-import { getPublisherById } from "./publisher";
+import { zodOutputIdObject } from "../../utils/zodOutputIdObject";
 
 //TODO!: check all routers to make sure disconnect/connect or set are used in any many-to-many relationships
 
@@ -262,9 +263,9 @@ const restMapSchema = z.object({
         techId: z.number(),
         fullClearOnlyBool: z.boolean(),
     }).array(),
-    MapReview: z.object({ id: z.number() }).array(),
-    Map_Archive: z.object({ id: z.number() }).array(),
-    Map_Edit: z.object({ id: z.number() }).array(),
+    MapReview: zodOutputIdObject.array(),
+    Map_Archive: zodOutputIdObject.array(),
+    Map_Edit: zodOutputIdObject.array(),
 });
 
 type MapTableName = typeof mapTableNameArray[number];

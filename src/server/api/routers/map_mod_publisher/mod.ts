@@ -14,6 +14,7 @@ import { getCurrentTime } from "../../utils/getCurrentTime";
 import { selectIdObject } from "../../utils/selectIdObject";
 import { IfElse } from "../../../../utils/typeHelpers";
 import { getCheckedTableNames } from "../../utils/getCheckedTableNames";
+import { zodOutputIdObject } from "../../utils/zodOutputIdObject";
 
 
 
@@ -166,11 +167,11 @@ const restModSchema = z.object({
     timeSubmitted: z.number(),
     timeCreatedGamebanana: z.number(),
     timeApproved: z.number(),
-    Map: z.object({ id: z.number() }).array(),
-    Review: z.object({ id: z.number() }).array(),
-    Mod_Archive: z.object({ id: z.number() }).array(),
-    Mod_Edit: z.object({ id: z.number() }).array(),
-    Map_NewSolo: z.object({ id: z.number() }).array(),
+    Map: zodOutputIdObject.array(),
+    Review: zodOutputIdObject.array(),
+    Mod_Archive: zodOutputIdObject.array(),
+    Mod_Edit: zodOutputIdObject.array(),
+    Map_NewSolo: zodOutputIdObject.array(),
 });
 
 type ModTableName = typeof modTableNameArray[number];
