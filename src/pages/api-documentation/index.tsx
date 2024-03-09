@@ -19,7 +19,7 @@ const ApiDocumentation: NextPage = () => {
         <MantineProvider withGlobalStyles theme={{
             colorScheme: 'light',
         }}>
-            <SwaggerUI url="/api/openapi.json" />
+            <SwaggerUI url={`${process.env.NEXT_PUBLIC_BASE_PATH ? process.env.NEXT_PUBLIC_BASE_PATH : ""}/api/openapi.json`} />
         </MantineProvider>
     );
 };
