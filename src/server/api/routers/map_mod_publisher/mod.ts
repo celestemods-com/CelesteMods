@@ -14,6 +14,7 @@ import { getCurrentTime } from "../../utils/getCurrentTime";
 import { selectIdObject } from "../../utils/selectIdObject";
 import { IfElse } from "../../../../utils/typeHelpers";
 import { getCheckedTableNames } from "../../utils/getCheckedTableNames";
+import { zodOutputIdObject } from "../../utils/zodOutputIdObject";
 
 
 
@@ -136,10 +137,13 @@ const modPostSchema = z.object({
 }).strict();
 
 
+const modDefaultSelectors = getNonEmptyArray(["publisherId", "timeCreatedGamebanana", "name"] as const);
+const modDefaultDirection = getNonEmptyArray(["asc"] as const);
+
 const modOrderSchema = getCombinedSchema(
     getNonEmptyArray(Prisma.ModScalarFieldEnum),
-    ["publisherId", "timeCreatedGamebanana", "name"],
-    ["asc"],
+    modDefaultSelectors,
+    modDefaultDirection,
 );
 
 
@@ -148,6 +152,27 @@ const modTableNameArray = getCheckedTableNames(["Mod", "Mod_Archive", "Mod_Edit"
 const modTableNameSchema = z.object({
     tableName: z.enum(modTableNameArray)
 }).strict();
+
+/** Schema for mod returned by the REST API. */
+const restModSchema = z.object({
+    id: z.number(),
+    type: modTypeSchema_NonObject,
+    name: z.string(),
+    publisherId: z.number(),
+    contentWarning: z.boolean(),
+    notes: z.string().nullable(),
+    shortDescription: z.string(),
+    longDescription: z.string().nullable(),
+    gamebananaModId: z.number(),
+    timeSubmitted: z.number(),
+    timeCreatedGamebanana: z.number(),
+    timeApproved: z.number(),
+    Map: zodOutputIdObject.array(),
+    Review: zodOutputIdObject.array(),
+    Mod_Archive: zodOutputIdObject.array(),
+    Mod_Edit: zodOutputIdObject.array(),
+    Map_NewSolo: zodOutputIdObject.array(),
+});
 
 type ModTableName = typeof modTableNameArray[number];
 
@@ -490,6 +515,17 @@ export const modRouter = createTRPCRouter({
             return ctx.prisma.mod.findMany({
                 select: defaultModSelect,
                 orderBy: getOrderObjectArray(input.selectors, input.directions),
+            });
+        }),
+
+    rest_getAll: publicProcedure
+        .meta({ openapi: { method: "GET", path: "/mods" } })
+        .input(z.void())
+        .output(restModSchema.array())
+        .query(({ ctx }) => {
+            return ctx.prisma.mod.findMany({
+                select: defaultModSelect,
+                orderBy: getOrderObjectArray(modDefaultSelectors, modDefaultDirection),
             });
         }),
 

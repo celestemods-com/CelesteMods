@@ -39,8 +39,9 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "sharp": "^0.33.2",
-    "superjson": "2.2.1",
+    "swagger-ui-react": "^5.11.8",
     "tabler-icons-react": "^1.56.0",
+    "trpc-openapi": "^1.2.0",
     "trpc-panel": "^1.3.4",
     "zod": "^3.22.4"
   },
@@ -49,6 +50,7 @@
     "@types/node": "^20.11.16",
     "@types/react": "^18.2.54",
     "@types/react-dom": "^18.2.18",
+    "@types/swagger-ui-react": "^4.18.3",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.56.0",

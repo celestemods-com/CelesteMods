@@ -9,13 +9,14 @@ import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { displayNameSchema_NonObject, getUserById, userIdSchema_NonObject } from "../user";
 import { MODLIST_MODERATOR_PERMISSION_STRINGS, checkPermissions } from "../../utils/permissions";
 import { getModById } from "./mod";
+import { getPublisherById } from "./publisher";
 import { difficultyIdSchema_NonObject } from "../difficulty";
 import { lengthIdSchema_NonObject } from "../length";
 import { techIdSchema_NonObject } from "../tech_techVideo/techVideo";
 import { IfElse, ArrayIncludes } from "../../../../utils/typeHelpers";
 import { getCurrentTime } from "../../utils/getCurrentTime";
 import { getCheckedTableNames } from "../../utils/getCheckedTableNames";
-import { getPublisherById } from "./publisher";
+import { zodOutputIdObject } from "../../utils/zodOutputIdObject";
 
 //TODO!: check all routers to make sure disconnect/connect or set are used in any many-to-many relationships
 
@@ -225,10 +226,13 @@ const mapUpdateSchema = z.union([
 ]);
 
 
+const mapDefaultSelectors = getNonEmptyArray(["modId", "mapRemovedFromModBool", "chapter", "side", "overallRank", "mapperNameString", "id"] as const);
+const mapDefaultDirection = getNonEmptyArray(["asc"] as const);
+
 export const mapOrderSchema = getCombinedSchema(
     getNonEmptyArray(Prisma.MapScalarFieldEnum),
-    ["modId", "mapRemovedFromModBool", "chapter", "side", "overallRank", "mapperNameString", "id"],
-    ["asc"],
+    mapDefaultSelectors,
+    mapDefaultDirection,
 );
 
 
@@ -237,6 +241,32 @@ const mapTableNameArray = getCheckedTableNames(["Map", "Map_Archive", "Map_Edit"
 const mapTableNameSchema = z.object({
     tableName: z.enum(mapTableNameArray)
 }).strict();
+
+/** Schema for map returned by the REST API. */
+const restMapSchema = z.object({
+    id: z.number(),
+    mapperUserId: z.string().nullable(),
+    mapperNameString: z.string(),
+    name: z.string(),
+    canonicalDifficultyId: z.number(),
+    lengthId: z.number(),
+    description: z.string().nullable(),
+    notes: z.string().nullable(),
+    chapter: z.number().nullable(),
+    side: mapSideSchema_NonObject.nullable(),
+    overallRank: z.number().nullable(),
+    mapRemovedFromModBool: z.boolean(),
+    timeSubmitted: z.number(),
+    modId: z.number(),
+    timeApproved: z.number(),
+    MapToTechs: z.object({
+        techId: z.number(),
+        fullClearOnlyBool: z.boolean(),
+    }).array(),
+    MapReview: zodOutputIdObject.array(),
+    Map_Archive: zodOutputIdObject.array(),
+    Map_Edit: zodOutputIdObject.array(),
+});
 
 type MapTableName = typeof mapTableNameArray[number];
 
@@ -599,6 +629,17 @@ export const mapRouter = createTRPCRouter({
             return ctx.prisma.map.findMany({
                 select: defaultMapSelect,
                 orderBy: getOrderObjectArray(input.selectors, input.directions),
+            });
+        }),
+    
+    rest_getAll: publicProcedure
+        .meta({ openapi: { method: "GET", path: "/maps" }})
+        .input(z.void())
+        .output(restMapSchema.array())
+        .query(({ ctx }) => {
+            return ctx.prisma.map.findMany({
+                select: defaultMapSelect,
+                orderBy: getOrderObjectArray(mapDefaultSelectors, mapDefaultDirection),
             });
         }),
 
