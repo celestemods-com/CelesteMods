@@ -519,7 +519,7 @@ export const modRouter = createTRPCRouter({
         }),
 
     rest_getAll: publicProcedure
-        .meta({ openapi: { method: "GET", path: "/mod" } })
+        .meta({ openapi: { method: "GET", path: "/mods" } })
         .input(z.void())
         .output(restModSchema.array())
         .query(({ ctx }) => {

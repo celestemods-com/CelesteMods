@@ -633,7 +633,7 @@ export const mapRouter = createTRPCRouter({
         }),
     
     rest_getAll: publicProcedure
-        .meta({ openapi: { method: "GET", path: "/map" }})
+        .meta({ openapi: { method: "GET", path: "/maps" }})
         .input(z.void())
         .output(restMapSchema.array())
         .query(({ ctx }) => {
