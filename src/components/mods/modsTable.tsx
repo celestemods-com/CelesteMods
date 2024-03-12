@@ -11,7 +11,8 @@ import { ListSelect } from "~/components/filterPopovers/listSelect";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import type { ModWithInfo } from "~/components/mods/types";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
-import { colorsForDifficultyIndex, difficultyColors, greatestValidDifficultyIndex } from "~/styles/mods-colors";
+import { colorsForDifficultyIndex, greatestValidDifficultyIndex } from "~/styles/mods-colors";
+import { difficultyColors } from "~/styles/difficultyColors";
 
 
 
