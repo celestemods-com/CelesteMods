@@ -35,7 +35,7 @@ const useStyles = createStyles(
                 justifyContent: "end",
             },
             tab: {
-                color: "white",
+                color: theme.white,
                 padding: "1px 20px",
                 display: "inline-block",
                 borderTopLeftRadius: "5px",
@@ -48,22 +48,22 @@ const useStyles = createStyles(
                 "button": {
                     border: "none",
                 },
-                backgroundColor: colors ? colors.primary : "black",
-                color: "white",
+                backgroundColor: colors ? colors.primary : theme.black,
+                color: theme.white,
                 "&&&& button": {
-                    backgroundColor: colors ? colors.secondary : "black",
+                    backgroundColor: colors ? colors.secondary : theme.black,
                 },
                 "&&&& button:hover": {
-                    backgroundColor: colors ? colors.secondaryHover : "black",
+                    backgroundColor: colors ? colors.secondaryHover : theme.black,
                 },
                 '&&&&& button[data-active]': {
-                    backgroundColor: colors ? colors.primaryHover1 : "black",
+                    backgroundColor: colors ? colors.primaryHover1 : theme.black,
                 },
                 '&&&&& button[data-active]:hover': {
-                    backgroundColor: colors ? colors.primaryHover2 : "black",
+                    backgroundColor: colors ? colors.primaryHover2 : theme.black,
                 },
                 '&&&&&& button[data-disabled]': {
-                    backgroundColor: colors ? colors.secondaryDisabled : "black",
+                    backgroundColor: colors ? colors.secondaryDisabled : theme.black,
                 },
             },
             beginner: {
@@ -103,7 +103,7 @@ const useStyles = createStyles(
                 "&&&&": {
                     /* top | left and right | bottom */
                     padding: `${theme.spacing.sm} ${theme.spacing.xl} ${theme.spacing.sm}`,
-                    backgroundColor: "#e1e1e2",
+                    backgroundColor: theme.colors.gray[2],
                     color: theme.black,
                     borderWidth: 0,
                     fontWeight: "bold",
@@ -121,34 +121,34 @@ const useStyles = createStyles(
                     padding: "10px",
                     textAlign: "center",
                     border: "none",
-                    backgroundColor: colors ? colors.primary : "black",
+                    backgroundColor: colors ? colors.primary : theme.black,
                     // The down arrow appears blurry due to rotation, so we zoom in to fix that.
                     // https://stackoverflow.com/a/53556981
                     ".mantine-Center-root": {
                         zoom: 1.1,
                     },
                     "svg": {
-                        color: "white",
+                        color: theme.white,
                     }
                 },
                 "&&&& th:hover": {
-                    backgroundColor: colors ? colors.primaryHover1 : "black",
+                    backgroundColor: colors ? colors.primaryHover1 : theme.black,
                 },
             },
             columnTitle: {
                 "&&&& .mantine-UnstyledButton-root": {
                     border: "none",
                     ":hover": {
-                        backgroundColor: colors ? colors.primaryHover2 : "black",
+                        backgroundColor: colors ? colors.primaryHover2 : theme.black,
                     }
                 }
             },
             filteredColumnTitle: {
                 "&&&& .mantine-UnstyledButton-root": {
                     border: "none",
-                    backgroundColor: colors ? colors.primaryHover1 : "black",
+                    backgroundColor: colors ? colors.primaryHover1 : theme.black,
                     ":hover": {
-                        backgroundColor: colors ? colors.primaryHover2 : "black",
+                        backgroundColor: colors ? colors.primaryHover2 : theme.black,
                     }
                 }
             },
