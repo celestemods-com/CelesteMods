@@ -11,8 +11,8 @@ import { ListSelect } from "~/components/filterPopovers/listSelect";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import type { ModWithInfo } from "~/components/mods/types";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
-import { colorsForDifficultyIndex, greatestValidDifficultyIndex } from "~/styles/mods-colors";
-import { difficultyColors } from "~/styles/difficultyColors";
+import { colorsForDifficultyIndex, greatestValidDifficultyIndex } from "~/styles/modsColors";
+import { canonicalDifficultyNames, difficultyColors } from "~/styles/difficultyColors";
 
 
 
@@ -81,6 +81,12 @@ const useStyles = createStyles(
             },
             grandmaster: {
                 backgroundColor: difficultyColors.grandmaster.primary,
+            },
+            astral: {
+                backgroundColor: difficultyColors.astral.primary,
+            },
+            celestial: {
+                backgroundColor: difficultyColors.celestial.primary,
             },
             table: {
                 "&&&& table": {
@@ -506,16 +512,11 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
 
 
 
+    //TODO!!: Fix this. It broke, probably in the last few commits. Also, update difficultyColors and all references to it to use the design in the `NEW` tab in the colors google sheet. Finally, pick any remaining colors.
 
     // apply the correct class to the body element to change the background color of the pagination dropdown
     useEffect(() => {
-        const menuClassNames = [
-            "beginnerMenu",
-            "intermediateMenu",
-            "advancedMenu",
-            "expertMenu",
-            "grandmasterMenu",
-        ];
+        const menuClassNames = canonicalDifficultyNames.map((difficultyName) => `${difficultyName.toLowerCase()}-menu`);
 
 
         if (currentTabIndex !== null) {
@@ -546,13 +547,19 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
 
     const { cx, classes } = useStyles({ difficultyIndex: currentTabIndex });
 
-    const tabColors = [
-        classes.beginner,
-        classes.intermediate,
-        classes.advanced,
-        classes.expert,
-        classes.grandmaster
-    ];
+    const tabColors: string[] = Array(canonicalDifficultyNames.length);
+
+    Object.entries(classes).forEach(
+        ([key, value]) => {
+            for (let index = 0; index < canonicalDifficultyNames.length; index++) {
+                if (key === canonicalDifficultyNames[index]) {
+                    tabColors[index] = value;
+                    break;
+                }
+            }
+        }
+    );
+
 
     return (
         <>

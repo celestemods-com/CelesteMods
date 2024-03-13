@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 import { NumberInput, Stack, type NumberInputProps, createStyles } from "@mantine/core";
-import { colorsForDifficultyIndex } from "~/styles/mods-colors";
+import { colorsForDifficultyIndex } from "~/styles/modsColors";
 
 
 
