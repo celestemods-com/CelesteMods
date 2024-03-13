@@ -83,14 +83,14 @@ type StringSearchProps = {
 
 
 
-export const StringSearch = (props: StringSearchProps) => {
-    const { classes } = useStyles({ difficultyIndex: props.difficultyIndex });
+export const StringSearch = ({ value, setValue, iconProps, difficultyIndex }: StringSearchProps) => {
+    const { classes } = useStyles({ difficultyIndex: difficultyIndex });
 
 
     return (
         <div className={classes.box}>
             <TextInput
-                {...props}
+                value={value}
                 classNames={{
                     root: classes.root,
                     wrapper: classes.wrapper,
@@ -98,17 +98,17 @@ export const StringSearch = (props: StringSearchProps) => {
                     label: classes.label,
                     description: classes.description,
                 }}
-                onChange={(event) => props.setValue(event.currentTarget.value)}
+                onChange={(event) => setValue(event.currentTarget.value)}
                 rightSection={
                     <ActionIcon
                         variant="light"
-                        onClick={() => props.setValue("")}
+                        onClick={() => setValue("")}
                     >
                         <X
-                            {...props.iconProps}
-                            size={props.iconProps?.size ?? 18   /*TODO!!: get this from MantineTheme*/}
-                            strokeWidth={props.iconProps?.strokeWidth ?? 1.5}
-                            color={props.iconProps?.color ?? "white"}
+                            {...iconProps}
+                            size={iconProps?.size ?? 18   /*TODO!!: get this from MantineTheme*/}
+                            strokeWidth={iconProps?.strokeWidth ?? 1.5}
+                            color={iconProps?.color ?? "white"}
                         />
                     </ActionIcon>
                 }
