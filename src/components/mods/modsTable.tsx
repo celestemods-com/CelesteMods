@@ -512,7 +512,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
 
 
 
-    //TODO!!: Fix this. It broke, probably in the last few commits. Also, update difficultyColors and all references to it to use the design in the `NEW` tab in the colors google sheet. Finally, pick any remaining colors.
+    //TODO!!: Update difficultyColors and all references to it to use the design in the `NEW` tab in the colors google sheet. Then pick any remaining colors.
 
     // apply the correct class to the body element to change the background color of the pagination dropdown
     useEffect(() => {
