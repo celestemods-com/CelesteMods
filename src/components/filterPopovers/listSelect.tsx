@@ -29,7 +29,7 @@ const useStyles = createStyles(
             defaultValue: {
                 "&&&&": {
                     color: "white",
-                    backgroundColor: colors.primaryHover1,
+                    backgroundColor: colors.primaryHover, // highlight color for selected items
                 },
                 "&&&& button": {
                     color: "white",
@@ -37,7 +37,7 @@ const useStyles = createStyles(
             },
             input: {
                 "&&&&": {
-                    backgroundColor: colors.primary,
+                    backgroundColor: colors.primary, // dropdown parent
                     color: "white",
                 },
                 "&&&& input::placeholder": {
@@ -46,7 +46,7 @@ const useStyles = createStyles(
             },
             dropdown: {
                 "&&&&": {
-                    backgroundColor: colors.primary,
+                    backgroundColor: colors.primary, // dropdown
                 }
             },
             item: {
@@ -54,7 +54,7 @@ const useStyles = createStyles(
                     color: "white",
                 },
                 "&&&&[data-hovered]": {
-                    backgroundColor: colors.primaryHover2,
+                    backgroundColor: colors.primaryHover, // highlight color for hovered items in dropdown
                 }
             },
             root: {

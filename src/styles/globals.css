@@ -22,53 +22,115 @@ a {
   border: 0;
 }
 
+
+/* pagination popover background - should be difficultyColors.beginner.primary */
 .beginner-menu .mantine-Menu-dropdown.mantine-Menu-dropdown {
-  background-color: #263972;
+  background-color: #16367b;
   border: 0;
 }
+
+/* currently selected page size highlight - should be difficultyColors.beginner.secondary */
 .beginner-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
-  background-color: #576ba9;
-}
-.beginner-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
-  background-color: #6a86b9;
+  background-color: #4f942f;
 }
 
+/* page size hover - should be difficultyColors.beginner.secondaryHover */
+.beginner-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
+  background-color: #4f942f;
+}
+
+
+/* pagination popover background - should be difficultyColors.intermediate.primary */
 .intermediate-menu .mantine-Menu-dropdown.mantine-Menu-dropdown {
   background-color: #0b6aba;
 }
+
+/* currently selected page size highlight - should be difficultyColors.intermediate.secondary */
 .intermediate-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
   background-color: #2a83c8;
 }
+
+/* page size hover - should be difficultyColors.intermediate.secondaryHover */
 .intermediate-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
   background-color: #3f9bd2;
 }
 
+
+/* pagination popover background - should be difficultyColors.advanced.primary */
 .advanced-menu .mantine-Menu-dropdown.mantine-Menu-dropdown {
   background-color: #413a98;
 }
+
+/* currently selected page size highlight - should be difficultyColors.advanced.secondary */
 .advanced-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
   background-color: #605bba;
 }
+
+/* page size hover - should be difficultyColors.advanced.secondaryHover */
 .advanced-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
   background-color: #776fd2;
 }
 
+
+/* pagination popover background - should be difficultyColors.expert.primary */
 .expert-menu .mantine-Menu-dropdown.mantine-Menu-dropdown {
   background-color: #84419e;
 }
+
+/* currently selected page size highlight - should be difficultyColors.expert.secondary */
 .expert-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
   background-color: #a966bb;
 }
+
+/* page size hover - should be difficultyColors.expert.secondaryHover */
 .expert-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
   background-color: #bd82d3;
 }
 
+
+/* pagination popover background - should be difficultyColors.grandmaster.primary */
 .grandmaster-menu .mantine-Menu-dropdown.mantine-Menu-dropdown {
   background-color: #6f057e;
 }
+
+/* currently selected page size highlight - should be difficultyColors.grandmaster.secondary */
 .grandmaster-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
   background-color: #8f1b9b;
 }
+
+/* page size hover - should be difficultyColors.grandmaster.secondaryHover */
 .grandmaster-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
+  background-color: #a238b4;
+}
+
+
+/* pagination popover background - should be difficultyColors.astral.primary */
+.astral-menu .mantine-Menu-dropdown.mantine-Menu-dropdown {
+  background-color: #6f057e;
+}
+
+/* currently selected page size highlight - should be difficultyColors.astral.secondary */
+.astral-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
+  background-color: #8f1b9b;
+}
+
+/* page size hover - should be difficultyColors.astral.secondaryHover */
+.astral-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
+  background-color: #a238b4;
+}
+
+
+/* pagination popover background - should be difficultyColors.celestial.primary */
+.celestial-menu .mantine-Menu-dropdown.mantine-Menu-dropdown {
+  background-color: #6f057e;
+}
+
+/* currently selected page size highlight - should be difficultyColors.celestial.secondary */
+.celestial-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
+  background-color: #8f1b9b;
+}
+
+/* page size hover - should be difficultyColors.celestial.secondaryHover */
+.celestial-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
   background-color: #a238b4;
 }

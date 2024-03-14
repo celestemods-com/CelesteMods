@@ -49,22 +49,22 @@ const useStyles = createStyles(
                 "button": {
                     border: "none",
                 },
-                backgroundColor: colors ? colors.primary : "black",
+                backgroundColor: colors ? colors.primary : "black", // table footer
                 color: "white",
                 "&&&& button": {
-                    backgroundColor: colors ? colors.secondary : "black",
+                    backgroundColor: colors ? colors.primaryHover : "black", // default pagination button
                 },
                 "&&&& button:hover": {
-                    backgroundColor: colors ? colors.secondaryHover : "black",
+                    backgroundColor: colors ? colors.secondaryHover : "black", // default pagination button hover
                 },
                 '&&&&& button[data-active]': {
-                    backgroundColor: colors ? colors.primaryHover1 : "black",
+                    backgroundColor: colors ? colors.secondary : "black", // active pagination button
                 },
                 '&&&&& button[data-active]:hover': {
-                    backgroundColor: colors ? colors.primaryHover2 : "black",
+                    backgroundColor: colors ? colors.secondaryHover : "black", // active pagination button hover
                 },
                 '&&&&&& button[data-disabled]': {
-                    backgroundColor: colors ? colors.secondaryDisabled : "black",
+                    backgroundColor: colors ? colors.primaryDisabled : "black", // disabled pagination button (for the arrows)
                 },
             },
             beginner: {
@@ -128,7 +128,7 @@ const useStyles = createStyles(
                     padding: "10px",
                     textAlign: "center",
                     border: "none",
-                    backgroundColor: colors ? colors.primary : "black",
+                    backgroundColor: colors ? colors.primary : "black", // table header
                     // The down arrow appears blurry due to rotation, so we zoom in to fix that.
                     // https://stackoverflow.com/a/53556981
                     ".mantine-Center-root": {
@@ -139,23 +139,23 @@ const useStyles = createStyles(
                     }
                 },
                 "&&&& th:hover": {
-                    backgroundColor: colors ? colors.primaryHover1 : "black",
+                    backgroundColor: colors ? colors.primaryHover : "black", // table header hover
                 },
             },
             columnTitle: {
                 "&&&& .mantine-UnstyledButton-root": {
                     border: "none",
                     ":hover": {
-                        backgroundColor: colors ? colors.primaryHover2 : "black",
+                        backgroundColor: colors ? colors.secondaryHover : "black",  // unfiltered column filter button hover
                     }
                 }
             },
             filteredColumnTitle: {
                 "&&&& .mantine-UnstyledButton-root": {
                     border: "none",
-                    backgroundColor: colors ? colors.primaryHover1 : "black",
+                    backgroundColor: colors ? colors.secondary : "black", // filtered column filter button
                     ":hover": {
-                        backgroundColor: colors ? colors.primaryHover2 : "black",
+                        backgroundColor: colors ? colors.secondaryHover : "black", // filtered column filter button hover
                     }
                 }
             },
@@ -512,7 +512,6 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
 
 
 
-    //TODO!!: Update difficultyColors and all references to it to use the design in the `NEW` tab in the colors google sheet. Then pick any remaining colors.
 
     // apply the correct class to the body element to change the background color of the pagination dropdown
     useEffect(() => {
