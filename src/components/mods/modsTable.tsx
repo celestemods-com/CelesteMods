@@ -19,6 +19,7 @@ import { canonicalDifficultyNames, difficultyColors } from "~/styles/difficultyC
 
 const PAGE_SIZES = [5, 10, 15, 20, 25, 50, 100, 250, 500, 1000];
 const DEFAULT_PAGE_SIZE_INDEX = 1;
+const ACTIVE_DIFFICULTY_TAB_BOTTOM_BORDER_HEIGHT = "2px";
 
 
 const useStyles = createStyles(
@@ -44,27 +45,16 @@ const useStyles = createStyles(
                 fontSize: "medium",
                 cursor: "pointer",
                 fontWeight: "bold",
+                borderTop: ACTIVE_DIFFICULTY_TAB_BOTTOM_BORDER_HEIGHT,  // add top border to re-center the text vertically
+                borderTopStyle: "solid",
+                borderTopColor: "transparent",
             },
-            pagination: {
-                "button": {
-                    border: "none",
-                },
-                backgroundColor: colors ? colors.primary : "black", // table footer
-                color: "white",
-                "&&&& button": {
-                    backgroundColor: colors ? colors.primaryHover : "black", // default pagination button
-                },
-                "&&&& button:hover": {
-                    backgroundColor: colors ? colors.secondaryHover : "black", // default pagination button hover
-                },
-                '&&&&& button[data-active]': {
-                    backgroundColor: colors ? colors.secondary : "black", // active pagination button
-                },
-                '&&&&& button[data-active]:hover': {
-                    backgroundColor: colors ? colors.secondaryHover : "black", // active pagination button hover
-                },
-                '&&&&&& button[data-disabled]': {
-                    backgroundColor: colors ? colors.primaryDisabled : "black", // disabled pagination button (for the arrows)
+            activeTab: {
+                borderBottom: ACTIVE_DIFFICULTY_TAB_BOTTOM_BORDER_HEIGHT,   // add bottom border to active tab so it's easier to see which tab is active (the contrast ratio between the difficulty colors is not sufficient on its own)
+                borderBottomStyle: "solid",
+                borderBottomColor: colors ? colors.primaryHover : "white",
+                ":hover": {
+                    borderBottomColor: colors ? colors.primaryDisabled : "black",
                 },
             },
             // color the difficulty tabs
@@ -128,7 +118,7 @@ const useStyles = createStyles(
                 }
             },
             modCell: {
-                //4 ampersands to increase selectivity of class to ensure it overrides any other css
+                // 4 ampersands to increase selectivity of class to ensure it overrides any other css
                 "&&&&": {
                     /* top | left and right | bottom */
                     padding: `${theme.spacing.sm} ${theme.spacing.xl} ${theme.spacing.sm}`,
@@ -188,6 +178,28 @@ const useStyles = createStyles(
             rightColumnCell: {
                 borderTopRightRadius: "50px",
                 borderBottomRightRadius: "50px",
+            },
+            pagination: {
+                "button": {
+                    border: "none",
+                },
+                backgroundColor: colors ? colors.primary : "black", // table footer
+                color: "white",
+                "&&&& button": {
+                    backgroundColor: colors ? colors.primaryHover : "black", // default pagination button
+                },
+                "&&&& button:hover": {
+                    backgroundColor: colors ? colors.secondaryHover : "black", // default pagination button hover
+                },
+                "&&&&& button[data-active]": {
+                    backgroundColor: colors ? colors.secondary : "black", // active pagination button
+                },
+                "&&&&& button[data-active]:hover": {
+                    backgroundColor: colors ? colors.secondaryHover : "black", // active pagination button hover
+                },
+                "&&&&&& button[data-disabled]": {
+                    backgroundColor: colors ? colors.primaryDisabled : "black", // disabled pagination button (for the arrows)
+                },
             },
         });
     }
@@ -594,6 +606,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                                     cx(
                                         classes.tab,
                                         tabColors[parentDifficultyNames.length - 1 - index],
+                                        { [classes.activeTab]: parentDifficultyNames.length - 1 - index ===  currentTabIndex }
                                     )
                                 }
                                 onClick={() => {
