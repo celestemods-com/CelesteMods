@@ -67,26 +67,48 @@ const useStyles = createStyles(
                     backgroundColor: colors ? colors.primaryDisabled : "black", // disabled pagination button (for the arrows)
                 },
             },
+            // color the difficulty tabs
             beginner: {
                 backgroundColor: difficultyColors.beginner.primary,
+                ":hover": {
+                    backgroundColor: difficultyColors.beginner.primaryHover,
+                },
             },
             intermediate: {
                 backgroundColor: difficultyColors.intermediate.primary,
+                ":hover": {
+                    backgroundColor: difficultyColors.intermediate.primaryHover,
+                },
             },
             advanced: {
                 backgroundColor: difficultyColors.advanced.primary,
+                ":hover": {
+                    backgroundColor: difficultyColors.advanced.primaryHover,
+                },
             },
             expert: {
                 backgroundColor: difficultyColors.expert.primary,
+                ":hover": {
+                    backgroundColor: difficultyColors.expert.primaryHover,
+                },
             },
             grandmaster: {
                 backgroundColor: difficultyColors.grandmaster.primary,
+                ":hover": {
+                    backgroundColor: difficultyColors.grandmaster.primaryHover,
+                },
             },
             astral: {
                 backgroundColor: difficultyColors.astral.primary,
+                ":hover": {
+                    backgroundColor: difficultyColors.astral.primaryHover,
+                },
             },
             celestial: {
                 backgroundColor: difficultyColors.celestial.primary,
+                ":hover": {
+                    backgroundColor: difficultyColors.celestial.primaryHover,
+                },
             },
             table: {
                 "&&&& table": {
