@@ -1,5 +1,6 @@
 /** Easiest to hardest.
  * Must be in the same order as the `listOfColors` array in `./modsColors.ts`.
+ * Used to specify the canonical property/class names for each difficulty as well as their order.
  */
 export const canonicalDifficultyNames = ["beginner", "intermediate", "advanced", "expert", "grandmaster", "astral", "celestial"] as const;
 
