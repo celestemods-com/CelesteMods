@@ -19,7 +19,7 @@ import { canonicalDifficultyNames, difficultyColors } from "~/styles/difficultyC
 
 const PAGE_SIZES = [5, 10, 15, 20, 25, 50, 100, 250, 500, 1000];
 const DEFAULT_PAGE_SIZE_INDEX = 1;
-const ACTIVE_DIFFICULTY_TAB_BOTTOM_BORDER_HEIGHT = "2px";
+const ACTIVE_DIFFICULTY_TAB_BORDER_HEIGHT = "2px";
 
 
 const useStyles = createStyles(
@@ -45,17 +45,11 @@ const useStyles = createStyles(
                 fontSize: "medium",
                 cursor: "pointer",
                 fontWeight: "bold",
-                borderTop: ACTIVE_DIFFICULTY_TAB_BOTTOM_BORDER_HEIGHT,  // add top border to re-center the text vertically
-                borderTopStyle: "solid",
-                borderTopColor: "transparent",
             },
             activeTab: {
-                borderBottom: ACTIVE_DIFFICULTY_TAB_BOTTOM_BORDER_HEIGHT,   // add bottom border to active tab so it's easier to see which tab is active (the contrast ratio between the difficulty colors is not sufficient on its own)
-                borderBottomStyle: "solid",
-                borderBottomColor: colors ? colors.primaryHover : "white",
-                ":hover": {
-                    borderBottomColor: colors ? colors.primaryDisabled : "black",
-                },
+                borderTop: ACTIVE_DIFFICULTY_TAB_BORDER_HEIGHT, // add top border to active tab so it's easier to see which tab is active (the contrast ratio between the difficulty colors is not sufficient on its own)
+                borderTopStyle: "solid",
+                borderTopColor: colors ? colors.primaryHover : "white",
             },
             // color the difficulty tabs
             beginner: {
