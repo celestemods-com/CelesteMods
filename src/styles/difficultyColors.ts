@@ -34,7 +34,7 @@ export type DifficultyColorsObjects = typeof difficultyColors[keyof typeof diffi
 export const difficultyColors = {
     beginner: {
         primary: {
-            backgroundColor: "#16367b", // Adjusted Color - Contrast Ratios: Intermediate (1.47), Advanced (1.59), Expert (2.20), Grandmaster (1.23), Astral (), Celestial ()
+            backgroundColor: "#16367b", // Adjusted Color - Contrast Ratios: Intermediate 1.47, Advanced 1.59, Expert 2.20, Grandmaster 1.23, Astral , Celestial 
             textColor: "white",
         },
         primaryHover: {
@@ -47,16 +47,16 @@ export const difficultyColors = {
         },
         secondary: {
             backgroundColor: "#4f942f",   // Adjusted Color - Contrast Ratios: Primary: 3.03, PrimaryHover: 1.50, PrimaryDisabled: 1.27
-            textColor: "white",
+            textColor: "black",
         },
         secondaryHover: {
-            backgroundColor: "#b8fd98",  // Adjusted Color - Contrast Ratios: Secondary: 3.12, PrimaryHover: 2.09
+            backgroundColor: "#b8fd98",  // Adjusted Color - Contrast Ratios: Secondary: 3.12
             textColor: "black",
         },
     },
     intermediate: {
         primary: {
-            backgroundColor: "#0f5881", // Adjusted Color - Contrast Ratios: Beginner (1.47), Advanced (1.07), Expert (1.49), Grandmaster (1.19), Astral (), Celestial ()
+            backgroundColor: "#0f5881", // Adjusted Color - Contrast Ratios: Beginner 1.47, Advanced 1.07, Expert 1.49, Grandmaster 1.19, Astral , Celestial 
             textColor: "white",
         },
         primaryHover: {
@@ -65,20 +65,20 @@ export const difficultyColors = {
         },
         primaryDisabled: {
             backgroundColor: "#5c89a3", // Adjusted Color - Contrast Ratio with Primary: 2.03 - WCAG guidelines don't require a minimum contrast ratio for disabled elements
-            textColor: "white",
+            textColor: "black",
         },
         secondary: {
-            backgroundColor: "#3891d1",
-            textColor: "white",
+            backgroundColor: "#89ae4a", // Adjusted Color - Contrast Ratios: Primary: 3.00, PrimaryHover: , PrimaryDisabled: 
+            textColor: "black",
         },
         secondaryHover: {
-            backgroundColor: "#66aadf",
-            textColor: "black",
+            backgroundColor: "#395c00", // Adjusted Color - Contrast Ratios: Secondary: 3.03
+            textColor: "white",
         },
     },
     advanced: {
         primary: {
-            backgroundColor: "#595667", // Adjusted Color - Contrast Ratios: Beginner (1.59), Intermediate (1.07), Expert (1.37), Grandmaster (1.29), Astral (), Celestial ()
+            backgroundColor: "#595667", // Adjusted Color - Contrast Ratios: Beginner 1.59, Intermediate 1.07, Expert 1.37, Grandmaster 1.29, Astral , Celestial 
             textColor: "white",
         },
         primaryHover: {
@@ -90,17 +90,17 @@ export const difficultyColors = {
             textColor: "white",
         },
         secondary: {
-            backgroundColor: "#b66fc5",
-            textColor: "white",
+            backgroundColor: "#9cad9f", // Adjusted Color - Contrast Ratios: Primary: 3.01, PrimaryHover: , PrimaryDisabled:
+            textColor: "black",
         },
         secondaryHover: {
-            backgroundColor: "#d494df",
-            textColor: "black",
+            backgroundColor: "#4b5c4e", // Adjusted Color - Contrast Ratios: Secondary: 3.02
+            textColor: "white",
         },
     },
     expert: {
         primary: {
-            backgroundColor: "#875aaa", // Adjusted Color - Contrast Ratios: Beginner (2.20), Intermediate (1.49), Advanced (1.37), Grandmaster (1.78), Astral (), Celestial ()
+            backgroundColor: "#875aaa", // Adjusted Color - Contrast Ratios: Beginner 2.20, Intermediate 1.49, Advanced 1.37, Grandmaster 1.78, Astral , Celestial 
             textColor: "white",
         },
         primaryHover: {
@@ -112,17 +112,17 @@ export const difficultyColors = {
             textColor: "white",
         },
         secondary: {
-            backgroundColor: "#a336ad",
-            textColor: "white",
+            backgroundColor: "#e3c093", // Adjusted Color - Contrast Ratios: Primary: 3.00, PrimaryHover: , PrimaryDisabled:
+            textColor: "black",
         },
         secondaryHover: {
-            backgroundColor: "#c362cd",
-            textColor: "black",
+            backgroundColor: "#896639", // Adjusted Color - Contrast Ratios: Secondary: 3.03
+            textColor: "white",
         },
     },
     grandmaster: {
         primary: {
-            backgroundColor: "#4c3795", // Adjusted Color - Contrast Ratios: Beginner (1.23), Intermediate (1.19), Advanced (1.29), Expert (1.78), Astral (), Celestial ()
+            backgroundColor: "#4c3795", // Adjusted Color - Contrast Ratios: Beginner 1.23, Intermediate 1.19, Advanced 1.29, Expert 1.78, Astral , Celestial 
             textColor: "white",
         },
         primaryHover: {
@@ -134,17 +134,17 @@ export const difficultyColors = {
             textColor: "white",
         },
         secondary: {
-            backgroundColor: "#a336ad",
-            textColor: "white",
+            backgroundColor: "#cc826e", // Adjusted Color - Contrast Ratios: Primary: 3.05, PrimaryHover: , PrimaryDisabled:
+            textColor: "black",
         },
         secondaryHover: {
-            backgroundColor: "#c362cd",
-            textColor: "black",
+            backgroundColor: "#7c3214", // Adjusted Color - Contrast Ratios: Secondary: 3.00
+            textColor: "white",
         },
     },
     astral: {
         primary: {
-            backgroundColor: "#4c3795", // Placeholder Color - Contrast Ratios: Beginner (1.23), Intermediate (1.19), Advanced (1.29), Expert (1.78), Grandmaster (), Celestial ()
+            backgroundColor: "#4c3795", // Placeholder Color - Contrast Ratios: Beginner 1.23, Intermediate 1.19, Advanced 1.29, Expert 1.78, Grandmaster , Celestial 
             textColor: "white",
         },
         primaryHover: {
@@ -166,7 +166,7 @@ export const difficultyColors = {
     },
     celestial: {
         primary: {
-            backgroundColor: "#4c3795", // Placeholder Color - Contrast Ratios: Beginner (1.23), Intermediate (1.19), Advanced (1.29), Expert (1.78), Grandmaster (), Astral ()
+            backgroundColor: "#4c3795", // Placeholder Color - Contrast Ratios: Beginner 1.23, Intermediate 1.19, Advanced 1.29, Expert 1.78, Grandmaster , Astral 
             textColor: "white",
         },
         primaryHover: {
