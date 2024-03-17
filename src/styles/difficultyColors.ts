@@ -31,8 +31,8 @@ export const difficultyColors = {
         primary: "#16367b", // Adjusted Color - Contrast Ratios: Intermediate (1.47), Advanced (1.59), Expert (2.20), Grandmaster (1.23), Astral (), Celestial ()
         primaryHover: "#84a4e9", // Adjusted Color - Contrast Ratio with Primary: 4.58
         primaryDisabled: "#5c72a3", // Adjusted Color - Contrast Ratio with Primary: 2.37 - WCAG guidelines don't require a minimum contrast ratio for disabled elements
-        secondary: "#4f942f",   // Adjusted Color - Contrast Ratios: Primary: 3.03, PrimaryHover: , PrimaryDisabled: , SecondaryHover:
-        secondaryHover: "#b8fd98",
+        secondary: "#4f942f",   // Adjusted Color - Contrast Ratios: Primary: 3.03, PrimaryHover: 1.50, PrimaryDisabled: 1.27
+        secondaryHover: "#b8fd98",  // Adjusted Color - Contrast Ratios: Secondary: 3.12, PrimaryHover: 2.09
     },
     intermediate: {
         primary: "#0f5881", // Adjusted Color - Contrast Ratios: Beginner (1.47), Advanced (1.07), Expert (1.49), Grandmaster (1.19), Astral (), Celestial ()

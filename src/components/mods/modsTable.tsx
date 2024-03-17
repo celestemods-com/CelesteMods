@@ -145,14 +145,15 @@ const useStyles = createStyles(
                     }
                 },
                 "&&&& th:hover": {
-                    backgroundColor: colors ? colors.primaryHover : "black", // table header hover
+                    backgroundColor: colors ? colors.primaryHover : "white", // table header hover
                 },
             },
             columnTitle: {
                 "&&&& .mantine-UnstyledButton-root": {
                     border: "none",
                     ":hover": {
-                        backgroundColor: colors ? colors.secondaryHover : "black",  // unfiltered column filter button hover
+                        backgroundColor: colors ? colors.secondaryHover : "white",  // unfiltered column filter button hover
+                        border: "2px solid black",
                     }
                 }
             },
@@ -161,7 +162,8 @@ const useStyles = createStyles(
                     border: "none",
                     backgroundColor: colors ? colors.secondary : "black", // filtered column filter button
                     ":hover": {
-                        backgroundColor: colors ? colors.secondaryHover : "black", // filtered column filter button hover
+                        backgroundColor: colors ? colors.secondaryHover : "white", // filtered column filter button hover
+                        border: "2px solid black",
                     }
                 }
             },
@@ -189,9 +191,10 @@ const useStyles = createStyles(
                 },
                 "&&&&& button[data-active]:hover": {
                     backgroundColor: colors ? colors.secondaryHover : "white", // active pagination button hover
+                    borderColor: "black",
                 },
                 "&&&&&& button[data-disabled]": {
-                    backgroundColor: colors ? colors.primaryDisabled : "black", // disabled pagination button (for the arrows)
+                    backgroundColor: colors ? colors.primaryDisabled : "gray", // disabled pagination button (for the arrows)
                     borderColor: "transparent",
                 },
             },
