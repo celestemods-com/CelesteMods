@@ -46,7 +46,7 @@ export const difficultyColors = {
             textColor: "white",
         },
         secondary: {
-            backgroundColor: "#4f942f",   // Adjusted Color - Contrast Ratios: Primary: 3.03, PrimaryHover: 1.50, PrimaryDisabled: 1.27
+            backgroundColor: "#4f942f",   // Adjusted Color - Contrast Ratios: Primary: 3.03
             textColor: "black",
         },
         secondaryHover: {
@@ -68,7 +68,7 @@ export const difficultyColors = {
             textColor: "black",
         },
         secondary: {
-            backgroundColor: "#89ae4a", // Adjusted Color - Contrast Ratios: Primary: 3.00, PrimaryHover: , PrimaryDisabled: 
+            backgroundColor: "#89ae4a", // Adjusted Color - Contrast Ratios: Primary: 3.00
             textColor: "black",
         },
         secondaryHover: {
@@ -90,7 +90,7 @@ export const difficultyColors = {
             textColor: "white",
         },
         secondary: {
-            backgroundColor: "#9cad9f", // Adjusted Color - Contrast Ratios: Primary: 3.01, PrimaryHover: , PrimaryDisabled:
+            backgroundColor: "#9cad9f", // Adjusted Color - Contrast Ratios: Primary: 3.01
             textColor: "black",
         },
         secondaryHover: {
@@ -112,7 +112,7 @@ export const difficultyColors = {
             textColor: "white",
         },
         secondary: {
-            backgroundColor: "#e3c093", // Adjusted Color - Contrast Ratios: Primary: 3.00, PrimaryHover: , PrimaryDisabled:
+            backgroundColor: "#e3c093", // Adjusted Color - Contrast Ratios: Primary: 3.00
             textColor: "black",
         },
         secondaryHover: {
@@ -134,7 +134,7 @@ export const difficultyColors = {
             textColor: "white",
         },
         secondary: {
-            backgroundColor: "#cc826e", // Adjusted Color - Contrast Ratios: Primary: 3.05, PrimaryHover: , PrimaryDisabled:
+            backgroundColor: "#cc826e", // Adjusted Color - Contrast Ratios: Primary: 3.05
             textColor: "black",
         },
         secondaryHover: {
