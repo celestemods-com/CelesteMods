@@ -174,25 +174,25 @@ const useStyles = createStyles(
                 borderBottomRightRadius: "50px",
             },
             pagination: {
-                "button": {
-                    border: "none",
-                },
                 backgroundColor: colors ? colors.primary : "black", // table footer
                 color: "white",
                 "&&&& button": {
-                    backgroundColor: colors ? colors.primaryHover : "black", // default pagination button
+                    backgroundColor: colors ? colors.primary : "black", // default pagination button
+                    border: `2px solid ${colors ? colors.primaryHover : "white"}`
                 },
                 "&&&& button:hover": {
-                    backgroundColor: colors ? colors.secondaryHover : "black", // default pagination button hover
+                    backgroundColor: colors ? colors.primaryHover : "white", // default pagination button hover
                 },
                 "&&&&& button[data-active]": {
                     backgroundColor: colors ? colors.secondary : "black", // active pagination button
+                    borderColor: "transparent",
                 },
                 "&&&&& button[data-active]:hover": {
-                    backgroundColor: colors ? colors.secondaryHover : "black", // active pagination button hover
+                    backgroundColor: colors ? colors.secondaryHover : "white", // active pagination button hover
                 },
                 "&&&&&& button[data-disabled]": {
                     backgroundColor: colors ? colors.primaryDisabled : "black", // disabled pagination button (for the arrows)
+                    borderColor: "transparent",
                 },
             },
         });
