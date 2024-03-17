@@ -28,6 +28,8 @@ const useStyles = createStyles(
         { difficultyIndex }: { difficultyIndex: number | null; }
     ) => {
         const colors = colorsForDifficultyIndex(difficultyIndex);
+        const primaryHoverRgbString = colors.primaryHoverRgbString !== "" ? colors.primaryHoverRgbString : "255,255,255";
+        const primaryDisabledRgbString = colors.primaryDisabledRgbString !== "" ? colors.primaryDisabledRgbString : "0,0,0";
 
 
         return ({
@@ -174,25 +176,36 @@ const useStyles = createStyles(
                 borderBottomRightRadius: "50px",
             },
             pagination: {
-                "button": {
+                backgroundColor: colors ? colors.primary : "black", // table footer
+                button: {
                     border: "none",
                 },
-                backgroundColor: colors ? colors.primary : "black", // table footer
                 color: "white",
                 "&&&& button": {
-                    backgroundColor: colors ? colors.primaryHover : "black", // default pagination button
+                    margin: "0 5px",
+                    backgroundColor: colors ? colors.primary : "black", // default pagination button
+                    border: `1px solid ${colors ? colors.primaryHover : "white"}`,
+                    boxShadow: `0px 2px 4px 0px rgba(${primaryHoverRgbString}, 0.4)`,
+                    transition: "border 0.15s, box-shadow 0.15s, transform 0.15s, background-color 0.15s, color 0.15s",
                 },
                 "&&&& button:hover": {
-                    backgroundColor: colors ? colors.secondaryHover : "black", // default pagination button hover
+                    transform: "translateY(-1px)",
+                },
+                "&&&& button:active": {
+                    boxShadow: "none",
+                    borderColor: colors ? colors.primaryDisabled : "black",
+                    transform: "translateY(1px)",
                 },
                 "&&&&& button[data-active]": {
                     backgroundColor: colors ? colors.secondary : "black", // active pagination button
+                    border: "none",
                 },
                 "&&&&& button[data-active]:hover": {
-                    backgroundColor: colors ? colors.secondaryHover : "black", // active pagination button hover
+                    backgroundColor: colors ? colors.secondaryHover : "white", // active pagination button hover
                 },
                 "&&&&&& button[data-disabled]": {
                     backgroundColor: colors ? colors.primaryDisabled : "black", // disabled pagination button (for the arrows)
+                    border: "none",
                 },
             },
         });
