@@ -1,0 +1,1 @@
+export const blackBackgroundColor = "rgba(1.0, 1.0, 1.0, 0.9)";

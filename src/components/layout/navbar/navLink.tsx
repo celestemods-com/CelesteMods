@@ -1,30 +1,33 @@
 import { Flex, createStyles } from "@mantine/core";
 import Link from "next/link";
+import { difficultyColors } from "~/styles/difficultyColors";
 
 
 
 
-const useStyles = createStyles((theme) => ({
-    navLink: {
-        width: "150px",
-        height: "40px",
-        position: "relative",
-    },
-    navLinkLabel: {
-        backgroundColor: "#263972",
-        color: theme.white,
-        flexGrow: 1,
-        fontSize: '17px',
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        fontWeight: "bold",
-    },
-    activeNavLink: {
-        position: "absolute",
-        right: "-40px",
-    },
-}));
+const useStyles = createStyles(
+    (theme) => ({
+        navLink: {
+            width: "150px",
+            height: "40px",
+            position: "relative",
+        },
+        navLinkLabel: {
+            backgroundColor: difficultyColors.beginner.primary.backgroundColor,
+            color: theme.white,
+            flexGrow: 1,
+            fontSize: '17px',
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            fontWeight: "bold",
+        },
+        activeNavLink: {
+            position: "absolute",
+            right: "-40px",
+        },
+    })
+);
 
 
 
@@ -54,7 +57,7 @@ export const NavLink = ({ label, pathname, active }: NavLinkProps) => {
                     xmlns="http://www.w3.org/2000/svg"
                     width="40px"
                     height="40px"
-                    fill="#263972"
+                    fill={difficultyColors.beginner.primary.backgroundColor}
                 >
                     <polygon points="0,0 100,0 100,100 0,100 100,50" />
                 </svg>
@@ -67,7 +70,7 @@ export const NavLink = ({ label, pathname, active }: NavLinkProps) => {
                         xmlns="http://www.w3.org/2000/svg"
                         width="40px"
                         height="40px"
-                        fill="#263972"
+                        fill={difficultyColors.beginner.primary.backgroundColor}
                         className={classes.activeNavLink}
                     >
                         <polygon points="0,0 100,50 0,100" />

@@ -6,6 +6,7 @@ import { Navbar } from "./navbar/navbar";
 import { Footer } from "./footer";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { MODS_PAGE_PATHNAME } from "~/consts/pathnames";
+import { blackBackgroundColor } from "~/styles/layoutColors";
 
 
 
@@ -18,18 +19,20 @@ const PAGES = getNonEmptyArray([
 
 
 
-const useStyles = createStyles(() => ({
-    backgroundImage: {
-        minWidth: "100vw",
-        minHeight: "100vh",
-        padding: "20px",
-    },
-    children: {
-        backgroundColor: "rgba(1.0, 1.0, 1.0, 0.9)",
-        height: "630px",
-        padding: "5px 45px",
-    },
-}));
+const useStyles = createStyles(
+    () => ({
+        backgroundImage: {
+            minWidth: "100vw",
+            minHeight: "100vh",
+            padding: "20px",
+        },
+        children: {
+            backgroundColor: blackBackgroundColor,
+            height: "630px",
+            padding: "5px 45px",
+        },
+    })
+);
 
 
 

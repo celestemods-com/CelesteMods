@@ -37,7 +37,7 @@ const useStyles = createStyles(
                 justifyContent: "end",
             },
             tab: {
-                color: "white",
+                color: theme.white,
                 padding: "1px 20px",
                 display: "inline-block",
                 borderTopLeftRadius: "5px",
@@ -116,7 +116,7 @@ const useStyles = createStyles(
                 "&&&&": {
                     /* top | left and right | bottom */
                     padding: `${theme.spacing.sm} ${theme.spacing.xl} ${theme.spacing.sm}`,
-                    backgroundColor: "#e1e1e2",
+                    backgroundColor: theme.colors.gray[2],
                     color: theme.black,
                     borderWidth: 0,
                     fontWeight: "bold",
@@ -134,14 +134,14 @@ const useStyles = createStyles(
                     padding: "10px",
                     textAlign: "center",
                     border: "none",
-                    backgroundColor: colors ? colors.primary.backgroundColor : "black", // table header
+                    backgroundColor: colors ? colors.primary.backgroundColor : theme.black, // table header
                     // The down arrow appears blurry due to rotation, so we zoom in to fix that.
                     // https://stackoverflow.com/a/53556981
                     ".mantine-Center-root": {
                         zoom: 1.1,
                     },
                     "svg": {
-                        color: "white",
+                        color: theme.white,
                     }
                 },
                 "&&&& th:hover": {
@@ -160,7 +160,7 @@ const useStyles = createStyles(
             filteredColumnTitle: {
                 "&&&& .mantine-UnstyledButton-root": {
                     border: "none",
-                    backgroundColor: colors ? colors.secondary.backgroundColor : "black", // filtered column filter button
+                    backgroundColor: colors ? colors.secondary.backgroundColor : theme.black, // filtered column filter button
                     ":hover": {
                         backgroundColor: colors ? colors.secondaryHover.backgroundColor : "white", // filtered column filter button hover
                         border: "2px solid black",
