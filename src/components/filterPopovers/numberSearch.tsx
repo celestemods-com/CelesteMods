@@ -28,13 +28,13 @@ const useStyles = createStyles(
         return {
             box: {
                 padding: '10px',
-                backgroundColor: colors.primary, // filter popover
+                backgroundColor: colors.primary.backgroundColor, // filter popover
                 "label": {
                     color: "white",
                 },
                 // Style the arrow on top of the box.
                 "+ div": {
-                    backgroundColor: colors.primary,
+                    backgroundColor: colors.primary.backgroundColor,
                 }
             },
             root: {
@@ -67,7 +67,7 @@ const useStyles = createStyles(
                     color: "white",
                     border: "none",
                     ":hover": {
-                        backgroundColor: colors.primaryHover, // increase/decrease arrows
+                        backgroundColor: colors.primaryHover.backgroundColor, // increase/decrease arrows
                     }
                 },
             }

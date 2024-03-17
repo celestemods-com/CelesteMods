@@ -29,10 +29,10 @@ const useStyles = createStyles(
         return {
             box: {
                 padding: '10px',
-                backgroundColor: colors.primary, // filter popover
+                backgroundColor: colors.primary.backgroundColor, // filter popover
                 // Style the arrow on top of the box.
                 "+ div": {
-                    backgroundColor: colors.primary,
+                    backgroundColor: colors.primary.backgroundColor,
                 }
             },
             root: {

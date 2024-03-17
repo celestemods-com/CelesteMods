@@ -29,7 +29,7 @@ const useStyles = createStyles(
             defaultValue: {
                 "&&&&": {
                     color: "white",
-                    backgroundColor: colors.primaryHover, // highlight color for selected items
+                    backgroundColor: colors.primaryHover.backgroundColor, // highlight color for selected items
                 },
                 "&&&& button": {
                     color: "white",
@@ -37,7 +37,7 @@ const useStyles = createStyles(
             },
             input: {
                 "&&&&": {
-                    backgroundColor: colors.primary, // dropdown parent
+                    backgroundColor: colors.primary.backgroundColor, // dropdown parent
                     color: "white",
                 },
                 "&&&& input::placeholder": {
@@ -46,7 +46,7 @@ const useStyles = createStyles(
             },
             dropdown: {
                 "&&&&": {
-                    backgroundColor: colors.primary, // dropdown
+                    backgroundColor: colors.primary.backgroundColor, // dropdown
                 }
             },
             item: {
@@ -54,13 +54,13 @@ const useStyles = createStyles(
                     color: "white",
                 },
                 "&&&&[data-hovered]": {
-                    backgroundColor: colors.primaryHover, // highlight color for hovered items in dropdown
+                    backgroundColor: colors.primaryHover.backgroundColor, // highlight color for hovered items in dropdown
                 }
             },
             root: {
                 // Style the arrow on top of the box.
                 "+ div": {
-                    backgroundColor: colors.primary,
+                    backgroundColor: colors.primary.backgroundColor,
                 }
             },
             rightSection: {

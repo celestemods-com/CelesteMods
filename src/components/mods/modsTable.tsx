@@ -49,49 +49,49 @@ const useStyles = createStyles(
             activeTab: {
                 borderTop: ACTIVE_DIFFICULTY_TAB_BORDER_HEIGHT, // add top border to active tab so it's easier to see which tab is active (the contrast ratio between the difficulty colors is not sufficient on its own)
                 borderTopStyle: "solid",
-                borderTopColor: colors ? colors.primaryHover : "white",
+                borderTopColor: colors ? colors.primaryHover.backgroundColor : "white",
             },
             // color the difficulty tabs
             beginner: {
-                backgroundColor: difficultyColors.beginner.primary,
+                backgroundColor: difficultyColors.beginner.primary.backgroundColor,
                 ":hover": {
-                    backgroundColor: difficultyColors.beginner.primaryHover,
+                    backgroundColor: difficultyColors.beginner.primaryHover.backgroundColor,
                 },
             },
             intermediate: {
-                backgroundColor: difficultyColors.intermediate.primary,
+                backgroundColor: difficultyColors.intermediate.primary.backgroundColor,
                 ":hover": {
-                    backgroundColor: difficultyColors.intermediate.primaryHover,
+                    backgroundColor: difficultyColors.intermediate.primaryHover.backgroundColor,
                 },
             },
             advanced: {
-                backgroundColor: difficultyColors.advanced.primary,
+                backgroundColor: difficultyColors.advanced.primary.backgroundColor,
                 ":hover": {
-                    backgroundColor: difficultyColors.advanced.primaryHover,
+                    backgroundColor: difficultyColors.advanced.primaryHover.backgroundColor,
                 },
             },
             expert: {
-                backgroundColor: difficultyColors.expert.primary,
+                backgroundColor: difficultyColors.expert.primary.backgroundColor,
                 ":hover": {
-                    backgroundColor: difficultyColors.expert.primaryHover,
+                    backgroundColor: difficultyColors.expert.primaryHover.backgroundColor,
                 },
             },
             grandmaster: {
-                backgroundColor: difficultyColors.grandmaster.primary,
+                backgroundColor: difficultyColors.grandmaster.primary.backgroundColor,
                 ":hover": {
-                    backgroundColor: difficultyColors.grandmaster.primaryHover,
+                    backgroundColor: difficultyColors.grandmaster.primaryHover.backgroundColor,
                 },
             },
             astral: {
-                backgroundColor: difficultyColors.astral.primary,
+                backgroundColor: difficultyColors.astral.primary.backgroundColor,
                 ":hover": {
-                    backgroundColor: difficultyColors.astral.primaryHover,
+                    backgroundColor: difficultyColors.astral.primaryHover.backgroundColor,
                 },
             },
             celestial: {
-                backgroundColor: difficultyColors.celestial.primary,
+                backgroundColor: difficultyColors.celestial.primary.backgroundColor,
                 ":hover": {
-                    backgroundColor: difficultyColors.celestial.primaryHover,
+                    backgroundColor: difficultyColors.celestial.primaryHover.backgroundColor,
                 },
             },
             table: {
@@ -134,7 +134,7 @@ const useStyles = createStyles(
                     padding: "10px",
                     textAlign: "center",
                     border: "none",
-                    backgroundColor: colors ? colors.primary : "black", // table header
+                    backgroundColor: colors ? colors.primary.backgroundColor : "black", // table header
                     // The down arrow appears blurry due to rotation, so we zoom in to fix that.
                     // https://stackoverflow.com/a/53556981
                     ".mantine-Center-root": {
@@ -145,14 +145,14 @@ const useStyles = createStyles(
                     }
                 },
                 "&&&& th:hover": {
-                    backgroundColor: colors ? colors.primaryHover : "white", // table header hover
+                    backgroundColor: colors ? colors.primaryHover.backgroundColor : "white", // table header hover
                 },
             },
             columnTitle: {
                 "&&&& .mantine-UnstyledButton-root": {
                     border: "none",
                     ":hover": {
-                        backgroundColor: colors ? colors.secondaryHover : "white",  // unfiltered column filter button hover
+                        backgroundColor: colors ? colors.secondaryHover.backgroundColor : "white",  // unfiltered column filter button hover
                         border: "2px solid black",
                     }
                 }
@@ -160,9 +160,9 @@ const useStyles = createStyles(
             filteredColumnTitle: {
                 "&&&& .mantine-UnstyledButton-root": {
                     border: "none",
-                    backgroundColor: colors ? colors.secondary : "black", // filtered column filter button
+                    backgroundColor: colors ? colors.secondary.backgroundColor : "black", // filtered column filter button
                     ":hover": {
-                        backgroundColor: colors ? colors.secondaryHover : "white", // filtered column filter button hover
+                        backgroundColor: colors ? colors.secondaryHover.backgroundColor : "white", // filtered column filter button hover
                         border: "2px solid black",
                     }
                 }
@@ -176,25 +176,25 @@ const useStyles = createStyles(
                 borderBottomRightRadius: "50px",
             },
             pagination: {
-                backgroundColor: colors ? colors.primary : "black", // table footer
+                backgroundColor: colors ? colors.primary.backgroundColor : "black", // table footer
                 color: "white",
                 "&&&& button": {
-                    backgroundColor: colors ? colors.primary : "black", // default pagination button
-                    border: `2px solid ${colors ? colors.primaryHover : "white"}`
+                    backgroundColor: colors ? colors.primary.backgroundColor : "black", // default pagination button
+                    border: `2px solid ${colors ? colors.primaryHover.backgroundColor : "white"}`
                 },
                 "&&&& button:hover": {
-                    backgroundColor: colors ? colors.primaryHover : "white", // default pagination button hover
+                    backgroundColor: colors ? colors.primaryHover.backgroundColor : "white", // default pagination button hover
                 },
                 "&&&&& button[data-active]": {
-                    backgroundColor: colors ? colors.secondary : "black", // active pagination button
+                    backgroundColor: colors ? colors.secondary.backgroundColor : "black", // active pagination button
                     borderColor: "transparent",
                 },
                 "&&&&& button[data-active]:hover": {
-                    backgroundColor: colors ? colors.secondaryHover : "white", // active pagination button hover
+                    backgroundColor: colors ? colors.secondaryHover.backgroundColor : "white", // active pagination button hover
                     borderColor: "black",
                 },
                 "&&&&&& button[data-disabled]": {
-                    backgroundColor: colors ? colors.primaryDisabled : "gray", // disabled pagination button (for the arrows)
+                    backgroundColor: colors ? colors.primaryDisabled.backgroundColor : "gray", // disabled pagination button (for the arrows)
                     borderColor: "transparent",
                 },
             },
