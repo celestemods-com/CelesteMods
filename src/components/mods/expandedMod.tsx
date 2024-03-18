@@ -7,6 +7,8 @@ import ModDownloadButton from "./modDownloadButton/modDownloadButton";
 import Link from "next/link";
 import ModCarousel from "./modCarousel";
 import { COMING_SOON_PATHNAME } from "~/consts/pathnames";
+import { expandedModColors } from "~/styles/expandedModColors";
+import type { DifficultyColor } from "~/styles/difficultyColors";
 
 
 
@@ -21,8 +23,8 @@ const useStyles = createStyles(
             },
         },
         expandedMod: {
-            backgroundColor: "#e1e1e2",
-            color: "black",
+            backgroundColor: expandedModColors.default.backgroundColor,
+            color: expandedModColors.default.textColor,
             borderRadius: "0 0 50px 50px",
             // We move the expanded mod up to make
             // the mod row and expanded mod look like a single row.
@@ -43,12 +45,17 @@ const useStyles = createStyles(
 type ExpandedModProps = {
     isLoading: boolean,
     mod: Mod,
+    colors: DifficultyColor,
 };
 
 
 
 
-const ExpandedMod = ({ isLoading, mod }: ExpandedModProps) => {
+const ExpandedMod = ({
+    isLoading,
+    mod,
+    colors,
+}: ExpandedModProps) => {
     const isMapperNameVisiblePermitted = false;
 
 
@@ -77,8 +84,9 @@ const ExpandedMod = ({ isLoading, mod }: ExpandedModProps) => {
                     isNormalMod={mod.type === "Normal"}
                     isMapperNameVisiblePermitted={isMapperNameVisiblePermitted}
                     mapIds={mod.Map.map(({ id }) => id)}
+                    colors={colors}
                 />
-                <ModCarousel gamebananaModId={mod.gamebananaModId} numberOfMaps={mod.Map.length}/>
+                <ModCarousel gamebananaModId={mod.gamebananaModId} numberOfMaps={mod.Map.length} colors={colors} />
             </Flex>
         </Stack>
     );

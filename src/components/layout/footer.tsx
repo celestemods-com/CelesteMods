@@ -2,27 +2,32 @@ import { Box, Group, Stack, createStyles } from "@mantine/core";
 import Link from "next/link";
 import { cmlDiscordInviteUrl } from "~/consts/cmlDiscordInviteUrl";
 import { COMING_SOON_PATHNAME } from "~/consts/pathnames";
+import { blackBackgroundColor } from "~/styles/layoutColors";
+import { difficultyColors } from "~/styles/difficultyColors";
 
 
 
 
-const useStyles = createStyles(() => ({
-    outerFooter: {
-        backgroundColor: "rgba(1.0, 1.0, 1.0, 0.9)",
-        /* top | left and right | bottom */
-        padding: "1px 10px 10px",
-    },
-    footer: {
-        padding: "0 12px",
-    },
-    horizontalRule: {
-        border: "2px solid #5b8bb3",
-    },
-    discordLink: {
-        fontWeight: "bold",
-        textAlign: "center",
-    },
-}));
+const useStyles = createStyles(
+    () => ({
+        outerFooter: {
+            backgroundColor: blackBackgroundColor,
+            /* top | left and right | bottom */
+            padding: "1px 10px 10px",
+        },
+        footer: {
+            padding: "0 12px",
+        },
+        horizontalRule: {
+            border: "2px solid",
+            borderColor: difficultyColors.beginner.primaryHover.backgroundColor,
+        },
+        discordLink: {
+            fontWeight: "bold",
+            textAlign: "center",
+        },
+    })
+);
 
 
 
