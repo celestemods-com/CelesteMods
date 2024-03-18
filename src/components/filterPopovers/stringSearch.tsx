@@ -28,7 +28,7 @@ const useStyles = createStyles(
 
         return {
             box: {
-                padding: '10px',
+                padding: "10px",
                 backgroundColor: colors.primary.backgroundColor, // filter popover
                 // Style the arrow on top of the box.
                 "+ div": {
@@ -37,37 +37,37 @@ const useStyles = createStyles(
             },
             root: {
                 "&&&&": {
-                    color: "white",
+                    color: colors.primary.textColor,    // this doesn't seem to be used
                 }
             },
             wrapper: {
-                borderColor: 'white',
+                borderColor: colors.primary.textColor,  // this doesn't seem to be used
                 "&&&& button": {
-                    color: "white",
+                    color: colors.primary.textColor,    // this doesn't seem to be used
                 },
             },
             input: {
                 "&&&&": {
-                    color: 'white',
-                    borderColor: 'white',
-                    backgroundColor: 'transparent',
+                    color: colors.primary.textColor,
+                    borderColor: colors.primary.textColor,
+                    backgroundColor: "transparent",
                 },
                 "::placeholder": {
-                    color: "white",
+                    color: colors.primary.textColor,
                 },
             },
             label: {
                 "&&&&": {
-                    color: "white",
+                    color: colors.primary.textColor,    // this doesn't seem to be used
                 }
             },
             description: {
                 "&&&&": {
-                    color: "white",
+                    color: "red",    // this doesn't seem to be used
                 }
-            }
+            },
         };
-    }
+    },
 );
 
 

@@ -156,12 +156,12 @@ export const difficultyColors = {
             textColor: "white",
         },
         secondary: {
-            backgroundColor: "#a336ad",
-            textColor: "white",
+            backgroundColor: "#cc826e",
+            textColor: "black",
         },
         secondaryHover: {
-            backgroundColor: "#c362cd",
-            textColor: "black",
+            backgroundColor: "#7c3214",
+            textColor: "white",
         },
     },
     celestial: {
@@ -178,12 +178,12 @@ export const difficultyColors = {
             textColor: "white",
         },
         secondary: {
-            backgroundColor: "#a336ad",
-            textColor: "white",
+            backgroundColor: "#cc826e",
+            textColor: "black",
         },
         secondaryHover: {
-            backgroundColor: "#c362cd",
-            textColor: "black",
+            backgroundColor: "#7c3214",
+            textColor: "white",
         },
     },
 } as const satisfies DifficultyColorsObject; // defined `as const` for more useful intellisense - `satisfies` ensures that the object conforms to the type but avoids type narrowing (which makes intellisense less useful)
