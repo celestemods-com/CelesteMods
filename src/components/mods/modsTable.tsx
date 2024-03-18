@@ -12,7 +12,9 @@ import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import type { ModWithInfo } from "~/components/mods/types";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
 import { colorsForDifficultyIndex, greatestValidDifficultyIndex } from "~/styles/modsColors";
-import { canonicalDifficultyNames, difficultyColors } from "~/styles/difficultyColors";
+import { canonicalDifficultyNames, difficultyColors, type DifficultyColor } from "~/styles/difficultyColors";
+import { expandedModColors } from "~/styles/expandedModColors";
+import { TABLE_HEADER_ARROW_ZOOM } from "~/consts/tableHeaderArrowZoom";
 
 
 
@@ -25,7 +27,7 @@ const ACTIVE_DIFFICULTY_TAB_BORDER_HEIGHT = "2px";
 const useStyles = createStyles(
     (
         theme,
-        { colors }: { colors: typeof difficultyColors[typeof canonicalDifficultyNames[number]]; }
+        { colors }: { colors: DifficultyColor; },
     ) => {
         return ({
             tabContainer: {
@@ -127,8 +129,8 @@ const useStyles = createStyles(
                 "&&&&": {
                     /* top | left and right | bottom */
                     padding: `${theme.spacing.sm} ${theme.spacing.xl} ${theme.spacing.sm}`,
-                    backgroundColor: theme.colors.gray[2],
-                    color: theme.black,
+                    backgroundColor: expandedModColors.default.backgroundColor,
+                    color: expandedModColors.default.textColor,
                     borderWidth: 0,
                     fontWeight: "bold",
                 },
@@ -149,7 +151,7 @@ const useStyles = createStyles(
                     // The down arrow appears blurry due to rotation, so we zoom in to fix that.
                     // https://stackoverflow.com/a/53556981
                     ".mantine-Center-root": {
-                        zoom: 1.1,
+                        zoom: TABLE_HEADER_ARROW_ZOOM,
                     },
                     "svg": {
                         color: colors.primary.textColor, // sets the color of the arrow and of the non-hovered filter icon
@@ -789,6 +791,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                             <ExpandedMod
                                 isLoading={isLoading}
                                 mod={record}
+                                colors={colors}
                             />
                         );
                     }

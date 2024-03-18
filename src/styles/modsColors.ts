@@ -1,4 +1,4 @@
-import { canonicalDifficultyNames, difficultyColors, type DifficultyColorsObjects } from "./difficultyColors";
+import { canonicalDifficultyNames, difficultyColors, type DifficultyColor } from "./difficultyColors";
 
 
 
@@ -6,7 +6,7 @@ import { canonicalDifficultyNames, difficultyColors, type DifficultyColorsObject
 /** Easiest to hardest.
  * Must be in the same order as the `canonicalDifficultyNames` array in `./difficultyColors.ts`.
  */
-const listOfColors: DifficultyColorsObjects[] = [];
+const listOfColors: DifficultyColor[] = [];
 
 for (let index = 0; index < canonicalDifficultyNames.length; index++) {
     const difficultyName = canonicalDifficultyNames[index];

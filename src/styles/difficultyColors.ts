@@ -1,3 +1,8 @@
+import type { ColorPair } from "./types.ts";
+
+
+
+
 /** Easiest to hardest.
  * Must be in the same order as the `listOfColors` array in `./modsColors.ts`.
  * Used to specify the canonical property/class names for each difficulty as well as their order.
@@ -7,12 +12,7 @@ export const canonicalDifficultyNames = ["beginner", "intermediate", "advanced",
 
 
 
-type ColorPair = {
-    backgroundColor: string;
-    textColor: "white" | "black";
-};
-
-type DifficultyColors = {
+type DifficultyColor_General = {
     primary: ColorPair;
     primaryHover: ColorPair;
     primaryDisabled: ColorPair;
@@ -20,12 +20,10 @@ type DifficultyColors = {
     secondaryHover: ColorPair;
 };
 
-type DifficultyColorsObject = {
-    [difficulty in typeof canonicalDifficultyNames[number]]: DifficultyColors;
+type DifficultyColors_General = {
+    [difficulty in typeof canonicalDifficultyNames[number]]: DifficultyColor_General;
 };
 
-
-export type DifficultyColorsObjects = typeof difficultyColors[keyof typeof difficultyColors];
 
 //color contrasts are calculated using https://contrastchecker.online/
 //contrast checker based on WCAG 2.1 level AA https://www.w3.org/WAI/standards-guidelines/wcag/
@@ -186,4 +184,7 @@ export const difficultyColors = {
             textColor: "white",
         },
     },
-} as const satisfies DifficultyColorsObject; // defined `as const` for more useful intellisense - `satisfies` ensures that the object conforms to the type but avoids type narrowing (which makes intellisense less useful)
+} as const satisfies DifficultyColors_General; // defined `as const` for more useful intellisense - `satisfies` ensures that the object conforms to the type but avoids type narrowing (which makes intellisense less useful)
+
+
+export type DifficultyColor = typeof difficultyColors[keyof typeof difficultyColors];
