@@ -1,0 +1,1 @@
+export const TABLE_HEADER_ARROW_ZOOM = 1.1;

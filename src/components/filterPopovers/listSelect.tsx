@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 import { MultiSelect, createStyles } from "@mantine/core";
-import { colorsForDifficultyIndex } from "~/styles/mods-colors";
+import { colorsForDifficultyIndex } from "~/styles/modsColors";
 
 
 
@@ -28,48 +28,49 @@ const useStyles = createStyles(
         return {
             defaultValue: {
                 "&&&&": {
-                    color: "white",
-                    backgroundColor: colors.primaryHover1,
+                    backgroundColor: colors.primaryHover.backgroundColor, // highlight color for selected items
+                    color: colors.primaryHover.textColor,
                 },
                 "&&&& button": {
-                    color: "white",
-                }
+                    color: colors.primaryHover.textColor,
+                },
             },
             input: {
                 "&&&&": {
-                    backgroundColor: colors.primary,
-                    color: "white",
+                    backgroundColor: colors.primary.backgroundColor, // dropdown parent
+                    color: colors.primary.textColor, // this doesn't seem to be used
                 },
                 "&&&& input::placeholder": {
-                    color: "white",
-                }
+                    color: colors.primary.textColor,
+                },
             },
             dropdown: {
                 "&&&&": {
-                    backgroundColor: colors.primary,
-                }
+                    backgroundColor: colors.primary.backgroundColor, // dropdown
+                },
             },
             item: {
                 "&&&&": {
-                    color: "white",
+                    color: colors.primary.textColor,
                 },
                 "&&&&[data-hovered]": {
-                    backgroundColor: colors.primaryHover2,
-                }
+                    backgroundColor: colors.primaryHover.backgroundColor, // highlight color for hovered items in dropdown
+                    color: colors.primaryHover.textColor,
+                },
             },
             root: {
                 // Style the arrow on top of the box.
                 "+ div": {
-                    backgroundColor: colors.primary,
-                }
+                    backgroundColor: colors.primary.backgroundColor,
+                },
             },
             rightSection: {
                 "&&&& path": {
-                    color: "white",
-                }
-            }
+                    color: colors.primary.textColor,
+                },
+            },
         };
-    }
+    },
 );
 
 

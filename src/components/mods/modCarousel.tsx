@@ -3,13 +3,16 @@ import { useGamebananaModImageUrls } from "~/hooks/gamebananaApi";
 import { createStyles } from "@mantine/core";
 import { Image } from "@mantine/core";      //TODO!: replace with nextjs Image component once next.config.mjs is fixed
 // import Image from "next/image";
-import { api } from "~/utils/api";
+import type { DifficultyColor } from "~/styles/difficultyColors";
 
 
 
 
 const useStyles = createStyles(
-    (_theme) => ({
+    (
+        theme,
+        { colors }: { colors: DifficultyColor; },
+    ) => ({
         carousel: {
             // double ampersand to increase selectivity of class to ensure it overrides any other css
             "&&": {
@@ -44,8 +47,8 @@ const useStyles = createStyles(
             position: "unset"
         },
         control: {
-            backgroundColor: "#263972",
-            color: "white",
+            backgroundColor: colors.primary.backgroundColor,
+            color: colors.primary.textColor,
             opacity: "0.9"
         },
     }),
@@ -57,16 +60,17 @@ const useStyles = createStyles(
 type modCarouselProps = {
     gamebananaModId: number,
     numberOfMaps: number,
+    colors: DifficultyColor,
 };
 
 
 
 
-const ModCarousel = ({ gamebananaModId, numberOfMaps }: modCarouselProps) => {
+const ModCarousel = ({ gamebananaModId, numberOfMaps, colors }: modCarouselProps) => {
     const { imageUrls } = useGamebananaModImageUrls({ gamebananaModId });
 
 
-    const { cx, classes } = useStyles();
+    const { cx, classes } = useStyles({ colors });
 
 
     return (
@@ -78,7 +82,7 @@ const ModCarousel = ({ gamebananaModId, numberOfMaps }: modCarouselProps) => {
                 viewport: classes.viewport,
                 slide: cx(classes.slide, numberOfMaps >= 4 ? classes.imgMaxHeight400 : classes.imgMaxHeight250),
                 controls: classes.controls,
-                control:classes.control,
+                control: classes.control,
             }}>
                 {imageUrls.map((imageUrl) => (
                     <Carousel.Slide

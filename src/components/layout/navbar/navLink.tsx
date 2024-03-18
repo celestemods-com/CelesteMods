@@ -1,6 +1,6 @@
 import { Flex, createStyles } from "@mantine/core";
 import Link from "next/link";
-import { difficultyColors } from "~/styles/mods-colors";
+import { difficultyColors } from "~/styles/difficultyColors";
 
 
 
@@ -13,7 +13,7 @@ const useStyles = createStyles(
             position: "relative",
         },
         navLinkLabel: {
-            backgroundColor: difficultyColors.beginner.primary,
+            backgroundColor: difficultyColors.beginner.primary.backgroundColor,
             color: theme.white,
             flexGrow: 1,
             fontSize: '17px',
@@ -57,7 +57,7 @@ export const NavLink = ({ label, pathname, active }: NavLinkProps) => {
                     xmlns="http://www.w3.org/2000/svg"
                     width="40px"
                     height="40px"
-                    fill={difficultyColors.beginner.primary}
+                    fill={difficultyColors.beginner.primary.backgroundColor}
                 >
                     <polygon points="0,0 100,0 100,100 0,100 100,50" />
                 </svg>
@@ -70,7 +70,7 @@ export const NavLink = ({ label, pathname, active }: NavLinkProps) => {
                         xmlns="http://www.w3.org/2000/svg"
                         width="40px"
                         height="40px"
-                        fill={difficultyColors.beginner.primary}
+                        fill={difficultyColors.beginner.primary.backgroundColor}
                         className={classes.activeNavLink}
                     >
                         <polygon points="0,0 100,50 0,100" />

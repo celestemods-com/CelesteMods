@@ -4,6 +4,7 @@ import { api } from "~/utils/api";
 import { useMemo } from "react";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
 import MapsTable from "./mapsTable";
+import type { DifficultyColor } from "~/styles/difficultyColors";
 
 
 
@@ -24,6 +25,7 @@ export type MapsProps = {
     isNormalMod: boolean;
     isMapperNameVisiblePermitted: boolean;
     mapIds: number[];
+    colors: DifficultyColor;
 };
 
 
@@ -126,6 +128,7 @@ const Maps = ({
     isNormalMod,
     isMapperNameVisiblePermitted,
     mapIds,
+    colors,
 }: MapsProps) => {
     //get common data
     const qualityQuery = api.quality.getAll.useQuery({}, { queryKey: ["quality.getAll", {}] });
@@ -213,7 +216,7 @@ const Maps = ({
     return (
         <Stack align="center" justify="flex-start" spacing="0">
             <Title order={3}>Maps</Title>
-            <MapsTable isNormalMod={isNormalMod} isMapperNameVisiblePermitted={isMapperNameVisiblePermitted} mapsWithInfo={mapsWithInfo} isLoading={isLoading}/>
+            <MapsTable isNormalMod={isNormalMod} isMapperNameVisiblePermitted={isMapperNameVisiblePermitted} mapsWithInfo={mapsWithInfo} isLoading={isLoading} colors={colors}/>
         </Stack>
     );
 };

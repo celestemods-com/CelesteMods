@@ -3,7 +3,7 @@ import Link from "next/link";
 import { cmlDiscordInviteUrl } from "~/consts/cmlDiscordInviteUrl";
 import { COMING_SOON_PATHNAME } from "~/consts/pathnames";
 import { blackBackgroundColor } from "~/styles/layoutColors";
-import { difficultyColors } from "~/styles/mods-colors";
+import { difficultyColors } from "~/styles/difficultyColors";
 
 
 
@@ -20,7 +20,7 @@ const useStyles = createStyles(
         },
         horizontalRule: {
             border: "2px solid",
-            borderColor: difficultyColors.beginner.primaryHover1,
+            borderColor: difficultyColors.beginner.primaryHover.backgroundColor,
         },
         discordLink: {
             fontWeight: "bold",

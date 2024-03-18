@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 import { NumberInput, Stack, type NumberInputProps, createStyles } from "@mantine/core";
-import { colorsForDifficultyIndex } from "~/styles/mods-colors";
+import { colorsForDifficultyIndex } from "~/styles/modsColors";
 
 
 
@@ -27,47 +27,47 @@ const useStyles = createStyles(
 
         return {
             box: {
-                padding: '10px',
-                backgroundColor: colors.primary,
+                padding: "10px",
+                backgroundColor: colors.primary.backgroundColor, // filter popover
                 "label": {
-                    color: "white",
+                    color: colors.primary.textColor,
                 },
                 // Style the arrow on top of the box.
                 "+ div": {
-                    backgroundColor: colors.primary,
+                    backgroundColor: colors.primary.backgroundColor,
                 }
             },
             root: {
                 "&&&&": {
-                    color: "white",
+                    color: colors.primary.textColor,    // this doesn't seem to be used
                 }
             },
             label: {
                 "&&&&": {
-                    color: "white",
+                    color: colors.primary.textColor,    // this doesn't seem to be used
                 }
             },
             description: {
                 "&&&&": {
-                    color: "white",
+                    color: colors.primary.textColor,
                 }
             },
             input: {
                 "&&&&": {
-                    color: 'white',
-                    borderColor: 'white',
-                    backgroundColor: 'transparent',
+                    color: colors.primary.textColor,
+                    borderColor: colors.primary.textColor,
+                    backgroundColor: "transparent",
                 },
                 "::placeholder": {
-                    color: "white",
+                    color: colors.primary.textColor,
                 },
             },
             control: {
                 "&&&&": {
-                    color: "white",
+                    color: colors.primary.textColor,
                     border: "none",
                     ":hover": {
-                        backgroundColor: colors.primaryHover2,
+                        backgroundColor: colors.primaryHover.backgroundColor, // increase/decrease arrows
                     }
                 },
             }

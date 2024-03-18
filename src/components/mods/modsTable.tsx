@@ -11,23 +11,24 @@ import { ListSelect } from "~/components/filterPopovers/listSelect";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import type { ModWithInfo } from "~/components/mods/types";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
-import { colorsForDifficultyIndex, difficultyColors, greatestValidDifficultyIndex } from "~/styles/mods-colors";
+import { colorsForDifficultyIndex, greatestValidDifficultyIndex } from "~/styles/modsColors";
+import { canonicalDifficultyNames, difficultyColors, type DifficultyColor } from "~/styles/difficultyColors";
+import { expandedModColors } from "~/styles/expandedModColors";
+import { TABLE_HEADER_ARROW_ZOOM } from "~/consts/tableHeaderArrowZoom";
 
 
 
 
 const PAGE_SIZES = [5, 10, 15, 20, 25, 50, 100, 250, 500, 1000];
 const DEFAULT_PAGE_SIZE_INDEX = 1;
+const ACTIVE_DIFFICULTY_TAB_BORDER_HEIGHT = "2px";
 
 
 const useStyles = createStyles(
     (
         theme,
-        { difficultyIndex }: { difficultyIndex: number | null; }
+        { colors }: { colors: DifficultyColor; },
     ) => {
-        const colors = colorsForDifficultyIndex(difficultyIndex);
-
-
         return ({
             tabContainer: {
                 padding: "0 15px",
@@ -35,51 +36,76 @@ const useStyles = createStyles(
                 justifyContent: "end",
             },
             tab: {
-                color: theme.white,
                 padding: "1px 20px",
                 display: "inline-block",
                 borderTopLeftRadius: "5px",
                 borderTopRightRadius: "5px",
+                borderTop: ACTIVE_DIFFICULTY_TAB_BORDER_HEIGHT,
+                borderTopStyle: "solid",
+                borderTopColor: "transparent",
                 fontSize: "medium",
                 cursor: "pointer",
                 fontWeight: "bold",
             },
-            pagination: {
-                "button": {
-                    border: "none",
-                },
-                backgroundColor: colors ? colors.primary : theme.black,
-                color: theme.white,
-                "&&&& button": {
-                    backgroundColor: colors ? colors.secondary : theme.black,
-                },
-                "&&&& button:hover": {
-                    backgroundColor: colors ? colors.secondaryHover : theme.black,
-                },
-                '&&&&& button[data-active]': {
-                    backgroundColor: colors ? colors.primaryHover1 : theme.black,
-                },
-                '&&&&& button[data-active]:hover': {
-                    backgroundColor: colors ? colors.primaryHover2 : theme.black,
-                },
-                '&&&&&& button[data-disabled]': {
-                    backgroundColor: colors ? colors.secondaryDisabled : theme.black,
-                },
+            activeTab: {
+                borderTopColor: `${colors.primaryHover.backgroundColor}`,  // add top border to active tab so it's easier to see which tab is active (the contrast ratio between the difficulty colors is not sufficient on its own)
             },
+            // color the difficulty tabs
             beginner: {
-                backgroundColor: difficultyColors.beginner.primary,
+                backgroundColor: difficultyColors.beginner.primary.backgroundColor,
+                color: difficultyColors.beginner.primary.textColor,
+                ":hover": {
+                    backgroundColor: difficultyColors.beginner.primaryHover.backgroundColor,
+                    color: difficultyColors.beginner.primaryHover.textColor,
+                },
             },
             intermediate: {
-                backgroundColor: difficultyColors.intermediate.primary,
+                backgroundColor: difficultyColors.intermediate.primary.backgroundColor,
+                color: difficultyColors.intermediate.primary.textColor,
+                ":hover": {
+                    backgroundColor: difficultyColors.intermediate.primaryHover.backgroundColor,
+                    color: difficultyColors.intermediate.primaryHover.textColor,
+                },
             },
             advanced: {
-                backgroundColor: difficultyColors.advanced.primary,
+                backgroundColor: difficultyColors.advanced.primary.backgroundColor,
+                color: difficultyColors.advanced.primary.textColor,
+                ":hover": {
+                    backgroundColor: difficultyColors.advanced.primaryHover.backgroundColor,
+                    color: difficultyColors.advanced.primaryHover.textColor,
+                },
             },
             expert: {
-                backgroundColor: difficultyColors.expert.primary,
+                backgroundColor: difficultyColors.expert.primary.backgroundColor,
+                color: difficultyColors.expert.primary.textColor,
+                ":hover": {
+                    backgroundColor: difficultyColors.expert.primaryHover.backgroundColor,
+                    color: difficultyColors.expert.primaryHover.textColor,
+                },
             },
             grandmaster: {
-                backgroundColor: difficultyColors.grandmaster.primary,
+                backgroundColor: difficultyColors.grandmaster.primary.backgroundColor,
+                color: difficultyColors.grandmaster.primary.textColor,
+                ":hover": {
+                    backgroundColor: difficultyColors.grandmaster.primaryHover.backgroundColor,
+                    color: difficultyColors.grandmaster.primaryHover.textColor,
+                },
+            },
+            astral: {
+                backgroundColor: difficultyColors.astral.primary.backgroundColor,
+                color: difficultyColors.astral.primary.textColor,
+                ":hover": {
+                    backgroundColor: difficultyColors.astral.primaryHover.backgroundColor,
+                    color: difficultyColors.astral.primaryHover.textColor,
+                },
+            },
+            celestial: {
+                backgroundColor: difficultyColors.celestial.primary.backgroundColor,
+                color: difficultyColors.celestial.primary.textColor,
+                ":hover": {
+                    backgroundColor: difficultyColors.celestial.primaryHover.backgroundColor,
+                    color: difficultyColors.celestial.primaryHover.textColor,
+                },
             },
             table: {
                 "&&&& table": {
@@ -96,15 +122,15 @@ const useStyles = createStyles(
                 "&&&& table + div": {
                     // Removes the shadow below the table header
                     display: "none",
-                }
+                },
             },
             modCell: {
-                //4 ampersands to increase selectivity of class to ensure it overrides any other css
+                // 4 ampersands to increase selectivity of class to ensure it overrides any other css
                 "&&&&": {
                     /* top | left and right | bottom */
                     padding: `${theme.spacing.sm} ${theme.spacing.xl} ${theme.spacing.sm}`,
-                    backgroundColor: theme.colors.gray[2],
-                    color: theme.black,
+                    backgroundColor: expandedModColors.default.backgroundColor,
+                    color: expandedModColors.default.textColor,
                     borderWidth: 0,
                     fontWeight: "bold",
                 },
@@ -116,41 +142,58 @@ const useStyles = createStyles(
             header: {
                 "&&&& th": {
                     fontWeight: "bold",
-                    color: theme.white,
                     fontSize: "17px",
                     padding: "10px",
                     textAlign: "center",
                     border: "none",
-                    backgroundColor: colors ? colors.primary : theme.black,
+                    backgroundColor: colors.primary.backgroundColor, // table header
+                    color: colors.primary.textColor,
                     // The down arrow appears blurry due to rotation, so we zoom in to fix that.
                     // https://stackoverflow.com/a/53556981
                     ".mantine-Center-root": {
-                        zoom: 1.1,
+                        zoom: TABLE_HEADER_ARROW_ZOOM,
                     },
                     "svg": {
-                        color: theme.white,
-                    }
+                        color: colors.primary.textColor, // sets the color of the arrow and of the non-hovered filter icon
+                    },
                 },
                 "&&&& th:hover": {
-                    backgroundColor: colors ? colors.primaryHover1 : theme.black,
+                    backgroundColor: colors.primaryHover.backgroundColor, // table header hover
+                    color: colors.primaryHover.textColor,
+                    "svg": {
+                        color: colors.primaryHover.textColor,    // sets the color of the arrow and of the non-hovered filter icon
+                    },
                 },
             },
-            columnTitle: {
+            unfilteredColumnTitle: {
                 "&&&& .mantine-UnstyledButton-root": {
                     border: "none",
                     ":hover": {
-                        backgroundColor: colors ? colors.primaryHover2 : theme.black,
-                    }
-                }
+                        backgroundColor: colors.secondaryHover.backgroundColor,  // unfiltered column filter button hover
+                        border: "2px solid",
+                        borderColor: colors.secondaryHover.textColor,
+                        "svg": {
+                            color: colors.secondaryHover.textColor,
+                        },
+                    },
+                },
             },
             filteredColumnTitle: {
                 "&&&& .mantine-UnstyledButton-root": {
                     border: "none",
-                    backgroundColor: colors ? colors.primaryHover1 : theme.black,
+                    backgroundColor: colors.secondary.backgroundColor, // filtered column filter button
+                    "svg": {
+                        color: `${colors.secondary.textColor} !important`,   // !important to override the color set by the `header` class
+                    },
                     ":hover": {
-                        backgroundColor: colors ? colors.primaryHover2 : theme.black,
-                    }
-                }
+                        backgroundColor: colors.secondaryHover.backgroundColor, // filtered column filter button hover
+                        border: "2px solid",
+                        borderColor: colors.secondaryHover.textColor,
+                        "svg": {
+                            color: `${colors.secondaryHover.textColor} !important`,  // !important to override the color set by the `header` class
+                        },
+                    },
+                },
             },
             leftColumnCell: {
                 borderTopLeftRadius: "50px",
@@ -160,8 +203,36 @@ const useStyles = createStyles(
                 borderTopRightRadius: "50px",
                 borderBottomRightRadius: "50px",
             },
+            pagination: {
+                backgroundColor: colors.primary.backgroundColor, // table footer
+                color: colors.primary.textColor,
+                "&&&& button": {
+                    backgroundColor: colors.primary.backgroundColor, // default pagination button
+                    border: "2px solid",
+                    borderColor: colors.primaryHover.backgroundColor,
+                    color: colors.primary.textColor,
+                },
+                "&&&& button:hover": {
+                    backgroundColor: colors.primaryHover.backgroundColor, // default pagination button hover
+                    color: colors.primaryHover.textColor,
+                },
+                "&&&&& button[data-active]": {
+                    backgroundColor: colors.secondary.backgroundColor, // active pagination button
+                    borderColor: "transparent",
+                    color: colors.secondary.textColor,
+                },
+                "&&&&& button[data-active]:hover": {
+                    backgroundColor: colors.secondaryHover.backgroundColor, // active pagination button hover
+                    borderColor: colors.secondaryHover.textColor,
+                    color: colors.secondaryHover.textColor,
+                },
+                "&&&&&& button[data-disabled]": {
+                    backgroundColor: colors.primaryDisabled.backgroundColor, // disabled pagination button (for the arrows)
+                    borderColor: "transparent",
+                },
+            },
         });
-    }
+    },
 );
 
 
@@ -508,13 +579,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
 
     // apply the correct class to the body element to change the background color of the pagination dropdown
     useEffect(() => {
-        const menuClassNames = [
-            "beginnerMenu",
-            "intermediateMenu",
-            "advancedMenu",
-            "expertMenu",
-            "grandmasterMenu",
-        ];
+        const menuClassNames = canonicalDifficultyNames.map((difficultyName) => `${difficultyName.toLowerCase()}-menu`);
 
 
         if (currentTabIndex !== null) {
@@ -543,15 +608,23 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
     }, [currentTabIndex]);
 
 
-    const { cx, classes } = useStyles({ difficultyIndex: currentTabIndex });
+    const colors = colorsForDifficultyIndex(currentTabIndex);
 
-    const tabColors = [
-        classes.beginner,
-        classes.intermediate,
-        classes.advanced,
-        classes.expert,
-        classes.grandmaster
-    ];
+    const { cx, classes } = useStyles({ colors });
+
+    const tabColors: string[] = Array(canonicalDifficultyNames.length);
+
+    Object.entries(classes).forEach(
+        ([key, value]) => {
+            for (let index = 0; index < canonicalDifficultyNames.length; index++) {
+                if (key === canonicalDifficultyNames[index]) {
+                    tabColors[index] = value;
+                    break;
+                }
+            }
+        }
+    );
+
 
     return (
         <>
@@ -565,6 +638,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                                     cx(
                                         classes.tab,
                                         tabColors[parentDifficultyNames.length - 1 - index],
+                                        { [classes.activeTab]: parentDifficultyNames.length - 1 - index === currentTabIndex }
                                     )
                                 }
                                 onClick={() => {
@@ -611,10 +685,11 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                                 description="Show mods whose names include the specified text"
                                 placeholder="Search names..."
                                 difficultyIndex={currentTabIndex}
+                                iconProps={{ color: colors.primary.textColor }}
                             />
                         ),
                         filtering: isNameFiltered,
-                        titleClassName: isNameFiltered ? classes.filteredColumnTitle : classes.columnTitle,
+                        titleClassName: isNameFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle,
                         cellsClassName: (record) => {
                             return cx(
                                 classes.modCell,
@@ -645,7 +720,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                             />
                         ),
                         filtering: isMapCountFiltered,
-                        titleClassName: isMapCountFiltered ? classes.filteredColumnTitle : classes.columnTitle,
+                        titleClassName: isMapCountFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle,
                     },
                     {
                         accessor: "type",
@@ -660,7 +735,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                             />
                         ),
                         filtering: isModTypeFiltered,
-                        titleClassName: isModTypeFiltered ? classes.filteredColumnTitle : classes.columnTitle
+                        titleClassName: isModTypeFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle
                     },
                     {
                         accessor: "Quality",
@@ -676,7 +751,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                             />
                         ),
                         filtering: isQualityFiltered,
-                        titleClassName: isQualityFiltered ? classes.filteredColumnTitle : classes.columnTitle
+                        titleClassName: isQualityFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle
                     },
                     {
                         accessor: "Difficulty",
@@ -692,7 +767,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                             />
                         ),
                         filtering: isChildDifficultyFiltered,
-                        titleClassName: isChildDifficultyFiltered ? classes.filteredColumnTitle : classes.columnTitle,
+                        titleClassName: isChildDifficultyFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle,
                         cellsClassName: (record) => {
                             return cx(
                                 classes.modCell,
@@ -716,6 +791,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                             <ExpandedMod
                                 isLoading={isLoading}
                                 mod={record}
+                                colors={colors}
                             />
                         );
                     }

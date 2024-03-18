@@ -17,58 +17,205 @@ a {
 
 
 
+
 .mantine-Popover-dropdown.mantine-Popover-dropdown {
   padding: 0;
   border: 0;
 }
 
-.beginnerMenu .mantine-Menu-dropdown.mantine-Menu-dropdown {
-  background-color: #263972;
-  border: 0;
-}
-.beginnerMenu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
-  background-color: #576ba9;
-}
-.beginnerMenu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
-  background-color: #6a86b9;
+/* page sizes in pagination dropdown */
+.mantine-Menu-dropdown.mantine-Menu-dropdown button {
+  border: 2px solid transparent;
+  /* top/bottom left/right */
+  padding: 8px 10px;  /* default padding is "10px 12px", but now we have 2px of border */
+  text-align: center;
 }
 
-.intermediateMenu .mantine-Menu-dropdown.mantine-Menu-dropdown {
-  background-color: #0b6aba;
+
+/* pagination popover background */
+.beginner-menu .mantine-Menu-dropdown.mantine-Menu-dropdown {
+  background-color: #16367b;  /* difficultyColors.beginner.primary.backgroundColor */
 }
-.intermediateMenu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
-  background-color: #2a83c8;
-}
-.intermediateMenu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
-  background-color: #3f9bd2;
+.beginner-menu .mantine-Menu-dropdown .mantine-Text-root {
+  color: white;  /* difficultyColors.beginner.primary.textColor */
 }
 
-.advancedMenu .mantine-Menu-dropdown.mantine-Menu-dropdown {
-  background-color: #413a98;
+/* currently selected page size highlight */
+.beginner-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
+  background-color: #4f942f;  /* difficultyColors.beginner.secondary.backgroundColor */
 }
-.advancedMenu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
-  background-color: #605bba;
-}
-.advancedMenu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
-  background-color: #776fd2;
+.beginner-menu .mantine-Menu-dropdown button:disabled .mantine-Text-root {
+  color: black;  /* difficultyColors.beginner.secondary.textColor */
 }
 
-.expertMenu .mantine-Menu-dropdown.mantine-Menu-dropdown {
-  background-color: #84419e;
+/* page size hover */
+.beginner-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
+  background-color: #b8fd98; /* difficultyColors.beginner.secondaryHover.backgroundColor */
+  border: 2px solid;
+  border-color: black; /* difficultyColors.beginner.secondaryHover.textColor */
 }
-.expertMenu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
-  background-color: #a966bb;
-}
-.expertMenu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
-  background-color: #bd82d3;
+.beginner-menu .mantine-Menu-dropdown button:hover .mantine-Text-root {
+  color: black; /* difficultyColors.beginner.secondaryHover.textColor */
 }
 
-.grandmasterMenu .mantine-Menu-dropdown.mantine-Menu-dropdown {
-  background-color: #6f057e;
+
+/* pagination popover background */
+.intermediate-menu .mantine-Menu-dropdown.mantine-Menu-dropdown {
+  background-color: #0f5881;  /* difficultyColors.intermediate.primary.backgroundColor */
 }
-.grandmasterMenu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
-  background-color: #8f1b9b;
+.intermediate-menu .mantine-Menu-dropdown .mantine-Text-root {
+  color: white;  /* difficultyColors.intermediate.primary.textColor */
 }
-.grandmasterMenu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
-  background-color: #a238b4;
+
+/* currently selected page size highlight */
+.intermediate-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
+  background-color: #89ae4a;  /* difficultyColors.intermediate.secondary.backgroundColor */
+}
+.intermediate-menu .mantine-Menu-dropdown button:disabled .mantine-Text-root {
+  color: black;  /* difficultyColors.intermediate.secondary.textColor */
+}
+
+/* page size hover */
+.intermediate-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
+  background-color: #395c00;  /* difficultyColors.intermediate.secondaryHover.backgroundColor */
+  border: 2px solid;
+  border-color: white; /* difficultyColors.intermediate.secondaryHover.textColor */
+}
+.intermediate-menu .mantine-Menu-dropdown button:hover .mantine-Text-root {
+  color: white;  /* difficultyColors.intermediate.secondaryHover.textColor */
+}
+
+
+/* pagination popover background */
+.advanced-menu .mantine-Menu-dropdown.mantine-Menu-dropdown {
+  background-color: #595667;  /* difficultyColors.advanced.primary.backgroundColor */
+}
+.advanced-menu .mantine-Menu-dropdown .mantine-Text-root {
+  color: white;  /* difficultyColors.advanced.primary.textColor */
+}
+
+/* currently selected page size highlight */
+.advanced-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
+  background-color: #9cad9f;  /* difficultyColors.advanced.secondary.backgroundColor */
+}
+.advanced-menu .mantine-Menu-dropdown button:disabled .mantine-Text-root {
+  color: black;  /* difficultyColors.advanced.secondary.textColor */
+}
+
+/* page size hover */
+.advanced-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
+  background-color: #4b5c4e;  /* difficultyColors.advanced.secondaryHover.backgroundColor */
+  border: 2px solid;
+  border-color: white; /* difficultyColors.advanced.secondaryHover.textColor */
+}
+.advanced-menu .mantine-Menu-dropdown button:hover .mantine-Text-root {
+  color: white;  /* difficultyColors.advanced.secondaryHover.textColor */
+}
+
+
+/* pagination popover background */
+.expert-menu .mantine-Menu-dropdown.mantine-Menu-dropdown {
+  background-color: #875aaa;  /* difficultyColors.expert.primary.backgroundColor */
+}
+.expert-menu .mantine-Menu-dropdown .mantine-Text-root {
+  color: white;  /* difficultyColors.expert.primary.textColor */
+}
+
+/* currently selected page size highlight */
+.expert-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
+  background-color: #e3c093;  /* difficultyColors.expert.secondary.backgroundColor */
+}
+.expert-menu .mantine-Menu-dropdown button:disabled .mantine-Text-root {
+  color: black;  /* difficultyColors.expert.secondary.textColor */
+}
+
+/* page size hover */
+.expert-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
+  background-color: #896639;  /* difficultyColors.expert.secondaryHover.backgroundColor */
+  border: 2px solid;
+  border-color: white; /* difficultyColors.expert.secondaryHover.textColor */
+}
+.expert-menu .mantine-Menu-dropdown button:hover .mantine-Text-root {
+  color: white;  /* difficultyColors.expert.secondaryHover.textColor */
+}
+
+
+/* pagination popover background */
+.grandmaster-menu .mantine-Menu-dropdown.mantine-Menu-dropdown {
+  background-color: #4c3795;  /* difficultyColors.grandmaster.primary.backgroundColor */
+}
+.grandmaster-menu .mantine-Menu-dropdown .mantine-Text-root {
+  color: white;  /* difficultyColors.grandmaster.primary.textColor */
+}
+
+/* currently selected page size highlight */
+.grandmaster-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
+  background-color: #cc826e;  /* difficultyColors.grandmaster.secondary.backgroundColor */
+}
+.grandmaster-menu .mantine-Menu-dropdown button:disabled .mantine-Text-root {
+  color: black;  /* difficultyColors.grandmaster.secondary.textColor */
+}
+
+/* page size hover */
+.grandmaster-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
+  background-color: #7c3214;  /* difficultyColors.grandmaster.secondaryHover.backgroundColor */
+  border: 2px solid;
+  border-color: white; /* difficultyColors.grandmaster.secondaryHover.textColor */
+}
+.grandmaster-menu .mantine-Menu-dropdown button:hover .mantine-Text-root {
+  color: white;  /* difficultyColors.grandmaster.secondaryHover.textColor */
+}
+
+
+/* pagination popover background */
+.astral-menu .mantine-Menu-dropdown.mantine-Menu-dropdown {
+  background-color: #4c3795;  /* difficultyColors.astral.primary.backgroundColor */
+}
+.astral-menu .mantine-Menu-dropdown .mantine-Text-root {
+  color: white;  /* difficultyColors.astral.primary.textColor */
+}
+
+/* currently selected page size highlight */
+.astral-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
+  background-color: #cc826e;  /* difficultyColors.astral.secondary.backgroundColor */
+}
+.astral-menu .mantine-Menu-dropdown button:disabled .mantine-Text-root {
+  color: black;  /* difficultyColors.astral.secondary.textColor */
+}
+
+/* page size hover */
+.astral-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
+  background-color: #7c3214;  /* difficultyColors.astral.secondaryHover.backgroundColor */
+  border: 2px solid;
+  border-color: white; /* difficultyColors.astral.secondaryHover.textColor */
+}
+.astral-menu .mantine-Menu-dropdown button:hover .mantine-Text-root {
+  color: white;  /* difficultyColors.astral.secondaryHover.textColor */
+}
+
+
+/* pagination popover background */
+.celestial-menu .mantine-Menu-dropdown.mantine-Menu-dropdown {
+  background-color: #4c3795;  /* difficultyColors.celestial.primary.backgroundColor */
+}
+.celestial-menu .mantine-Menu-dropdown .mantine-Text-root {
+  color: white;  /* difficultyColors.celestial.primary.textColor */
+}
+
+/* currently selected page size highlight */
+.celestial-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:disabled {
+  background-color: #cc826e;  /* difficultyColors.celestial.secondary.backgroundColor */
+}
+.celestial-menu .mantine-Menu-dropdown button:disabled .mantine-Text-root {
+  color: black;  /* difficultyColors.celestial.secondary.textColor */
+}
+
+/* page size hover */
+.celestial-menu .mantine-Menu-dropdown.mantine-Menu-dropdown button:hover {
+  background-color: #7c3214;  /* difficultyColors.celestial.secondaryHover.backgroundColor */
+  border: 2px solid;
+  border-color: white; /* difficultyColors.celestial.secondaryHover.textColor */
+}
+.celestial-menu .mantine-Menu-dropdown button:hover .mantine-Text-root {
+  color: white;  /* difficultyColors.celestial.secondaryHover.textColor */
 }

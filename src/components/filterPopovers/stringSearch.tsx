@@ -1,7 +1,7 @@
 import { ActionIcon, TextInput, createStyles, type TextInputProps } from "@mantine/core";
 import type { Dispatch, SetStateAction } from "react";
 import { X, type IconProps } from "tabler-icons-react";
-import { colorsForDifficultyIndex } from "~/styles/mods-colors";
+import { colorsForDifficultyIndex } from "~/styles/modsColors";
 
 
 
@@ -28,46 +28,46 @@ const useStyles = createStyles(
 
         return {
             box: {
-                padding: '10px',
-                backgroundColor: colors.primary,
+                padding: "10px",
+                backgroundColor: colors.primary.backgroundColor, // filter popover
                 // Style the arrow on top of the box.
                 "+ div": {
-                    backgroundColor: colors.primary,
+                    backgroundColor: colors.primary.backgroundColor,
                 }
             },
             root: {
                 "&&&&": {
-                    color: "white",
+                    color: colors.primary.textColor,    // this doesn't seem to be used
                 }
             },
             wrapper: {
-                borderColor: 'white',
+                borderColor: colors.primary.textColor,  // this doesn't seem to be used
                 "&&&& button": {
-                    color: "white",
+                    color: colors.primary.textColor,    // this doesn't seem to be used
                 },
             },
             input: {
                 "&&&&": {
-                    color: 'white',
-                    borderColor: 'white',
-                    backgroundColor: 'transparent',
+                    color: colors.primary.textColor,
+                    borderColor: colors.primary.textColor,
+                    backgroundColor: "transparent",
                 },
                 "::placeholder": {
-                    color: "white",
+                    color: colors.primary.textColor,
                 },
             },
             label: {
                 "&&&&": {
-                    color: "white",
+                    color: colors.primary.textColor,    // this doesn't seem to be used
                 }
             },
             description: {
                 "&&&&": {
-                    color: "white",
+                    color: "red",    // this doesn't seem to be used
                 }
-            }
+            },
         };
-    }
+    },
 );
 
 
@@ -83,14 +83,14 @@ type StringSearchProps = {
 
 
 
-export const StringSearch = (props: StringSearchProps) => {
-    const { classes } = useStyles({ difficultyIndex: props.difficultyIndex });
+export const StringSearch = ({ value, setValue, iconProps, difficultyIndex }: StringSearchProps) => {
+    const { classes } = useStyles({ difficultyIndex: difficultyIndex });
 
 
     return (
         <div className={classes.box}>
             <TextInput
-                {...props}
+                value={value}
                 classNames={{
                     root: classes.root,
                     wrapper: classes.wrapper,
@@ -98,17 +98,17 @@ export const StringSearch = (props: StringSearchProps) => {
                     label: classes.label,
                     description: classes.description,
                 }}
-                onChange={(event) => props.setValue(event.currentTarget.value)}
+                onChange={(event) => setValue(event.currentTarget.value)}
                 rightSection={
                     <ActionIcon
                         variant="light"
-                        onClick={() => props.setValue("")}
+                        onClick={() => setValue("")}
                     >
                         <X
-                            {...props.iconProps}
-                            size={props.iconProps?.size ?? 18   /*TODO!!: get this from MantineTheme*/}
-                            strokeWidth={props.iconProps?.strokeWidth ?? 1.5}
-                            color={props.iconProps?.color ?? "white"}
+                            {...iconProps}
+                            size={iconProps?.size ?? 18   /*TODO!!: get this from MantineTheme*/}
+                            strokeWidth={iconProps?.strokeWidth ?? 1.5}
+                            color={iconProps?.color ?? "white"}
                         />
                     </ActionIcon>
                 }
