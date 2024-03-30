@@ -239,14 +239,23 @@ const useStyles = createStyles(
 
 
 
+type AdditionalColumnAccessor = "qualityCount" | "difficultyCount";
+
+type ColumnAccessor = keyof ModWithInfo | AdditionalColumnAccessor;
+
+type ExtendedModWithInfo = {
+    [key in AdditionalColumnAccessor]: number;
+} & ModWithInfo;
+
 type ModsTableSortStatus = {
-    columnAccessor: keyof ModWithInfo; //narrow from "typeof string"
+    columnAccessor: ColumnAccessor; // narrow from "typeof string"
 } & DataTableSortStatus;
 
 
 type ModsTableProps = {
     qualities: Quality[];
     difficulties: Difficulty[];
+    publishers: Publisher[];
     techs: Tech[];
     modsWithInfo: ModWithInfo[];
     isLoading: boolean;
@@ -329,7 +338,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
     const [debouncedNameQuery, _cancelDebouncedNameQueryChange] = useDebouncedValue(nameQuery, QUERY_DEBOUNCE_TIME_MILLISECONDS);
     const isNameFiltered = nameQuery !== "";
 
-    
+
     const [selectedModTypes, setSelectedModTypes] = useState<ModType[]>([]);
     const isModTypeFiltered = selectedModTypes.length > 0;
 
@@ -411,7 +420,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
 
             if (
                 debouncedPublisherQuery &&
-                !modWithInfo.Publisher.name.toLowerCase().includes(debouncedPublisherQuery.trim().toLowerCase())
+                !modWithInfo.publisherName.toLowerCase().includes(debouncedPublisherQuery.trim().toLowerCase())
             ) {
                 return false;
             }
@@ -504,7 +513,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                 }
             }
 
-            
+
             if (
                 selectedChildDifficulties.length &&
                 !selectedChildDifficulties.some(childDifficulty => modWithInfo.Difficulty.name.endsWith(childDifficulty))
@@ -539,14 +548,14 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
             ) {
                 if (
                     mapCountRange[0] !== undefined &&
-                    modWithInfo.Map.length < mapCountRange[0]
+                    modWithInfo.MapsWithInfo.length < mapCountRange[0]
                 ) {
                     return false;
                 }
 
                 if (
                     mapCountRange[1] !== undefined &&
-                    modWithInfo.Map.length > mapCountRange[1]
+                    modWithInfo.MapsWithInfo.length > mapCountRange[1]
                 ) {
                     return false;
                 }
@@ -558,7 +567,6 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
     }, [debouncedNameQuery, selectedModTypes, debouncedPublisherQuery, publicationDateRange, selectedTechsAny, selectedTechsFC, selectedQualities, qualityRatingsCountRange, selectedChildDifficulties, difficultyRatingsCountRange, mapCountRange, currentTabIndex, parentDifficultyNames, difficulties, modsWithInfo]);
 
 
-    // TODO!!!: continue down from here to implement new columns (do everything except for actually render the tooltips for now). also, pass the maps and techs to the expanded mod component so we aren't double fetching.
 
 
     //handle sorting
@@ -572,27 +580,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
 
         const sortedModsWithInfo = [...filteredModsWithInfo];
 
-        if (columnAccessor === "Map") {
-            sortedModsWithInfo.sort(
-                (a, b) => {
-                    const propertyANum = Number(a.Map.length);
-                    const propertyBNum = Number(b.Map.length);
-
-                    const aIsNan = isNaN(propertyANum);
-                    const bIsNan = isNaN(propertyBNum);
-
-                    if (aIsNan && bIsNan) return 0;
-                    if (aIsNan) return -1;
-                    if (bIsNan) return 1;
-
-                    return (
-                        sortStatus.direction === "asc" ?
-                            propertyANum - propertyBNum :
-                            propertyBNum - propertyANum
-                    );
-                },
-            );
-        } else if (columnAccessor === "Quality") {
+        if (columnAccessor === "Quality") {
             sortedModsWithInfo.sort(
                 (a, b) => {
                     if (a === b) return 0;
@@ -630,7 +618,30 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                     );
                 },
             );
-        } else {
+        } else if (columnAccessor === "mapCount" || columnAccessor === "timeCreatedGamebanana" || columnAccessor === "qualityCount" || columnAccessor === "difficultyCount") {  // map count and publication date
+            sortedModsWithInfo.sort(
+                (a, b) => {
+                    const propertyAString = String((a as ExtendedModWithInfo)[columnAccessor]);
+                    const propertyBString = String((b as ExtendedModWithInfo)[columnAccessor]);
+
+                    const propertyANum = Number(propertyAString);
+                    const propertyBNum = Number(propertyBString);
+
+                    const aIsNan = isNaN(propertyANum);
+                    const bIsNan = isNaN(propertyBNum);
+
+                    if (aIsNan && bIsNan) return 0;
+                    if (aIsNan) return -1;
+                    if (bIsNan) return 1;
+
+                    return (
+                        sortStatus.direction === "asc" ?
+                            propertyANum - propertyBNum :
+                            propertyBNum - propertyANum
+                    );
+                },
+            );
+        } else {    // handles name, publisherName
             sortedModsWithInfo.sort(
                 (a, b) => {
                     const propertyAString = String(a[columnAccessor]);
@@ -678,7 +689,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
     //reset page when required
     useEffect(() => {
         setPage(1);
-    }, [sortStatus, pageSize, debouncedNameQuery, mapCountRange, selectedModTypes, selectedQualities, selectedChildDifficulties, currentTabIndex]);
+    }, [sortStatus, pageSize, debouncedNameQuery, selectedModTypes, debouncedPublisherQuery, publicationDateRange, selectedTechsAny, selectedTechsFC, selectedQualities, qualityRatingsCountRange, selectedChildDifficulties, difficultyRatingsCountRange, mapCountRange, currentTabIndex]);
 
     //handle providing datatable with correct subset of data
     // const [records, setRecords] = useState<ModWithInfo[]>(sortedModsWithIsExpanded.slice(0, pageSize));
@@ -752,6 +763,8 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
         }
     );
 
+
+    // TODO!!!: continue down from here to implement new columns (do everything except for actually render the tooltips for now). also, pass the maps and techs to the expanded mod component so we aren't double fetching.
 
     return (
         <>
@@ -865,10 +878,9 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                         },
                     },
                     {
-                        accessor: "Map",
+                        accessor: "mapCount",
                         title: "# Maps",
                         sortable: true,
-                        render: (modWithInfo) => modWithInfo.Map.length,
                         filter: (
                             <NumberSearch
                                 range={mapCountRange}

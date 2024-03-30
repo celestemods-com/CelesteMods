@@ -101,6 +101,7 @@ const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModR
 
         const techIdsAny: Set<Tech["id"]> = new Set();
         const techIdsFC: Set<Tech["id"]> = new Set();
+        const mapsWithInfo: MapWithInfo[] = [];
 
         mod.Map.forEach(
             ({ id: mapId }) => {
@@ -121,6 +122,9 @@ const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModR
                         if (!techIdsAny.has(tech.id)) techIdsFC.add(tech.id);
                     }
                 );
+
+
+                mapsWithInfo.push(map);
             }
         );
 
@@ -180,7 +184,10 @@ const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModR
                 name: difficultyName,
                 count: difficultyCount,
             },
-            Publisher: publisher,
+            Map: undefined, // overwrite the Map property in mod
+            mapCount: mapsWithInfo.length,
+            MapsWithInfo: mapsWithInfo,
+            publisherName: publisher.name,
             TechsAny: Array.from(techIdsAny),
             TechsFC: Array.from(techIdsFC),
         };
@@ -400,7 +407,7 @@ const Mods: NextPage = () => {
     return (
         <Layout pageTitle="Mods" pageDescription="Mods" pathname={MODS_PAGE_PATHNAME}>
             <Title className={classes.pageTitle} order={2}>Mods List</Title>
-            <ModsTable qualities={qualities} difficulties={difficulties} techs={techs} modsWithInfo={modsWithInfo} isLoading={isLoading} />
+            <ModsTable qualities={qualities} difficulties={difficulties} publishers={publishers} techs={techs} modsWithInfo={modsWithInfo} isLoading={isLoading} />
         </Layout>
     );
 };

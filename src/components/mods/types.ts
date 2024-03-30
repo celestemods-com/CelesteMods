@@ -53,7 +53,9 @@ export type ModWithInfo = {
     lowestCannonicalDifficulty: number | undefined;
     Quality: RatingInfo;
     Difficulty: RatingInfo;
-    Publisher: Publisher;
+    mapCount: number;
+    MapsWithInfo: MapWithInfo[];
+    publisherName: Publisher["name"];
     TechsAny: Tech["id"][];
     TechsFC: Tech["id"][];
-} & Mod;
+} & Omit<Mod, "Map">;

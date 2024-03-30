@@ -1,5 +1,5 @@
 import { Flex, Group, Loader, Stack, createStyles } from "@mantine/core";
-import { Mod } from "~/components/mods/types";
+import type { ModWithInfo } from "~/components/mods/types";
 import Maps from "./maps/maps";
 import PublisherName from "./publisherName";
 import PublicationDate from "./publicationDate";
@@ -44,7 +44,7 @@ const useStyles = createStyles(
 
 type ExpandedModProps = {
     isLoading: boolean,
-    mod: Mod,
+    mod: ModWithInfo,
     colors: DifficultyColor,
 };
 
@@ -87,10 +87,10 @@ const ExpandedMod = ({
                     isLoadingMod={isLoading}
                     isNormalMod={mod.type === "Normal"}
                     isMapperNameVisiblePermitted={isMapperNameVisiblePermitted}
-                    mapIds={mod.Map.map(({ id }) => id)}
+                    mapIds={mod.MapsWithInfo.map(({ id }) => id)}
                     colors={colors}
                 />
-                <ModCarousel gamebananaModId={mod.gamebananaModId} numberOfMaps={mod.Map.length} colors={colors} />
+                <ModCarousel gamebananaModId={mod.gamebananaModId} numberOfMaps={mod.mapCount} colors={colors} />
             </Flex>
         </Stack>
     );
