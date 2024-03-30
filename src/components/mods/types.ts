@@ -15,7 +15,7 @@ export type ModRatingData = RouterOutputs["rating"]["getModRatingData"];
 export type ModNoRatingData = Pick<ModRatingData, "modId">;
 export type ModYesRatingData = {    //TODO: figure out how to do this through narrowing instead of directly referencing the type
     modId: ModRatingData["modId"];
-} & RatingsInfo
+} & RatingsInfo;
 
 
 export type Map = RouterOutputs["map"]["getById"];
@@ -24,11 +24,13 @@ export type MapRatingData = RouterOutputs["rating"]["getMapRatingData"];
 export type MapNoRatingData = Pick<MapRatingData, "mapId">;
 export type MapYesRatingData = {    //TODO: figure out how to do this through narrowing instead of directly referencing the type
     mapId: MapRatingData["mapId"];
-} & RatingsInfo
+} & RatingsInfo;
 
 
 export type Quality = RouterOutputs["quality"]["getAll"][number];
 export type Difficulty = RouterOutputs["difficulty"]["getAll"][number];
+export type Publisher = RouterOutputs["publisher"]["getAll"][number];
+export type Tech = RouterOutputs["tech"]["getAll"][number];
 export type Length = RouterOutputs["length"]["getAll"][number];
 
 
@@ -40,9 +42,18 @@ type RatingInfo = {
     count: number;
 };
 
+export type MapWithInfo = {
+    TechsAny: Tech[];
+    TechsFC: Tech[];
+} & Omit<Map, "MapToTechs">;
+
 export type ModWithInfo = {
     overallCount: number;
+    /** should only be defined if there are no difficulty ratings */
     lowestCannonicalDifficulty: number | undefined;
     Quality: RatingInfo;
     Difficulty: RatingInfo;
+    Publisher: Publisher;
+    TechsAny: Tech["id"][];
+    TechsFC: Tech["id"][];
 } & Mod;

@@ -4,12 +4,12 @@ import ExpandedMod from "~/components/mods/expandedMod";
 import { createStyles } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 import { Difficulty, Quality } from "~/components/mods/types";
-import { type ModType, ModType as modTypes } from "@prisma/client";
+import { type ModType, ModType as modTypes, type Publisher as PrismaPublisher, type Mod } from "@prisma/client";
 import { StringSearch } from "~/components/filterPopovers/stringSearch";
 import { NumberSearch } from "~/components/filterPopovers/numberSearch";
 import { ListSelect } from "~/components/filterPopovers/listSelect";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
-import type { ModWithInfo } from "~/components/mods/types";
+import type { ModWithInfo, Publisher, Tech } from "~/components/mods/types";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
 import { colorsForDifficultyIndex, greatestValidDifficultyIndex } from "~/styles/modsColors";
 import { canonicalDifficultyNames, difficultyColors, type DifficultyColor } from "~/styles/difficultyColors";
@@ -22,6 +22,7 @@ import { TABLE_HEADER_ARROW_ZOOM } from "~/consts/tableHeaderArrowZoom";
 const PAGE_SIZES = [5, 10, 15, 20, 25, 50, 100, 250, 500, 1000];
 const DEFAULT_PAGE_SIZE_INDEX = 1;
 const ACTIVE_DIFFICULTY_TAB_BORDER_HEIGHT = "2px";
+const QUERY_DEBOUNCE_TIME_MILLISECONDS = 200;
 
 
 const useStyles = createStyles(
@@ -246,6 +247,7 @@ type ModsTableSortStatus = {
 type ModsTableProps = {
     qualities: Quality[];
     difficulties: Difficulty[];
+    techs: Tech[];
     modsWithInfo: ModWithInfo[];
     isLoading: boolean;
 };
@@ -319,27 +321,65 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
         [difficulties, modsWithInfo, parentDifficultyNames, currentTabIndex],
     );
 
+
+
+
     //handle filtering
     const [nameQuery, setNameQuery] = useState<string>("");
-    const [debouncedNameQuery, _cancelDebouncedNameQueryChange] = useDebouncedValue(nameQuery, 200);
+    const [debouncedNameQuery, _cancelDebouncedNameQueryChange] = useDebouncedValue(nameQuery, QUERY_DEBOUNCE_TIME_MILLISECONDS);
     const isNameFiltered = nameQuery !== "";
 
-    const [mapCountRange, setMapCountRange] = useState<[number | undefined, number | undefined]>([undefined, undefined]);     //[min, max]
-    const isMapCountFiltered = mapCountRange[0] !== undefined || mapCountRange[1] !== undefined;
-
+    
     const [selectedModTypes, setSelectedModTypes] = useState<ModType[]>([]);
     const isModTypeFiltered = selectedModTypes.length > 0;
+
+
+    const [publisherQuery, setPublisherQuery] = useState<PrismaPublisher["name"]>("");
+    const [debouncedPublisherQuery, _cancelDebouncedPublisherQueryChange] = useDebouncedValue(publisherQuery, QUERY_DEBOUNCE_TIME_MILLISECONDS);
+    const isPublishersFiltered = publisherQuery !== "";
+
+
+    type PublicationDate = Mod["timeCreatedGamebanana"];
+    /** [min, max] */
+    type PublicationDateRange = [PublicationDate | undefined, PublicationDate | undefined];
+
+    const [publicationDateRange, setPublicationDateRange] = useState<PublicationDateRange>([undefined, undefined]);   // [min, max]
+    const isPublicationDateFiltered = publicationDateRange[0] !== undefined || publicationDateRange[1] !== undefined;
+
+
+    const [selectedTechsAny, setSelectedTechsAny] = useState<Tech["id"][]>([]);
+    const isTechsAnyFiltered = selectedTechsAny.length > 0;
+
+
+    const [selectedTechsFC, setSelectedTechsFC] = useState<Tech["id"][]>([]);
+    const isTechsFCFiltered = selectedTechsFC.length > 0;
+
 
     const [selectedQualities, setSelectedQualities] = useState<string[]>([]);
     const isQualityFiltered = selectedQualities.length > 0;
 
+
+    const [qualityRatingsCountRange, setQualityRatingsCountRange] = useState<[number | undefined, number | undefined]>([undefined, undefined]);   // [min, max]
+    const isQualityRatingsCountFiltered = qualityRatingsCountRange[0] !== undefined || qualityRatingsCountRange[1] !== undefined;
+
+
     const [selectedChildDifficulties, setSelectedChildDifficulties] = useState<string[]>([]);
-    const isChildDifficultyFiltered = selectedChildDifficulties.length > 0;
+    const isChildDifficultiesFiltered = selectedChildDifficulties.length > 0;
+
+
+    const [difficultyRatingsCountRange, setDifficultyRatingsCountRange] = useState<[number | undefined, number | undefined]>([undefined, undefined]);   // [min, max]
+    const isDifficultyRatingsCountFiltered = difficultyRatingsCountRange[0] !== undefined || difficultyRatingsCountRange[1] !== undefined;
+
+
+    const [mapCountRange, setMapCountRange] = useState<[number | undefined, number | undefined]>([undefined, undefined]);     // [min, max]
+    const isMapCountFiltered = mapCountRange[0] !== undefined || mapCountRange[1] !== undefined;
+
 
     // Reset tab index if the difficulties change.
     useEffect(() => {
         setCurrentTabIndex(parentDifficultyNames.length > 0 ? 0 : null);
     }, [difficulties, parentDifficultyNames]);
+
 
     // Check selected child difficulties when childDifficultyNames changes.
     useEffect(() => {
@@ -350,6 +390,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
         }
     }, [selectedChildDifficulties, childDifficultyNames]);
 
+
     const filteredModsWithInfo = useMemo(() => {
         return modsWithInfo.filter((modWithInfo) => {
             if (
@@ -357,6 +398,138 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                 !modWithInfo.name.toLowerCase().includes(debouncedNameQuery.trim().toLowerCase())
             ) {
                 return false;
+            }
+
+
+            if (
+                selectedModTypes.length &&
+                !selectedModTypes.includes(modWithInfo.type)
+            ) {
+                return false;
+            }
+
+
+            if (
+                debouncedPublisherQuery &&
+                !modWithInfo.Publisher.name.toLowerCase().includes(debouncedPublisherQuery.trim().toLowerCase())
+            ) {
+                return false;
+            }
+
+
+            if (
+                publicationDateRange[0] !== undefined ||
+                publicationDateRange[1] !== undefined
+            ) {
+                if (
+                    publicationDateRange[0] !== undefined &&
+                    modWithInfo.timeCreatedGamebanana < publicationDateRange[0]
+                ) {
+                    return false;
+                }
+
+                if (
+                    publicationDateRange[1] !== undefined &&
+                    modWithInfo.timeCreatedGamebanana > publicationDateRange[1]
+                ) {
+                    return false;
+                }
+            }
+
+
+            if (
+                selectedTechsAny.length &&
+                !selectedTechsAny.some(techId => modWithInfo.TechsAny.includes(techId))
+            ) {
+                return false;
+            }
+
+
+            if (
+                selectedTechsFC.length &&
+                !selectedTechsFC.some(techId => modWithInfo.TechsFC.includes(techId))
+            ) {
+                return false;
+            }
+
+
+            if (
+                selectedQualities.length &&
+                !selectedQualities.includes(modWithInfo.Quality.name)
+            ) {
+                return false;
+            }
+
+
+            if (
+                qualityRatingsCountRange[0] !== undefined ||
+                qualityRatingsCountRange[1] !== undefined
+            ) {
+                if (
+                    qualityRatingsCountRange[0] !== undefined &&
+                    modWithInfo.Quality.count < qualityRatingsCountRange[0]
+                ) {
+                    return false;
+                }
+
+                if (
+                    qualityRatingsCountRange[1] !== undefined &&
+                    modWithInfo.Quality.count > qualityRatingsCountRange[1]
+                ) {
+                    return false;
+                }
+            }
+
+
+            if (currentTabIndex !== null) {
+                // Check parent difficulty
+                const parentDifficultyName = parentDifficultyNames[currentTabIndex];
+                if (parentDifficultyName === undefined) throw `Tab index ${currentTabIndex} is outside the range of the ${parentDifficultyNames.length} tabs.`;
+
+                if (modWithInfo.Difficulty.name === noRatingsFoundMessage) {
+                    // Mod doesn't have a difficulty rating, so we check if the lowestCannonicalDifficulty is a child of parentDifficulty.
+                    const lowestCannonicalDifficulty = modWithInfo.lowestCannonicalDifficulty;
+                    if (lowestCannonicalDifficulty === undefined) throw `Mod ${modWithInfo.id} has no difficulty/lowestCannonicalDifficulty.`;
+
+                    const difficulty = difficulties.find(difficulty => difficulty.id === lowestCannonicalDifficulty);
+                    if (!difficulty) throw `Difficulty ${lowestCannonicalDifficulty} doesn't exist.`;
+
+                    if (!difficulty.name.startsWith(parentDifficultyName)) {
+                        return false;
+                    }
+                }
+                // Mod has a difficulty rating, so we check if its difficulty is a child of parentDifficulty.
+                else if (!modWithInfo.Difficulty.name.startsWith(parentDifficultyName)) {
+                    return false;
+                }
+            }
+
+            
+            if (
+                selectedChildDifficulties.length &&
+                !selectedChildDifficulties.some(childDifficulty => modWithInfo.Difficulty.name.endsWith(childDifficulty))
+            ) {
+                return false;
+            }
+
+
+            if (
+                difficultyRatingsCountRange[0] !== undefined ||
+                difficultyRatingsCountRange[1] !== undefined
+            ) {
+                if (
+                    difficultyRatingsCountRange[0] !== undefined &&
+                    modWithInfo.Difficulty.count < difficultyRatingsCountRange[0]
+                ) {
+                    return false;
+                }
+
+                if (
+                    difficultyRatingsCountRange[1] !== undefined &&
+                    modWithInfo.Difficulty.count > difficultyRatingsCountRange[1]
+                ) {
+                    return false;
+                }
             }
 
 
@@ -380,58 +553,12 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
             }
 
 
-            if (
-                selectedModTypes.length &&
-                !selectedModTypes.includes(modWithInfo.type)
-            ) {
-                return false;
-            }
-
-
-            if (
-                selectedQualities.length &&
-                !selectedQualities.includes(modWithInfo.Quality.name)
-            ) {
-                return false;
-            }
-
-
-            if (currentTabIndex !== null) {
-                // Check parent difficulty
-                const parentDifficultyName = parentDifficultyNames[currentTabIndex];
-                if (parentDifficultyName === undefined) throw `Tab index ${currentTabIndex} is outside the range of the ${parentDifficultyNames.length} tabs.`;
-
-                if (modWithInfo.Difficulty.name === noRatingsFoundMessage) {
-                    // Mod doesn't have a difficulty rating, so we check if the lowestCannonicalDifficulty is a child of parentDifficulty.
-                    const lowestCannonicalDifficulty = modWithInfo.lowestCannonicalDifficulty;
-                    if (lowestCannonicalDifficulty === undefined) throw `Mod ${modWithInfo.id} has no difficulty/lowestCannonicalDifficulty.`;
-
-                    const difficulty = difficulties.find(difficulty => difficulty.id === lowestCannonicalDifficulty);
-                    if (!difficulty) throw `Difficulty ${lowestCannonicalDifficulty} doesn't exist.`;
-
-                    if (!difficulty.name.startsWith(parentDifficultyName)) {
-                        return false;
-                    }
-                }
-                // Mod has a difficulty rating, so we check if it's difficulty is a child of parentDifficulty.
-                else if (!modWithInfo.Difficulty.name.startsWith(parentDifficultyName)) {
-                    return false;
-                }
-            }
-
-            if (
-                selectedChildDifficulties.length &&
-                !selectedChildDifficulties.some(childDifficulty => modWithInfo.Difficulty.name.endsWith(childDifficulty))
-            ) {
-                return false;
-            }
-
-
             return true;
         });
-    }, [modsWithInfo, difficulties, debouncedNameQuery, mapCountRange, selectedModTypes, selectedQualities, selectedChildDifficulties, currentTabIndex, parentDifficultyNames]);
+    }, [debouncedNameQuery, selectedModTypes, debouncedPublisherQuery, publicationDateRange, selectedTechsAny, selectedTechsFC, selectedQualities, qualityRatingsCountRange, selectedChildDifficulties, difficultyRatingsCountRange, mapCountRange, currentTabIndex, parentDifficultyNames, difficulties, modsWithInfo]);
 
 
+    // TODO!!!: continue down from here to implement new columns (do everything except for actually render the tooltips for now). also, pass the maps and techs to the expanded mod component so we aren't double fetching.
 
 
     //handle sorting
@@ -699,45 +826,6 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                         },
                     },
                     {
-                        accessor: "Map",
-                        title: "# Maps",
-                        sortable: true,
-                        render: (modWithInfo) => modWithInfo.Map.length,
-                        filter: (
-                            <NumberSearch
-                                range={mapCountRange}
-                                setRange={setMapCountRange}
-                                maxProps={{
-                                    label: "Map Count",
-                                    description: "Maximum",
-                                    placeholder: "Set maximum..."
-                                }}
-                                minProps={{
-                                    description: "Minimum",
-                                    placeholder: "Set minimum..."
-                                }}
-                                difficultyIndex={currentTabIndex}
-                            />
-                        ),
-                        filtering: isMapCountFiltered,
-                        titleClassName: isMapCountFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle,
-                    },
-                    {
-                        accessor: "type",
-                        title: "Type",
-                        sortable: true,
-                        filter: (
-                            <ListSelect
-                                permittedStrings={getNonEmptyArray(modTypes)}
-                                selectedStrings={selectedModTypes}
-                                setSelectedStrings={setSelectedModTypes}
-                                difficultyIndex={currentTabIndex}
-                            />
-                        ),
-                        filtering: isModTypeFiltered,
-                        titleClassName: isModTypeFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle
-                    },
-                    {
                         accessor: "Quality",
                         title: "Quality",
                         sortable: true,
@@ -766,8 +854,8 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                                 difficultyIndex={currentTabIndex}
                             />
                         ),
-                        filtering: isChildDifficultyFiltered,
-                        titleClassName: isChildDifficultyFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle,
+                        filtering: isChildDifficultiesFiltered,
+                        titleClassName: isChildDifficultiesFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle,
                         cellsClassName: (record) => {
                             return cx(
                                 classes.modCell,
@@ -776,6 +864,45 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                             );
                         },
                     },
+                    {
+                        accessor: "Map",
+                        title: "# Maps",
+                        sortable: true,
+                        render: (modWithInfo) => modWithInfo.Map.length,
+                        filter: (
+                            <NumberSearch
+                                range={mapCountRange}
+                                setRange={setMapCountRange}
+                                maxProps={{
+                                    label: "Map Count",
+                                    description: "Maximum",
+                                    placeholder: "Set maximum..."
+                                }}
+                                minProps={{
+                                    description: "Minimum",
+                                    placeholder: "Set minimum..."
+                                }}
+                                difficultyIndex={currentTabIndex}
+                            />
+                        ),
+                        filtering: isMapCountFiltered,
+                        titleClassName: isMapCountFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle,
+                    },
+                    // {
+                    //     accessor: "type",
+                    //     title: "Type",
+                    //     sortable: true,
+                    //     filter: (
+                    //         <ListSelect
+                    //             permittedStrings={getNonEmptyArray(modTypes)}
+                    //             selectedStrings={selectedModTypes}
+                    //             setSelectedStrings={setSelectedModTypes}
+                    //             difficultyIndex={currentTabIndex}
+                    //         />
+                    //     ),
+                    //     filtering: isModTypeFiltered,
+                    //     titleClassName: isModTypeFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle
+                    // },
                 ]}
                 sortStatus={sortStatus}
                 onSortStatusChange={setSortStatus as Dispatch<SetStateAction<DataTableSortStatus>>}     //un-narrow type to match types in DataTable
