@@ -99,8 +99,8 @@ const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModR
         }
 
 
-        const techIdsAny: Set<Tech["id"]> = new Set();
-        const techIdsFC: Set<Tech["id"]> = new Set();
+        const techIdsAny: Set<ModWithInfo["TechsAny"][number]> = new Set();
+        const techIdsFC: Set<ModWithInfo["TechsAny"][number]> = new Set();
         const mapsWithInfoForMod: MapWithInfo[] = [];
 
         mod.Map.forEach(
@@ -116,14 +116,14 @@ const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModR
 
                 map.TechsAny.forEach(
                     (tech) => {
-                        techIdsAny.add(tech.id);
-                        techIdsFC.delete(tech.id);
+                        techIdsAny.add(tech.name);
+                        techIdsFC.delete(tech.name);
                     }
                 );
 
                 map.TechsFC.forEach(
                     (tech) => {
-                        if (!techIdsAny.has(tech.id)) techIdsFC.add(tech.id);
+                        if (!techIdsAny.has(tech.name)) techIdsFC.add(tech.name);
                     }
                 );
 

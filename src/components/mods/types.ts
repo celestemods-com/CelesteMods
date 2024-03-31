@@ -56,6 +56,6 @@ export type ModWithInfo = {
     mapCount: number;
     MapsWithInfo: MapWithInfo[];
     publisherName: Publisher["name"];
-    TechsAny: Tech["id"][];
-    TechsFC: Tech["id"][];
+    TechsAny: Tech["name"][];
+    TechsFC: Tech["name"][];
 } & Omit<Mod, "Map">;

@@ -23,6 +23,8 @@ const PAGE_SIZES = [5, 10, 15, 20, 25, 50, 100, 250, 500, 1000];
 const DEFAULT_PAGE_SIZE_INDEX = 1;
 const ACTIVE_DIFFICULTY_TAB_BORDER_HEIGHT = "2px";
 const QUERY_DEBOUNCE_TIME_MILLISECONDS = 200;
+/** Does NOT include the ellipsis */
+const TECH_COLUMN_MAX_LETTERS = 17;
 
 
 const useStyles = createStyles(
@@ -266,8 +268,30 @@ type ModsTableProps = {
 
 // We create a seperate ModsTable component to prevent the Mods queries
 // running again when the ModsTable state changes.
-export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: ModsTableProps) => {
+export const ModsTable = ({ qualities, difficulties, publishers, techs, modsWithInfo, isLoading }: ModsTableProps) => {
     const [currentTabIndex, setCurrentTabIndex] = useState<number | null>(null);    //track the currently selected parent difficulty
+
+
+    const techNames = useMemo(   // get tech names for filter component
+        () => [...techs]
+            .sort(  // sort first by difficulty order, then by name
+                (a, b) => {
+                    const aDifficulty = difficulties.find(difficulty => difficulty.id === a.difficultyId);
+                    if (!aDifficulty) throw `Difficulty ${a.difficultyId} doesn't exist. Tech ${a.id} is invalid.`;
+
+                    const bDifficulty = difficulties.find(difficulty => difficulty.id === b.difficultyId);
+                    if (!bDifficulty) throw `Difficulty ${b.difficultyId} doesn't exist. Tech ${b.id} is invalid.`;
+
+                    if (aDifficulty.order !== bDifficulty.order) {  // sort by difficulty order
+                        return bDifficulty.order - aDifficulty.order;   // harder difficulties have higher orders, and we want them to sort first
+                    }
+
+                    return a.name.localeCompare(b.name);    // sort by name
+                }
+            )
+            .map((tech) => tech.name),
+        [qualities],
+    );
 
 
     const qualityNames = useMemo(   //get quality names for filter component
@@ -356,11 +380,11 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
     const isPublicationDateFiltered = publicationDateRange[0] !== undefined || publicationDateRange[1] !== undefined;
 
 
-    const [selectedTechsAny, setSelectedTechsAny] = useState<Tech["id"][]>([]);
+    const [selectedTechsAny, setSelectedTechsAny] = useState<ModWithInfo["TechsAny"]>([]);
     const isTechsAnyFiltered = selectedTechsAny.length > 0;
 
 
-    const [selectedTechsFC, setSelectedTechsFC] = useState<Tech["id"][]>([]);
+    const [selectedTechsFC, setSelectedTechsFC] = useState<ModWithInfo["TechsAny"]>([]);
     const isTechsFCFiltered = selectedTechsFC.length > 0;
 
 
@@ -764,7 +788,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
     );
 
 
-    // TODO!!!: continue down from here to implement new columns (do everything except for actually render the tooltips for now). also, pass the maps and techs to the expanded mod component so we aren't double fetching.
+    // TODO!!!: pass the maps and techs to the expanded mod component so we aren't double fetching. also, limit the displayed strings in the name and publisher columns to a certain length similarly to the techs column.
 
     return (
         <>
@@ -839,21 +863,25 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                             );
                         },
                     },
-                    // {
-                    //     accessor: "type",
-                    //     title: "Type",
-                    //     sortable: true,
-                    //     filter: (
-                    //         <ListSelect
-                    //             permittedStrings={getNonEmptyArray(modTypes)}
-                    //             selectedStrings={selectedModTypes}
-                    //             setSelectedStrings={setSelectedModTypes}
-                    //             difficultyIndex={currentTabIndex}
-                    //         />
-                    //     ),
-                    //     filtering: isModTypeFiltered,
-                    //     titleClassName: isModTypeFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle
-                    // },
+                    {
+                        accessor: "publisherName",
+                        title: "Publisher",
+                        sortable: true,
+                        ellipsis: true,
+                        filter: (
+                            <StringSearch
+                                value={publisherQuery}
+                                setValue={setPublisherQuery}
+                                label="Name"
+                                description="Show mods whose publisher's name includes the specified text"
+                                placeholder="Search publishers..."
+                                difficultyIndex={currentTabIndex}
+                                iconProps={{ color: colors.primary.textColor }}
+                            />
+                        ),
+                        filtering: isPublishersFiltered,
+                        titleClassName: isPublishersFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle,
+                    },
                     {
                         accessor: "Quality",
                         title: "Quality",
@@ -911,6 +939,27 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                         ),
                         filtering: isMapCountFiltered,
                         titleClassName: isMapCountFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle,
+                    },
+                    {
+                        accessor: "techsAny",
+                        title: "Techs",
+                        sortable: false,
+                        ellipsis: true,
+                        render: (modWithInfo) => {
+                            const techsString = modWithInfo.TechsAny.join(", ").trim().slice(0, TECH_COLUMN_MAX_LETTERS);
+
+                            return techsString === "" ? undefined : `${techsString}...`;
+                        },
+                        filter: (
+                            <ListSelect
+                                permittedStrings={techNames}
+                                selectedStrings={selectedTechsAny}
+                                setSelectedStrings={setSelectedTechsAny}
+                                difficultyIndex={currentTabIndex}
+                            />
+                        ),
+                        filtering: isTechsAnyFiltered,
+                        titleClassName: isTechsAnyFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle,
                         cellsClassName: (record) => {
                             return cx(
                                 classes.modCell,
@@ -919,6 +968,21 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                             );
                         },
                     },
+                    // {
+                    //     accessor: "type",
+                    //     title: "Type",
+                    //     sortable: true,
+                    //     filter: (
+                    //         <ListSelect
+                    //             permittedStrings={getNonEmptyArray(modTypes)}
+                    //             selectedStrings={selectedModTypes}
+                    //             setSelectedStrings={setSelectedModTypes}
+                    //             difficultyIndex={currentTabIndex}
+                    //         />
+                    //     ),
+                    //     filtering: isModTypeFiltered,
+                    //     titleClassName: isModTypeFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle
+                    // },
                 ]}
                 sortStatus={sortStatus}
                 onSortStatusChange={setSortStatus as Dispatch<SetStateAction<DataTableSortStatus>>}     // un-narrow type to match types in DataTable
