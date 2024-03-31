@@ -101,13 +101,17 @@ const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModR
 
         const techIdsAny: Set<Tech["id"]> = new Set();
         const techIdsFC: Set<Tech["id"]> = new Set();
-        const mapsWithInfo: MapWithInfo[] = [];
+        const mapsWithInfoForMod: MapWithInfo[] = [];
 
         mod.Map.forEach(
             ({ id: mapId }) => {
                 const map = mapsWithInfo.find((map) => map.id === mapId);
 
-                if (map === undefined) throw `Map ${mapId} not found. This should not happen.`;
+                if (map === undefined) {
+                    console.log(`mapId = ${mapId}`);
+                    console.log(mapsWithInfo);
+                    throw `Map ${mapId} not found in loop 1. This should not happen.`;
+                }
 
 
                 map.TechsAny.forEach(
@@ -124,7 +128,7 @@ const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModR
                 );
 
 
-                mapsWithInfo.push(map);
+                mapsWithInfoForMod.push(map);
             }
         );
 
@@ -141,7 +145,7 @@ const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModR
                 ({ id: mapId }) => {
                     const map = mapsWithInfo.find((map) => map.id === mapId);
 
-                    if (map === undefined) throw `Map ${mapId} not found. This should not happen.`;
+                    if (map === undefined) throw `Map ${mapId} not found in loop 2. This should not happen.`;
 
 
                     const mapCanonicalDifficultyId = map.canonicalDifficultyId;
@@ -185,8 +189,8 @@ const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModR
                 count: difficultyCount,
             },
             Map: undefined, // overwrite the Map property in mod
-            mapCount: mapsWithInfo.length,
-            MapsWithInfo: mapsWithInfo,
+            mapCount: mapsWithInfoForMod.length,
+            MapsWithInfo: mapsWithInfoForMod,
             publisherName: publisher.name,
             TechsAny: Array.from(techIdsAny),
             TechsFC: Array.from(techIdsFC),
@@ -341,26 +345,26 @@ const Mods: NextPage = () => {
 
     const mapQuery = api.map.getAll.useQuery({}, { queryKey: ["map.getAll", {}] });
 
-    const isLoadingMaps = mapQuery.isLoading;
+    const isLoadingMaps = mapQuery.isLoading || !mapQuery.data || !mapQuery.data.length;
 
     const mapsWithInfo: MapWithInfo[] = useMemo(() => {
-        if (isLoadingRatings || isLoadingMaps || !mapQuery.data || !mapQuery.data.length) return [];
+        if (isLoadingRatings || isLoadingMaps) return [];
 
 
         const maps_maybeEmpty: MapWithInfo[] = [];
 
         mapQuery.data.forEach(
-            (oldMap) => {
-                const rating = ratingsFromModIds.find((rating) => rating.modId === oldMap.modId);
+            (mapFromQuery) => {
+                const rating = ratingsFromModIds.find((rating) => rating.modId === mapFromQuery.modId);
 
-                if (!rating) throw `Rating for mod ${oldMap.modId} (via map ${oldMap.id}) not found. This should not happen.`;
+                if (!rating) throw `Rating for mod ${mapFromQuery.modId} (via map ${mapFromQuery.id}) not found. This should not happen.`;
 
 
                 const techsAny: Tech[] = [];
                 const techsFC: Tech[] = [];
 
 
-                oldMap.MapToTechs.forEach(
+                mapFromQuery.MapToTechs.forEach(
                     (mapToTechRelation) => {
                         const tech = techs.find((tech) => tech.id === mapToTechRelation.techId);
 
@@ -374,7 +378,7 @@ const Mods: NextPage = () => {
 
 
                 const mapWithInfo: MapWithInfo & { MapsToTechs: undefined; } = {
-                    ...oldMap,
+                    ...mapFromQuery,
                     MapsToTechs: undefined, // overwrite the MapsToTechs property in oldMap
                     TechsAny: techsAny,
                     TechsFC: techsFC,
@@ -389,7 +393,7 @@ const Mods: NextPage = () => {
 
 
         return maps_maybeEmpty;
-    }, [isLoadingRatings, isLoadingMaps, mapQuery.data, ratingsFromModIds, techs]);
+    }, [isLoadingRatings, isLoadingMaps, ratingsFromModIds, techs, mapQuery.data]);
 
     //check that all data is loaded
     const isLoading = isLoadingMods || isLoadingRatings || isLoadingMaps || qualityQuery.isLoading || difficultyQuery.isLoading || publisherQuery.isLoading || techQuery.isLoading;

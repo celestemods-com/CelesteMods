@@ -817,6 +817,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                         accessor: "name",
                         title: "Name",
                         sortable: true,
+                        ellipsis: true,
                         filter: (
                             <StringSearch
                                 value={nameQuery}
@@ -838,10 +839,26 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                             );
                         },
                     },
+                    // {
+                    //     accessor: "type",
+                    //     title: "Type",
+                    //     sortable: true,
+                    //     filter: (
+                    //         <ListSelect
+                    //             permittedStrings={getNonEmptyArray(modTypes)}
+                    //             selectedStrings={selectedModTypes}
+                    //             setSelectedStrings={setSelectedModTypes}
+                    //             difficultyIndex={currentTabIndex}
+                    //         />
+                    //     ),
+                    //     filtering: isModTypeFiltered,
+                    //     titleClassName: isModTypeFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle
+                    // },
                     {
                         accessor: "Quality",
                         title: "Quality",
                         sortable: true,
+                        ellipsis: true,
                         render: (modWithInfo) => modWithInfo.Quality.name,
                         filter: (
                             <ListSelect
@@ -858,6 +875,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                         accessor: "Difficulty",
                         title: "Difficulty",
                         sortable: true,
+                        ellipsis: true,
                         render: (modWithInfo) => modWithInfo.Difficulty.name,
                         filter: (
                             <ListSelect
@@ -869,18 +887,12 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                         ),
                         filtering: isChildDifficultiesFiltered,
                         titleClassName: isChildDifficultiesFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle,
-                        cellsClassName: (record) => {
-                            return cx(
-                                classes.modCell,
-                                classes.rightColumnCell,
-                                record.isExpanded && classes.expandedModCell,
-                            );
-                        },
                     },
                     {
                         accessor: "mapCount",
                         title: "# Maps",
                         sortable: true,
+                        ellipsis: true,
                         filter: (
                             <NumberSearch
                                 range={mapCountRange}
@@ -899,25 +911,17 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                         ),
                         filtering: isMapCountFiltered,
                         titleClassName: isMapCountFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle,
+                        cellsClassName: (record) => {
+                            return cx(
+                                classes.modCell,
+                                classes.rightColumnCell,
+                                record.isExpanded && classes.expandedModCell,
+                            );
+                        },
                     },
-                    // {
-                    //     accessor: "type",
-                    //     title: "Type",
-                    //     sortable: true,
-                    //     filter: (
-                    //         <ListSelect
-                    //             permittedStrings={getNonEmptyArray(modTypes)}
-                    //             selectedStrings={selectedModTypes}
-                    //             setSelectedStrings={setSelectedModTypes}
-                    //             difficultyIndex={currentTabIndex}
-                    //         />
-                    //     ),
-                    //     filtering: isModTypeFiltered,
-                    //     titleClassName: isModTypeFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle
-                    // },
                 ]}
                 sortStatus={sortStatus}
-                onSortStatusChange={setSortStatus as Dispatch<SetStateAction<DataTableSortStatus>>}     //un-narrow type to match types in DataTable
+                onSortStatusChange={setSortStatus as Dispatch<SetStateAction<DataTableSortStatus>>}     // un-narrow type to match types in DataTable
                 rowExpansion={{
                     trigger: "click",
                     allowMultiple: false,
