@@ -618,7 +618,7 @@ export const ModsTable = ({ qualities, difficulties, publishers, techs, modsWith
 
                     return (
                         sortStatus.direction === "asc" ?
-                            bQuality.order - aQuality.order :   //b-a because better qualities have higher orders, but we want them to sort first when ascending
+                            bQuality.order - aQuality.order :   // b-a because better qualities have higher orders, but we want them to sort first when ascending
                             aQuality.order - bQuality.order
                     );
                 },
@@ -637,12 +637,12 @@ export const ModsTable = ({ qualities, difficulties, publishers, techs, modsWith
 
                     return (
                         sortStatus.direction === "asc" ?
-                            aDifficulty.order - bDifficulty.order :
+                            aDifficulty.order - bDifficulty.order :     // a-b because easier difficulties have lower orders, but we want them to sort first when ascending
                             bDifficulty.order - aDifficulty.order
                     );
                 },
             );
-        } else if (columnAccessor === "mapCount" || columnAccessor === "timeCreatedGamebanana" || columnAccessor === "qualityCount" || columnAccessor === "difficultyCount") {  // map count and publication date
+        } else if (columnAccessor === "mapCount") {  // map count
             sortedModsWithInfo.sort(
                 (a, b) => {
                     const propertyAString = String((a as ExtendedModWithInfo)[columnAccessor]);
@@ -665,7 +665,7 @@ export const ModsTable = ({ qualities, difficulties, publishers, techs, modsWith
                     );
                 },
             );
-        } else {    // handles name, publisherName
+        } else if (columnAccessor === "name" || columnAccessor === "publisherName") {    // handles name, publisherName
             sortedModsWithInfo.sort(
                 (a, b) => {
                     const propertyAString = String(a[columnAccessor]);
@@ -678,6 +678,8 @@ export const ModsTable = ({ qualities, difficulties, publishers, techs, modsWith
                     );
                 },
             );
+        } else {
+            throw `Invalid sorting column accessor: "${columnAccessor}"`;
         }
 
         return sortedModsWithInfo;
