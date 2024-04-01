@@ -39,7 +39,7 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "sharp": "^0.33.2",
-    "swagger-ui-react": "^5.11.8",
+    "swagger-ui-react": "^5.13.0",
     "tabler-icons-react": "^1.56.0",
     "trpc-openapi": "^1.2.0",
     "trpc-panel": "^1.3.4",
