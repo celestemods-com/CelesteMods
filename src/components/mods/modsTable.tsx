@@ -16,6 +16,7 @@ import { colorsForDifficultyIndex, greatestValidDifficultyIndex } from "~/styles
 import { canonicalDifficultyNames, difficultyColors, type DifficultyColor } from "~/styles/difficultyColors";
 import { expandedModColors } from "~/styles/expandedModColors";
 import { TABLE_HEADER_ARROW_ZOOM } from "~/consts/tableHeaderArrowZoom";
+import { blackBackgroundColor } from "~/styles/layoutColors";
 
 
 
@@ -39,7 +40,7 @@ const useStyles = createStyles(
                 display: "flex",
                 justifyContent: "end",
                 padding: "0 15px",
-                backgroundColor: "theme.black",
+                backgroundColor: blackBackgroundColor,
             },
             tab: {
                 padding: "1px 20px",
