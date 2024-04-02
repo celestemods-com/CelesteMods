@@ -1,5 +1,6 @@
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import ExpandedMod from "~/components/mods/expandedMod";
 import { createStyles } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
@@ -15,7 +16,6 @@ import { colorsForDifficultyIndex, greatestValidDifficultyIndex } from "~/styles
 import { canonicalDifficultyNames, difficultyColors, type DifficultyColor } from "~/styles/difficultyColors";
 import { expandedModColors } from "~/styles/expandedModColors";
 import { TABLE_HEADER_ARROW_ZOOM } from "~/consts/tableHeaderArrowZoom";
-import { createPortal } from "react-dom";
 
 
 
@@ -39,7 +39,7 @@ const useStyles = createStyles(
                 display: "flex",
                 justifyContent: "end",
                 padding: "0 15px",
-                backgroundColor: "black",
+                backgroundColor: "theme.black",
             },
             tab: {
                 padding: "1px 20px",
@@ -117,7 +117,7 @@ const useStyles = createStyles(
                 "&&&& table": {
                     transform: "translate(0, -21px)",
                     borderSpacing: "0 20px",
-                    padding: "0 15px"
+                    padding: "0 15px",
                 },
                 "&&&& thead": {
                     top: "49px",
@@ -631,26 +631,35 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
         }
     );
 
-    // We want to render the tab container inside the scroll area of the datatable,
-    // so we use ref and portal.
+
+    // We want to render the tab container inside the scroll area of the datatable, so we use ref and portal.
     const tableBodyRef = useRef<HTMLTableSectionElement>(null);
-    const [tabContainer, setTabContainer] = useState<null | HTMLDivElement>(null);
+    const [tabContainer, setTabContainer] = useState<HTMLDivElement | null>(null);
+
     useEffect(() => {
         const tabsParent = tableBodyRef.current?.parentElement?.parentElement;
+
         if (!tabsParent) {
             throw "Couldn't find tabsParent.";
         }
 
+
         const tabContainer = document.createElement("div");
+
         tabContainer.className = classes.tabContainer;
+
         tabsParent.prepend(tabContainer);
+
         setTabContainer(tabContainer);
+
 
         return () => {
             tabsParent.removeChild(tabContainer);
+            
             setTabContainer(null);
         };
     }, [classes.tabContainer]);
+
 
     return (
         <>
