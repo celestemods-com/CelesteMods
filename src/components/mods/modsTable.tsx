@@ -1,5 +1,5 @@
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import ExpandedMod from "~/components/mods/expandedMod";
 import { createStyles } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
@@ -15,6 +15,7 @@ import { colorsForDifficultyIndex, greatestValidDifficultyIndex } from "~/styles
 import { canonicalDifficultyNames, difficultyColors, type DifficultyColor } from "~/styles/difficultyColors";
 import { expandedModColors } from "~/styles/expandedModColors";
 import { TABLE_HEADER_ARROW_ZOOM } from "~/consts/tableHeaderArrowZoom";
+import { createPortal } from "react-dom";
 
 
 
@@ -31,9 +32,14 @@ const useStyles = createStyles(
     ) => {
         return ({
             tabContainer: {
-                padding: "0 15px",
+                height: "29px",
+                position: "sticky",
+                top: "0",
+                zIndex: 2,
                 display: "flex",
                 justifyContent: "end",
+                padding: "0 15px",
+                backgroundColor: "black",
             },
             tab: {
                 padding: "1px 20px",
@@ -114,7 +120,7 @@ const useStyles = createStyles(
                     padding: "0 15px"
                 },
                 "&&&& thead": {
-                    top: "20px",
+                    top: "49px",
                 },
                 "&&&& tr": {
                     backgroundColor: "transparent",
@@ -625,32 +631,56 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
         }
     );
 
+    // We want to render the tab container inside the scroll area of the datatable,
+    // so we use ref and portal.
+    const tableBodyRef = useRef<HTMLTableSectionElement>(null);
+    const [tabContainer, setTabContainer] = useState<null | HTMLDivElement>(null);
+    useEffect(() => {
+        const tabsParent = tableBodyRef.current?.parentElement?.parentElement;
+        if (!tabsParent) {
+            throw "Couldn't find tabsParent.";
+        }
+
+        const tabContainer = document.createElement("div");
+        tabContainer.className = classes.tabContainer;
+        tabsParent.prepend(tabContainer);
+        setTabContainer(tabContainer);
+
+        return () => {
+            tabsParent.removeChild(tabContainer);
+            setTabContainer(null);
+        };
+    }, [classes.tabContainer]);
 
     return (
         <>
-            <div className={classes.tabContainer}>
-                {
-                    [...parentDifficultyNames].reverse().map(
-                        (name, index) =>
-                            <span
-                                key={name}
-                                className={
-                                    cx(
-                                        classes.tab,
-                                        tabColors[parentDifficultyNames.length - 1 - index],
-                                        { [classes.activeTab]: parentDifficultyNames.length - 1 - index === currentTabIndex }
-                                    )
-                                }
-                                onClick={() => {
-                                    setCurrentTabIndex(parentDifficultyNames.length - 1 - index);
-                                }}
-                            >
-                                {name}
-                            </span>
+            {
+                tabContainer !== null && (
+                    createPortal(
+                        [...parentDifficultyNames].reverse().map(
+                            (name, index) =>
+                                <span
+                                    key={name}
+                                    className={
+                                        cx(
+                                            classes.tab,
+                                            tabColors[parentDifficultyNames.length - 1 - index],
+                                            { [classes.activeTab]: parentDifficultyNames.length - 1 - index === currentTabIndex }
+                                        )
+                                    }
+                                    onClick={() => {
+                                        setCurrentTabIndex(parentDifficultyNames.length - 1 - index);
+                                    }}
+                                >
+                                    {name}
+                                </span>
+                        ),
+                        tabContainer
                     )
-                }
-            </div>
+                )
+            }
             <DataTable
+                bodyRef={tableBodyRef}
                 classNames={{
                     root: classes.table,
                     header: classes.header,
