@@ -33,7 +33,6 @@ const useStyles = createStyles(
     ) => {
         return ({
             tabContainer: {
-                height: "29px",
                 position: "sticky",
                 top: "0",
                 zIndex: 2,
