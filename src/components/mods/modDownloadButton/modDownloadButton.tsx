@@ -1,5 +1,6 @@
 import { useGamebananaModDownloadUrl, GAMEBANANA_OLYMPUS_ICON_URL } from "~/hooks/gamebananaApi";
-import { Text } from "@mantine/core";
+import { Popover, Text, createStyles } from "@mantine/core";
+import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
 
 
 
@@ -10,18 +11,69 @@ type ModDownloadButtonProps = {
 };
 
 
-
+const useStyles = createStyles(
+    (theme) => {
+        return ({
+            dropdown: {
+                '&&': {
+                    backgroundColor: theme.white,
+                    padding: '5px 10px',
+                },
+                "a": {
+                    textDecoration: 'underline',
+                },
+            },
+            dropdownText: {
+                margin: '5px 0',
+            },
+            arrow: {
+                backgroundColor: 'white',
+                border: 'none',
+                pointerEvents: 'none',
+            }
+        });
+    }
+);
 
 const ModDownloadButton = ({ gamebananaModId }: ModDownloadButtonProps) => {
     const { downloadUrl } = useGamebananaModDownloadUrl({ gamebananaModId });
+    const [opened, { close, open }] = useDisclosure(false);
+    const [debouncedOpened] = useDebouncedValue(opened, 100);
+    // We use this so that the popover opens instantly, but takes some time to close.
+    // Since there is a gap between the link and the popover it prevents the popover from closing
+    // when we move from the link to popover.
+    const openPopover = opened || debouncedOpened;
 
+    const { classes } = useStyles();
 
-    return (        //TODO: add popover with info about Olympus/Everest and 1-click install
-        <a href={downloadUrl    /*TODO!: implement useGamebananaModDownloadUrl */}>
-            <Text size={"md"}>
-                Olympus: 1-Click Install
-            </Text>
-        </a>
+    return (
+        <div>
+            <Popover position="bottom"
+                withArrow
+                shadow="md"
+                opened={openPopover}
+                classNames={{ dropdown: classes.dropdown, arrow: classes.arrow }}>
+                <Popover.Target>
+                    <a href={downloadUrl    /*TODO!: implement useGamebananaModDownloadUrl */}
+                        onMouseEnter={open}
+                        onMouseLeave={close}>
+                        <Text size={"md"}>
+                            Olympus: 1-Click Install
+                        </Text>
+                    </a>
+                </Popover.Target>
+                <Popover.Dropdown
+                    onMouseEnter={open}
+                    onMouseLeave={close}>
+                    <Text className={classes.dropdownText}>
+                        Install the mod directly using <a href="https://everestapi.github.io/">Olympus</a>, a mod loader.
+                    </Text>
+                    <Text className={classes.dropdownText}>
+                        You could also use <a href="https://gamebanana.com/tools/16200">CeleMod</a>, a alternative mod manager.
+                    </Text>
+                </Popover.Dropdown>
+            </Popover>
+        </div>
     );
 };
 
