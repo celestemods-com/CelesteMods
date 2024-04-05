@@ -38,11 +38,9 @@ const useStyles = createStyles(
 const ModDownloadButton = ({ gamebananaModId }: ModDownloadButtonProps) => {
     const { downloadUrl } = useGamebananaModDownloadUrl({ gamebananaModId });
     const [opened, { close, open }] = useDisclosure(false);
+    // Since there is a gap between the link and the popover,
+    // debouncing prevents the popover from closing when we move from the link to popover.
     const [debouncedOpened] = useDebouncedValue(opened, 100);
-    // We use this so that the popover opens instantly, but takes some time to close.
-    // Since there is a gap between the link and the popover it prevents the popover from closing
-    // when we move from the link to popover.
-    const openPopover = opened || debouncedOpened;
 
     const { classes } = useStyles();
 
@@ -51,7 +49,7 @@ const ModDownloadButton = ({ gamebananaModId }: ModDownloadButtonProps) => {
             <Popover position="bottom"
                 withArrow
                 shadow="md"
-                opened={openPopover}
+                opened={debouncedOpened}
                 classNames={{ dropdown: classes.dropdown, arrow: classes.arrow }}>
                 <Popover.Target>
                     <a href={downloadUrl    /*TODO!: implement useGamebananaModDownloadUrl */}
