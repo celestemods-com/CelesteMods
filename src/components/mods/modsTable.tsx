@@ -1,5 +1,5 @@
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
-import { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState, createContext } from "react";
 import { createPortal } from "react-dom";
 import ExpandedMod from "~/components/mods/expandedMod";
 import { createStyles } from "@mantine/core";
@@ -17,9 +17,12 @@ import { canonicalDifficultyNames, difficultyColors, type DifficultyColor } from
 import { expandedModColors } from "~/styles/expandedModColors";
 import { TABLE_HEADER_ARROW_ZOOM } from "~/consts/tableHeaderArrowZoom";
 import { blackBackgroundColor } from "~/styles/layoutColors";
+import { pageContentHeightPixels } from "~/styles/pageContentHeightPixels";
 
 
 
+
+export const currentDifficultyTabIndexContext = createContext<number | null>(null);
 
 const PAGE_SIZES = [5, 10, 15, 20, 25, 50, 100, 250, 500, 1000];
 const DEFAULT_PAGE_SIZE_INDEX = 1;
@@ -688,160 +691,162 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                     )
                 )
             }
-            <DataTable
-                bodyRef={tableBodyRef}
+            <currentDifficultyTabIndexContext.Provider value={currentTabIndex}>
+                <DataTable
+                    bodyRef={tableBodyRef}
                 classNames={{
-                    root: classes.table,
-                    header: classes.header,
-                    pagination: classes.pagination,
-                }}
-                defaultColumnProps={{
-                    cellsClassName: (record) => {
-                        return cx(
-                            classes.modCell,
-                            record.isExpanded && classes.expandedModCell,
-                        );
-                    },
-                }}
-                height={550}
-                striped
-                textSelectionDisabled
-                withColumnBorders
-                highlightOnHover
-                fetching={isLoading}
-                records={records}
-                idAccessor={(record) => record.id}
-                columns={[
-                    {
-                        accessor: "name",
-                        title: "Name",
-                        sortable: true,
-                        filter: (
-                            <StringSearch
-                                value={nameQuery}
-                                setValue={setNameQuery}
-                                label="Name"
-                                description="Show mods whose names include the specified text"
-                                placeholder="Search names..."
-                                difficultyIndex={currentTabIndex}
-                                iconProps={{ color: colors.primary.textColor }}
-                            />
-                        ),
-                        filtering: isNameFiltered,
-                        titleClassName: isNameFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle,
+                        root: classes.table,
+                        header: classes.header,
+                        pagination: classes.pagination,
+                    }}
+                    defaultColumnProps={{
                         cellsClassName: (record) => {
                             return cx(
                                 classes.modCell,
-                                classes.leftColumnCell,
                                 record.isExpanded && classes.expandedModCell,
                             );
                         },
-                    },
-                    {
-                        accessor: "Map",
-                        title: "# Maps",
-                        sortable: true,
-                        render: (modWithInfo) => modWithInfo.Map.length,
-                        filter: (
-                            <NumberSearch
-                                range={mapCountRange}
-                                setRange={setMapCountRange}
-                                maxProps={{
-                                    label: "Map Count",
-                                    description: "Maximum",
-                                    placeholder: "Set maximum..."
-                                }}
-                                minProps={{
-                                    description: "Minimum",
-                                    placeholder: "Set minimum..."
-                                }}
-                                difficultyIndex={currentTabIndex}
-                            />
-                        ),
-                        filtering: isMapCountFiltered,
-                        titleClassName: isMapCountFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle,
-                    },
-                    {
-                        accessor: "type",
-                        title: "Type",
-                        sortable: true,
-                        filter: (
-                            <ListSelect
-                                permittedStrings={getNonEmptyArray(modTypes)}
-                                selectedStrings={selectedModTypes}
-                                setSelectedStrings={setSelectedModTypes}
-                                difficultyIndex={currentTabIndex}
-                            />
-                        ),
-                        filtering: isModTypeFiltered,
-                        titleClassName: isModTypeFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle
-                    },
-                    {
-                        accessor: "Quality",
-                        title: "Quality",
-                        sortable: true,
-                        render: (modWithInfo) => modWithInfo.Quality.name,
-                        filter: (
-                            <ListSelect
-                                permittedStrings={qualityNames}
-                                selectedStrings={selectedQualities}
-                                setSelectedStrings={setSelectedQualities}
-                                difficultyIndex={currentTabIndex}
-                            />
-                        ),
-                        filtering: isQualityFiltered,
-                        titleClassName: isQualityFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle
-                    },
-                    {
-                        accessor: "Difficulty",
-                        title: "Difficulty",
-                        sortable: true,
-                        render: (modWithInfo) => modWithInfo.Difficulty.name,
-                        filter: (
-                            <ListSelect
-                                permittedStrings={childDifficultyNames}
-                                selectedStrings={selectedChildDifficulties}
-                                setSelectedStrings={setSelectedChildDifficulties}
-                                difficultyIndex={currentTabIndex}
-                            />
-                        ),
-                        filtering: isChildDifficultyFiltered,
-                        titleClassName: isChildDifficultyFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle,
-                        cellsClassName: (record) => {
-                            return cx(
-                                classes.modCell,
-                                classes.rightColumnCell,
-                                record.isExpanded && classes.expandedModCell,
-                            );
+                    }}
+                    height={pageContentHeightPixels}
+                    striped
+                    textSelectionDisabled
+                    withColumnBorders
+                    highlightOnHover
+                    fetching={isLoading}
+                    records={records}
+                    idAccessor={(record) => record.id}
+                    columns={[
+                        {
+                            accessor: "name",
+                            title: "Name",
+                            sortable: true,
+                            filter: (
+                                <StringSearch
+                                    value={nameQuery}
+                                    setValue={setNameQuery}
+                                    label="Name"
+                                    description="Show mods whose names include the specified text"
+                                    placeholder="Search names..."
+                                    difficultyIndex={currentTabIndex}
+                                    iconProps={{ color: colors.primary.textColor }}
+                                />
+                            ),
+                            filtering: isNameFiltered,
+                            titleClassName: isNameFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle,
+                            cellsClassName: (record) => {
+                                return cx(
+                                    classes.modCell,
+                                    classes.leftColumnCell,
+                                    record.isExpanded && classes.expandedModCell,
+                                );
+                            },
                         },
-                    },
-                ]}
-                sortStatus={sortStatus}
-                onSortStatusChange={setSortStatus as Dispatch<SetStateAction<DataTableSortStatus>>}     //un-narrow type to match types in DataTable
-                rowExpansion={{
-                    trigger: "click",
-                    allowMultiple: false,
-                    expanded: {
-                        recordIds: expandedRowIds,
-                        onRecordIdsChange: setExpandedRowsIds,
-                    },
-                    content: ({ record }) => {
-                        return (
-                            <ExpandedMod
-                                isLoading={isLoading}
-                                mod={record}
-                                colors={colors}
-                            />
-                        );
-                    }
-                }}
-                totalRecords={sortedModsWithIsExpanded.length}
-                recordsPerPage={pageSize}
-                page={page}
-                onPageChange={setPage}
-                recordsPerPageOptions={PAGE_SIZES}
-                onRecordsPerPageChange={setPageSize}
-            />
+                        {
+                            accessor: "Map",
+                            title: "# Maps",
+                            sortable: true,
+                            render: (modWithInfo) => modWithInfo.Map.length,
+                            filter: (
+                                <NumberSearch
+                                    range={mapCountRange}
+                                    setRange={setMapCountRange}
+                                    maxProps={{
+                                        label: "Map Count",
+                                        description: "Maximum",
+                                        placeholder: "Set maximum..."
+                                    }}
+                                    minProps={{
+                                        description: "Minimum",
+                                        placeholder: "Set minimum..."
+                                    }}
+                                    difficultyIndex={currentTabIndex}
+                                />
+                            ),
+                            filtering: isMapCountFiltered,
+                            titleClassName: isMapCountFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle,
+                        },
+                        {
+                            accessor: "type",
+                            title: "Type",
+                            sortable: true,
+                            filter: (
+                                <ListSelect
+                                    permittedStrings={getNonEmptyArray(modTypes)}
+                                    selectedStrings={selectedModTypes}
+                                    setSelectedStrings={setSelectedModTypes}
+                                    difficultyIndex={currentTabIndex}
+                                />
+                            ),
+                            filtering: isModTypeFiltered,
+                            titleClassName: isModTypeFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle
+                        },
+                        {
+                            accessor: "Quality",
+                            title: "Quality",
+                            sortable: true,
+                            render: (modWithInfo) => modWithInfo.Quality.name,
+                            filter: (
+                                <ListSelect
+                                    permittedStrings={qualityNames}
+                                    selectedStrings={selectedQualities}
+                                    setSelectedStrings={setSelectedQualities}
+                                    difficultyIndex={currentTabIndex}
+                                />
+                            ),
+                            filtering: isQualityFiltered,
+                            titleClassName: isQualityFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle
+                        },
+                        {
+                            accessor: "Difficulty",
+                            title: "Difficulty",
+                            sortable: true,
+                            render: (modWithInfo) => modWithInfo.Difficulty.name,
+                            filter: (
+                                <ListSelect
+                                    permittedStrings={childDifficultyNames}
+                                    selectedStrings={selectedChildDifficulties}
+                                    setSelectedStrings={setSelectedChildDifficulties}
+                                    difficultyIndex={currentTabIndex}
+                                />
+                            ),
+                            filtering: isChildDifficultyFiltered,
+                            titleClassName: isChildDifficultyFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle,
+                            cellsClassName: (record) => {
+                                return cx(
+                                    classes.modCell,
+                                    classes.rightColumnCell,
+                                    record.isExpanded && classes.expandedModCell,
+                                );
+                            },
+                        },
+                    ]}
+                    sortStatus={sortStatus}
+                    onSortStatusChange={setSortStatus as Dispatch<SetStateAction<DataTableSortStatus>>}     //un-narrow type to match types in DataTable
+                    rowExpansion={{
+                        trigger: "click",
+                        allowMultiple: false,
+                        expanded: {
+                            recordIds: expandedRowIds,
+                            onRecordIdsChange: setExpandedRowsIds,
+                        },
+                        content: ({ record }) => {
+                            return (
+                                <ExpandedMod
+                                    isLoading={isLoading}
+                                    mod={record}
+                                    colors={colors}
+                                />
+                            );
+                        }
+                    }}
+                    totalRecords={sortedModsWithIsExpanded.length}
+                    recordsPerPage={pageSize}
+                    page={page}
+                    onPageChange={setPage}
+                    recordsPerPageOptions={PAGE_SIZES}
+                    onRecordsPerPageChange={setPageSize}
+                />
+            </currentDifficultyTabIndexContext.Provider>
         </>
     );
 };
