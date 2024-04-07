@@ -46,7 +46,7 @@ export const ModDownloadButton = ({ gamebananaModId }: ModDownloadButtonProps) =
 
     // Since there is a gap between the link and the popover,
     // debouncing prevents the popover from closing when we move from the link to popover.
-    const [debouncedOpened] = useDebouncedValue(opened, 100);
+    const [debouncedOpened] = useDebouncedValue(opened, 110);
 
 
     const { classes } = useStyles();
