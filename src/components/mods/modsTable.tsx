@@ -17,6 +17,7 @@ import { canonicalDifficultyNames, difficultyColors, type DifficultyColor } from
 import { expandedModColors } from "~/styles/expandedModColors";
 import { TABLE_HEADER_ARROW_ZOOM } from "~/consts/tableHeaderArrowZoom";
 import { blackBackgroundColor } from "~/styles/layoutColors";
+import { pageContentHeightPixels } from "~/styles/pageContentHeightPixels";
 
 
 
@@ -706,7 +707,7 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
                             );
                         },
                     }}
-                    height={550}
+                    height={pageContentHeightPixels}
                     striped
                     textSelectionDisabled
                     withColumnBorders
