@@ -52,8 +52,8 @@ const useStyles = createStyles(
             },
             arrow: {
                 backgroundColor: theme.white,
-                border: 'none',
-                pointerEvents: 'none',
+                border: "none",
+                pointerEvents: "none",
             }
         });
     }
