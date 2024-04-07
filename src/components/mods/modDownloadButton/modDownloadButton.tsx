@@ -26,29 +26,31 @@ const useStyles = createStyles(
         theme,
         {
             colors,
+            isOpened,
         }: {
             colors: DifficultyColor;
+            isOpened: boolean;
         }
     ) => {
         return ({
             downloadButton: {
-                backgroundColor: colors.primary.backgroundColor,
-                color: colors.primary.textColor,
+                backgroundColor: isOpened ? colors.primaryHover.backgroundColor : colors.primary.backgroundColor,
+                color: isOpened ? colors.primaryHover.textColor : colors.primary.textColor,
                 /* left/right top/bottom */
-                padding: "2px 6px",
+                padding: "2px 10px",
                 borderRadius: "8px",
             },
             dropdown: {
                 '&&': {
                     backgroundColor: theme.white,
-                    padding: '5px 10px',
+                    padding: "5px 10px",
                 },
                 "a": {
-                    textDecoration: 'underline',
+                    textDecoration: "underline",
                 },
             },
             dropdownText: {
-                margin: '5px 0',
+                margin: "5px 0",
             },
             arrow: {
                 backgroundColor: theme.white,
@@ -65,11 +67,11 @@ const useStyles = createStyles(
 export const ModDownloadButton = ({ gamebananaModId }: ModDownloadButtonProps) => {
     const { downloadUrl } = useGamebananaModDownloadUrl({ gamebananaModId });
 
-    const [opened, { close, open }] = useDisclosure(false);
+    const [isOpened, { close, open }] = useDisclosure(false);
 
     // Since there is a gap between the link and the popover,
     // debouncing prevents the popover from closing when we move from the link to popover.
-    const [debouncedOpened] = useDebouncedValue(opened, 110);
+    const [debouncedIsOpened] = useDebouncedValue(isOpened, 110);
 
 
     const currentTabIndex = useContext(currentDifficultyTabIndexContext);
@@ -77,14 +79,14 @@ export const ModDownloadButton = ({ gamebananaModId }: ModDownloadButtonProps) =
 
     const colors = colorsForDifficultyIndex(currentTabIndex);
 
-    const { classes } = useStyles({colors});
+    const { classes } = useStyles({ colors, isOpened });
 
 
     return (
         <Popover position="bottom"
             withArrow
             shadow="md"
-            opened={debouncedOpened}
+            opened={debouncedIsOpened}
             classNames={{ dropdown: classes.dropdown, arrow: classes.arrow }}>
             <Popover.Target>
                 <a
