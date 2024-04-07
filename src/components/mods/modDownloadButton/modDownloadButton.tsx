@@ -1,10 +1,15 @@
 
+import { useContext } from "react";
 import Link from "next/link";
-import { Popover, Text, createStyles } from "@mantine/core";
+import Image from "next/image";
+import { Group, Popover, Text, createStyles } from "@mantine/core";
 import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
 import { useGamebananaModDownloadUrl } from "~/hooks/gamebananaApi";
 import { FAQ_PAGE_PATHNAME } from "~/consts/pathnames";
 import { OLYMPUS_INSTALLATION_URL } from "~/consts/olympusInstallationUrl";
+import { type DifficultyColor } from "~/styles/difficultyColors";
+import { colorsForDifficultyIndex } from "~/styles/modsColors";
+import { currentDifficultyTabIndexContext } from "../modsTable";
 
 
 
@@ -17,8 +22,22 @@ type ModDownloadButtonProps = {
 
 
 const useStyles = createStyles(
-    (theme) => {
+    (
+        theme,
+        {
+            colors,
+        }: {
+            colors: DifficultyColor;
+        }
+    ) => {
         return ({
+            downloadButton: {
+                backgroundColor: colors.primary.backgroundColor,
+                color: colors.primary.textColor,
+                /* left/right top/bottom */
+                padding: "2px 6px",
+                borderRadius: "8px",
+            },
             dropdown: {
                 '&&': {
                     backgroundColor: theme.white,
@@ -53,36 +72,52 @@ export const ModDownloadButton = ({ gamebananaModId }: ModDownloadButtonProps) =
     const [debouncedOpened] = useDebouncedValue(opened, 110);
 
 
-    const { classes } = useStyles();
+    const currentTabIndex = useContext(currentDifficultyTabIndexContext);
+
+
+    const colors = colorsForDifficultyIndex(currentTabIndex);
+
+    const { classes } = useStyles({colors});
 
 
     return (
-        <div>
-            <Popover position="bottom"
-                withArrow
-                shadow="md"
-                opened={debouncedOpened}
-                classNames={{ dropdown: classes.dropdown, arrow: classes.arrow }}>
-                <Popover.Target>
-                    <a href={downloadUrl}
-                        onMouseEnter={open}
-                        onMouseLeave={close}>
-                        <Text size={"md"}>
-                            Olympus: 1-Click Install
-                        </Text>
-                    </a>
-                </Popover.Target>
-                <Popover.Dropdown
+        <Popover position="bottom"
+            withArrow
+            shadow="md"
+            opened={debouncedOpened}
+            classNames={{ dropdown: classes.dropdown, arrow: classes.arrow }}>
+            <Popover.Target>
+                <a
+                    href={downloadUrl}
                     onMouseEnter={open}
-                    onMouseLeave={close}>
-                    <Text className={classes.dropdownText}>
-                        Install the mod directly using <a href={OLYMPUS_INSTALLATION_URL}>Olympus</a>, a mod manager for Celeste.
-                    </Text>
-                    <Text className={classes.dropdownText}>
-                        You can also use one of the <Link href={`${FAQ_PAGE_PATHNAME}`}>other methods</Link>.
-                    </Text>
-                </Popover.Dropdown>
-            </Popover>
-        </div>
+                    onMouseLeave={close}
+                    className={classes.downloadButton}
+                >
+                    <Group
+                        spacing={"5px"}
+                    >
+                        <Image
+                            src={"/images/everest-logo/everest-logo.png"}
+                            alt={"Everest modding API logo"}
+                            width={16}
+                            height={16}
+                        />
+                        <Text size={"md"}>
+                            1-Click Install
+                        </Text>
+                    </Group>
+                </a>
+            </Popover.Target>
+            <Popover.Dropdown
+                onMouseEnter={open}
+                onMouseLeave={close}>
+                <Text className={classes.dropdownText}>
+                    Install the mod directly using <a href={OLYMPUS_INSTALLATION_URL}>Olympus</a>, a mod manager for Celeste.
+                </Text>
+                <Text className={classes.dropdownText}>
+                    You can also use one of the <Link href={`${FAQ_PAGE_PATHNAME}`}>other methods</Link>.
+                </Text>
+            </Popover.Dropdown>
+        </Popover>
     );
 };
