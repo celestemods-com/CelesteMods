@@ -1,6 +1,10 @@
-import { useGamebananaModDownloadUrl } from "~/hooks/gamebananaApi";
+
+import Link from "next/link";
 import { Popover, Text, createStyles } from "@mantine/core";
 import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
+import { useGamebananaModDownloadUrl } from "~/hooks/gamebananaApi";
+import { FAQ_PAGE_PATHNAME } from "~/consts/pathnames";
+import { OLYMPUS_INSTALLATION_URL } from "~/consts/olympusInstallationUrl";
 
 
 
@@ -72,10 +76,10 @@ export const ModDownloadButton = ({ gamebananaModId }: ModDownloadButtonProps) =
                     onMouseEnter={open}
                     onMouseLeave={close}>
                     <Text className={classes.dropdownText}>
-                        Install the mod directly using <a href="https://everestapi.github.io/#installing-everest">Olympus</a>, a mod manager for Celeste.
+                        Install the mod directly using <a href={OLYMPUS_INSTALLATION_URL}>Olympus</a>, a mod manager for Celeste.
                     </Text>
                     <Text className={classes.dropdownText}>
-                        You could also use <a href="https://gamebanana.com/tools/16200">CeleMod</a>, a alternative mod manager.
+                        You can also use one of the <Link href={`${FAQ_PAGE_PATHNAME}`}>other methods</Link>.
                     </Text>
                 </Popover.Dropdown>
             </Popover>
