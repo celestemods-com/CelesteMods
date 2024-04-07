@@ -60,7 +60,7 @@ export const ModDownloadButton = ({ gamebananaModId }: ModDownloadButtonProps) =
                 opened={debouncedOpened}
                 classNames={{ dropdown: classes.dropdown, arrow: classes.arrow }}>
                 <Popover.Target>
-                    <a href={downloadUrl    /*TODO!: implement useGamebananaModDownloadUrl */}
+                    <a href={downloadUrl}
                         onMouseEnter={open}
                         onMouseLeave={close}>
                         <Text size={"md"}>
@@ -72,7 +72,7 @@ export const ModDownloadButton = ({ gamebananaModId }: ModDownloadButtonProps) =
                     onMouseEnter={open}
                     onMouseLeave={close}>
                     <Text className={classes.dropdownText}>
-                        Install the mod directly using <a href="https://everestapi.github.io/">Olympus</a>, a mod loader.
+                        Install the mod directly using <a href="https://everestapi.github.io/#installing-everest">Olympus</a>, a mod manager for Celeste.
                     </Text>
                     <Text className={classes.dropdownText}>
                         You could also use <a href="https://gamebanana.com/tools/16200">CeleMod</a>, a alternative mod manager.
