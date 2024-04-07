@@ -10,6 +10,7 @@ import { OLYMPUS_INSTALLATION_URL } from "~/consts/olympusInstallationUrl";
 import { type DifficultyColor } from "~/styles/difficultyColors";
 import { colorsForDifficultyIndex } from "~/styles/modsColors";
 import { currentDifficultyTabIndexContext } from "../modsTable";
+import everestLogo from "../../../../public/images/everest-logo/everest-logo.png";
 
 
 
@@ -99,7 +100,7 @@ export const ModDownloadButton = ({ gamebananaModId }: ModDownloadButtonProps) =
                         spacing={"5px"}
                     >
                         <Image
-                            src={"/images/everest-logo/everest-logo.png"}
+                            src={everestLogo}
                             alt={"Everest modding API logo"}
                             width={16}
                             height={16}
