@@ -1,7 +1,6 @@
-import { useGamebananaModDownloadUrl, GAMEBANANA_OLYMPUS_ICON_URL } from "~/hooks/gamebananaApi";
+import { useGamebananaModDownloadUrl } from "~/hooks/gamebananaApi";
 import { Popover, Text, createStyles } from "@mantine/core";
 import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
-
 
 
 
@@ -9,6 +8,8 @@ import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
 type ModDownloadButtonProps = {
     gamebananaModId: number;
 };
+
+
 
 
 const useStyles = createStyles(
@@ -27,7 +28,7 @@ const useStyles = createStyles(
                 margin: '5px 0',
             },
             arrow: {
-                backgroundColor: 'white',
+                backgroundColor: theme.white,
                 border: 'none',
                 pointerEvents: 'none',
             }
@@ -35,14 +36,21 @@ const useStyles = createStyles(
     }
 );
 
-const ModDownloadButton = ({ gamebananaModId }: ModDownloadButtonProps) => {
+
+
+
+export const ModDownloadButton = ({ gamebananaModId }: ModDownloadButtonProps) => {
     const { downloadUrl } = useGamebananaModDownloadUrl({ gamebananaModId });
+
     const [opened, { close, open }] = useDisclosure(false);
+
     // Since there is a gap between the link and the popover,
     // debouncing prevents the popover from closing when we move from the link to popover.
     const [debouncedOpened] = useDebouncedValue(opened, 100);
 
+
     const { classes } = useStyles();
+
 
     return (
         <div>
@@ -74,6 +82,3 @@ const ModDownloadButton = ({ gamebananaModId }: ModDownloadButtonProps) => {
         </div>
     );
 };
-
-
-export default ModDownloadButton;
