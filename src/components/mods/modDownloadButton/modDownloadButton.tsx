@@ -114,10 +114,10 @@ export const ModDownloadButton = ({ gamebananaModId }: ModDownloadButtonProps) =
                 onMouseEnter={open}
                 onMouseLeave={close}>
                 <Text className={classes.dropdownText}>
-                    Install the mod directly using <a href={OLYMPUS_INSTALLATION_URL}>Olympus</a>, a mod manager for Celeste.
+                    Install the mod directly using <Link href={OLYMPUS_INSTALLATION_URL} target="_blank" rel="noopener noreferrer">Olympus</Link>, a mod manager for Celeste.
                 </Text>
                 <Text className={classes.dropdownText}>
-                    You can also use one of the <Link href={`${FAQ_PAGE_PATHNAME}#mod_managers`}>other methods</Link>.
+                    You can also use one of the <Link href={`${FAQ_PAGE_PATHNAME}#mod_managers`} target="_blank">other methods</Link>.
                 </Text>
             </Popover.Dropdown>
         </Popover>
