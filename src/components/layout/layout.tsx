@@ -5,15 +5,17 @@ import { Header } from "./header";
 import { Navbar } from "./navbar/navbar";
 import { Footer } from "./footer";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
-import { MODS_PAGE_PATHNAME } from "~/consts/pathnames";
+import { MODS_PAGE_PATHNAME, FAQ_PAGE_PATHNAME } from "~/consts/pathnames";
 import { blackBackgroundColor } from "~/styles/layoutColors";
 
 
 
 
+/** Define the pages for the navbar. */
 const PAGES = getNonEmptyArray([
     { label: "Home", pathname: "/" },
     { label: "Mods", pathname: MODS_PAGE_PATHNAME },
+    { label: "FAQ", pathname: FAQ_PAGE_PATHNAME },
 ]);
 
 

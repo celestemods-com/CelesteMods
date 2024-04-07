@@ -10,9 +10,6 @@ const GAMEBANANA_API_BASE_URL = "api.gamebanana.com/Core/Item/Data" as const;
 const GAMEBANANA_API_ERROR_STRING = "GameBanana API not responding as expected." as const;
 
 
-export const GAMEBANANA_OLYMPUS_ICON_URL = "https://images.gamebanana.com/img/ico/tools/60b506516b5dc.png";
-
-
 
 
 type GamebananaModId = Mod["gamebananaModId"];

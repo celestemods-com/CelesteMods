@@ -1,0 +1,1 @@
+export const OLYMPUS_INSTALLATION_URL = "https://everestapi.github.io/#installing-everest" as const;
