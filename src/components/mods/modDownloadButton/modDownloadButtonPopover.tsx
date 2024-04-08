@@ -1,1 +1,0 @@
-//TODO: add popover with info about Olympus/Everest and 1-click install

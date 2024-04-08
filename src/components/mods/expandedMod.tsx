@@ -3,7 +3,7 @@ import type { ModWithInfo } from "~/components/mods/types";
 import Maps from "./maps/maps";
 import PublisherName from "./publisherName";
 import PublicationDate from "./publicationDate";
-import ModDownloadButton from "./modDownloadButton/modDownloadButton";
+import { ModDownloadButton } from "./modDownloadButton/modDownloadButton";
 import Link from "next/link";
 import ModCarousel from "./modCarousel";
 import { COMING_SOON_PATHNAME } from "~/consts/pathnames";
