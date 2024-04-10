@@ -5,12 +5,12 @@ import ExpandedMod from "~/components/mods/expandedMod";
 import { createStyles } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 import { Difficulty, Quality } from "~/components/mods/types";
-import { type ModType, ModType as modTypes, type Publisher as PrismaPublisher, type Mod } from "@prisma/client";
+import { type ModType, type Publisher as PrismaPublisher, type Mod } from "@prisma/client";
 import { StringSearch } from "~/components/filterPopovers/stringSearch";
 import { NumberSearch } from "~/components/filterPopovers/numberSearch";
 import { ListSelect } from "~/components/filterPopovers/listSelect";
 import { truncateString } from "~/utils/truncateString";
-import type { ModWithInfo, Publisher, Tech } from "~/components/mods/types";
+import type { ModWithInfo, Tech } from "~/components/mods/types";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
 import { colorsForDifficultyIndex, greatestValidDifficultyIndex } from "~/styles/modsColors";
 import { canonicalDifficultyNames, difficultyColors, type DifficultyColor } from "~/styles/difficultyColors";
@@ -269,7 +269,6 @@ type ModsTableSortStatus = {
 type ModsTableProps = {
     qualities: Quality[];
     difficulties: Difficulty[];
-    publishers: Publisher[];
     techs: Tech[];
     modsWithInfo: ModWithInfo[];
     isLoading: boolean;
@@ -280,7 +279,7 @@ type ModsTableProps = {
 
 // We create a seperate ModsTable component to prevent the Mods queries
 // running again when the ModsTable state changes.
-export const ModsTable = ({ qualities, difficulties, publishers, techs, modsWithInfo, isLoading }: ModsTableProps) => {
+export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoading }: ModsTableProps) => {
     const [currentTabIndex, setCurrentTabIndex] = useState<number | null>(null);    //track the currently selected parent difficulty
 
 

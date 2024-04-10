@@ -411,7 +411,7 @@ const Mods: NextPage = () => {
     return (
         <Layout pageTitle="Mods" pageDescription="Mods" pathname={MODS_PAGE_PATHNAME}>
             <Title className={classes.pageTitle} order={2}>Mods List</Title>
-            <ModsTable qualities={qualities} difficulties={difficulties} publishers={publishers} techs={techs} modsWithInfo={modsWithInfo} isLoading={isLoading} />
+            <ModsTable qualities={qualities} difficulties={difficulties} techs={techs} modsWithInfo={modsWithInfo} isLoading={isLoading} />
         </Layout>
     );
 };
