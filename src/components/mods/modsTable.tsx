@@ -9,7 +9,7 @@ import { type ModType, ModType as modTypes, type Publisher as PrismaPublisher, t
 import { StringSearch } from "~/components/filterPopovers/stringSearch";
 import { NumberSearch } from "~/components/filterPopovers/numberSearch";
 import { ListSelect } from "~/components/filterPopovers/listSelect";
-import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
+import { truncateString } from "~/utils/truncateString";
 import type { ModWithInfo, Publisher, Tech } from "~/components/mods/types";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
 import { colorsForDifficultyIndex, greatestValidDifficultyIndex } from "~/styles/modsColors";
@@ -28,8 +28,11 @@ const PAGE_SIZES = [5, 10, 15, 20, 25, 50, 100, 250, 500, 1000];
 const DEFAULT_PAGE_SIZE_INDEX = 1;
 const ACTIVE_DIFFICULTY_TAB_BORDER_HEIGHT = "2px";
 const QUERY_DEBOUNCE_TIME_MILLISECONDS = 200;
-/** Does NOT include the ellipsis */
-const TECH_COLUMN_MAX_LETTERS = 17;
+
+// TODO: remove these parameters, limit the width of the columns in the table in some way, and let the datatable columns' `ellipsis` property handle the overflow.
+const NAME_COLUMN_MAX_LETTERS = 35;
+const PUBLISHER_COLUMN_MAX_LETTERS = 15;
+const TECHS_COLUMN_MAX_LETTERS = 20;
 
 
 const useStyles = createStyles(
@@ -822,13 +825,13 @@ export const ModsTable = ({ qualities, difficulties, publishers, techs, modsWith
 
         return () => {
             tabsParent.removeChild(tabContainer);
-            
+
             setTabContainer(null);
         };
     }, [classes.tabContainer]);
 
 
-    // TODO!!!: pass the maps and techs to the expanded mod component so we aren't double fetching. also, limit the displayed strings in the name and publisher columns to a certain length similarly to the techs column.
+    // TODO!!!: pass the maps and techs to the expanded mod component so we aren't double fetching
 
     return (
         <>
@@ -860,7 +863,7 @@ export const ModsTable = ({ qualities, difficulties, publishers, techs, modsWith
             <currentDifficultyTabIndexContext.Provider value={currentTabIndex}>
                 <DataTable
                     bodyRef={tableBodyRef}
-                classNames={{
+                    classNames={{
                         root: classes.table,
                         header: classes.header,
                         pagination: classes.pagination,
@@ -887,6 +890,7 @@ export const ModsTable = ({ qualities, difficulties, publishers, techs, modsWith
                             title: "Name",
                             sortable: true,
                             ellipsis: true,
+                            render: (modWithInfo) => truncateString(modWithInfo.name, NAME_COLUMN_MAX_LETTERS),
                             filter: (
                                 <StringSearch
                                     value={nameQuery}
@@ -913,6 +917,7 @@ export const ModsTable = ({ qualities, difficulties, publishers, techs, modsWith
                             title: "Publisher",
                             sortable: true,
                             ellipsis: true,
+                            render: (modWithInfo) => truncateString(modWithInfo.publisherName, PUBLISHER_COLUMN_MAX_LETTERS),
                             filter: (
                                 <StringSearch
                                     value={publisherQuery}
@@ -991,9 +996,9 @@ export const ModsTable = ({ qualities, difficulties, publishers, techs, modsWith
                             sortable: false,
                             ellipsis: true,
                             render: (modWithInfo) => {
-                                const techsString = modWithInfo.TechsAny.join(", ").trim().slice(0, TECH_COLUMN_MAX_LETTERS);
-    
-                                return techsString === "" ? undefined : `${techsString}...`;
+                                const techsString = modWithInfo.TechsAny.join(", ");
+
+                                return techsString === "" ? undefined : truncateString(techsString, TECHS_COLUMN_MAX_LETTERS);
                             },
                             filter: (
                                 <ListSelect
