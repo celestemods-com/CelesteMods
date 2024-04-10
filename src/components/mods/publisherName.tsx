@@ -16,7 +16,7 @@ const PUBLISHER_NAME_LABEL = "Publisher: ";
 
 
 
-const PublisherName = ({ publisherId }: PublisherNameProps) => {
+export const PublisherName = ({ publisherId }: PublisherNameProps) => {
     const publisherQuery = api.publisher.getById.useQuery({ id: publisherId }, { queryKey: ["publisher.getById", { id: publisherId }] });
 
     const publisher = publisherQuery.data;
@@ -47,6 +47,3 @@ const PublisherName = ({ publisherId }: PublisherNameProps) => {
         </Text>
     );
 };
-
-
-export default PublisherName;

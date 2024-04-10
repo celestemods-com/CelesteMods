@@ -1,11 +1,11 @@
 import { Flex, Group, Loader, Stack, createStyles } from "@mantine/core";
 import type { ModWithInfo } from "~/components/mods/types";
-import Maps from "./maps/maps";
-import PublisherName from "./publisherName";
-import PublicationDate from "./publicationDate";
+import { Maps } from "./maps/maps";
+import { PublisherName } from "./publisherName";
+import { PublicationDate } from "./publicationDate";
 import { ModDownloadButton } from "./modDownloadButton/modDownloadButton";
 import Link from "next/link";
-import ModCarousel from "./modCarousel";
+import { ModCarousel } from "./modCarousel";
 import { COMING_SOON_PATHNAME } from "~/consts/pathnames";
 import { expandedModColors } from "~/styles/expandedModColors";
 import type { DifficultyColor } from "~/styles/difficultyColors";
@@ -43,9 +43,9 @@ const useStyles = createStyles(
 
 
 type ExpandedModProps = {
-    isLoading: boolean,
-    mod: ModWithInfo,
-    colors: DifficultyColor,
+    isLoading: boolean;
+    mod: ModWithInfo;
+    colors: DifficultyColor;
 };
 
 

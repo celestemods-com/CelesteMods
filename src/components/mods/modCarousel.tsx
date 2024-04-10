@@ -10,7 +10,7 @@ import type { DifficultyColor } from "~/styles/difficultyColors";
 
 const useStyles = createStyles(
     (
-        theme,
+        _theme,
         { colors }: { colors: DifficultyColor; },
     ) => ({
         carousel: {
@@ -66,7 +66,7 @@ type modCarouselProps = {
 
 
 
-const ModCarousel = ({ gamebananaModId, numberOfMaps, colors }: modCarouselProps) => {
+export const ModCarousel = ({ gamebananaModId, numberOfMaps, colors }: modCarouselProps) => {
     const { imageUrls } = useGamebananaModImageUrls({ gamebananaModId });
 
 
@@ -100,6 +100,3 @@ const ModCarousel = ({ gamebananaModId, numberOfMaps, colors }: modCarouselProps
         )
     );
 };
-
-
-export default ModCarousel;

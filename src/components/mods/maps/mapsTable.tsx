@@ -141,7 +141,7 @@ const getSortStatusFromIsNormalMod = (isNormalMod: boolean): MapsTableSortStatus
 
 
 
-const MapsTable = (
+export const MapsTable = (
     {
         isNormalMod,
         isMapperNameVisiblePermitted,
@@ -243,5 +243,3 @@ const MapsTable = (
         />
     );
 };
-
-export default MapsTable;

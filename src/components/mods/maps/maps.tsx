@@ -3,7 +3,7 @@ import type { Difficulty, Length, Map, MapRatingData, MapYesRatingData, Quality 
 import { api } from "~/utils/api";
 import { useMemo } from "react";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
-import MapsTable from "./mapsTable";
+import { MapsTable } from "./mapsTable";
 import type { DifficultyColor } from "~/styles/difficultyColors";
 
 
@@ -123,7 +123,7 @@ const getMapsWithInfo = (isLoading: boolean, maps: Map[], ratingsFromMapIds: Map
 
 
 
-const Maps = ({
+export const Maps = ({
     isLoadingMod,
     isNormalMod,
     isMapperNameVisiblePermitted,
@@ -216,9 +216,7 @@ const Maps = ({
     return (
         <Stack align="center" justify="flex-start" spacing="0">
             <Title order={3}>Maps</Title>
-            <MapsTable isNormalMod={isNormalMod} isMapperNameVisiblePermitted={isMapperNameVisiblePermitted} mapsWithInfo={mapsWithInfo} isLoading={isLoading} colors={colors}/>
+            <MapsTable isNormalMod={isNormalMod} isMapperNameVisiblePermitted={isMapperNameVisiblePermitted} mapsWithInfo={mapsWithInfo} isLoading={isLoading} colors={colors} />
         </Stack>
     );
 };
-
-export default Maps;
