@@ -1,1 +1,1 @@
-export const noRatingsFoundMessage = "No ratings.";
+export const noRatingsFoundMessage = "No ratings";
