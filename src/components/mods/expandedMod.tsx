@@ -1,9 +1,9 @@
-import { Flex, Loader, Stack, createStyles } from "@mantine/core";
+import { Flex, Loader, Stack, Text, createStyles } from "@mantine/core";
 import type { ModWithInfo } from "~/components/mods/types";
 import { Maps } from "./maps/maps";
 import { ModDownloadButton } from "./modDownloadButton/modDownloadButton";
-import Link from "next/link";
 import { ModCarousel } from "./modCarousel";
+import { LinkButton } from "~/components/linkButton";
 import { COMING_SOON_PATHNAME } from "~/consts/pathnames";
 import { expandedModColors } from "~/styles/expandedModColors";
 import type { DifficultyColor } from "~/styles/difficultyColors";
@@ -28,9 +28,6 @@ const useStyles = createStyles(
             // the mod row and expanded mod look like a single row.
             transform: "translate(0, -45px)",
             paddingTop: "10px",
-        },
-        moreInfo: {
-            fontSize: "1rem",
         },
         modDetails: {
             width: "100%",
@@ -87,16 +84,17 @@ const ExpandedMod = ({
                 <Flex
                     direction="row"
                     align="center"
-                    justify="space-between"
+                    justify="space-around"
                     className={classes.modDetails}
                 >
                     <ModDownloadButton gamebananaModId={mod.gamebananaModId} />
-                    <Link
-                        href={{ pathname: COMING_SOON_PATHNAME }}
-                        className={classes.moreInfo}
+                    <LinkButton
+                        href={COMING_SOON_PATHNAME}
                     >
+                        <Text size={"md"}>
                         More Info
-                    </Link>
+                        </Text>
+                    </LinkButton>
                 </Flex>
                 <ModCarousel
                     gamebananaModId={mod.gamebananaModId}
