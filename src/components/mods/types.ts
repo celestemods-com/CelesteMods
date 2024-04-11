@@ -42,10 +42,21 @@ type RatingInfo = {
     count: number;
 };
 
-export type MapWithInfo = {
+export type MapWithTechInfo = {
     TechsAny: Tech[];
     TechsFC: Tech[];
 } & Omit<Map, "MapToTechs">;
+
+export type MapWithTechAndRatingInfo = {
+    lengthName: string,
+    overallCount: number,
+    qualityName: string,
+    qualityCount: number,
+    difficultyName: string,
+    difficultyCount: number,
+    chapterSide?: string;
+} & MapWithTechInfo;
+
 
 export type ModWithInfo = {
     overallCount: number;
@@ -54,7 +65,7 @@ export type ModWithInfo = {
     Quality: RatingInfo;
     Difficulty: RatingInfo;
     mapCount: number;
-    MapsWithInfo: MapWithInfo[];
+    MapsWithTechInfo: MapWithTechInfo[];
     publisherName: Publisher["name"];
     TechsAny: Tech["name"][];
     TechsFC: Tech["name"][];

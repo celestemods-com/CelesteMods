@@ -87,7 +87,7 @@ const ExpandedMod = ({
                     isLoadingMod={isLoading}
                     isNormalMod={mod.type === "Normal"}
                     isMapperNameVisiblePermitted={isMapperNameVisiblePermitted}
-                    mapIds={mod.MapsWithInfo.map(({ id }) => id)}
+                    mapsWithTechInfo={mod.MapsWithTechInfo}
                     colors={colors}
                 />
                 <ModCarousel gamebananaModId={mod.gamebananaModId} numberOfMaps={mod.mapCount} colors={colors} />

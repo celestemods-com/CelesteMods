@@ -583,14 +583,14 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
             ) {
                 if (
                     mapCountRange[0] !== undefined &&
-                    modWithInfo.MapsWithInfo.length < mapCountRange[0]
+                    modWithInfo.MapsWithTechInfo.length < mapCountRange[0]
                 ) {
                     return false;
                 }
 
                 if (
                     mapCountRange[1] !== undefined &&
-                    modWithInfo.MapsWithInfo.length > mapCountRange[1]
+                    modWithInfo.MapsWithTechInfo.length > mapCountRange[1]
                 ) {
                     return false;
                 }

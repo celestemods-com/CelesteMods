@@ -2,7 +2,7 @@ import type { NextPage } from "next";
 import { api } from "~/utils/api";
 import { useMemo } from "react";
 import { createStyles, Title } from "@mantine/core";
-import type { Difficulty, Mod, ModRatingData, ModYesRatingData, Quality, Publisher, MapWithInfo, Tech } from "~/components/mods/types";
+import type { Difficulty, Mod, ModRatingData, ModYesRatingData, Quality, Publisher, MapWithTechInfo, Tech } from "~/components/mods/types";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
 import { Layout } from "~/components/layout/layout";
 import { ModsTable } from "~/components/mods/modsTable";
@@ -44,7 +44,7 @@ const getLowestDifficultyId = (difficultyOneId: number, difficultyTwoId: number,
 
 
 
-const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModRatingData[], qualities: Quality[], difficulties: Difficulty[], publishers: Publisher[], mapsWithInfo: MapWithInfo[]): ModWithInfo[] => {
+const getModsWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModRatingData[], qualities: Quality[], difficulties: Difficulty[], publishers: Publisher[], mapsWithTechInfo: MapWithTechInfo[]): ModWithInfo[] => {
     if (isLoading) return [];
 
 
@@ -101,15 +101,15 @@ const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModR
 
         const techIdsAny: Set<ModWithInfo["TechsAny"][number]> = new Set();
         const techIdsFC: Set<ModWithInfo["TechsAny"][number]> = new Set();
-        const mapsWithInfoForMod: MapWithInfo[] = [];
+        const mapsWithInfoForMod: MapWithTechInfo[] = [];
 
         mod.Map.forEach(
             ({ id: mapId }) => {
-                const map = mapsWithInfo.find((map) => map.id === mapId);
+                const map = mapsWithTechInfo.find((map) => map.id === mapId);
 
                 if (map === undefined) {
                     console.log(`mapId = ${mapId}`);
-                    console.log(mapsWithInfo);
+                    console.log(mapsWithTechInfo);
                     throw `Map ${mapId} not found in loop 1. This should not happen.`;
                 }
 
@@ -143,7 +143,7 @@ const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModR
 
             mod.Map.forEach(
                 ({ id: mapId }) => {
-                    const map = mapsWithInfo.find((map) => map.id === mapId);
+                    const map = mapsWithTechInfo.find((map) => map.id === mapId);
 
                     if (map === undefined) throw `Map ${mapId} not found in loop 2. This should not happen.`;
 
@@ -190,7 +190,7 @@ const getModWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: ModR
             },
             Map: undefined, // overwrite the Map property in mod
             mapCount: mapsWithInfoForMod.length,
-            MapsWithInfo: mapsWithInfoForMod,
+            MapsWithTechInfo: mapsWithInfoForMod,
             publisherName: publisher.name,
             TechsAny: Array.from(techIdsAny),
             TechsFC: Array.from(techIdsFC),
@@ -347,11 +347,11 @@ const Mods: NextPage = () => {
 
     const isLoadingMaps = mapQuery.isLoading || !mapQuery.data || !mapQuery.data.length;
 
-    const mapsWithInfo: MapWithInfo[] = useMemo(() => {
+    const mapsWithTechInfo: MapWithTechInfo[] = useMemo(() => {
         if (isLoadingRatings || isLoadingMaps) return [];
 
 
-        const maps_maybeEmpty: MapWithInfo[] = [];
+        const maps_maybeEmpty: MapWithTechInfo[] = [];
 
         mapQuery.data.forEach(
             (mapFromQuery) => {
@@ -377,7 +377,7 @@ const Mods: NextPage = () => {
                 );
 
 
-                const mapWithInfo: MapWithInfo & { MapsToTechs: undefined; } = {
+                const mapWithInfo: MapWithTechInfo & { MapsToTechs: undefined; } = {
                     ...mapFromQuery,
                     MapsToTechs: undefined, // overwrite the MapsToTechs property in oldMap
                     TechsAny: techsAny,
@@ -401,8 +401,8 @@ const Mods: NextPage = () => {
 
     //get mods with map count, and quality and difficulty names
     const modsWithInfo = useMemo(() => {
-        return getModWithInfo(isLoading, mods, ratingsFromModIds, qualities, difficulties, publishers, mapsWithInfo);
-    }, [isLoading, mods, ratingsFromModIds, qualities, difficulties, publishers, mapsWithInfo]);
+        return getModsWithInfo(isLoading, mods, ratingsFromModIds, qualities, difficulties, publishers, mapsWithTechInfo);
+    }, [isLoading, mods, ratingsFromModIds, qualities, difficulties, publishers, mapsWithTechInfo]);
 
 
     const { classes } = useStyles();

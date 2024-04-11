@@ -1,6 +1,6 @@
 import { ActionIcon, createStyles } from "@mantine/core";
 import { DataTable, type DataTableSortStatus } from "mantine-datatable";
-import type { Map } from "~/components/mods/types";
+import type { MapWithTechAndRatingInfo } from "~/components/mods/types";
 import { type Dispatch, type SetStateAction, useEffect, useMemo, useState } from "react";
 import { CirclePlus } from "tabler-icons-react";
 import { expandedModColors } from "~/styles/expandedModColors";
@@ -99,26 +99,15 @@ const useStyles = createStyles(
 
 
 
-type MapWithInfo = {
-    lengthName: string,
-    overallCount: number,
-    qualityName: string,
-    qualityCount: number,
-    difficultyName: string,
-    difficultyCount: number,
-    chapterSide?: string;
-} & Map;
-
-
 type MapsTableSortStatus = {
-    columnAccessor: keyof MapWithInfo;  //narrow from "typeof string"
+    columnAccessor: keyof MapWithTechAndRatingInfo;  //narrow from "typeof string"
 } & DataTableSortStatus;
 
 
 export type MapsTableProps = {
     isNormalMod: boolean;
     isMapperNameVisiblePermitted: boolean;
-    mapsWithInfo: MapWithInfo[];
+    mapsWithTechAndRatingInfo: MapWithTechAndRatingInfo[];
     isLoading: boolean;
     colors: DifficultyColor;
 };
@@ -145,7 +134,7 @@ export const MapsTable = (
     {
         isNormalMod,
         isMapperNameVisiblePermitted,
-        mapsWithInfo,
+        mapsWithTechAndRatingInfo,
         isLoading,
         colors,
     }: MapsTableProps
@@ -159,7 +148,7 @@ export const MapsTable = (
     );
 
     const sortedMapsWithInfo = useMemo(() => {
-        const sortedMaps = [...mapsWithInfo].sort(
+        const sortedMaps = [...mapsWithTechAndRatingInfo].sort(
             (a, b) => {
                 const columnAccessor = sortStatus.columnAccessor;
 
@@ -178,7 +167,7 @@ export const MapsTable = (
 
 
         return sortedMaps;
-    }, [mapsWithInfo, sortStatus]);
+    }, [mapsWithTechAndRatingInfo, sortStatus]);
 
 
     //handle mapper name visibility
