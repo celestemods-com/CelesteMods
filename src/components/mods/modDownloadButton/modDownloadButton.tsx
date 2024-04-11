@@ -1,4 +1,3 @@
-
 import { useContext } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -40,6 +39,7 @@ const useStyles = createStyles(
                 /* left/right top/bottom */
                 padding: "2px 10px",
                 borderRadius: "8px",
+                width: "fit-content",
             },
             dropdown: {
                 '&&': {

@@ -21,7 +21,8 @@ const useStyles = createStyles(
                 flexDirection: "column",
                 alignItems: "stretch",
                 gap: "10px",
-                padding: "20px",
+                /** top | left and right | bottom */
+                padding: "21px 20px 20px",
             },
         },
         viewport: {

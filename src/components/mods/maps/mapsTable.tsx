@@ -22,10 +22,13 @@ const useStyles = createStyles(
                 margin: `0 ${theme.spacing.sm} ${theme.spacing.xl}`,
                 backgroundColor: expandedModColors.default.backgroundColor,
             },
-            "&&&& table": {
+            "&&&&&& table": {
                 borderSpacing: "0 20px",
                 // Border spacing adds space before the header, so we move the table up
                 transform: 'translate(0, -20px)',
+            },
+            "&&&&&& thead": {
+                top: "0",
             },
             "&&&& th": {
                 fontWeight: "bold",

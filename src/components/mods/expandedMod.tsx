@@ -1,8 +1,6 @@
-import { Flex, Group, Loader, Stack, createStyles } from "@mantine/core";
+import { Flex, Loader, Stack, createStyles } from "@mantine/core";
 import type { ModWithInfo } from "~/components/mods/types";
 import { Maps } from "./maps/maps";
-import { PublisherName } from "./publisherName";
-import { PublicationDate } from "./publicationDate";
 import { ModDownloadButton } from "./modDownloadButton/modDownloadButton";
 import Link from "next/link";
 import { ModCarousel } from "./modCarousel";
@@ -29,12 +27,15 @@ const useStyles = createStyles(
             // We move the expanded mod up to make
             // the mod row and expanded mod look like a single row.
             transform: "translate(0, -45px)",
+            paddingTop: "10px",
         },
         moreInfo: {
             fontSize: "1rem",
         },
         modDetails: {
-            padding: "10px 25px",
+            width: "100%",
+            /** top and bottom | left and right */
+            padding: "0 20px",
         }
     }),
 );
@@ -59,40 +60,51 @@ const ExpandedMod = ({
     const isMapperNameVisiblePermitted = false;
 
 
-    const publicationDateInSeconds = mod.timeCreatedGamebanana;
-    const publicationDate = publicationDateInSeconds > 0 ? new Date(publicationDateInSeconds * 1000) : undefined;
-
-
     const { classes } = useStyles();
 
     if (isLoading) return <Loader />;
 
     return (
-        <Stack justify="center" align="stretch" className={classes.expandedMod} spacing="0">
-            <Group position="apart" align="center" className={classes.modDetails}>
-                <PublisherName publisherId={mod.publisherId} />
-                <PublicationDate publicationDate={publicationDate} />
-                <ModDownloadButton gamebananaModId={mod.gamebananaModId} />
-                <Link
-                    href={{
-                        pathname: COMING_SOON_PATHNAME,
-                    }}
-                    className={classes.moreInfo}
+        <Flex
+            direction="row"
+            wrap="wrap"
+            align="flex-start"
+            justify="space-around"
+            className={classes.expandedMod}
+        >
+            <Maps
+                isLoadingMod={isLoading}
+                isNormalMod={mod.type === "Normal"}
+                isMapperNameVisiblePermitted={isMapperNameVisiblePermitted}
+                mapsWithTechInfo={mod.MapsWithTechInfo}
+                colors={colors}
+            />
+            <Stack
+                justify="flex-start"
+                align="center"
+                spacing="0"
+            >
+                <Flex
+                    direction="row"
+                    align="center"
+                    justify="space-between"
+                    className={classes.modDetails}
                 >
-                    More Info
-                </Link>
-            </Group>
-            <Flex align="center" justify="space-around">
-                <Maps
-                    isLoadingMod={isLoading}
-                    isNormalMod={mod.type === "Normal"}
-                    isMapperNameVisiblePermitted={isMapperNameVisiblePermitted}
-                    mapsWithTechInfo={mod.MapsWithTechInfo}
+                    <ModDownloadButton gamebananaModId={mod.gamebananaModId} />
+                    <Link
+                        href={{ pathname: COMING_SOON_PATHNAME }}
+                        className={classes.moreInfo}
+                    >
+                        More Info
+                    </Link>
+                </Flex>
+                <ModCarousel
+                    gamebananaModId={mod.gamebananaModId}
+                    numberOfMaps={mod.mapCount}
                     colors={colors}
                 />
-                <ModCarousel gamebananaModId={mod.gamebananaModId} numberOfMaps={mod.mapCount} colors={colors} />
-            </Flex>
-        </Stack>
+            </Stack>
+        </Flex>
     );
 };
 
