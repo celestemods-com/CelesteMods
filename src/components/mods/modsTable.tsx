@@ -28,6 +28,8 @@ const PAGE_SIZES = [5, 10, 15, 20, 25, 50, 100, 250, 500, 1000];
 const DEFAULT_PAGE_SIZE_INDEX = 1;
 const ACTIVE_DIFFICULTY_TAB_BORDER_HEIGHT = "2px";
 const QUERY_DEBOUNCE_TIME_MILLISECONDS = 200;
+/** Easiest difficulty first */
+const DEFAULT_DIFFICULTY_NAMES_FOR_FALLBACK = ["Beginner", "Intermediate", "Advanced", "Expert", "Grandmaster", "Astral", "Celestial"] as const;
 
 // TODO: remove these parameters, limit the width of the columns in the table in some way, and let the datatable columns' `ellipsis` property handle the overflow.
 const NAME_COLUMN_MAX_LETTERS = 35;
@@ -315,10 +317,16 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
 
 
     const parentDifficultyNames = useMemo(  //get parent difficulty names for filter component
-        () => difficulties
-            .filter((difficulty) => difficulty.parentDifficultyId === 0)    //parent difficulties all have the nullParent difficulty, with id = 0, as their parent
-            .sort((a, b) => a.order - b.order)  //easier difficulties have lower orders, and we want them to sort first
-            .map((difficulty) => difficulty.name),
+        () => {
+            if (difficulties.length === 0) {
+                return DEFAULT_DIFFICULTY_NAMES_FOR_FALLBACK;
+            }
+
+            return difficulties
+                .filter((difficulty) => difficulty.parentDifficultyId === 0)    //parent difficulties all have the nullParent difficulty, with id = 0, as their parent
+                .sort((a, b) => a.order - b.order)  //easier difficulties have lower orders, and we want them to sort first
+                .map((difficulty) => difficulty.name);
+        },
         [difficulties],
     );
 
@@ -829,8 +837,6 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
         };
     }, [classes.tabContainer]);
 
-
-    // TODO!!!: pass the maps and techs to the expanded mod component so we aren't double fetching
 
     return (
         <>
