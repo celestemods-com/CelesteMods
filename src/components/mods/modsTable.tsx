@@ -27,6 +27,8 @@ export const currentDifficultyTabIndexContext = createContext<number | null>(nul
 const PAGE_SIZES = [5, 10, 15, 20, 25, 50, 100, 250, 500, 1000];
 const DEFAULT_PAGE_SIZE_INDEX = 1;
 const ACTIVE_DIFFICULTY_TAB_BORDER_HEIGHT = "2px";
+/** Easiest difficulty first */
+const DEFAULT_DIFFICULTY_NAMES_FOR_FALLBACK = ["Beginner", "Intermediate", "Advanced", "Expert", "Grandmaster", "Astral", "Celestial"] as const;
 
 
 const useStyles = createStyles(
@@ -278,10 +280,16 @@ export const ModsTable = ({ qualities, difficulties, modsWithInfo, isLoading }: 
 
 
     const parentDifficultyNames = useMemo(  //get parent difficulty names for filter component
-        () => difficulties
-            .filter((difficulty) => difficulty.parentDifficultyId === 0)    //parent difficulties all have the nullParent difficulty, with id = 0, as their parent
-            .sort((a, b) => a.order - b.order)  //easier difficulties have lower orders, and we want them to sort first
-            .map((difficulty) => difficulty.name),
+        () => {
+            if (difficulties.length === 0) {
+                return DEFAULT_DIFFICULTY_NAMES_FOR_FALLBACK;
+            }
+
+            return difficulties
+                .filter((difficulty) => difficulty.parentDifficultyId === 0)    //parent difficulties all have the nullParent difficulty, with id = 0, as their parent
+                .sort((a, b) => a.order - b.order)  //easier difficulties have lower orders, and we want them to sort first
+                .map((difficulty) => difficulty.name);
+        },
         [difficulties],
     );
 
