@@ -43,6 +43,7 @@ type LinkButtonProps = {
     href: string;
     onMouseEnter?: () => void;
     onMouseLeave?: () => void;
+    linkWrapper?: boolean;
 };
 
 
@@ -58,6 +59,7 @@ export const LinkButton = forwardRef<
             href,
             onMouseEnter,
             onMouseLeave,
+            linkWrapper = true,
         },
         ref,
     ) => {
@@ -69,16 +71,29 @@ export const LinkButton = forwardRef<
 
 
         return (
-            <Link
-                href={href}
-                ref={ref}
-                type="button"
-                className={classes.button}
-                onMouseEnter={onMouseEnter}
-                onMouseLeave={onMouseLeave}
-            >
-                {children}
-            </Link>
+            linkWrapper ? (
+                <Link
+                    href={href}
+                    ref={ref}
+                    type="button"
+                    className={classes.button}
+                    onMouseEnter={onMouseEnter}
+                    onMouseLeave={onMouseLeave}
+                >
+                    {children}
+                </Link>
+            ) : (
+                <a
+                    href={href}
+                    ref={ref}
+                    type="button"
+                    className={classes.button}
+                    onMouseEnter={onMouseEnter}
+                    onMouseLeave={onMouseLeave}
+                >
+                    {children}
+                </a>
+            )
         );
     }
 );

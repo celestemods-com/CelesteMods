@@ -69,6 +69,7 @@ export const ModDownloadButton = ({ gamebananaModId }: ModDownloadButtonProps) =
                     href={downloadUrl ?? ""}
                     onMouseEnter={open}
                     onMouseLeave={close}
+                    linkWrapper={false}
                 >
                     <Group
                         spacing={"5px"}
