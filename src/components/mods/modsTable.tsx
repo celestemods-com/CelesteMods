@@ -2,16 +2,18 @@ import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState, createContext } from "react";
 import { createPortal } from "react-dom";
 import ExpandedMod from "~/components/mods/expandedMod";
-import { createStyles } from "@mantine/core";
+import { createStyles, Text, Tooltip } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 import { Difficulty, Quality } from "~/components/mods/types";
 import { type ModType, type Publisher as PrismaPublisher, type Mod } from "@prisma/client";
 import { StringSearch } from "~/components/filterPopovers/stringSearch";
 import { NumberSearch } from "~/components/filterPopovers/numberSearch";
 import { ListSelect } from "~/components/filterPopovers/listSelect";
+import { ModsTableTooltip } from "./modsTableTooltip";
 import { truncateString } from "~/utils/truncateString";
 import type { ModWithInfo, Tech } from "~/components/mods/types";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
+import { defaultToLocaleDateStringOptions } from "~/consts/defaultToLocaleDateStringOptions";
 import { colorsForDifficultyIndex, greatestValidDifficultyIndex } from "~/styles/modsColors";
 import { canonicalDifficultyNames, difficultyColors, type DifficultyColor } from "~/styles/difficultyColors";
 import { expandedModColors } from "~/styles/expandedModColors";
@@ -144,12 +146,19 @@ const useStyles = createStyles(
             modCell: {
                 // 4 ampersands to increase selectivity of class to ensure it overrides any other css
                 "&&&&": {
-                    /* top | left and right | bottom */
-                    padding: `${theme.spacing.sm} ${theme.spacing.xl} ${theme.spacing.sm}`,
+                    /* top and bottom | left and right */
+                    padding: `${theme.spacing.sm} ${theme.spacing.xl}`,
                     backgroundColor: expandedModColors.default.backgroundColor,
                     color: expandedModColors.default.textColor,
                     borderWidth: 0,
                     fontWeight: "bold",
+                    ".mantine-Tooltip-tooltip": {   // TODO: figure out how to move this styling into the ModsTableTooltip component
+                        backgroundColor: colors.primaryHover.backgroundColor,
+                        color: colors.primaryHover.textColor,
+                        borderColor: colors.primaryHover.textColor,
+                        border: "2px solid",
+                        borderRadius: "16px",
+                    },
                 },
             },
             expandedModCell: {
@@ -895,7 +904,19 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                             title: "Name",
                             sortable: true,
                             ellipsis: true,
-                            render: (modWithInfo) => truncateString(modWithInfo.name, NAME_COLUMN_MAX_LETTERS),
+                            render: (modWithInfo) => {
+                                const modTypeString = (modWithInfo.type !== "Normal" && modWithInfo.type !== "LobbyOther") ?
+                                    modWithInfo.type : (
+                                        modWithInfo.type === "Normal" ? "Campaign" : "Other Lobby"
+                                    );
+
+                                return (
+                                    <ModsTableTooltip
+                                        targetString={truncateString(modWithInfo.name, NAME_COLUMN_MAX_LETTERS)}
+                                        dropdownString={`${modWithInfo.name}: ${modTypeString} Mod`}
+                                    />
+                                );
+                            },
                             filter: (
                                 <StringSearch
                                     value={nameQuery}
@@ -922,7 +943,15 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                             title: "Publisher",
                             sortable: true,
                             ellipsis: true,
-                            render: (modWithInfo) => truncateString(modWithInfo.publisherName, PUBLISHER_COLUMN_MAX_LETTERS),
+                            render: (modWithInfo) => {
+                                const publicationDate = new Date(modWithInfo.timeCreatedGamebanana * 1000); // convert from seconds to milliseconds
+                                return (
+                                    <ModsTableTooltip
+                                        targetString={truncateString(modWithInfo.publisherName, PUBLISHER_COLUMN_MAX_LETTERS)}
+                                        dropdownString={`${modWithInfo.publisherName}: ${publicationDate.toLocaleDateString(undefined, defaultToLocaleDateStringOptions)}`}
+                                    />
+                                );
+                            },
                             filter: (
                                 <StringSearch
                                     value={publisherQuery}
@@ -942,7 +971,12 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                             title: "Quality",
                             sortable: true,
                             ellipsis: true,
-                            render: (modWithInfo) => modWithInfo.Quality.name,
+                            render: (modWithInfo) => (
+                                <ModsTableTooltip
+                                    targetString={modWithInfo.Quality.name}
+                                    dropdownString={`${modWithInfo.Quality.name}: ${modWithInfo.Quality.count} ratings`}
+                                />
+                            ),
                             filter: (
                                 <ListSelect
                                     permittedStrings={qualityNames}
@@ -959,7 +993,20 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                             title: "Difficulty",
                             sortable: true,
                             ellipsis: true,
-                            render: (modWithInfo) => modWithInfo.Difficulty.name,
+                            render: (modWithInfo) => {
+                                const difficultyNameFromMod = modWithInfo.Difficulty.name;
+
+                                const splitDifficultyNamesArray = difficultyNameFromMod.split(": ");
+                                const [parentDifficulty, childDifficulty] = splitDifficultyNamesArray;
+                                if (parentDifficulty === undefined || childDifficulty === undefined) return "";
+
+                                return (
+                                    <ModsTableTooltip
+                                        targetString={childDifficulty}
+                                        dropdownString={`${childDifficulty}: ${modWithInfo.Difficulty.count} ratings`}
+                                    />
+                                );
+                            },
                             filter: (
                                 <ListSelect
                                     permittedStrings={childDifficultyNames}
@@ -1001,9 +1048,33 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                             sortable: false,
                             ellipsis: true,
                             render: (modWithInfo) => {
-                                const techsString = modWithInfo.TechsAny.join(", ");
+                                const techsAnyString = modWithInfo.TechsAny.join(", ");
+                                const techsFCString = modWithInfo.TechsFC.join(", ");
 
-                                return techsString === "" ? undefined : truncateString(techsString, TECHS_COLUMN_MAX_LETTERS);
+                                return (
+                                    <ModsTableTooltip
+                                        multiline={true}
+                                        maxWidth={200}
+                                        targetString={
+                                            techsAnyString === "" ? (
+                                                techsFCString === "" ? "" : truncateString(`Full Clear: ${techsFCString}`, TECHS_COLUMN_MAX_LETTERS)
+                                            ) : (
+                                                truncateString(techsAnyString, TECHS_COLUMN_MAX_LETTERS)
+                                            )
+                                        }
+                                        dropdownString={
+                                            techsAnyString === "" ? (
+                                                techsFCString === "" ?
+                                                    "None" :
+                                                    `Any%: None. Full Clear: ${techsFCString}.`
+                                            ) : (
+                                                techsFCString === "" ?
+                                                    `Any%: ${techsAnyString}.` :
+                                                    `Any%: ${techsAnyString}. Full Clear: ${techsFCString}.`
+                                            )
+                                        }
+                                    />
+                                );
                             },
                             filter: (
                                 <ListSelect
@@ -1023,21 +1094,6 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                                 );
                             },
                         },
-                        // {
-                        //     accessor: "type",
-                        //     title: "Type",
-                        //     sortable: true,
-                        //     filter: (
-                        //         <ListSelect
-                        //             permittedStrings={getNonEmptyArray(modTypes)}
-                        //             selectedStrings={selectedModTypes}
-                        //             setSelectedStrings={setSelectedModTypes}
-                        //             difficultyIndex={currentTabIndex}
-                        //         />
-                        //     ),
-                        //     filtering: isModTypeFiltered,
-                        //     titleClassName: isModTypeFiltered ? classes.filteredColumnTitle : classes.unfilteredColumnTitle
-                        // },
                     ]}
                     sortStatus={sortStatus}
                     onSortStatusChange={setSortStatus as Dispatch<SetStateAction<DataTableSortStatus>>}     // un-narrow type to match types in DataTable
