@@ -152,13 +152,6 @@ const useStyles = createStyles(
                     color: expandedModColors.default.textColor,
                     borderWidth: 0,
                     fontWeight: "bold",
-                    ".mantine-Tooltip-tooltip": {   // TODO: figure out how to move this styling into the ModsTableTooltip component
-                        backgroundColor: colors.primaryHover.backgroundColor,
-                        color: colors.primaryHover.textColor,
-                        borderColor: colors.primaryHover.textColor,
-                        border: "2px solid",
-                        borderRadius: "16px",
-                    },
                 },
             },
             expandedModCell: {

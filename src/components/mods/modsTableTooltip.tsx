@@ -1,7 +1,7 @@
 import { Tooltip, Text } from "@mantine/core";
-import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
 
 
+// styles are defined in ~/styles/globals.css
 
 
 type ModsTableTooltipProps = {
@@ -13,28 +13,24 @@ type ModsTableTooltipProps = {
 
 
 
+
 /** `target` must be able to accept a `ref`. */
 export const ModsTableTooltip = ({
     targetString,
     dropdownString,
-    multiline = false,  //TODO!!!: figure out how to make multiline work
+    multiline = false,  //TODO!!!!: figure out how to make multiline work with static tooltips and switch back to static from floating
     maxWidth,
 }: ModsTableTooltipProps) => {
-    const [isOpened, { close, open }] = useDisclosure(false);
-
-    // Since there is a gap between the link and the tooltip,
-    // debouncing prevents the tooltip from closing when we move from the link to tooltip.
-    const [debouncedIsOpened] = useDebouncedValue(isOpened, 200);
 
     return (
-        <Tooltip
-            offset={12}
-            opened={debouncedIsOpened}
+        <Tooltip.Floating
+            // offset={12}  // re-enable when multiline works
+            multiline={multiline}
+            width={maxWidth}
+            withinPortal    // disabling this would make styling simpler, but it makes the tooltip look a bit jittery
             label={
-                <Text       // TODO!!!: figure out why onMouseEnter and onMouseLeave don't work
+                <Text       // TODO!!!: figure out why onMouseEnter and onMouseLeave don't work (for static tooltips)
                     size="xs"
-                    onMouseEnter={open}
-                    onMouseLeave={close}
                 >
                     {dropdownString}
                 </Text>
@@ -42,11 +38,9 @@ export const ModsTableTooltip = ({
         >
             <Text
                 size="sm"
-                onMouseEnter={open}
-                onMouseLeave={close}
             >
                 {targetString}
             </Text>
-        </Tooltip>
+        </Tooltip.Floating>
     );
 };

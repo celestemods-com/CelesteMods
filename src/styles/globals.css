@@ -32,6 +32,13 @@ a {
 }
 
 
+/* ModsTable tooltips */
+.mantine-TooltipFloating-tooltip.mantine-TooltipFloating-tooltip {
+  border: 2px solid;
+  border-radius: 16px;
+}
+
+
 /* pagination popover background */
 .beginner-menu .mantine-Menu-dropdown.mantine-Menu-dropdown {
   background-color: #16367b;  /* difficultyColors.beginner.primary.backgroundColor */
@@ -56,6 +63,13 @@ a {
 }
 .beginner-menu .mantine-Menu-dropdown button:hover .mantine-Text-root {
   color: black; /* difficultyColors.beginner.secondaryHover.textColor */
+}
+
+/* ModsTable tooltips */
+.beginner-menu .mantine-TooltipFloating-tooltip.mantine-TooltipFloating-tooltip {
+  background-color: #84a4e9;  /* difficultyColors.beginner.primaryHover.backgroundColor */
+  color: "black";  /* difficultyColors.beginner.primaryHover.textColor */
+  border-color: "black";  /* difficultyColors.beginner.primaryHover.textColor */
 }
 
 
@@ -85,6 +99,13 @@ a {
   color: white;  /* difficultyColors.intermediate.secondaryHover.textColor */
 }
 
+/* ModsTable tooltips */
+.intermediate-menu .mantine-TooltipFloating-tooltip.mantine-TooltipFloating-tooltip {
+  background-color: #87d0f9;  /* difficultyColors.intermediate.primaryHover.backgroundColor */
+  color: "black";  /* difficultyColors.intermediate.primaryHover.textColor */
+  border-color: "black";  /* difficultyColors.intermediate.primaryHover.textColor */
+}
+
 
 /* pagination popover background */
 .advanced-menu .mantine-Menu-dropdown.mantine-Menu-dropdown {
@@ -110,6 +131,13 @@ a {
 }
 .advanced-menu .mantine-Menu-dropdown button:hover .mantine-Text-root {
   color: white;  /* difficultyColors.advanced.secondaryHover.textColor */
+}
+
+/* ModsTable tooltips */
+.advanced-menu .mantine-TooltipFloating-tooltip.mantine-TooltipFloating-tooltip {
+  background-color: #d1cedf;  /* difficultyColors.advanced.primaryHover.backgroundColor */
+  color: "black";  /* difficultyColors.advanced.primaryHover.textColor */
+  border-color: "black";  /* difficultyColors.advanced.primaryHover.textColor */
 }
 
 
@@ -139,6 +167,13 @@ a {
   color: white;  /* difficultyColors.expert.secondaryHover.textColor */
 }
 
+/* ModsTable tooltips */
+.expert-menu .mantine-TooltipFloating-tooltip.mantine-TooltipFloating-tooltip {
+  background-color: #f8f0ff;  /* difficultyColors.expert.primaryHover.backgroundColor */
+  color: "black";  /* difficultyColors.expert.primaryHover.textColor */
+  border-color: "black";  /* difficultyColors.expert.primaryHover.textColor */
+}
+
 
 /* pagination popover background */
 .grandmaster-menu .mantine-Menu-dropdown.mantine-Menu-dropdown {
@@ -164,6 +199,13 @@ a {
 }
 .grandmaster-menu .mantine-Menu-dropdown button:hover .mantine-Text-root {
   color: white;  /* difficultyColors.grandmaster.secondaryHover.textColor */
+}
+
+/* ModsTable tooltips */
+.grandmaster-menu .mantine-TooltipFloating-tooltip.mantine-TooltipFloating-tooltip {
+  background-color: #c1adff;  /* difficultyColors.grandmaster.primaryHover.backgroundColor */
+  color: "black";  /* difficultyColors.grandmaster.primaryHover.textColor */
+  border-color: "black";  /* difficultyColors.grandmaster.primaryHover.textColor */
 }
 
 
@@ -193,6 +235,13 @@ a {
   color: white;  /* difficultyColors.astral.secondaryHover.textColor */
 }
 
+/* ModsTable tooltips */
+.astral-menu .mantine-TooltipFloating-tooltip.mantine-TooltipFloating-tooltip {
+  background-color: #c1adff;  /* difficultyColors.astral.primaryHover.backgroundColor */
+  color: "black";  /* difficultyColors.astral.primaryHover.textColor */
+  border-color: "black";  /* difficultyColors.astral.primaryHover.textColor */
+}
+
 
 /* pagination popover background */
 .celestial-menu .mantine-Menu-dropdown.mantine-Menu-dropdown {
@@ -218,4 +267,11 @@ a {
 }
 .celestial-menu .mantine-Menu-dropdown button:hover .mantine-Text-root {
   color: white;  /* difficultyColors.celestial.secondaryHover.textColor */
+}
+
+/* ModsTable tooltips */
+.celestial-menu .mantine-TooltipFloating-tooltip.mantine-TooltipFloating-tooltip {
+  background-color: #c1adff;  /* difficultyColors.celestial.primaryHover.backgroundColor */
+  color: "black";  /* difficultyColors.celestial.primaryHover.textColor */
+  border-color: "black";  /* difficultyColors.celestial.primaryHover.textColor */
 }
