@@ -18,13 +18,13 @@ type ModsTableTooltipProps = {
 export const ModsTableTooltip = ({
     targetString,
     dropdownString,
-    multiline = false,  //TODO!!!!: figure out how to make multiline work with static tooltips and switch back to static from floating
+    multiline = false,  //TODO!!!!: figure out how to make multiline work with static tooltips and switch back to static from floating. or use a popover styled like a tooltip
     maxWidth,
 }: ModsTableTooltipProps) => {
 
     return (
         <Tooltip.Floating
-            // offset={12}  // re-enable when multiline works
+            // offset={12}  // re-enable when multiline works with static tooltips
             multiline={multiline}
             width={maxWidth}
             withinPortal    // disabling this would make styling simpler, but it makes the tooltip look a bit jittery
