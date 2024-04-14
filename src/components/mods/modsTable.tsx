@@ -769,7 +769,7 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
 
 
 
-    // apply the correct class to the body element to change the background color of the pagination dropdown
+    // apply the correct class (defined in ~/styles/globals.css) to the body element to change the background color of the pagination dropdown
     useEffect(() => {
         const menuClassNames = canonicalDifficultyNames.map((difficultyName) => `${difficultyName.toLowerCase()}-menu`);
 
