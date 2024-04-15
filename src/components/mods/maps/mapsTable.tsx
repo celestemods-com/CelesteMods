@@ -1,13 +1,15 @@
+import { type Dispatch, type SetStateAction, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { ActionIcon, Text, createStyles } from "@mantine/core";
 import { DataTable, type DataTableSortStatus } from "mantine-datatable";
 import type { MapWithTechAndRatingInfo, Mod } from "~/components/mods/types";
-import { type Dispatch, type SetStateAction, useEffect, useMemo, useState } from "react";
-import { CirclePlus, Tooltip } from "tabler-icons-react";
+import { CirclePlus } from "tabler-icons-react";
 import { ModsTableTooltip } from "../modsTableTooltip";
 import { expandedModColors } from "~/styles/expandedModColors";
 import { TABLE_HEADER_ARROW_ZOOM } from "~/consts/tableHeaderArrowZoom";
 import type { DifficultyColor } from "~/styles/difficultyColors";
 import { getOrdinal } from "~/utils/getOrdinal";
+import { COMING_SOON_PATHNAME } from "~/consts/pathnames";
 
 
 
@@ -323,13 +325,17 @@ export const MapsTable = (
                         <ModsTableTooltip
                             dropdownString="Rate this map"
                             childComponent={(
-                                <ActionIcon
-                                    aria-label="Rate this map"
+                                <Link
+                                    href={COMING_SOON_PATHNAME}
                                 >
-                                    <CirclePlus
-                                        color="black"
-                                    />
-                                </ActionIcon>
+                                    <ActionIcon
+                                        aria-label="Rate this map"
+                                    >
+                                        <CirclePlus
+                                            color="black"
+                                        />
+                                    </ActionIcon>
+                                </Link>
                             )}
                         />
 
