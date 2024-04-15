@@ -49,7 +49,7 @@ type ExpandedModProps = {
 
 
 
-const ExpandedMod = ({
+export const ExpandedMod = ({
     isLoading,
     mod,
     colors,
@@ -105,5 +105,3 @@ const ExpandedMod = ({
         </Flex>
     );
 };
-
-export default ExpandedMod;
