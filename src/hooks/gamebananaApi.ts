@@ -48,7 +48,7 @@ const GAMEBANANA_ITEM_FIELDS: {
     Mod: GAMEBANANA_MOD_FIELDS,
 };
 
-type GamebananaItemFields<      //TODO!!!: make this work then continue below
+type GamebananaItemFields<      //TODO: make this work then continue below
     ItemType extends GamebananaItemType
 > = typeof GAMEBANANA_ITEM_FIELDS[ItemType];
 
