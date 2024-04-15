@@ -29,7 +29,7 @@ export const ModsTableTooltip = ({
     targetString,
     childComponent,
     dropdownString,
-    multiline = false,  //TODO!!!!: figure out how to make multiline work with static tooltips and switch back to static from floating. or use a popover styled like a tooltip
+    multiline = false,  // I couldn't make multiline work with static tooltips so we are using floating for now. we could also use a popover styled like a tooltip.
     maxWidth,
 }: ModsTableTooltipProps) => {
 
@@ -40,7 +40,7 @@ export const ModsTableTooltip = ({
             width={maxWidth}
             withinPortal    // disabling this would make styling simpler, but it makes the tooltip look a bit jittery
             label={
-                <Text       // TODO!!!: figure out why onMouseEnter and onMouseLeave don't work (for static tooltips)
+                <Text       // onMouseEnter and onMouseLeave don't work for static tooltips for some reason
                     size="xs"
                 >
                     {dropdownString}
