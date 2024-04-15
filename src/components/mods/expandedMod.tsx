@@ -71,7 +71,7 @@ const ExpandedMod = ({
         >
             <Maps
                 isLoadingMod={isLoading}
-                isNormalMod={mod.type === "Normal"}
+                modType={mod.type}
                 isMapperNameVisiblePermitted={isMapperNameVisiblePermitted}
                 mapsWithTechInfo={mod.MapsWithTechInfo}
                 colors={colors}

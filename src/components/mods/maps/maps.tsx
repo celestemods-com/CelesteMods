@@ -1,5 +1,5 @@
 import { Stack, Title } from "@mantine/core";
-import type { Difficulty, Length, MapRatingData, MapYesRatingData, MapWithTechInfo, MapWithTechAndRatingInfo, Quality } from "~/components/mods/types";
+import type { Difficulty, Length, MapRatingData, MapYesRatingData, MapWithTechInfo, MapWithTechAndRatingInfo, Quality, Mod } from "~/components/mods/types";
 import { api } from "~/utils/api";
 import { useMemo } from "react";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
@@ -11,7 +11,7 @@ import type { DifficultyColor } from "~/styles/difficultyColors";
 
 export type MapsProps = {
     isLoadingMod: boolean;
-    isNormalMod: boolean;
+    modType: Mod["type"];
     isMapperNameVisiblePermitted: boolean;
     mapsWithTechInfo: MapWithTechInfo[];
     colors: DifficultyColor;
@@ -123,7 +123,7 @@ const getMapsWithTechAndRatingInfo = (
 
 export const Maps = ({
     isLoadingMod,
-    isNormalMod,
+    modType,
     isMapperNameVisiblePermitted,
     mapsWithTechInfo,
     colors,
@@ -185,7 +185,7 @@ export const Maps = ({
     return (
         <Stack align="center" justify="flex-start" spacing="0">
             <Title order={3}>Maps</Title>
-            <MapsTable isNormalMod={isNormalMod} isMapperNameVisiblePermitted={isMapperNameVisiblePermitted} mapsWithTechAndRatingInfo={mapsWithTechAndRatingInfo} isLoading={isLoading} colors={colors} />
+            <MapsTable modType={modType} isMapperNameVisiblePermitted={isMapperNameVisiblePermitted} mapsWithTechAndRatingInfo={mapsWithTechAndRatingInfo} isLoading={isLoading} colors={colors} />
         </Stack>
     );
 };

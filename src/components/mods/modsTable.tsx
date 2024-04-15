@@ -842,7 +842,7 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
 
     return (
         <>
-            {
+            {   /// TODO!!!: move the difficulty tabs to a separate component
                 tabContainer !== null && (
                     createPortal(
                         [...parentDifficultyNames].reverse().map(
@@ -964,12 +964,22 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                             title: "Quality",
                             sortable: true,
                             ellipsis: true,
-                            render: (modWithInfo) => (
-                                <ModsTableTooltip
-                                    targetString={modWithInfo.Quality.name}
-                                    dropdownString={`${modWithInfo.Quality.name}: ${modWithInfo.Quality.count} ratings`}
-                                />
-                            ),
+                            render: (modWithInfo) => {
+                                if (modWithInfo.Quality.count === 0) return (
+                                    <Text
+                                        size="sm"
+                                    >
+                                        {modWithInfo.Quality.name}
+                                    </Text>
+                                );
+
+                                return (
+                                    <ModsTableTooltip
+                                        targetString={modWithInfo.Quality.name}
+                                        dropdownString={`${modWithInfo.Quality.name}: ${modWithInfo.Quality.count} ratings`}
+                                    />
+                                );
+                            },
                             filter: (
                                 <ListSelect
                                     permittedStrings={qualityNames}
@@ -989,14 +999,30 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                             render: (modWithInfo) => {
                                 const difficultyNameFromMod = modWithInfo.Difficulty.name;
 
-                                const splitDifficultyNamesArray = difficultyNameFromMod.split(": ");
-                                const [parentDifficulty, childDifficulty] = splitDifficultyNamesArray;
-                                if (parentDifficulty === undefined || childDifficulty === undefined) return "";
+                                let difficultyStringForDisplay: string;
+                                if (modWithInfo.Difficulty.count === 0) {
+                                    difficultyStringForDisplay =  modWithInfo.Difficulty.name;
+                                } else {
+                                    const [parentDifficulty, childDifficultyName] = difficultyNameFromMod.split(": ");
+    
+                                    if (parentDifficulty === undefined || childDifficultyName === undefined) return "";
+
+                                    difficultyStringForDisplay = childDifficultyName;
+                                }
+
+
+                                if (modWithInfo.Difficulty.count === 0) return (
+                                    <Text
+                                        size="sm"
+                                    >
+                                        {modWithInfo.Difficulty.name}
+                                    </Text>
+                                );
 
                                 return (
                                     <ModsTableTooltip
-                                        targetString={childDifficulty}
-                                        dropdownString={`${childDifficulty}: ${modWithInfo.Difficulty.count} ratings`}
+                                        targetString={difficultyStringForDisplay}
+                                        dropdownString={`${difficultyStringForDisplay}: ${modWithInfo.Difficulty.count} ratings`}
                                     />
                                 );
                             },
