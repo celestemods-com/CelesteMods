@@ -30,13 +30,15 @@ const PAGE_SIZES = [5, 10, 15, 20, 25, 50, 100, 250, 500, 1000];
 const DEFAULT_PAGE_SIZE_INDEX = 1;
 const ACTIVE_DIFFICULTY_TAB_BORDER_HEIGHT = "2px";
 const QUERY_DEBOUNCE_TIME_MILLISECONDS = 200;
-/** Easiest difficulty first */
-const DEFAULT_DIFFICULTY_NAMES_FOR_FALLBACK = ["Beginner", "Intermediate", "Advanced", "Expert", "Grandmaster", "Astral", "Celestial"] as const;
 
 // TODO: remove these parameters, limit the width of the columns in the table in some way, and let the datatable columns' `ellipsis` property handle the overflow.
 const NAME_COLUMN_MAX_LETTERS = 35;
 const PUBLISHER_COLUMN_MAX_LETTERS = 15;
 const TECHS_COLUMN_MAX_LETTERS = 20;
+
+
+/** Easiest difficulty first */
+const defaultDifficultyNamesForFallback = canonicalDifficultyNames.map(lowercaseDifficultyName => lowercaseDifficultyName.charAt(0).toUpperCase() + lowercaseDifficultyName.slice(1));
 
 
 const useStyles = createStyles(
@@ -321,7 +323,7 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
     const parentDifficultyNames = useMemo(  //get parent difficulty names for filter component
         () => {
             if (difficulties.length === 0) {
-                return DEFAULT_DIFFICULTY_NAMES_FOR_FALLBACK;
+                return defaultDifficultyNamesForFallback;
             }
 
             return difficulties
