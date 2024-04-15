@@ -1,1 +1,1 @@
-export const REFETCH_INTERVAL_SECONDS = 5 * 60;
+export const REFETCH_INTERVAL_SECONDS = 15 * 60;
