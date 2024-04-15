@@ -305,7 +305,13 @@ export const MapsTable = (
                 {
                     accessor: "mapperNameString",
                     title: "Mapper Name",
-                    ellipsis: true,     /// TODO!!!: add render function. truncate the displayed mapper name if it's too long and add a tooltip with the full name
+                    ellipsis: true,
+                    render: (mapWithTechAndRatingInfo) => (
+                        <ModsTableTooltip
+                            targetString={mapWithTechAndRatingInfo.mapperNameString}
+                            dropdownString={mapWithTechAndRatingInfo.mapperNameString}
+                        />
+                    ),
                     hidden: !isMapperNameVisible,
                     cellsClassName: classes.columnCells,
                 },
