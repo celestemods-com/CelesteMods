@@ -3,7 +3,7 @@ import axios from "axios";
 import { createTRPCRouter, publicProcedure, adminProcedure, loggedInProcedure, modlistModeratorProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
-import { Prisma, ModType, Mod, Mod_Archive, Mod_Edit, Mod_New } from "@prisma/client";
+import { Prisma, ModType, type Mod, type Mod_Archive, type Mod_Edit, type Mod_New, type Map, type Tech } from "@prisma/client";
 import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
@@ -21,17 +21,35 @@ import { zodOutputIdObject } from "../../utils/zodOutputIdObject";
 
 type IdObjectArray = { id: number; }[];
 
-type ExpandedMod = Mod & {
-    Map: IdObjectArray;
+type TechsInfo = {
+    TechsAny: Tech["name"][];
+    TechsFC: Tech["name"][];
+};
+
+type TechInfoOnMap = {
+    fullClearOnlyBool: boolean;
+    Tech: {
+        name: Tech["name"];
+    };
+};
+
+type UnprocessedExpandedMod = Mod & {
+    Map: {
+        id: number;
+        MapToTechs: TechInfoOnMap[];
+    }[];
     Review: IdObjectArray;
     Mod_Archive: IdObjectArray;
     Mod_Edit: IdObjectArray;
     Map_NewSolo: IdObjectArray;
 };
+
+type ExpandedMod = UnprocessedExpandedMod & TechsInfo & { Map: IdObjectArray; };
 type ExpandedModArchive = Mod_Archive;
 type ExpandedModEdit = Mod_Edit;
 type ExpandedModNew = Mod_New & { Map_NewWithMod_New: IdObjectArray; };
 
+type UnprocessedTrimmedMod = Omit<UnprocessedExpandedMod, "submittedBy" | "approvedBy">;
 export type TrimmedMod = Omit<ExpandedMod, "submittedBy" | "approvedBy">;   //TODO: remove export when no longer used in "~/types/types.ts"
 type TrimmedModArchive = Omit<ExpandedModArchive, "submittedBy" | "approvedBy">;
 type TrimmedModEdit = Omit<ExpandedModEdit, "submittedBy">;
@@ -40,8 +58,22 @@ type TrimmedModNew = Omit<ExpandedModNew, "submittedBy">;
 
 
 
-const includeModConnectionsObject = {
-    Map: selectIdObject,
+const includeModConnectionsObject: Prisma.ModInclude = {
+    Map: {
+        select: {
+            id: true,
+            MapToTechs: {
+                select: {
+                    fullClearOnlyBool: true,
+                    Tech: {
+                        select: {
+                            name: true,
+                        },
+                    },
+                },
+            },
+        },
+    },
     Review: selectIdObject,
     Mod_Archive: selectIdObject,
     Mod_Edit: selectIdObject,
@@ -49,7 +81,7 @@ const includeModConnectionsObject = {
 };
 
 
-const includeModNewConnectionsObject = {
+const includeModNewConnectionsObject: Prisma.Mod_NewInclude = {
     Map_NewWithMod_New: selectIdObject,
 };
 
@@ -181,10 +213,14 @@ type ModTableName = typeof modTableNameArray[number];
 
 type ModUnion<
     TableName extends ModTableName,
-    ReturnAll extends boolean
+    ReturnAll extends boolean,
+    TechsProcessed extends boolean,
 > = (
-    TableName extends "Mod" ? IfElse<ReturnAll, ExpandedMod, TrimmedMod> :
-    (
+    TableName extends "Mod" ? (
+        TechsProcessed extends true ?
+        IfElse<ReturnAll, ExpandedMod, TrimmedMod> :
+        IfElse<ReturnAll, UnprocessedExpandedMod, UnprocessedTrimmedMod>
+    ) : (
         TableName extends "Mod_Archive" ? IfElse<ReturnAll, ExpandedModArchive, TrimmedModArchive> :
         (
             TableName extends "Mod_Edit" ? IfElse<ReturnAll, ExpandedModEdit, TrimmedModEdit> :
@@ -202,7 +238,7 @@ export const getModById = async<
     IdType extends "mod" | "gamebanana",
     ReturnAll extends boolean,
     ThrowOnMatch extends boolean,
-    Union extends ModUnion<TableName, ReturnAll>,
+    Union extends ModUnion<TableName, ReturnAll, false>,
     ReturnType extends (
         ThrowOnMatch extends true ? void : NonNullable<Union>
     ),
@@ -326,7 +362,7 @@ export const getModById = async<
 const getModByName = async<
     TableName extends ModTableName,
     ReturnAll extends boolean,
-    Union extends ModUnion<TableName, ReturnAll>,
+    Union extends ModUnion<TableName, ReturnAll, false>,
     ReturnType extends NonNullable<Union>[],
 >(
     tableName: TableName,
@@ -419,6 +455,60 @@ const getModByName = async<
 
 
     return mods as ReturnType;
+};
+
+
+
+
+const processTechs = <
+    UnprocessedMod extends UnprocessedExpandedMod | UnprocessedTrimmedMod,
+    ProcessedMod extends (
+        UnprocessedMod extends UnprocessedExpandedMod ? ExpandedMod : TrimmedMod
+    ),
+>(
+    unprocessedMod: UnprocessedMod,
+): ProcessedMod => {
+    const mapIds: Set<Map["id"]> = new Set();
+    const techsAny: Set<Tech["name"]> = new Set();
+    const techsFC: Set<Tech["name"]> = new Set();
+
+
+    unprocessedMod.Map.forEach(
+        (mapToTech) => {
+            const mapId = mapToTech.id;
+
+            mapIds.add(mapId);
+
+
+            const mapToTechs = mapToTech.MapToTechs;
+
+            mapToTechs.forEach(
+                (mapToTech) => {
+                    const techName = mapToTech.Tech.name;
+                    const fullClearOnly = mapToTech.fullClearOnlyBool;
+
+                    if (!fullClearOnly) {
+                        techsAny.add(techName);
+                    }
+
+                    if (!techsAny.has(techName)) {
+                        techsFC.add(techName);
+                    }
+                }
+            );
+        }
+    );
+
+
+    const processedMod = {
+        ...unprocessedMod,
+        Map: Array.from(mapIds),
+        TechsAny: Array.from(techsAny),
+        TechsFC: Array.from(techsFC),
+    } as unknown as ProcessedMod;
+
+
+    return processedMod;
 };
 
 
