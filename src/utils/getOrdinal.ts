@@ -1,4 +1,6 @@
-/** `returnZeroth` defaults to `true` */
+/** 
+ * @param {boolean} returnZeroth - Whether to return "0th" or an empty string for 0. Defaults to true.
+ */
 export const getOrdinal = (
     n: number, 
     returnZeroth = true,
