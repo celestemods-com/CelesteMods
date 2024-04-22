@@ -55,10 +55,12 @@ type TrimmedModArchive = Omit<ExpandedModArchive, "submittedBy" | "approvedBy">;
 type TrimmedModEdit = Omit<ExpandedModEdit, "submittedBy">;
 type TrimmedModNew = Omit<ExpandedModNew, "submittedBy">;
 
+type UnprocessedMod = UnprocessedExpandedMod | UnprocessedTrimmedMod;
 
 
 
-const includeModConnectionsObject: Prisma.ModInclude = {
+
+const includeModConnectionsObject = {
     Map: {
         select: {
             id: true,
@@ -78,12 +80,12 @@ const includeModConnectionsObject: Prisma.ModInclude = {
     Mod_Archive: selectIdObject,
     Mod_Edit: selectIdObject,
     Map_NewSolo: selectIdObject,
-};
+} satisfies Prisma.ModInclude;
 
 
-const includeModNewConnectionsObject: Prisma.Mod_NewInclude = {
+const includeModNewConnectionsObject = {
     Map_NewWithMod_New: selectIdObject,
-};
+} satisfies Prisma.Mod_NewInclude;
 
 
 
@@ -460,6 +462,23 @@ const getModByName = async<
 
 
 
+const processMod = <
+    TableName extends ModTableName,
+    ReturnAll extends boolean,
+    UnprocessedMod extends NonNullable<ModUnion<TableName, ReturnAll, false>>,
+    ProcessedMod extends NonNullable<ModUnion<TableName, ReturnAll, true>>,
+>(
+    tableName: TableName,
+    unprocessedMod: UnprocessedMod,
+): ProcessedMod => {
+    if (tableName === "Mod") {
+        return processTechs(unprocessedMod as NonNullable<ModUnion<"Mod", ReturnAll, false>>) as ProcessedMod;
+    }
+
+    return unprocessedMod as unknown as ProcessedMod;
+};
+
+
 const processTechs = <
     UnprocessedMod extends UnprocessedExpandedMod | UnprocessedTrimmedMod,
     ProcessedMod extends (
@@ -601,22 +620,34 @@ const getUpdateGamebananaModIdObject = async (newGamebananaModId: number): Promi
 export const modRouter = createTRPCRouter({
     getAll: publicProcedure
         .input(modOrderSchema)
-        .query(({ ctx, input }) => {
-            return ctx.prisma.mod.findMany({
+        .query(async ({ ctx, input }) => {
+            const unprocessedMods = await ctx.prisma.mod.findMany({
                 select: defaultModSelect,
                 orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
+
+
+            const processedMods = unprocessedMods.map((unprocessedMod) => processTechs(unprocessedMod));
+
+
+            return processedMods;
         }),
 
     rest_getAll: publicProcedure
         .meta({ openapi: { method: "GET", path: "/mods" } })
         .input(z.void())
         .output(restModSchema.array())
-        .query(({ ctx }) => {
-            return ctx.prisma.mod.findMany({
+        .query(async ({ ctx }) => {
+            const unprocessedMods = await ctx.prisma.mod.findMany({
                 select: defaultModSelect,
                 orderBy: getOrderObjectArray(modDefaultSelectors, modDefaultDirection),
             });
+
+
+            const processedMods = unprocessedMods.map((unprocessedMod) => processTechs(unprocessedMod));
+
+
+            return processedMods;
         }),
 
     getIds: publicProcedure
@@ -637,13 +668,31 @@ export const modRouter = createTRPCRouter({
     getById: publicProcedure
         .input(modIdSchema.merge(modTableNameSchema.partial()))
         .query(async ({ ctx, input }) => {
-            return await getModById(input.tableName ?? "Mod", "mod", false, false, ctx.prisma, input.id);
+            const tableName = input.tableName ?? "Mod";
+
+
+            const unprocessedMod = await getModById(tableName, "mod", false, false, ctx.prisma, input.id);
+
+
+            const processedMod = processMod(tableName, unprocessedMod);
+
+
+            return processedMod;
         }),
 
     getByGamebananaModId: publicProcedure
         .input(gamebananaModIdSchema.merge(modTableNameSchema.partial()))
         .query(async ({ ctx, input }) => {
-            return await getModById(input.tableName ?? "Mod", "gamebanana", false, false, ctx.prisma, input.gamebananaModId);
+            const tableName = input.tableName ?? "Mod";
+
+            
+            const unprocessedMod = await getModById(tableName, "gamebanana", false, false, ctx.prisma, input.gamebananaModId);
+
+
+            const processedMod = processMod(tableName, unprocessedMod);
+
+
+            return processedMod;
         }),
 
     getByName: publicProcedure
@@ -655,7 +704,18 @@ export const modRouter = createTRPCRouter({
                 .merge(modOrderSchema),
         )
         .query(async ({ ctx, input }) => {
-            return await getModByName(input.tableName ?? "Mod", false, ctx.prisma, input.query, `No mod exists in table "${input.tableName}" with a name matching "${input.query}"`);
+            const tableName = input.tableName ?? "Mod";
+
+
+            const unprocessedMods = await getModByName(tableName, false, ctx.prisma, input.query, `No mod exists in table "${tableName}" with a name matching "${input.query}"`);
+
+            
+            const processedMods = unprocessedMods.map(
+                (unprocessedMod) => processMod(tableName, unprocessedMod)
+            );
+
+
+            return processedMods;
         }),
 
     add: loggedInProcedure
