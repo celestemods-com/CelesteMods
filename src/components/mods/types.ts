@@ -48,12 +48,13 @@ export type MapWithTechInfo = {
 } & Omit<Map, "MapToTechs">;
 
 export type MapWithTechAndRatingInfo = {
-    lengthName: string,
-    overallCount: number,
-    qualityName: string,
-    qualityCount: number,
-    difficultyName: string,
-    difficultyCount: number,
+    lengthName: string;
+    lengthDescription: string;
+    overallCount: number;
+    qualityName: string;
+    qualityCount: number;
+    difficultyName: string;
+    difficultyCount: number;
     chapterSide?: string;
 } & MapWithTechInfo;
 

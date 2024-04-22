@@ -103,6 +103,7 @@ const getMapsWithTechAndRatingInfo = (
             return {
                 ...mapWithTechInfo,
                 lengthName: length.name,
+                lengthDescription: length.description,
                 overallCount,
                 qualityName,
                 qualityCount,

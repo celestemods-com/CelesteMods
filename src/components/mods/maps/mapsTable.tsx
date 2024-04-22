@@ -304,6 +304,12 @@ export const MapsTable = (
                     accessor: "lengthName",
                     title: "Length",
                     ellipsis: true,
+                    render: (mapWithTechAndRatingInfo) => (
+                        <ModsTableTooltip
+                            targetString={mapWithTechAndRatingInfo.lengthName}
+                            dropdownString={`Length: ${mapWithTechAndRatingInfo.lengthName}. Description: ${mapWithTechAndRatingInfo.lengthDescription}`}
+                        />
+                    ),
                     cellsClassName: classes.columnCells,
                 },
                 {
