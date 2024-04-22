@@ -25,7 +25,6 @@ const useStyles = createStyles(
                 padding: "2px 10px",
                 border: "none",
                 borderRadius: "8px",
-                width: "fit-content",
                 "&:hover": {
                     backgroundColor: colors.primaryHover.backgroundColor,
                     color: colors.primaryHover.textColor,
