@@ -771,7 +771,7 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                                 return (
                                     <ModsTableTooltip
                                         targetString={truncateString(modWithInfo.name, NAME_COLUMN_MAX_LETTERS)}
-                                        dropdownString={`${modWithInfo.name}: ${modTypeString} Mod`}
+                                        dropdownString={`Mod: ${modWithInfo.name}. Mod type: ${modTypeString}.`}
                                     />
                                 );
                             },
@@ -806,7 +806,7 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                                 return (
                                     <ModsTableTooltip
                                         targetString={truncateString(modWithInfo.publisherName, PUBLISHER_COLUMN_MAX_LETTERS)}
-                                        dropdownString={`${modWithInfo.publisherName}: ${publicationDate.toLocaleDateString(undefined, defaultToLocaleDateStringOptions)}`}
+                                        dropdownString={`Publisher: ${modWithInfo.publisherName}. Publication Date: ${publicationDate.toLocaleDateString(undefined, defaultToLocaleDateStringOptions)}.`}
                                     />
                                 );
                             },
@@ -841,7 +841,7 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                                 return (
                                     <ModsTableTooltip
                                         targetString={modWithInfo.Quality.name}
-                                        dropdownString={`${modWithInfo.Quality.name}: ${modWithInfo.Quality.count} ratings`}
+                                        dropdownString={`Quality: ${modWithInfo.Quality.name}. Based on ${modWithInfo.Quality.count} ratings.`}
                                     />
                                 );
                             },
@@ -863,31 +863,27 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                             ellipsis: true,
                             render: (modWithInfo) => {
                                 const difficultyNameFromMod = modWithInfo.Difficulty.name;
-
-                                let difficultyStringForDisplay: string;
+                                
                                 if (modWithInfo.Difficulty.count === 0) {
-                                    difficultyStringForDisplay = modWithInfo.Difficulty.name;
-                                } else {
-                                    const [parentDifficulty, childDifficultyName] = difficultyNameFromMod.split(": ");
-
-                                    if (parentDifficulty === undefined || childDifficultyName === undefined) return "";
-
-                                    difficultyStringForDisplay = childDifficultyName;
+                                    return (
+                                        <Text
+                                            size="sm"
+                                        >
+                                            {difficultyNameFromMod}
+                                        </Text>
+                                    );
                                 }
 
 
-                                if (modWithInfo.Difficulty.count === 0) return (
-                                    <Text
-                                        size="sm"
-                                    >
-                                        {modWithInfo.Difficulty.name}
-                                    </Text>
-                                );
+                                const [parentDifficultyName, childDifficultyName] = difficultyNameFromMod.split(": ");
+
+                                if (parentDifficultyName === undefined || childDifficultyName === undefined) return "";
+
 
                                 return (
                                     <ModsTableTooltip
-                                        targetString={difficultyStringForDisplay}
-                                        dropdownString={`${difficultyStringForDisplay}: ${modWithInfo.Difficulty.count} ratings`}
+                                        targetString={childDifficultyName}
+                                        dropdownString={`Difficulty: ${childDifficultyName} ${parentDifficultyName}. Based on ${modWithInfo.Difficulty.count} ratings.`}
                                     />
                                 );
                             },

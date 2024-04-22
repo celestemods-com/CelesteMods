@@ -211,12 +211,14 @@ export const MapsTable = (
                         if (modType === "Normal") {
                             if (chapterSide === undefined) throw `chapterSide is undefined for map ${mapWithTechAndRatingInfo.id} in a Normal mod.`;
 
-                            dropdownBaseString = chapterSide;
+                            dropdownBaseString = `Level: ${chapterSide}.`;
                         } else if (modType === "Contest") {
                             if (overallRank === null) dropdownBaseString = "";
-                            else dropdownBaseString = getOrdinal(overallRank, false);
+                            else dropdownBaseString = `Place: ${getOrdinal(overallRank, false)}.`;
                         }
 
+
+                        const mapNameStringForTooltip = `Map: ${name}.`;
 
                         return (
                             dropdownBaseString === undefined ? (
@@ -230,8 +232,8 @@ export const MapsTable = (
                                     targetString={name}
                                     dropdownString={
                                         dropdownBaseString === "" ?
-                                            name :
-                                            `${name}: ${dropdownBaseString} Place`
+                                            mapNameStringForTooltip :
+                                            `${mapNameStringForTooltip} ${dropdownBaseString}`
                                     }
                                 />
                             )
@@ -256,7 +258,7 @@ export const MapsTable = (
                         return (
                             <ModsTableTooltip
                                 targetString={mapWithTechAndRatingInfo.qualityName}
-                                dropdownString={`${mapWithTechAndRatingInfo.qualityName}: ${mapWithTechAndRatingInfo.qualityCount} ratings`}
+                                dropdownString={`Quality: ${mapWithTechAndRatingInfo.qualityName}. Based on ${mapWithTechAndRatingInfo.qualityCount} ratings.`}
                             />
                         );
                     },
@@ -292,7 +294,7 @@ export const MapsTable = (
                         return (
                             <ModsTableTooltip
                                 targetString={difficultyStringForDisplay}
-                                dropdownString={`${difficultyStringForDisplay}: ${mapWithTechAndRatingInfo.difficultyCount} ratings`}
+                                dropdownString={`Difficulty: ${difficultyStringForDisplay}. Based on ${mapWithTechAndRatingInfo.difficultyCount} ratings.`}
                             />
                         );
                     },
@@ -311,7 +313,7 @@ export const MapsTable = (
                     render: (mapWithTechAndRatingInfo) => (
                         <ModsTableTooltip
                             targetString={mapWithTechAndRatingInfo.mapperNameString}
-                            dropdownString={mapWithTechAndRatingInfo.mapperNameString}
+                            dropdownString={`Mapper: ${mapWithTechAndRatingInfo.mapperNameString}`}
                         />
                     ),
                     hidden: !isMapperNameVisible,
