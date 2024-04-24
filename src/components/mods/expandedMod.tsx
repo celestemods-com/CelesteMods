@@ -1,11 +1,9 @@
-import { Flex, Group, Loader, Stack, createStyles } from "@mantine/core";
-import { Mod } from "~/components/mods/types";
-import Maps from "./maps/maps";
-import PublisherName from "./publisherName";
-import PublicationDate from "./publicationDate";
+import { Flex, Loader, Stack, Text, createStyles } from "@mantine/core";
+import type { ModWithInfo } from "~/components/mods/types";
+import { Maps } from "./maps/maps";
 import { ModDownloadButton } from "./modDownloadButton/modDownloadButton";
-import Link from "next/link";
-import ModCarousel from "./modCarousel";
+import { ModCarousel } from "./modCarousel";
+import { LinkButton } from "~/components/linkButton";
 import { COMING_SOON_PATHNAME } from "~/consts/pathnames";
 import { expandedModColors } from "~/styles/expandedModColors";
 import type { DifficultyColor } from "~/styles/difficultyColors";
@@ -29,12 +27,12 @@ const useStyles = createStyles(
             // We move the expanded mod up to make
             // the mod row and expanded mod look like a single row.
             transform: "translate(0, -45px)",
-        },
-        moreInfo: {
-            fontSize: "1rem",
+            paddingTop: "10px",
         },
         modDetails: {
-            padding: "10px 25px",
+            width: "100%",
+            /** top and bottom | left and right */
+            padding: "0 20px",
         }
     }),
 );
@@ -43,15 +41,15 @@ const useStyles = createStyles(
 
 
 type ExpandedModProps = {
-    isLoading: boolean,
-    mod: Mod,
-    colors: DifficultyColor,
+    isLoading: boolean;
+    mod: ModWithInfo;
+    colors: DifficultyColor;
 };
 
 
 
 
-const ExpandedMod = ({
+export const ExpandedMod = ({
     isLoading,
     mod,
     colors,
@@ -64,32 +62,46 @@ const ExpandedMod = ({
     if (isLoading) return <Loader />;
 
     return (
-        <Stack justify="center" align="stretch" className={classes.expandedMod} spacing="0">
-            <Group position="apart" align="center" className={classes.modDetails}>
-                <PublisherName publisherId={mod.publisherId} />
-                <PublicationDate gamebananaModId={mod.gamebananaModId} />
-                <ModDownloadButton gamebananaModId={mod.gamebananaModId} />
-                <Link
-                    href={{
-                        pathname: COMING_SOON_PATHNAME,
-                    }}
-                    className={classes.moreInfo}
+        <Flex
+            direction="row"
+            wrap="wrap"
+            align="flex-start"
+            justify="space-around"
+            className={classes.expandedMod}
+        >
+            <Maps
+                isLoadingMod={isLoading}
+                modType={mod.type}
+                isMapperNameVisiblePermitted={isMapperNameVisiblePermitted}
+                mapsWithTechInfo={mod.MapsWithTechInfo}
+                colors={colors}
+            />
+            <Stack
+                justify="flex-start"
+                align="center"
+                spacing="0"
+            >
+                <Flex
+                    direction="row"
+                    align="center"
+                    justify="space-around"
+                    className={classes.modDetails}
                 >
-                    More Info
-                </Link>
-            </Group>
-            <Flex align="center" justify="space-around">
-                <Maps
-                    isLoadingMod={isLoading}
-                    isNormalMod={mod.type === "Normal"}
-                    isMapperNameVisiblePermitted={isMapperNameVisiblePermitted}
-                    mapIds={mod.Map.map(({ id }) => id)}
+                    <ModDownloadButton gamebananaModId={mod.gamebananaModId} />
+                    <LinkButton
+                        href={COMING_SOON_PATHNAME}
+                    >
+                        <Text size={"md"}>
+                        More Info
+                        </Text>
+                    </LinkButton>
+                </Flex>
+                <ModCarousel
+                    gamebananaModId={mod.gamebananaModId}
+                    numberOfMaps={mod.mapCount}
                     colors={colors}
                 />
-                <ModCarousel gamebananaModId={mod.gamebananaModId} numberOfMaps={mod.Map.length} colors={colors} />
-            </Flex>
-        </Stack>
+            </Stack>
+        </Flex>
     );
 };
-
-export default ExpandedMod;

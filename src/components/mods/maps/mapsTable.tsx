@@ -1,11 +1,15 @@
-import { ActionIcon, createStyles } from "@mantine/core";
-import { DataTable, type DataTableSortStatus } from "mantine-datatable";
-import type { Map } from "~/components/mods/types";
 import { type Dispatch, type SetStateAction, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { ActionIcon, Text, createStyles } from "@mantine/core";
+import { DataTable, type DataTableSortStatus } from "mantine-datatable";
+import type { MapWithTechAndRatingInfo, Mod } from "~/components/mods/types";
 import { CirclePlus } from "tabler-icons-react";
+import { ModsTableTooltip } from "../modsTableTooltip";
 import { expandedModColors } from "~/styles/expandedModColors";
 import { TABLE_HEADER_ARROW_ZOOM } from "~/consts/tableHeaderArrowZoom";
 import type { DifficultyColor } from "~/styles/difficultyColors";
+import { getOrdinal } from "~/utils/getOrdinal";
+import { COMING_SOON_PATHNAME } from "~/consts/pathnames";
 
 
 
@@ -22,10 +26,13 @@ const useStyles = createStyles(
                 margin: `0 ${theme.spacing.sm} ${theme.spacing.xl}`,
                 backgroundColor: expandedModColors.default.backgroundColor,
             },
-            "&&&& table": {
+            "&&&&&& table": {
                 borderSpacing: "0 20px",
                 // Border spacing adds space before the header, so we move the table up
                 transform: 'translate(0, -20px)',
+            },
+            "&&&&&& thead": {
+                top: "0",
             },
             "&&&& th": {
                 fontWeight: "bold",
@@ -99,26 +106,15 @@ const useStyles = createStyles(
 
 
 
-type MapWithInfo = {
-    lengthName: string,
-    overallCount: number,
-    qualityName: string,
-    qualityCount: number,
-    difficultyName: string,
-    difficultyCount: number,
-    chapterSide?: string;
-} & Map;
-
-
 type MapsTableSortStatus = {
-    columnAccessor: keyof MapWithInfo;  //narrow from "typeof string"
+    columnAccessor: keyof MapWithTechAndRatingInfo;  //narrow from "typeof string"
 } & DataTableSortStatus;
 
 
 export type MapsTableProps = {
-    isNormalMod: boolean;
+    modType: Mod["type"];
     isMapperNameVisiblePermitted: boolean;
-    mapsWithInfo: MapWithInfo[];
+    mapsWithTechAndRatingInfo: MapWithTechAndRatingInfo[];
     isLoading: boolean;
     colors: DifficultyColor;
 };
@@ -141,15 +137,18 @@ const getSortStatusFromIsNormalMod = (isNormalMod: boolean): MapsTableSortStatus
 
 
 
-const MapsTable = (
+export const MapsTable = (
     {
-        isNormalMod,
+        modType,
         isMapperNameVisiblePermitted,
-        mapsWithInfo,
+        mapsWithTechAndRatingInfo,
         isLoading,
         colors,
     }: MapsTableProps
 ) => {
+    const isNormalMod = modType === "Normal";
+
+
     //handle sorting
     const [sortStatus, setSortStatus] = useState<MapsTableSortStatus>(getSortStatusFromIsNormalMod(isNormalMod));
 
@@ -159,7 +158,7 @@ const MapsTable = (
     );
 
     const sortedMapsWithInfo = useMemo(() => {
-        const sortedMaps = [...mapsWithInfo].sort(
+        const sortedMaps = [...mapsWithTechAndRatingInfo].sort(
             (a, b) => {
                 const columnAccessor = sortStatus.columnAccessor;
 
@@ -178,14 +177,14 @@ const MapsTable = (
 
 
         return sortedMaps;
-    }, [mapsWithInfo, sortStatus]);
+    }, [mapsWithTechAndRatingInfo, sortStatus]);
 
 
     //handle mapper name visibility
     const isMapperNameVisible = !isNormalMod && isMapperNameVisiblePermitted;
 
 
-    const { cx, classes } = useStyles({ colors });
+    const { classes } = useStyles({ colors });
 
     return (
         <DataTable
@@ -202,37 +201,152 @@ const MapsTable = (
                 {
                     accessor: "name",
                     title: "Name",
+                    ellipsis: true,
+                    render: (mapWithTechAndRatingInfo) => {
+                        const { name, chapterSide, overallRank } = mapWithTechAndRatingInfo;
+
+
+                        let dropdownBaseString: string | undefined = undefined;
+
+                        if (modType === "Normal") {
+                            if (chapterSide === undefined) throw `chapterSide is undefined for map ${mapWithTechAndRatingInfo.id} in a Normal mod.`;
+
+                            dropdownBaseString = `Level: ${chapterSide}.`;
+                        } else if (modType === "Contest") {
+                            if (overallRank === null) dropdownBaseString = "";
+                            else dropdownBaseString = `Place: ${getOrdinal(overallRank, false)}.`;
+                        }
+
+
+                        const mapNameStringForTooltip = `Map: ${name}.`;
+
+                        return (
+                            dropdownBaseString === undefined ? (
+                                <Text
+                                    size="sm"
+                                >
+                                    {name}
+                                </Text>
+                            ) : (
+                                <ModsTableTooltip
+                                    targetString={name}
+                                    dropdownString={
+                                        dropdownBaseString === "" ?
+                                            mapNameStringForTooltip :
+                                            `${mapNameStringForTooltip} ${dropdownBaseString}`
+                                    }
+                                />
+                            )
+                        );
+                    },
                     titleClassName: classes.leftColumnTitle,
                     cellsClassName: classes.leftColumnCells,
                 },
                 {
                     accessor: "qualityName",
                     title: "Quality",
+                    ellipsis: true,
+                    render: (mapWithTechAndRatingInfo) => {
+                        if (mapWithTechAndRatingInfo.qualityCount === 0) return (
+                            <Text
+                                size="sm"
+                            >
+                                {mapWithTechAndRatingInfo.qualityName}
+                            </Text>
+                        );
+
+                        return (
+                            <ModsTableTooltip
+                                targetString={mapWithTechAndRatingInfo.qualityName}
+                                dropdownString={`Quality: ${mapWithTechAndRatingInfo.qualityName}. Based on ${mapWithTechAndRatingInfo.qualityCount} ratings.`}
+                            />
+                        );
+                    },
                     cellsClassName: classes.columnCells,
                 },
                 {
                     accessor: "difficultyName",
                     title: "Difficulty",
+                    ellipsis: true,
+                    render: (mapWithTechAndRatingInfo) => {
+                        const difficultyNameFromMap = mapWithTechAndRatingInfo.difficultyName;
+
+                        let difficultyStringForDisplay: string;
+                        if (mapWithTechAndRatingInfo.difficultyCount === 0) {
+                            difficultyStringForDisplay = mapWithTechAndRatingInfo.difficultyName;
+                        } else {
+                            const [parentDifficulty, childDifficulty] = difficultyNameFromMap.split(": ");
+
+                            if (parentDifficulty === undefined || childDifficulty === undefined) return "";
+
+                            difficultyStringForDisplay = `${childDifficulty} ${parentDifficulty}`;
+                        }
+
+
+                        if (mapWithTechAndRatingInfo.difficultyCount === 0) return (
+                            <Text
+                                size="sm"
+                            >
+                                {mapWithTechAndRatingInfo.difficultyName}
+                            </Text>
+                        );
+
+                        return (
+                            <ModsTableTooltip
+                                targetString={difficultyStringForDisplay}
+                                dropdownString={`Difficulty: ${difficultyStringForDisplay}. Based on ${mapWithTechAndRatingInfo.difficultyCount} ratings.`}
+                            />
+                        );
+                    },
                     cellsClassName: classes.columnCells,
                 },
                 {
                     accessor: "lengthName",
                     title: "Length",
+                    ellipsis: true,
+                    render: (mapWithTechAndRatingInfo) => (
+                        <ModsTableTooltip
+                            targetString={mapWithTechAndRatingInfo.lengthName}
+                            dropdownString={`Length: ${mapWithTechAndRatingInfo.lengthName}. Description: ${mapWithTechAndRatingInfo.lengthDescription}`}
+                        />
+                    ),
                     cellsClassName: classes.columnCells,
                 },
                 {
                     accessor: "mapperNameString",
                     title: "Mapper Name",
+                    ellipsis: true,
+                    render: (mapWithTechAndRatingInfo) => (
+                        <ModsTableTooltip
+                            targetString={mapWithTechAndRatingInfo.mapperNameString}
+                            dropdownString={`Mapper: ${mapWithTechAndRatingInfo.mapperNameString}`}
+                        />
+                    ),
                     hidden: !isMapperNameVisible,
                     cellsClassName: classes.columnCells,
                 },
                 {
                     accessor: "rate",
                     title: "Rate",
-                    render: (_) => (
-                        <ActionIcon>
-                            <CirclePlus color="black" />
-                        </ActionIcon>
+                    ellipsis: true,
+                    render: (_mapWithTechAndRatingInfo) => (
+                        <ModsTableTooltip
+                            dropdownString="Rate this map"
+                            childComponent={(
+                                <Link
+                                    href={COMING_SOON_PATHNAME}
+                                >
+                                    <ActionIcon
+                                        aria-label="Rate this map"
+                                    >
+                                        <CirclePlus
+                                            color="black"
+                                        />
+                                    </ActionIcon>
+                                </Link>
+                            )}
+                        />
+
                     ),
                     titleClassName: classes.rightColumnTitle,
                     cellsClassName: classes.rightColumnCells,
@@ -243,5 +357,3 @@ const MapsTable = (
         />
     );
 };
-
-export default MapsTable;

@@ -21,16 +21,15 @@ import { zodOutputIdObject } from "../../utils/zodOutputIdObject";
 //TODO!: check all routers to make sure disconnect/connect or set are used in any many-to-many relationships
 
 
-
-
-type TrimmedMap = Omit<Map, "submittedBy" | "approvedBy">;
-type TrimmedMapArchive = Omit<Map_Archive, "submittedBy" | "approvedBy">;
-type TrimmedMapEdit = Omit<Map_Edit, "submittedBy">;
-type TrimmedMapNewWithModNew = Omit<Map_NewWithMod_New, "submittedBy">;
-type TrimmedMapNewSolo = Omit<Map_NewSolo, "submittedBy">;
-
-
 type MapToTechRelation = { techId: number, fullClearOnlyBool: boolean; }[];
+
+
+type TrimmedMap = Omit<Map, "submittedBy" | "approvedBy"> & { MapToTechs: MapToTechRelation; };
+type TrimmedMapArchive = Omit<Map_Archive, "submittedBy" | "approvedBy"> & { Map_ArchiveToTechs: MapToTechRelation; };
+type TrimmedMapEdit = Omit<Map_Edit, "submittedBy"> & { Map_EditToTechs: MapToTechRelation; };
+type TrimmedMapNewWithModNew = Omit<Map_NewWithMod_New, "submittedBy"> & { Map_NewWithMod_NewToTechs: MapToTechRelation; };
+type TrimmedMapNewSolo = Omit<Map_NewSolo, "submittedBy"> & { Map_NewSoloToTechs: MapToTechRelation; };
+
 
 type ExpandedMap = Map & { MapToTechs: MapToTechRelation; };
 type ExpandedMapArchive = Map_Archive & { Map_ArchiveToTechs: MapToTechRelation; };
@@ -275,7 +274,7 @@ type MapTableName = typeof mapTableNameArray[number];
 
 type MapUnion<
     TableName extends MapTableName,
-    ReturnAll extends boolean
+    ReturnAll extends boolean,
 > = (
     TableName extends "Map" ? IfElse<ReturnAll, ExpandedMap, TrimmedMap> :
     (
@@ -462,10 +461,10 @@ const getMapByName = async<
     const whereObject: Prisma.MapWhereInput = exactMatch ?
         {
             [tableName === "Map" ? "modId" : "mod_newId"]: modId,
-            name: { equals: query }
+            name: { equals: query },
         } :
         {
-            name: { contains: query }
+            name: { contains: query },
         };
 
 
@@ -597,7 +596,12 @@ const getMapByName = async<
 
 
 
-const getTechConnectObject = (input: z.infer<typeof mapSoloPostSchema> | z.infer<typeof mapUpdateSchema>): Prisma.MapToTechsCreateWithoutMapInput[] => {
+type TechIdsForConnection = {
+    techAnyIds?: number[];
+    techFullClearIds?: number[];
+};
+
+const getTechConnectObject = (input: TechIdsForConnection): Prisma.MapToTechsCreateWithoutMapInput[] => {
     const techConnectObject: Prisma.MapToTechsCreateWithoutMapInput[] = [];
 
 
@@ -619,6 +623,31 @@ const getTechConnectObject = (input: z.infer<typeof mapSoloPostSchema> | z.infer
     return techConnectObject;
 };
 
+const getTechIdsForConnection = (mapToTechs: MapToTechRelation): TechIdsForConnection => {
+    const techAnyIds: number[] = [];
+    const techFullClearIds: number[] = [];
+
+    mapToTechs.forEach(
+        (mapToTech) => {
+            if (mapToTech.fullClearOnlyBool) {
+                techFullClearIds.push(mapToTech.techId);
+            }
+            else {
+                techAnyIds.push(mapToTech.techId);
+            }
+        }
+    );
+
+
+    const techIdsForConnection: TechIdsForConnection = {
+        techAnyIds: techAnyIds,
+        techFullClearIds: techFullClearIds,
+    };
+
+
+    return techIdsForConnection;
+};
+
 
 
 
@@ -631,9 +660,9 @@ export const mapRouter = createTRPCRouter({
                 orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
         }),
-    
+
     rest_getAll: publicProcedure
-        .meta({ openapi: { method: "GET", path: "/maps" }})
+        .meta({ openapi: { method: "GET", path: "/maps" } })
         .input(z.void())
         .output(restMapSchema.array())
         .query(({ ctx }) => {
@@ -801,7 +830,7 @@ export const mapRouter = createTRPCRouter({
                 };
             }
 
-            let map: Map | TrimmedMapNewSolo;
+            let map: TrimmedMap | TrimmedMapNewSolo;
 
             if (checkPermissions(MODLIST_MODERATOR_PERMISSION_STRINGS, ctx.user.permissions)) {
                 map = await ctx.prisma.map.create({
@@ -811,6 +840,7 @@ export const mapRouter = createTRPCRouter({
                         User_ApprovedBy: { connect: { id: ctx.user.id } },
                         MapToTechs: { create: techConnectObject },
                     },
+                    select: defaultMapSelect,
                 });
 
 
@@ -833,6 +863,7 @@ export const mapRouter = createTRPCRouter({
                         ...mapCreateData,
                         Map_NewSoloToTechs: { create: techConnectObject },
                     },
+                    select: defaultMapNewSoloSelect,
                 });
             }
 
@@ -1058,7 +1089,7 @@ export const mapRouter = createTRPCRouter({
             const currentTime = getCurrentTime();
 
 
-            const techConnectObject = getTechConnectObject(input);
+            const techConnectObject = getTechConnectObject(getTechIdsForConnection(mapEdit.Map_EditToTechs));
 
 
             await ctx.prisma.map_Archive.create({
