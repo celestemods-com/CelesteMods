@@ -474,22 +474,17 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
 
 
             if (
-                publicationDateRange[0] !== undefined ||
-                publicationDateRange[1] !== undefined
+                publicationDateRange[0] !== undefined &&
+                modWithInfo.timeCreatedGamebanana < publicationDateRange[0]
             ) {
-                if (
-                    publicationDateRange[0] !== undefined &&
-                    modWithInfo.timeCreatedGamebanana < publicationDateRange[0]
-                ) {
-                    return false;
-                }
+                return false;
+            }
 
-                if (
-                    publicationDateRange[1] !== undefined &&
-                    modWithInfo.timeCreatedGamebanana > publicationDateRange[1]
-                ) {
-                    return false;
-                }
+            if (
+                publicationDateRange[1] !== undefined &&
+                modWithInfo.timeCreatedGamebanana > publicationDateRange[1]
+            ) {
+                return false;
             }
 
 
@@ -518,22 +513,17 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
 
 
             if (
-                qualityRatingsCountRange[0] !== undefined ||
-                qualityRatingsCountRange[1] !== undefined
+                qualityRatingsCountRange[0] !== undefined &&
+                modWithInfo.Quality.count < qualityRatingsCountRange[0]
             ) {
-                if (
-                    qualityRatingsCountRange[0] !== undefined &&
-                    modWithInfo.Quality.count < qualityRatingsCountRange[0]
-                ) {
-                    return false;
-                }
+                return false;
+            }
 
-                if (
-                    qualityRatingsCountRange[1] !== undefined &&
-                    modWithInfo.Quality.count > qualityRatingsCountRange[1]
-                ) {
-                    return false;
-                }
+            if (
+                qualityRatingsCountRange[1] !== undefined &&
+                modWithInfo.Quality.count > qualityRatingsCountRange[1]
+            ) {
+                return false;
             }
 
 
@@ -570,42 +560,32 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
 
 
             if (
-                difficultyRatingsCountRange[0] !== undefined ||
-                difficultyRatingsCountRange[1] !== undefined
+                difficultyRatingsCountRange[0] !== undefined &&
+                modWithInfo.Difficulty.count < difficultyRatingsCountRange[0]
             ) {
-                if (
-                    difficultyRatingsCountRange[0] !== undefined &&
-                    modWithInfo.Difficulty.count < difficultyRatingsCountRange[0]
-                ) {
-                    return false;
-                }
+                return false;
+            }
 
-                if (
-                    difficultyRatingsCountRange[1] !== undefined &&
-                    modWithInfo.Difficulty.count > difficultyRatingsCountRange[1]
-                ) {
-                    return false;
-                }
+            if (
+                difficultyRatingsCountRange[1] !== undefined &&
+                modWithInfo.Difficulty.count > difficultyRatingsCountRange[1]
+            ) {
+                return false;
             }
 
 
             if (
-                mapCountRange[0] !== undefined ||
-                mapCountRange[1] !== undefined
+                mapCountRange[0] !== undefined &&
+                modWithInfo.MapsWithTechInfo.length < mapCountRange[0]
             ) {
-                if (
-                    mapCountRange[0] !== undefined &&
-                    modWithInfo.MapsWithTechInfo.length < mapCountRange[0]
-                ) {
-                    return false;
-                }
+                return false;
+            }
 
-                if (
-                    mapCountRange[1] !== undefined &&
-                    modWithInfo.MapsWithTechInfo.length > mapCountRange[1]
-                ) {
-                    return false;
-                }
+            if (
+                mapCountRange[1] !== undefined &&
+                modWithInfo.MapsWithTechInfo.length > mapCountRange[1]
+            ) {
+                return false;
             }
 
 
@@ -837,7 +817,7 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
 
         return () => {
             tabsParent.removeChild(tabContainer);
-            
+
             setTabContainer(null);
         };
     }, [classes.tabContainer]);
@@ -1001,7 +981,7 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                             ellipsis: true,
                             render: (modWithInfo) => {
                                 const difficultyNameFromMod = modWithInfo.Difficulty.name;
-                                
+
                                 if (modWithInfo.Difficulty.count === 0) {
                                     return (
                                         <Text
