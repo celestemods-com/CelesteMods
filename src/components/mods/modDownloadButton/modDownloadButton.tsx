@@ -1,15 +1,11 @@
-
-import { useContext } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Group, Popover, Text, createStyles } from "@mantine/core";
 import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
+import { LinkButton } from "~/components/linkButton";
 import { useGamebananaModDownloadUrl } from "~/hooks/gamebananaApi";
 import { FAQ_PAGE_PATHNAME } from "~/consts/pathnames";
 import { OLYMPUS_INSTALLATION_URL } from "~/consts/olympusInstallationUrl";
-import { type DifficultyColor } from "~/styles/difficultyColors";
-import { colorsForDifficultyIndex } from "~/styles/modsColors";
-import { currentDifficultyTabIndexContext } from "../modsTable";
 import everestLogo from "../../../../public/images/everest-logo/everest-logo.png";
 
 
@@ -23,24 +19,8 @@ type ModDownloadButtonProps = {
 
 
 const useStyles = createStyles(
-    (
-        theme,
-        {
-            colors,
-            isOpened,
-        }: {
-            colors: DifficultyColor;
-            isOpened: boolean;
-        }
-    ) => {
+    (theme) => {
         return ({
-            downloadButton: {
-                backgroundColor: isOpened ? colors.primaryHover.backgroundColor : colors.primary.backgroundColor,
-                color: isOpened ? colors.primaryHover.textColor : colors.primary.textColor,
-                /* left/right top/bottom */
-                padding: "2px 10px",
-                borderRadius: "8px",
-            },
             dropdown: {
                 '&&': {
                     backgroundColor: theme.white,
@@ -75,26 +55,23 @@ export const ModDownloadButton = ({ gamebananaModId }: ModDownloadButtonProps) =
     const [debouncedIsOpened] = useDebouncedValue(isOpened, 110);
 
 
-    const currentTabIndex = useContext(currentDifficultyTabIndexContext);
-
-
-    const colors = colorsForDifficultyIndex(currentTabIndex);
-
-    const { classes } = useStyles({ colors, isOpened });
+    const { classes } = useStyles();
 
 
     return (
-        <Popover position="bottom"
+        <Popover
+            position="bottom"
             withArrow
             shadow="md"
             opened={debouncedIsOpened}
-            classNames={{ dropdown: classes.dropdown, arrow: classes.arrow }}>
+            classNames={{ dropdown: classes.dropdown, arrow: classes.arrow }}
+        >
             <Popover.Target>
-                <a
-                    href={downloadUrl}
+                <LinkButton
+                    href={downloadUrl ?? ""}
                     onMouseEnter={open}
                     onMouseLeave={close}
-                    className={classes.downloadButton}
+                    linkWrapper={false}
                 >
                     <Group
                         spacing={"5px"}
@@ -105,19 +82,26 @@ export const ModDownloadButton = ({ gamebananaModId }: ModDownloadButtonProps) =
                             width={16}
                             height={16}
                         />
-                        <Text size={"md"}>
+                        <Text
+                            size={"md"}
+                        >
                             1-Click Install
                         </Text>
                     </Group>
-                </a>
+                </LinkButton>
             </Popover.Target>
             <Popover.Dropdown
                 onMouseEnter={open}
-                onMouseLeave={close}>
-                <Text className={classes.dropdownText}>
+                onMouseLeave={close}
+            >
+                <Text
+                    className={classes.dropdownText}
+                >
                     Install the mod directly using <Link href={OLYMPUS_INSTALLATION_URL} target="_blank" rel="noopener noreferrer">Olympus</Link>, a mod manager for Celeste.
                 </Text>
-                <Text className={classes.dropdownText}>
+                <Text
+                    className={classes.dropdownText}
+                >
                     You can also use one of the <Link href={`${FAQ_PAGE_PATHNAME}#mod_managers`} target="_blank">other methods</Link>.
                 </Text>
             </Popover.Dropdown>

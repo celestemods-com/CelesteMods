@@ -10,7 +10,7 @@ import type { DifficultyColor } from "~/styles/difficultyColors";
 
 const useStyles = createStyles(
     (
-        theme,
+        _theme,
         { colors }: { colors: DifficultyColor; },
     ) => ({
         carousel: {
@@ -21,7 +21,8 @@ const useStyles = createStyles(
                 flexDirection: "column",
                 alignItems: "stretch",
                 gap: "10px",
-                padding: "20px",
+                /** top | left and right | bottom */
+                padding: "21px 20px 20px",
             },
         },
         viewport: {
@@ -66,7 +67,7 @@ type modCarouselProps = {
 
 
 
-const ModCarousel = ({ gamebananaModId, numberOfMaps, colors }: modCarouselProps) => {
+export const ModCarousel = ({ gamebananaModId, numberOfMaps, colors }: modCarouselProps) => {
     const { imageUrls } = useGamebananaModImageUrls({ gamebananaModId });
 
 
@@ -100,6 +101,3 @@ const ModCarousel = ({ gamebananaModId, numberOfMaps, colors }: modCarouselProps
         )
     );
 };
-
-
-export default ModCarousel;
