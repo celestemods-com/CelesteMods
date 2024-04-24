@@ -406,9 +406,10 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
     const [selectedTechsAny, setSelectedTechsAny] = useState<ModWithInfo["TechsAny"]>([]);
     const isTechsAnyFiltered = selectedTechsAny.length > 0;
 
-
     const [selectedTechsFC, setSelectedTechsFC] = useState<ModWithInfo["TechsAny"]>([]);
     const isTechsFCFiltered = selectedTechsFC.length > 0;
+
+    const [doesTechsFCFilterIncludeTechsAny, setDoesTechsFCFilterIncludeTechsAny] = useState<boolean>(false);
 
 
     const [selectedQualities, setSelectedQualities] = useState<string[]>([]);
@@ -497,8 +498,13 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
 
 
             if (
-                selectedTechsFC.length &&
-                !selectedTechsFC.some(techId => modWithInfo.TechsFC.includes(techId))
+                selectedTechsFC.length && (
+                    (
+                        doesTechsFCFilterIncludeTechsAny && !selectedTechsFC.some(techId => modWithInfo.TechsAny.includes(techId) || modWithInfo.TechsFC.includes(techId))
+                    ) || (
+                        !doesTechsFCFilterIncludeTechsAny && !selectedTechsFC.some(techId => modWithInfo.TechsFC.includes(techId))
+                    )
+                )
             ) {
                 return false;
             }
