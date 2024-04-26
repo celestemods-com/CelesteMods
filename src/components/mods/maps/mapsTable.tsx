@@ -206,22 +206,25 @@ export const MapsTable = (
                         const { name, chapterSide, overallRank } = mapWithTechAndRatingInfo;
 
 
-                        let dropdownBaseString: string | undefined = undefined;
+                        let dropdownLabel: string | undefined = undefined;
+                        let dropdownText: string | undefined = undefined;
 
                         if (modType === "Normal") {
                             if (chapterSide === undefined) throw `chapterSide is undefined for map ${mapWithTechAndRatingInfo.id} in a Normal mod.`;
 
-                            dropdownBaseString = `Level: ${chapterSide}.`;
+                            dropdownLabel = "Level";
+                            dropdownText = chapterSide;
                         } else if (modType === "Contest") {
-                            if (overallRank === null) dropdownBaseString = "";
-                            else dropdownBaseString = `Place: ${getOrdinal(overallRank, false)}.`;
+                            if (overallRank === null) dropdownText = "";
+                            else {
+                                dropdownLabel = "Place";
+                                dropdownText = getOrdinal(overallRank, false);
+                            }
                         }
 
 
-                        const mapNameStringForTooltip = `Map: ${name}.`;
-
                         return (
-                            dropdownBaseString === undefined ? (
+                            dropdownText === undefined ? (
                                 <Text
                                     size="sm"
                                 >
@@ -229,12 +232,18 @@ export const MapsTable = (
                                 </Text>
                             ) : (
                                 <ModsTableTooltip
-                                    targetString={name}
-                                    dropdownString={
-                                        dropdownBaseString === "" ?
-                                            mapNameStringForTooltip :
-                                            `${mapNameStringForTooltip} ${dropdownBaseString}`
-                                    }
+                                    prefixDropdownWithTarget
+                                    targetStrings={{
+                                        label: "Map",
+                                        text: name,
+                                    }}
+                                    dropdownStrings={{
+                                        label: dropdownLabel,
+                                        text: dropdownText,
+                                        // dropdownText === "" ?
+                                        //     mapNameStringForTooltip :
+                                        //     `${mapNameStringForTooltip} ${dropdownText}`
+                                    }}
                                 />
                             )
                         );
@@ -257,8 +266,14 @@ export const MapsTable = (
 
                         return (
                             <ModsTableTooltip
-                                targetString={mapWithTechAndRatingInfo.qualityName}
-                                dropdownString={`Quality: ${mapWithTechAndRatingInfo.qualityName}. Based on ${mapWithTechAndRatingInfo.qualityCount} ratings.`}
+                                prefixDropdownWithTarget
+                                targetStrings={{
+                                    label: "Quality",
+                                    text: mapWithTechAndRatingInfo.qualityName,
+                                }}
+                                dropdownStrings={{
+                                    text: `Based on ${mapWithTechAndRatingInfo.qualityCount} ratings.`,
+                                }}
                             />
                         );
                     },
@@ -271,30 +286,30 @@ export const MapsTable = (
                     render: (mapWithTechAndRatingInfo) => {
                         const difficultyNameFromMap = mapWithTechAndRatingInfo.difficultyName;
 
-                        let difficultyStringForDisplay: string;
-                        if (mapWithTechAndRatingInfo.difficultyCount === 0) {
-                            difficultyStringForDisplay = mapWithTechAndRatingInfo.difficultyName;
-                        } else {
-                            const [parentDifficulty, childDifficulty] = difficultyNameFromMap.split(": ");
-
-                            if (parentDifficulty === undefined || childDifficulty === undefined) return "";
-
-                            difficultyStringForDisplay = `${childDifficulty} ${parentDifficulty}`;
-                        }
-
 
                         if (mapWithTechAndRatingInfo.difficultyCount === 0) return (
                             <Text
                                 size="sm"
                             >
-                                {mapWithTechAndRatingInfo.difficultyName}
+                                {difficultyNameFromMap}
                             </Text>
                         );
 
+
+                        const [parentDifficultyName, childDifficultyName] = difficultyNameFromMap.split(": ");
+
+                        if (parentDifficultyName === undefined || childDifficultyName === undefined) return "";
+
                         return (
                             <ModsTableTooltip
-                                targetString={difficultyStringForDisplay}
-                                dropdownString={`Difficulty: ${difficultyStringForDisplay}. Based on ${mapWithTechAndRatingInfo.difficultyCount} ratings.`}
+                                prefixDropdownWithTarget
+                                targetStrings={{
+                                    label: "Difficulty",
+                                    text: `${childDifficultyName} ${parentDifficultyName}`,
+                                }}
+                                dropdownStrings={{
+                                    text: `Based on ${mapWithTechAndRatingInfo.difficultyCount} ratings.`,
+                                }}
                             />
                         );
                     },
@@ -306,8 +321,15 @@ export const MapsTable = (
                     ellipsis: true,
                     render: (mapWithTechAndRatingInfo) => (
                         <ModsTableTooltip
-                            targetString={mapWithTechAndRatingInfo.lengthName}
-                            dropdownString={`Length: ${mapWithTechAndRatingInfo.lengthName}. Description: ${mapWithTechAndRatingInfo.lengthDescription}`}
+                            prefixDropdownWithTarget
+                            targetStrings={{
+                                label: "Length",
+                                text: mapWithTechAndRatingInfo.lengthName,
+                            }}
+                            dropdownStrings={{
+                                label: "Description",
+                                text: mapWithTechAndRatingInfo.lengthDescription,
+                            }}
                         />
                     ),
                     cellsClassName: classes.columnCells,
@@ -318,8 +340,14 @@ export const MapsTable = (
                     ellipsis: true,
                     render: (mapWithTechAndRatingInfo) => (
                         <ModsTableTooltip
-                            targetString={mapWithTechAndRatingInfo.mapperNameString}
-                            dropdownString={`Mapper: ${mapWithTechAndRatingInfo.mapperNameString}`}
+                            prefixDropdownWithTarget={false}
+                            targetStrings={{
+                                text: mapWithTechAndRatingInfo.mapperNameString,
+                            }}
+                            dropdownStrings={{
+                                label: "Mapper",
+                                text: mapWithTechAndRatingInfo.mapperNameString,
+                            }}
                         />
                     ),
                     hidden: !isMapperNameVisible,
@@ -331,7 +359,9 @@ export const MapsTable = (
                     ellipsis: true,
                     render: (_mapWithTechAndRatingInfo) => (
                         <ModsTableTooltip
-                            dropdownString="Rate this map"
+                            dropdownStrings={{
+                                text: "Rate this map",
+                            }}
                             childComponent={(
                                 <Link
                                     href={COMING_SOON_PATHNAME}
