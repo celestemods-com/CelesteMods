@@ -141,7 +141,11 @@ export const ModsTableTooltip = ({
                         <Text
                             size={TARGET_TEXT_SIZE}
                         >
-                            {targetStrings.text}
+                            {
+                                punctuationAndSymbolsRegexPattern.test(targetStrings.text) ?
+                                    targetStrings.text :
+                                    `${targetStrings.text}.`
+                            }
                         </Text>
                     )
             }
