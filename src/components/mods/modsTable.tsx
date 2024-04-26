@@ -9,7 +9,7 @@ import type { ModType, Publisher as PrismaPublisher, Mod } from "@prisma/client"
 import { StringSearch } from "~/components/filterPopovers/stringSearch";
 import { NumberSearch } from "~/components/filterPopovers/numberSearch";
 import { ListSelect } from "~/components/filterPopovers/listSelect";
-import { ModsTableTooltip } from "./modsTableTooltip";
+import { ModsTableTooltip, SEPARATOR_STRING } from "./modsTableTooltip";
 import { truncateString } from "~/utils/truncateString";
 import type { ModWithInfo, Tech } from "~/components/mods/types";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
@@ -894,8 +894,16 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
 
                                 return (
                                     <ModsTableTooltip
-                                        targetString={truncateString(modWithInfo.name, NAME_COLUMN_MAX_LETTERS)}
-                                        dropdownString={`Mod: ${modWithInfo.name}. Mod type: ${modTypeString}.`}
+                                        prefixDropdownWithTarget
+                                        targetStrings={{
+                                            label: "Mod",
+                                            text: truncateString(modWithInfo.name, NAME_COLUMN_MAX_LETTERS),
+                                            textForDropdown: modWithInfo.name,
+                                        }}
+                                        dropdownStrings={{
+                                            label: "Mod Type",
+                                            text: modTypeString,
+                                        }}
                                     />
                                 );
                             },
@@ -929,8 +937,16 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                                 const publicationDate = new Date(modWithInfo.timeCreatedGamebanana * 1000); // convert from seconds to milliseconds
                                 return (
                                     <ModsTableTooltip
-                                        targetString={truncateString(modWithInfo.publisherName, PUBLISHER_COLUMN_MAX_LETTERS)}
-                                        dropdownString={`Publisher: ${modWithInfo.publisherName}. Publication Date: ${publicationDate.toLocaleDateString(undefined, defaultToLocaleDateStringOptions)}.`}
+                                        prefixDropdownWithTarget
+                                        targetStrings={{
+                                            label: "Publisher",
+                                            text: truncateString(modWithInfo.publisherName, PUBLISHER_COLUMN_MAX_LETTERS),
+                                            textForDropdown: modWithInfo.publisherName,
+                                        }}
+                                        dropdownStrings={{
+                                            label: "Publication Date",
+                                            text: publicationDate.toLocaleDateString(undefined, defaultToLocaleDateStringOptions),
+                                        }}
                                     />
                                 );
                             },
@@ -964,8 +980,14 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
 
                                 return (
                                     <ModsTableTooltip
-                                        targetString={modWithInfo.Quality.name}
-                                        dropdownString={`Quality: ${modWithInfo.Quality.name}. Based on ${modWithInfo.Quality.count} ratings.`}
+                                        prefixDropdownWithTarget
+                                        targetStrings={{
+                                            label: "Quality",
+                                            text: modWithInfo.Quality.name,
+                                        }}
+                                        dropdownStrings={{
+                                            text: `Based on ${modWithInfo.Quality.count} ratings.`,
+                                        }}
                                     />
                                 );
                             },
@@ -1006,8 +1028,14 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
 
                                 return (
                                     <ModsTableTooltip
-                                        targetString={childDifficultyName}
-                                        dropdownString={`Difficulty: ${childDifficultyName} ${parentDifficultyName}. Based on ${modWithInfo.Difficulty.count} ratings.`}
+                                        prefixDropdownWithTarget
+                                        targetStrings={{
+                                            label: "Difficulty",
+                                            text: `${childDifficultyName} ${parentDifficultyName}`
+                                        }}
+                                        dropdownStrings={{
+                                            text: `Based on ${modWithInfo.Difficulty.count} ratings.`
+                                        }}
                                     />
                                 );
                             },
@@ -1055,28 +1083,56 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                                 const techsAnyString = modWithInfo.TechsAny.join(", ");
                                 const techsFCString = modWithInfo.TechsFC.join(", ");
 
+
+                                const FULL_CLEAR_SHORT_STRING = "F.C.";
+                                const FULL_CLEAR_LONG_STRING = "Full Clear";
+
+
+                                let targetLabel: string | undefined;
+                                let targetText: string;
+                                /** use targetText in the ModsTable and use targetTextForDropdown in the Tooltip/Dropdown */
+                                let targetTextForDropdown: string | undefined;
+                                let dropdownLabel: string | undefined;
+                                let dropdownText: string;
+
+                                if (techsAnyString === "") {
+                                    if (techsFCString === "") {
+                                        targetLabel = "";
+                                        targetText = "None.";
+                                        dropdownText = "";
+                                    } else {
+                                        targetText = truncateString(FULL_CLEAR_SHORT_STRING + SEPARATOR_STRING + techsFCString, TECHS_COLUMN_MAX_LETTERS);
+                                        dropdownLabel = FULL_CLEAR_LONG_STRING;
+                                        dropdownText = techsFCString;
+                                    }
+                                } else {
+                                    targetLabel = "Any%";
+                                    targetText = truncateString(techsAnyString, TECHS_COLUMN_MAX_LETTERS);
+                                    targetTextForDropdown = techsAnyString;
+
+                                    if (techsFCString === "") {
+                                        dropdownText = "";
+                                    } else {
+                                        dropdownLabel = FULL_CLEAR_LONG_STRING;
+                                        dropdownText = techsFCString;
+                                    }
+                                }
+
+
                                 return (
                                     <ModsTableTooltip
+                                        prefixDropdownWithTarget
+                                        targetStrings={{
+                                            label: targetLabel,
+                                            text: targetText,
+                                            textForDropdown: targetTextForDropdown,
+                                        }}
+                                        dropdownStrings={{
+                                            label: dropdownLabel,
+                                            text: dropdownText,                                            
+                                        }}
                                         multiline={true}
                                         maxWidth={200}
-                                        targetString={
-                                            techsAnyString === "" ? (
-                                                techsFCString === "" ? "" : truncateString(`Full Clear: ${techsFCString}`, TECHS_COLUMN_MAX_LETTERS)
-                                            ) : (
-                                                truncateString(techsAnyString, TECHS_COLUMN_MAX_LETTERS)
-                                            )
-                                        }
-                                        dropdownString={
-                                            techsAnyString === "" ? (
-                                                techsFCString === "" ?
-                                                    "None" :
-                                                    `Any%: None. Full Clear: ${techsFCString}.`
-                                            ) : (
-                                                techsFCString === "" ?
-                                                    `Any%: ${techsAnyString}.` :
-                                                    `Any%: ${techsAnyString}. Full Clear: ${techsFCString}.`
-                                            )
-                                        }
                                     />
                                 );
                             },
