@@ -72,7 +72,7 @@ const TextAndLabel = ({ text, label }: TextAndLabel) => {
                 label={label}
             />
             {
-                punctuationAndSymbolsRegexPattern.test(text) ?    // if the text doesn't end with punctuation or symbols, add a period
+                punctuationAndSymbolsRegexPattern.test(text.slice(-1)) ?    // if the last character of text doesn't end with punctuation or symbols, add a period
                     text :
                     `${text}.`
             }
