@@ -6,7 +6,7 @@ import { LinkButton } from "~/components/linkButton";
 import { useGamebananaModDownloadUrl } from "~/hooks/gamebananaApi";
 import { FAQ_PAGE_PATHNAME } from "~/consts/pathnames";
 import { OLYMPUS_INSTALLATION_URL } from "~/consts/olympusInstallationUrl";
-import everestLogo from "../../../../public/images/everest-logo/everest-logo.png";
+import everestLogo from "../../../public/images/everest-logo/everest-logo.png";
 
 
 

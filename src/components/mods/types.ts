@@ -11,6 +11,8 @@ export type Mod = {
     isExpanded: boolean;
 } & TrimmedMod;
 
+export type GamebananaModId = Mod["gamebananaModId"];
+
 export type ModRatingData = RouterOutputs["rating"]["getModRatingData"];
 export type ModNoRatingData = Pick<ModRatingData, "modId">;
 export type ModYesRatingData = {    //TODO: figure out how to do this through narrowing instead of directly referencing the type

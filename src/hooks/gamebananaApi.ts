@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useContext } from "react";
 import { useFetch } from "~/hooks/useFetch";
 import type { Mod } from "~/components/mods/types";
+import { modImageUrlsContext } from "~/components/globalContexts/modImageUrls";
+import { modDownloadUrlsContext } from "~/components/globalContexts/modDownloadUrls";
 
 
 
@@ -152,6 +154,22 @@ const GAMEBANANA_MOD_IMAGES_BASE_URL = "https://images.gamebanana.com/img/ss/mod
 export const useGamebananaModImageUrls = (
     { gamebananaModId }: UseGamebananaModImageUrlsProps
 ): UseGamebananaModImageUrlsReturn => {
+    if (gamebananaModId === undefined) return {};
+
+
+    const modImageUrlsStateObject = useContext(modImageUrlsContext);
+
+    const modImageUrlsState = modImageUrlsStateObject?.state;
+    const modImageUrlsUpdate = modImageUrlsStateObject?.update;
+
+    // check if the query url is already cached in the global context
+    if (modImageUrlsState) {
+        const imageUrls = modImageUrlsState[gamebananaModId];
+
+        if (imageUrls) return { imageUrls };
+    }
+
+
     //get query url
     const DEFAULT_GAMEBANANA_API_URL_PROPS = {
         itemType: "Mod",
@@ -195,9 +213,23 @@ export const useGamebananaModImageUrls = (
 
     //get image urls
     const imageUrls = useMemo(() => {
-        return screenshotData.map(
+        const imageUrls = screenshotData.map(
             ({ _sFile }) => `${GAMEBANANA_MOD_IMAGES_BASE_URL}${_sFile}`,
         );
+
+
+        // cache the image urls in the global context
+        if (modImageUrlsUpdate) {
+            modImageUrlsUpdate(
+                (previousState) => ({
+                    ...previousState,
+                    [gamebananaModId]: imageUrls,
+                })
+            );
+        }
+
+
+        return imageUrls;
     }, [screenshotData]);
 
 
@@ -287,6 +319,22 @@ const GAMEBANANA_MOD_DOWNLOAD_BASE_URL = "everest:https://gamebanana.com/mmdl/";
 export const useGamebananaModDownloadUrl = (
     { gamebananaModId }: UseGamebananaModDownloadUrlProps
 ): UseGamebananaModDownloadUrlReturn => {
+    if (gamebananaModId === undefined) return {};
+
+
+    const modDownloadUrlsStateObject = useContext(modDownloadUrlsContext);
+
+    const modDownloadUrlsState = modDownloadUrlsStateObject?.state;
+    const modDownloadUrlsUpdate = modDownloadUrlsStateObject?.update;
+
+    // check if the query url is already cached in the global context
+    if (modDownloadUrlsState) {
+        const downloadUrl = modDownloadUrlsState[gamebananaModId];
+
+        if (downloadUrl) return { downloadUrl };
+    }
+
+
     //get query url
     const DEFAULT_GAMEBANANA_API_URL_PROPS = {
         itemType: "Mod",
@@ -331,17 +379,29 @@ export const useGamebananaModDownloadUrl = (
             }
         }
 
-        return (
-            newestFileId === "" ?
-                "" :
-                `${GAMEBANANA_MOD_DOWNLOAD_BASE_URL}${newestFileId},Mod,${gamebananaModId}`
-        );
+
+        const downloadUrl = newestFileId === "" ? "" : `${GAMEBANANA_MOD_DOWNLOAD_BASE_URL}${newestFileId},Mod,${gamebananaModId}`;
+
+
+        // cache the download url in the global context
+        if (modDownloadUrlsUpdate) {
+            modDownloadUrlsUpdate(
+                (previousState) => ({
+                    ...previousState,
+                    [gamebananaModId]: downloadUrl,
+                })
+            );
+        }
+
+
+        return downloadUrl;
     }, [data, isLoading]);
 
 
     if (error) console.error(error);
 
     if (isLoading) return {};
+
 
     return { downloadUrl };
 };

@@ -7,6 +7,7 @@ import { MantineProvider } from "@mantine/core";
 
 import { api } from "~/utils/api";
 import { RouterTransition } from "~/components/routerTransition";
+import { GlobalContextsProvider } from "~/components/globalContexts/globalContextsProvider";
 import { emotionCache } from "~/emotionCache";
 
 
@@ -28,7 +29,9 @@ const MyApp: AppType<{ session: Session | null; }> = ({
         }}
       >
         <RouterTransition />
-        <Component {...pageProps} />
+        <GlobalContextsProvider>
+          <Component {...pageProps} />
+        </GlobalContextsProvider>
       </MantineProvider>
     </SessionProvider>
   );
