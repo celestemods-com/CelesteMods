@@ -18,36 +18,61 @@ const TARGET_TEXT_SIZE: MantineNumberSize = "sm";
 
 
 
-export type TextAndLabel = {
+export type AddPeriodToText_Base = boolean;
+type Label = string;
+
+
+type TextAndLabel_Base = {
     text: string;
-    label?: string;
+    label?: Label;
 };
 
+type TextAndLabel_Dropdown = (
+    {
+        addPeriodToText: AddPeriodToText_Base;
+    }
+) & TextAndLabel_Base;
+
+type TextAndLabel_Target = (
+    {
+        addPeriodToText: {
+            dropdown: AddPeriodToText_Base;
+            target: AddPeriodToText_Base;
+        } | AddPeriodToText_Base;
+    }
+) & TextAndLabel_Base;
+
+type TextAndLabel = TextAndLabel_Dropdown | TextAndLabel_Target;
+
+export type AddPeriodToText_Union = TextAndLabel["addPeriodToText"];
+
+
 type ModsTableTooltipProps_Base = {
-    dropdownStrings: TextAndLabel;
+    dropdownStrings: TextAndLabel_Dropdown;
     multiline?: boolean;
     maxWidth?: number;
 };
 
 type ModsTableTooltipProps = (
     {
+        childComponent?: never;
         prefixDropdownWithTarget: boolean;
         targetStrings: {
             textForDropdown?: string;
-        } & TextAndLabel;
-        childComponent?: never;
+        } & TextAndLabel_Target;
     } | {
+        childComponent: JSX.Element;
         prefixDropdownWithTarget?: never;
         targetStrings?: never;
-        childComponent: JSX.Element;
-
     }
 ) & ModsTableTooltipProps_Base;
 
 
 
 
-const Label = ({ label }: { label: TextAndLabel["label"]; }) => {
+const Label = (
+    { label }: { label: Label; }
+) => {
     if (!label) return;
 
     return (
@@ -61,7 +86,13 @@ const Label = ({ label }: { label: TextAndLabel["label"]; }) => {
 };
 
 
-const TextAndLabel = ({ text, label }: TextAndLabel) => {
+const TextAndLabel = (
+    {
+        text,
+        label,
+        addPeriodToText,
+    }: TextAndLabel
+) => {
     if (!label) return text;
 
     if (text === "") return "";
@@ -72,9 +103,9 @@ const TextAndLabel = ({ text, label }: TextAndLabel) => {
                 label={label}
             />
             {
-                punctuationAndSymbolsRegexPattern.test(text.slice(-1)) ?    // if the last character of text doesn't end with punctuation or symbols, add a period
-                    text :
-                    `${text}.`
+                addPeriodToText && !punctuationAndSymbolsRegexPattern.test(text.slice(-1)) ?    // if addPeriodToText === true and the last character of text doesn't end with punctuation or symbols, add a period
+                    `${text}.` :
+                    text
             }
         </>
     );
@@ -97,6 +128,7 @@ export const ModsTableTooltip = ({
             <TextAndLabel
                 text={dropdownStrings.text}
                 label={dropdownStrings.label}
+                addPeriodToText={dropdownStrings.addPeriodToText}
             />
         </Text>
     );
@@ -122,11 +154,17 @@ export const ModsTableTooltip = ({
                                         targetStrings.text
                                 }
                                 label={targetStrings.label}
+                                addPeriodToText={
+                                    typeof targetStrings.addPeriodToText === "object" ?
+                                        targetStrings.addPeriodToText.dropdown :
+                                        targetStrings.addPeriodToText
+                                }
                             />
                             {" "}
                             <TextAndLabel
                                 text={dropdownStrings.text}
                                 label={dropdownStrings.label}
+                                addPeriodToText={dropdownStrings.addPeriodToText}
                             />
                         </Text>
                     ) : (
@@ -141,11 +179,18 @@ export const ModsTableTooltip = ({
                         <Text
                             size={TARGET_TEXT_SIZE}
                         >
-                            {
-                                punctuationAndSymbolsRegexPattern.test(targetStrings.text) ?
-                                    targetStrings.text :
-                                    `${targetStrings.text}.`
-                            }
+                            <TextAndLabel
+                                text={
+                                    punctuationAndSymbolsRegexPattern.test(targetStrings.text) ?
+                                        targetStrings.text :
+                                        `${targetStrings.text}.`
+                                }
+                                addPeriodToText={
+                                    typeof targetStrings.addPeriodToText === "object" ?
+                                        targetStrings.addPeriodToText.target :
+                                        targetStrings.addPeriodToText
+                                }
+                            />
                         </Text>
                     )
             }
