@@ -1,3 +1,4 @@
+import { useContext } from "react";
 import { Carousel } from "@mantine/carousel";
 import { useGamebananaModImageUrls } from "~/hooks/gamebananaApi";
 import { createStyles } from "@mantine/core";

@@ -7,12 +7,22 @@ import axios, { AxiosRequestConfig } from 'axios';
 
 
 
+type FetchResponse<T> = {
+    data: T | null;
+    isLoading: boolean;
+    isError: boolean;
+    error: any;
+};
+
+
+
+
 const EXTRA_FETCH_LOGS = false;
 
 
 
 
-export const useFetch = <T = any>(url: string) => {
+export const useFetch = <T = any>(url: string): FetchResponse<T> => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isError, setIsError] = useState<boolean>(false);
     const [error, setError] = useState<any>(null);
@@ -98,4 +108,9 @@ export const useFetch = <T = any>(url: string) => {
 
 
     return { data, isLoading, isError, error };
+};
+
+
+export const fetchWithAxios = async <T = any>(url: string): FetchResponse<T> => {
+    
 };

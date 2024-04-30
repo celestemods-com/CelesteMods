@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState, useContext } from "react";
 import { useFetch } from "~/hooks/useFetch";
 import type { Mod } from "~/components/mods/types";
-import { modImageUrlsContext } from "~/components/globalContexts/modImageUrls";
-import { modDownloadUrlsContext } from "~/components/globalContexts/modDownloadUrls";
+import type { CancelTokenSource } from "axios";
 
 
 
@@ -157,19 +156,6 @@ export const useGamebananaModImageUrls = (
     if (gamebananaModId === undefined) return {};
 
 
-    const modImageUrlsStateObject = useContext(modImageUrlsContext);
-
-    const modImageUrlsState = modImageUrlsStateObject?.state;
-    const modImageUrlsUpdate = modImageUrlsStateObject?.update;
-
-    // check if the query url is already cached in the global context
-    if (modImageUrlsState) {
-        const imageUrls = modImageUrlsState[gamebananaModId];
-
-        if (imageUrls) return { imageUrls };
-    }
-
-
     //get query url
     const DEFAULT_GAMEBANANA_API_URL_PROPS = {
         itemType: "Mod",
@@ -218,17 +204,6 @@ export const useGamebananaModImageUrls = (
         );
 
 
-        // cache the image urls in the global context
-        if (modImageUrlsUpdate) {
-            modImageUrlsUpdate(
-                (previousState) => ({
-                    ...previousState,
-                    [gamebananaModId]: imageUrls,
-                })
-            );
-        }
-
-
         return imageUrls;
     }, [screenshotData]);
 
@@ -238,6 +213,14 @@ export const useGamebananaModImageUrls = (
     if (isLoading) return {};
 
     return { imageUrls };
+};
+
+
+export const getGamebananaModImageUrls = async (
+    gamebananaModId: number,
+    source: CancelTokenSource,
+): Promise<ModImageUrls> => {
+
 };
 
 
@@ -322,19 +305,6 @@ export const useGamebananaModDownloadUrl = (
     if (gamebananaModId === undefined) return {};
 
 
-    const modDownloadUrlsStateObject = useContext(modDownloadUrlsContext);
-
-    const modDownloadUrlsState = modDownloadUrlsStateObject?.state;
-    const modDownloadUrlsUpdate = modDownloadUrlsStateObject?.update;
-
-    // check if the query url is already cached in the global context
-    if (modDownloadUrlsState) {
-        const downloadUrl = modDownloadUrlsState[gamebananaModId];
-
-        if (downloadUrl) return { downloadUrl };
-    }
-
-
     //get query url
     const DEFAULT_GAMEBANANA_API_URL_PROPS = {
         itemType: "Mod",
@@ -381,17 +351,6 @@ export const useGamebananaModDownloadUrl = (
 
 
         const downloadUrl = newestFileId === "" ? "" : `${GAMEBANANA_MOD_DOWNLOAD_BASE_URL}${newestFileId},Mod,${gamebananaModId}`;
-
-
-        // cache the download url in the global context
-        if (modDownloadUrlsUpdate) {
-            modDownloadUrlsUpdate(
-                (previousState) => ({
-                    ...previousState,
-                    [gamebananaModId]: downloadUrl,
-                })
-            );
-        }
 
 
         return downloadUrl;

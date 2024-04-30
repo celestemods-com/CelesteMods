@@ -7,7 +7,7 @@ import { MantineProvider } from "@mantine/core";
 
 import { api } from "~/utils/api";
 import { RouterTransition } from "~/components/routerTransition";
-import { GlobalContextsProvider } from "~/components/globalContexts/globalContextsProvider";
+import { GlobalContextsProvider } from "~/hooks/globalContexts/globalContextsProvider";
 import { emotionCache } from "~/emotionCache";
 
 
