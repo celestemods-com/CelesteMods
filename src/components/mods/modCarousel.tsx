@@ -1,6 +1,5 @@
-import { useContext } from "react";
 import { Carousel } from "@mantine/carousel";
-import { useGamebananaModImageUrls } from "~/hooks/gamebananaApi";
+import { useGamebananaModImageUrls } from "~/hooks/gamebananaApi/useModImageUrls";
 import { createStyles } from "@mantine/core";
 import { Image } from "@mantine/core";      //TODO!: replace with nextjs Image component once next.config.mjs is fixed
 // import Image from "next/image";

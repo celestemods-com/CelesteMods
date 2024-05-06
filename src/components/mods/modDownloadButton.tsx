@@ -3,7 +3,7 @@ import Image from "next/image";
 import { Group, Popover, Text, createStyles } from "@mantine/core";
 import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
 import { LinkButton } from "~/components/linkButton";
-import { useGamebananaModDownloadUrl } from "~/hooks/gamebananaApi";
+import { useModDownloadUrl } from "~/hooks/gamebananaApi/useModDownloadUrl";
 import { FAQ_PAGE_PATHNAME } from "~/consts/pathnames";
 import { OLYMPUS_INSTALLATION_URL } from "~/consts/olympusInstallationUrl";
 import everestLogo from "../../../public/images/everest-logo/everest-logo.png";
@@ -46,7 +46,7 @@ const useStyles = createStyles(
 
 
 export const ModDownloadButton = ({ gamebananaModId }: ModDownloadButtonProps) => {
-    const { downloadUrl } = useGamebananaModDownloadUrl({ gamebananaModId });
+    const { downloadUrl } = useModDownloadUrl({ gamebananaModId });
 
     const [isOpened, { close, open }] = useDisclosure(false);
 

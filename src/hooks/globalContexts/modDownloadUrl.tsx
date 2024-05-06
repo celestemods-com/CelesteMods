@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { ContextState } from "./globalContextsProvider";
-import { getModDownloadUrl } from "~/hooks/gamebananaApi";
+import { getModDownloadUrl } from "../gamebananaApi/useModDownloadUrl";
 import type { GamebananaModId } from "~/components/mods/types";
 import axios from "axios";
 
@@ -66,6 +66,9 @@ export const useModDownloadUrl = (
 
         const fetchDownloadUrl = async () => {
             const fetchedDownloadUrl = await getModDownloadUrl(gamebananaModId, source);
+
+            if (fetchedDownloadUrl === undefined) return;
+            
 
             setDownloadUrl(fetchedDownloadUrl);
 
