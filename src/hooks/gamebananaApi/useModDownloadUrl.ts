@@ -53,7 +53,6 @@ const isGamebananaFileMetadata = (
 
 
 const isGamebananaFilesObject = (data: unknown): data is Record<string, GamebananaFileMetadata> => {
-    console.log(data);
     if (typeof data !== "object" || data === null) return false;
 
     const dataObject = data as Record<string, unknown>;
