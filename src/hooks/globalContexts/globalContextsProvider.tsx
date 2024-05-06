@@ -1,13 +1,13 @@
 import type { Dispatch, SetStateAction } from "react";
 import { ModImageUrlsContextProvider } from "./modImageUrls";
-import { ModDownloadUrlsContextProvider } from "./modDownloadUrls";
+import { ModDownloadUrlsContextProvider } from "./modDownloadUrl";
 
 
 
 
-export type ContextState<T> = {
-    state: T,
-    update: Dispatch<SetStateAction<T>>;
+export type ContextState<State> = {
+    state: State,
+    update: Dispatch<SetStateAction<State>>;
 };
 
 

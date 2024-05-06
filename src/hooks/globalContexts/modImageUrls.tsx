@@ -1,27 +1,21 @@
 import { createContext, useEffect, useMemo, useState, useContext } from "react";
 import type { ContextState } from "./globalContextsProvider";
-import { getGamebananaModImageUrls } from "~/hooks/gamebananaApi";
+import { getModImageUrls } from "~/hooks/gamebananaApi";
 import type { GamebananaModId } from "~/components/mods/types";
-import axios, { type CancelTokenSource } from 'axios';
+import axios from 'axios';
 
 
 
 
 type ModImageUrls = string[];
 
+
 export type ModImageUrlsState = Record<GamebananaModId, ModImageUrls>;
 
 
-type useModImageUrlsProps = {
-    gamebananaModId: number,
-};
 
 
-
-
-const modImageUrlsContext = createContext<ContextState<ModImageUrlsState> | null>(null);
-
-
+const modImageUrlsContext = createContext<ContextState<ModImageUrlsState> | undefined>(undefined);
 
 
 export const ModImageUrlsContextProvider = ({ children }: { children: React.ReactNode; }) => {
@@ -47,14 +41,19 @@ export const ModImageUrlsContextProvider = ({ children }: { children: React.Reac
 
 
 
-export const useModImageUrlsContext = (
+type useModImageUrlsProps = {
+    gamebananaModId: number,
+};
+
+
+export const useModImageUrls = (
     {
         gamebananaModId,
     }: useModImageUrlsProps,
 ): ModImageUrls => {
-    const contextOrNull = useContext(modImageUrlsContext);
+    const contextOrUndefined = useContext(modImageUrlsContext);
 
-    const cachedImageUrls = contextOrNull?.state[gamebananaModId];
+    const cachedImageUrls = contextOrUndefined?.state[gamebananaModId];
 
     const [imageUrls, setImageUrls] = useState<ModImageUrls>(cachedImageUrls ?? []);
 
@@ -62,21 +61,23 @@ export const useModImageUrlsContext = (
     useEffect(() => {
         if (cachedImageUrls) return;
 
-        if (contextOrNull === null) throw "useModImageUrlsContext may only be called within a descendant of a ModImageUrlsContextProvider component";
+        if (contextOrUndefined === undefined) throw "useModImageUrlContext must be used within a ModImageUrlsContextProvider";
 
 
         const source = axios.CancelToken.source();
 
 
         const fetchImageUrls = async () => {
-            const fetchedImageUrls = await getGamebananaModImageUrls(gamebananaModId, source);
+            const fetchedImageUrls = await getModImageUrls(gamebananaModId, source);
 
             setImageUrls(fetchedImageUrls);
 
-            contextOrNull.update({
-                ...contextOrNull.state,
-                [gamebananaModId]: fetchedImageUrls,
-            });
+            contextOrUndefined.update(
+                (previousState) => ({
+                    ...previousState,
+                    [gamebananaModId]: fetchedImageUrls,
+                })
+            );
         };
 
         fetchImageUrls();
@@ -85,7 +86,7 @@ export const useModImageUrlsContext = (
         return () => {
             source.cancel();
         };
-    }, [gamebananaModId, contextOrNull, cachedImageUrls]);
+    }, [gamebananaModId, contextOrUndefined, cachedImageUrls]);
 
 
     return imageUrls;

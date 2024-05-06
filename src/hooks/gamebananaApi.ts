@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useContext } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useFetch } from "~/hooks/useFetch";
 import type { Mod } from "~/components/mods/types";
 import type { CancelTokenSource } from "axios";
@@ -216,7 +216,7 @@ export const useGamebananaModImageUrls = (
 };
 
 
-export const getGamebananaModImageUrls = async (
+export const getModImageUrls = async (
     gamebananaModId: number,
     source: CancelTokenSource,
 ): Promise<ModImageUrls> => {
@@ -363,4 +363,14 @@ export const useGamebananaModDownloadUrl = (
 
 
     return { downloadUrl };
+};
+
+
+
+
+export const getModDownloadUrl = async (
+    gamebananaModId: number,
+    source: CancelTokenSource,
+): Promise<string> => {
+
 };
