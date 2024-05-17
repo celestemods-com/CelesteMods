@@ -27,9 +27,9 @@ const useStyles = createStyles(
                 backgroundColor: expandedModColors.default.backgroundColor,
             },
             "&&&&&& table": {
-                borderSpacing: "0 20px",
+                borderSpacing: "0 7px",
                 // Border spacing adds space before the header, so we move the table up
-                transform: 'translate(0, -20px)',
+                transform: 'translate(0, -7px)',
             },
             "&&&&&& thead": {
                 top: "0",
