@@ -28,7 +28,7 @@ const useStyles = createStyles(
 
 export const Header = () => {
     const { classes } = useStyles();
-    const height = 150;
+    const height = 115;
     const width = height / 694 * 774;
 
 

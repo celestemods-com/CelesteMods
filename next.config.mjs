@@ -14,6 +14,11 @@ const config = {
         protocol: "https",
         hostname: "**.gamebanana.com",
         pathname: "**/img/ss/mods/**",
+      },
+      {
+        protocol: "https",
+        hostname: "ideascdn.lego.com",
+        pathname: "/media/generate/lego_ci/**",
       }
     ],
   },
