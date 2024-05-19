@@ -131,7 +131,7 @@ const useStyles = createStyles(
             table: {
                 "&&&& table": {
                     transform: "translate(0, -21px)",
-                    borderSpacing: "0 10px",
+                    borderSpacing: "0 12px",
                     padding: "0 15px",
                 },
                 "&&&& thead": {
