@@ -902,15 +902,12 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                                             label: "Mod",
                                             text: truncateString(modWithInfo.name, NAME_COLUMN_MAX_LETTERS),
                                             textForDropdown: modWithInfo.name,
-                                            addPeriodToText: {
-                                                dropdown: true,
-                                                target: false,
-                                            },
+                                            addPeriodToText: false,
                                         }}
                                         dropdownStrings={{
                                             label: "Mod Type",
                                             text: modTypeString,
-                                            addPeriodToText: true,
+                                            addPeriodToText: false,
                                         }}
                                     />
                                 );
@@ -950,15 +947,12 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                                             label: "Publisher",
                                             text: truncateString(modWithInfo.publisherName, PUBLISHER_COLUMN_MAX_LETTERS),
                                             textForDropdown: modWithInfo.publisherName,
-                                            addPeriodToText: {
-                                                dropdown: true,
-                                                target: false,
-                                            },
+                                            addPeriodToText: false,
                                         }}
                                         dropdownStrings={{
                                             label: "Publication Date",
                                             text: publicationDate.toLocaleDateString(undefined, defaultToLocaleDateStringOptions),
-                                            addPeriodToText: true,
+                                            addPeriodToText: false,
                                         }}
                                     />
                                 );
@@ -997,13 +991,12 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                                         targetStrings={{
                                             label: "Quality",
                                             text: modWithInfo.Quality.name,
-                                            addPeriodToText: {
-                                                dropdown: true,
-                                                target: false,
-                                            },
+                                            textForDropdown: `${modWithInfo.Quality.name}. Based on ${modWithInfo.Quality.count} ratings.`,
+                                            addPeriodToText: false,
                                         }}
                                         dropdownStrings={{
-                                            text: `Based on ${modWithInfo.Quality.count} ratings.`,
+                                            label: "Description",
+                                            text: modWithInfo.qualityDescription,
                                             addPeriodToText: false,
                                         }}
                                     />
@@ -1139,14 +1132,19 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                                     targetLabel = "Any%";
                                     targetText = truncateString(techsAnyString, TECHS_COLUMN_MAX_LETTERS);
                                     targetTextForDropdown = techsAnyString;
-                                    addPeriodToTargetText = false;
-                                    addPeriodToDropdownText = false;
 
                                     if (techsFCString === "") {
                                         dropdownText = "";
+                                        addPeriodToTargetText = false;
+                                        addPeriodToDropdownText = false;
                                     } else {
                                         dropdownLabel = FULL_CLEAR_LONG_STRING;
                                         dropdownText = techsFCString;
+                                        addPeriodToTargetText = {
+                                            dropdown: true,
+                                            target: false,
+                                        };
+                                        addPeriodToDropdownText = true;
                                     }
                                 }
 

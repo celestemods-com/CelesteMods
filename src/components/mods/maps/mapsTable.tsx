@@ -10,6 +10,13 @@ import { TABLE_HEADER_ARROW_ZOOM } from "~/consts/tableHeaderArrowZoom";
 import type { DifficultyColor } from "~/styles/difficultyColors";
 import { getOrdinal } from "~/utils/getOrdinal";
 import { COMING_SOON_PATHNAME } from "~/consts/pathnames";
+import { truncateString } from "~/utils/truncateString";
+
+
+
+
+const NAME_COLUMN_MAX_LETTERS = 20;
+const MAPPER_NAME_COLUMN_MAX_LETTERS = 20;
 
 
 
@@ -206,6 +213,8 @@ export const MapsTable = (
                     title: "Name",
                     ellipsis: true,
                     render: (mapWithTechAndRatingInfo) => {
+                        const TARGET_LABEL = "Map";
+
                         const { name, chapterSide, overallRank } = mapWithTechAndRatingInfo;
 
 
@@ -218,34 +227,54 @@ export const MapsTable = (
                             dropdownLabel = "Level";
                             dropdownText = chapterSide;
                         } else if (modType === "Contest") {
-                            if (overallRank === null) dropdownText = "";
-                            else {
-                                dropdownLabel = "Place";
+                            dropdownLabel = "Place";
+
+                            if (overallRank === null) {
+                                dropdownText = "N/A";
+                            } else {
                                 dropdownText = getOrdinal(overallRank, false);
                             }
                         }
 
 
+
                         return (
                             dropdownText === undefined ? (
-                                <Text
-                                    size="sm"
-                                >
-                                    {name}
-                                </Text>
+                                name.length > NAME_COLUMN_MAX_LETTERS ? (
+                                    <ModsTableTooltip
+                                        prefixDropdownWithTarget
+                                        targetStrings={{
+                                            label: TARGET_LABEL,
+                                            text: truncateString(name, NAME_COLUMN_MAX_LETTERS),
+                                            textForDropdown: name,
+                                            addPeriodToText: false,
+                                        }}
+                                        dropdownStrings={{
+                                            label: "",
+                                            text: "",
+                                            addPeriodToText: false,
+                                        }}
+                                    />
+                                ) : (
+                                    <Text
+                                        size="sm"
+                                    >
+                                        {name}
+                                    </Text>
+                                )
                             ) : (
                                 <ModsTableTooltip
                                     prefixDropdownWithTarget
                                     targetStrings={{
-                                        label: "Map",
-                                        text: name,
+                                        label: TARGET_LABEL,
+                                        text: truncateString(name, NAME_COLUMN_MAX_LETTERS),
+                                        textForDropdown: name,
+                                        addPeriodToText: false,
                                     }}
                                     dropdownStrings={{
                                         label: dropdownLabel,
                                         text: dropdownText,
-                                        // dropdownText === "" ?
-                                        //     mapNameStringForTooltip :
-                                        //     `${mapNameStringForTooltip} ${dropdownText}`
+                                        addPeriodToText: false,
                                     }}
                                 />
                             )
@@ -273,9 +302,13 @@ export const MapsTable = (
                                 targetStrings={{
                                     label: "Quality",
                                     text: mapWithTechAndRatingInfo.qualityName,
+                                    textForDropdown: `${mapWithTechAndRatingInfo.qualityName}. Based on ${mapWithTechAndRatingInfo.qualityCount} ratings.`,
+                                    addPeriodToText: false,
                                 }}
                                 dropdownStrings={{
-                                    text: `Based on ${mapWithTechAndRatingInfo.qualityCount} ratings.`,
+                                    label: "Description",
+                                    text: mapWithTechAndRatingInfo.qualityDescription,
+                                    addPeriodToText: false,
                                 }}
                             />
                         );
@@ -309,9 +342,14 @@ export const MapsTable = (
                                 targetStrings={{
                                     label: "Difficulty",
                                     text: `${childDifficultyName} ${parentDifficultyName}`,
+                                    addPeriodToText: {
+                                        dropdown: true,
+                                        target: false,
+                                    },
                                 }}
                                 dropdownStrings={{
                                     text: `Based on ${mapWithTechAndRatingInfo.difficultyCount} ratings.`,
+                                    addPeriodToText: false,
                                 }}
                             />
                         );
@@ -328,10 +366,12 @@ export const MapsTable = (
                             targetStrings={{
                                 label: "Length",
                                 text: mapWithTechAndRatingInfo.lengthName,
+                                addPeriodToText: false,
                             }}
                             dropdownStrings={{
                                 label: "Description",
                                 text: mapWithTechAndRatingInfo.lengthDescription,
+                                addPeriodToText: false,
                             }}
                         />
                     ),
@@ -343,13 +383,16 @@ export const MapsTable = (
                     ellipsis: true,
                     render: (mapWithTechAndRatingInfo) => (
                         <ModsTableTooltip
-                            prefixDropdownWithTarget={false}
+                            prefixDropdownWithTarget
                             targetStrings={{
-                                text: mapWithTechAndRatingInfo.mapperNameString,
+                                label: "Mapper",
+                                text: truncateString(mapWithTechAndRatingInfo.mapperNameString, MAPPER_NAME_COLUMN_MAX_LETTERS),
+                                textForDropdown: mapWithTechAndRatingInfo.mapperNameString,
+                                addPeriodToText: false,
                             }}
                             dropdownStrings={{
-                                label: "Mapper",
-                                text: mapWithTechAndRatingInfo.mapperNameString,
+                                text: "",
+                                addPeriodToText: false,
                             }}
                         />
                     ),
@@ -363,7 +406,8 @@ export const MapsTable = (
                     render: (_mapWithTechAndRatingInfo) => (
                         <ModsTableTooltip
                             dropdownStrings={{
-                                text: "Rate this map",
+                                text: "Rate this map!",
+                                addPeriodToText: false,
                             }}
                             childComponent={(
                                 <Link

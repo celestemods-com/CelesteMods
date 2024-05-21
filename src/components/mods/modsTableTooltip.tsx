@@ -180,11 +180,7 @@ export const ModsTableTooltip = ({
                             size={TARGET_TEXT_SIZE}
                         >
                             <TextAndLabel
-                                text={
-                                    punctuationAndSymbolsRegexPattern.test(targetStrings.text) ?
-                                        targetStrings.text :
-                                        `${targetStrings.text}.`
-                                }
+                                text={targetStrings.text}
                                 addPeriodToText={
                                     typeof targetStrings.addPeriodToText === "object" ?
                                         targetStrings.addPeriodToText.target :
