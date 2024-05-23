@@ -1117,7 +1117,7 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                                 if (techsAnyString === "") {
                                     if (techsFCString === "") {
                                         targetLabel = "";
-                                        targetText = "None.";
+                                        targetText = "None";
                                         addPeriodToTargetText = false;
                                         dropdownText = "";
                                         addPeriodToDropdownText = false;
