@@ -7,5 +7,5 @@ export const truncateString = (string: string, maxLength: number, trimString = t
     }
 
 
-    return trimmedString.slice(0, maxLength - ellipsis.length) + ellipsis;
+    return trimmedString.slice(0, maxLength - ellipsis.length).trim() + ellipsis;
 }
