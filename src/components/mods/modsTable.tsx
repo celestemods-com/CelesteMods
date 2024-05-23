@@ -9,7 +9,7 @@ import type { ModType, Publisher as PrismaPublisher, Mod } from "@prisma/client"
 import { StringSearch } from "~/components/filterPopovers/stringSearch";
 import { NumberSearch } from "~/components/filterPopovers/numberSearch";
 import { ListSelect } from "~/components/filterPopovers/listSelect";
-import { ModsTableTooltip, SEPARATOR_STRING } from "./modsTableTooltip";
+import { ModsTableTooltip, SEPARATOR_STRING, type AddPeriodToText_Base, type AddPeriodToText_Union } from "./modsTableTooltip";
 import { truncateString } from "~/utils/truncateString";
 import type { ModWithInfo, Tech } from "~/components/mods/types";
 import { noRatingsFoundMessage } from "~/consts/noRatingsFoundMessage";
@@ -902,10 +902,12 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                                             label: "Mod",
                                             text: truncateString(modWithInfo.name, NAME_COLUMN_MAX_LETTERS),
                                             textForDropdown: modWithInfo.name,
+                                            addPeriodToText: false,
                                         }}
                                         dropdownStrings={{
                                             label: "Mod Type",
                                             text: modTypeString,
+                                            addPeriodToText: false,
                                         }}
                                     />
                                 );
@@ -945,10 +947,12 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                                             label: "Publisher",
                                             text: truncateString(modWithInfo.publisherName, PUBLISHER_COLUMN_MAX_LETTERS),
                                             textForDropdown: modWithInfo.publisherName,
+                                            addPeriodToText: false,
                                         }}
                                         dropdownStrings={{
                                             label: "Publication Date",
                                             text: publicationDate.toLocaleDateString(undefined, defaultToLocaleDateStringOptions),
+                                            addPeriodToText: false,
                                         }}
                                     />
                                 );
@@ -987,9 +991,13 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                                         targetStrings={{
                                             label: "Quality",
                                             text: modWithInfo.Quality.name,
+                                            textForDropdown: `${modWithInfo.Quality.name}. Based on ${modWithInfo.Quality.count} ratings.`,
+                                            addPeriodToText: false,
                                         }}
                                         dropdownStrings={{
-                                            text: `Based on ${modWithInfo.Quality.count} ratings.`,
+                                            label: "Description",
+                                            text: modWithInfo.qualityDescription,
+                                            addPeriodToText: false,
                                         }}
                                     />
                                 );
@@ -1034,10 +1042,15 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                                         prefixDropdownWithTarget
                                         targetStrings={{
                                             label: "Difficulty",
-                                            text: `${childDifficultyName} ${parentDifficultyName}`
+                                            text: `${childDifficultyName} ${parentDifficultyName}`,
+                                            addPeriodToText: {
+                                                dropdown: true,
+                                                target: false,
+                                            },
                                         }}
                                         dropdownStrings={{
-                                            text: `Based on ${modWithInfo.Difficulty.count} ratings.`
+                                            text: `Based on ${modWithInfo.Difficulty.count} ratings.`,
+                                            addPeriodToText: false,
                                         }}
                                     />
                                 );
@@ -1093,20 +1106,27 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
 
                                 let targetLabel: string | undefined;
                                 let targetText: string;
+                                let addPeriodToTargetText: AddPeriodToText_Union = false;
                                 /** use targetText in the ModsTable and use targetTextForDropdown in the Tooltip/Dropdown */
                                 let targetTextForDropdown: string | undefined;
                                 let dropdownLabel: string | undefined;
                                 let dropdownText: string;
+                                let addPeriodToDropdownText: AddPeriodToText_Base = false;
+
 
                                 if (techsAnyString === "") {
                                     if (techsFCString === "") {
                                         targetLabel = "";
-                                        targetText = "None.";
+                                        targetText = "None";
+                                        addPeriodToTargetText = false;
                                         dropdownText = "";
+                                        addPeriodToDropdownText = false;
                                     } else {
                                         targetText = truncateString(FULL_CLEAR_SHORT_STRING + SEPARATOR_STRING + techsFCString, TECHS_COLUMN_MAX_LETTERS);
+                                        addPeriodToTargetText = false;
                                         dropdownLabel = FULL_CLEAR_LONG_STRING;
                                         dropdownText = techsFCString;
+                                        addPeriodToDropdownText = true;
                                     }
                                 } else {
                                     targetLabel = "Any%";
@@ -1115,9 +1135,16 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
 
                                     if (techsFCString === "") {
                                         dropdownText = "";
+                                        addPeriodToTargetText = false;
+                                        addPeriodToDropdownText = false;
                                     } else {
                                         dropdownLabel = FULL_CLEAR_LONG_STRING;
                                         dropdownText = techsFCString;
+                                        addPeriodToTargetText = {
+                                            dropdown: true,
+                                            target: false,
+                                        };
+                                        addPeriodToDropdownText = true;
                                     }
                                 }
 
@@ -1129,10 +1156,12 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                                             label: targetLabel,
                                             text: targetText,
                                             textForDropdown: targetTextForDropdown,
+                                            addPeriodToText: addPeriodToTargetText,
                                         }}
                                         dropdownStrings={{
                                             label: dropdownLabel,
-                                            text: dropdownText,                                            
+                                            text: dropdownText,
+                                            addPeriodToText: addPeriodToDropdownText,
                                         }}
                                         multiline={true}
                                         maxWidth={200}

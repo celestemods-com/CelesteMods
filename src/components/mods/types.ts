@@ -52,6 +52,7 @@ export type MapWithTechAndRatingInfo = {
     lengthDescription: string;
     overallCount: number;
     qualityName: string;
+    qualityDescription: string;
     qualityCount: number;
     difficultyName: string;
     difficultyCount: number;
@@ -64,6 +65,7 @@ export type ModWithInfo = {
     /** should only be defined if there are no difficulty ratings */
     lowestCannonicalDifficulty: number | undefined;
     Quality: RatingInfo;
+    qualityDescription: string;
     Difficulty: RatingInfo;
     mapCount: number;
     MapsWithTechInfo: MapWithTechInfo[];

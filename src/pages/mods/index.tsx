@@ -62,6 +62,7 @@ const getModsWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: Mod
         let overallCount = 0;
         let qualityId = -1;
         let qualityName: string;
+        let qualityDescription: string;
         let qualityCount = 0;
         let difficultyId = -1;
         let difficultyName: string;
@@ -83,8 +84,10 @@ const getModsWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: Mod
         }
 
 
-        if (qualityId === -1) qualityName = noRatingsFoundMessage;
-        else {
+        if (qualityId === -1) {
+            qualityName = noRatingsFoundMessage;
+            qualityDescription = "";
+        } else {
             if (qualityCount === 0) throw `Quality count is 0 for mod ${mod.id} but qualityId is ${qualityId} (and not -1) - this should not happen.`;
 
 
@@ -96,6 +99,7 @@ const getModsWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: Mod
 
 
             qualityName = quality.name;
+            qualityDescription = quality.description;
         }
 
 
@@ -183,6 +187,7 @@ const getModsWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: Mod
                 name: qualityName,
                 count: qualityCount,
             },
+            qualityDescription,
             Difficulty: {
                 id: difficultyId,
                 name: difficultyName,

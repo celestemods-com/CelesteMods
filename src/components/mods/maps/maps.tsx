@@ -47,10 +47,11 @@ const getMapsWithTechAndRatingInfo = (
             //get quality and difficulty info from rating. this is more complicated than lengths because ratings are optional.
             let overallCount = 0;
             let qualityId = -1;
-            let qualityName: string;
+            let qualityName: MapWithTechAndRatingInfo["qualityName"];
+            let qualityDescription: MapWithTechAndRatingInfo["qualityDescription"];
             let qualityCount = 0;
             let difficultyId = -1;
-            let difficultyName: string;
+            let difficultyName: MapWithTechAndRatingInfo["difficultyName"];
             let difficultyCount = 0;
 
             if ("overallCount" in rating === false) {   //no ratings exist for this map
@@ -69,8 +70,10 @@ const getMapsWithTechAndRatingInfo = (
             }
 
 
-            if (qualityId === -1) qualityName = noRatingsFoundMessage;
-            else {
+            if (qualityId === -1) {
+                qualityName = noRatingsFoundMessage;
+                qualityDescription = "";
+            } else {
                 if (qualityCount === 0) throw `Quality count is 0 for map ${mapWithTechInfo.id} but qualityId is ${qualityId} (and not -1) - this should not happen.`;
 
 
@@ -80,11 +83,13 @@ const getMapsWithTechAndRatingInfo = (
 
 
                 qualityName = quality.name;
+                qualityDescription = quality.description;
             }
 
 
-            if (difficultyId === -1) difficultyName = noRatingsFoundMessage;
-            else {
+            if (difficultyId === -1) {
+                difficultyName = noRatingsFoundMessage;
+            } else {
                 if (difficultyCount === 0) throw `Difficulty count is 0 for map ${mapWithTechInfo.id} but difficultyId is ${difficultyId} (and not -1) - this should not happen.`;
 
 
@@ -106,6 +111,7 @@ const getMapsWithTechAndRatingInfo = (
                 lengthDescription: length.description,
                 overallCount,
                 qualityName,
+                qualityDescription,
                 qualityCount,
                 difficultyName,
                 difficultyCount,
