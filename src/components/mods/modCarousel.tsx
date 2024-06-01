@@ -1,5 +1,5 @@
 import { Carousel } from "@mantine/carousel";
-import { useGamebananaModImageUrls } from "~/hooks/gamebananaApi";
+import { useModImageUrls } from "~/hooks/globalContexts/modImageUrls";
 import { createStyles } from "@mantine/core";
 import { Image } from "@mantine/core";      //TODO!: replace with nextjs Image component once next.config.mjs is fixed
 // import Image from "next/image";
@@ -68,36 +68,32 @@ type modCarouselProps = {
 
 
 export const ModCarousel = ({ gamebananaModId, numberOfMaps, colors }: modCarouselProps) => {
-    const { imageUrls } = useGamebananaModImageUrls({ gamebananaModId });
+    const imageUrls = useModImageUrls({ gamebananaModId });
 
 
     const { cx, classes } = useStyles({ colors });
 
 
     return (
-        !imageUrls ? (
-            null
-        ) : (
-            <Carousel classNames={{
-                root: classes.carousel,
-                viewport: classes.viewport,
-                slide: cx(classes.slide, numberOfMaps >= 4 ? classes.imgMaxHeight400 : classes.imgMaxHeight250),
-                controls: classes.controls,
-                control: classes.control,
-            }}>
-                {imageUrls.map((imageUrl) => (
-                    <Carousel.Slide
-                        key={imageUrl}
-                        gap={"md"}
-                        size={"400px"}
-                    >
-                        <Image
-                            src={imageUrl}
-                            alt="Mod image"
-                        />
-                    </Carousel.Slide>
-                ))}
-            </Carousel>
-        )
+        <Carousel classNames={{
+            root: classes.carousel,
+            viewport: classes.viewport,
+            slide: cx(classes.slide, numberOfMaps >= 4 ? classes.imgMaxHeight400 : classes.imgMaxHeight250),
+            controls: classes.controls,
+            control: classes.control,
+        }}>
+            {imageUrls.map((imageUrl) => (
+                <Carousel.Slide
+                    key={imageUrl}
+                    gap={"md"}
+                    size={"400px"}
+                >
+                    <Image
+                        src={imageUrl}
+                        alt="Mod image"
+                    />
+                </Carousel.Slide>
+            ))}
+        </Carousel>
     );
 };

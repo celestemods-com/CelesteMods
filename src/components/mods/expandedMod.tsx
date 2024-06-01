@@ -1,7 +1,7 @@
 import { Flex, Loader, Stack, Text, createStyles } from "@mantine/core";
 import type { ModWithInfo } from "~/components/mods/types";
 import { Maps } from "./maps/maps";
-import { ModDownloadButton } from "./modDownloadButton/modDownloadButton";
+import { ModDownloadButton } from "./modDownloadButton";
 import { ModCarousel } from "./modCarousel";
 import { LinkButton } from "~/components/linkButton";
 import { COMING_SOON_PATHNAME } from "~/consts/pathnames";
