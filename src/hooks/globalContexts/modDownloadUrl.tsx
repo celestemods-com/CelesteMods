@@ -72,10 +72,10 @@ export const useModDownloadUrl = (
                 fetchedDownloadUrl = await getModDownloadUrl(gamebananaModId, source);
             }
             catch (error) {
-                console.warn(`Failed to fetch download url for mod ${gamebananaModId}`);
+                console.warn(`Failed to fetch download url for mod ${gamebananaModId}.`);
                 console.error(error);
                 
-                fetchedDownloadUrl = undefined;
+                return;
             }
 
             if (fetchedDownloadUrl === undefined) return;
