@@ -1,8 +1,8 @@
 import { createContext, useEffect, useMemo, useState, useContext } from "react";
 import type { ContextState } from "./globalContextsProvider";
-import { getModImageUrls } from "~/hooks/gamebananaApi/useModImageUrls";
+import { getModImageUrls } from "~/hooks/gamebananaApi/getModImageUrls";
 import type { GamebananaModId } from "~/components/mods/types";
-import type { ModImageUrls } from "~/hooks/gamebananaApi/useModImageUrls";
+import type { ModImageUrls } from "~/hooks/gamebananaApi/getModImageUrls";
 import axios from 'axios';
 
 

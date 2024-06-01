@@ -1,7 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import type { GamebananaModId } from "~/components/mods/types";
-import { type GetGamebananaApiUrlProps, useGamebananaApiUrl, getGamebananaApiUrl } from "./useGamebananaApiUrl";
-import { fetchWithAxios, useFetch } from "../useFetch";
+import { getGamebananaApiUrl } from "./getGamebananaApiUrl";
+import { fetchWithAxios } from "../useFetch";
 import { GAMEBANANA_API_ERROR_STRING, type GamebananaApiResponse } from "./typesAndConsts";
 import type { CancelTokenSource } from "axios";
 
@@ -71,86 +69,6 @@ const isGamebananaFilesObject = (data: unknown): data is Record<string, Gamebana
 
 const GAMEBANANA_MOD_DOWNLOAD_BASE_URL = "everest:https://gamebanana.com/mmdl/";
 const GAMEBANANA_MOD_FILES_LIST_FIELD = "Files().aFiles()";
-
-
-type UseModDownloadUrlProps = {
-    gamebananaModId: GamebananaModId | undefined;
-};
-
-type UseModDownloadUrlReturn = {
-    downloadUrl?: string;
-};
-
-
-// Unused
-
-export const useModDownloadUrl = (
-    { gamebananaModId }: UseModDownloadUrlProps
-): UseModDownloadUrlReturn => {
-    if (gamebananaModId === undefined) return {};
-
-
-    //get query url
-    const DEFAULT_GAMEBANANA_API_URL_PROPS = {
-        itemType: "Mod",
-        itemId: gamebananaModId,
-        fields: GAMEBANANA_MOD_FILES_LIST_FIELD,
-        returnKeys: true,
-    } as const;
-
-    const [gamebananaApiUrlProps, setGamebananaApiUrlProps] = useState<GetGamebananaApiUrlProps<boolean>>(DEFAULT_GAMEBANANA_API_URL_PROPS);
-
-    useEffect(() => {
-        setGamebananaApiUrlProps(DEFAULT_GAMEBANANA_API_URL_PROPS);
-    }, [gamebananaModId]);
-
-    const { queryUrl } = useGamebananaApiUrl(gamebananaApiUrlProps);
-
-
-    const { data, isLoading, error } = useFetch<GamebananaApiResponse<true, typeof GAMEBANANA_MOD_FILES_LIST_FIELD>>(queryUrl);    //TODO!: implement caching
-
-
-    //get download url
-    const downloadUrl = useMemo(() => {
-        if (isLoading) return undefined;
-
-        const filesObject = data ? data[GAMEBANANA_MOD_FILES_LIST_FIELD] : undefined;
-
-        if (filesObject) {
-            if (!isGamebananaFilesObject(filesObject)) throw new Error(GAMEBANANA_API_ERROR_STRING);
-        }
-        else {
-            return undefined;
-        }
-
-
-        let newestFileId = "";
-        let newestFileDateAdded = 0;
-
-        for (const [fileId, fileData] of Object.entries(filesObject)) {
-            if (fileData._tsDateAdded > newestFileDateAdded) {
-                newestFileId = fileId;
-                newestFileDateAdded = fileData._tsDateAdded;
-            }
-        }
-
-
-        const downloadUrl = newestFileId === "" ? "" : `${GAMEBANANA_MOD_DOWNLOAD_BASE_URL}${newestFileId},Mod,${gamebananaModId}`;
-
-
-        return downloadUrl;
-    }, [data, isLoading]);
-
-
-    if (error) console.error(error);
-
-    if (isLoading) return {};
-
-
-    return { downloadUrl };
-};
-
-
 
 
 export const getModDownloadUrl = async (

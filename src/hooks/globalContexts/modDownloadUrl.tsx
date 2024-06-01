@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { ContextState } from "./globalContextsProvider";
-import { getModDownloadUrl } from "../gamebananaApi/useModDownloadUrl";
+import { getModDownloadUrl } from "../gamebananaApi/getModDownloadUrl";
 import type { GamebananaModId } from "~/components/mods/types";
 import axios from "axios";
 
