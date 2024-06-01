@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { ContextState } from "./globalContextsProvider";
 import { getModDownloadUrl } from "../gamebananaApi/getModDownloadUrl";
 import type { GamebananaModId } from "~/components/mods/types";
+import type { ModDownloadurl } from "../gamebananaApi/getModDownloadUrl";
 import axios from "axios";
 
 
@@ -65,7 +66,17 @@ export const useModDownloadUrl = (
 
 
         const fetchDownloadUrl = async () => {
-            const fetchedDownloadUrl = await getModDownloadUrl(gamebananaModId, source);
+            let fetchedDownloadUrl: ModDownloadurl;
+
+            try {
+                fetchedDownloadUrl = await getModDownloadUrl(gamebananaModId, source);
+            }
+            catch (error) {
+                console.warn(`Failed to fetch download url for mod ${gamebananaModId}`);
+                console.error(error);
+                
+                fetchedDownloadUrl = undefined;
+            }
 
             if (fetchedDownloadUrl === undefined) return;
             

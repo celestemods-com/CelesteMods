@@ -67,6 +67,9 @@ const isGamebananaFilesObject = (data: unknown): data is Record<string, Gamebana
 
 
 
+export type ModDownloadurl = string | undefined;
+
+
 const GAMEBANANA_MOD_DOWNLOAD_BASE_URL = "everest:https://gamebanana.com/mmdl/";
 const GAMEBANANA_MOD_FILES_LIST_FIELD = "Files().aFiles()";
 
@@ -74,7 +77,7 @@ const GAMEBANANA_MOD_FILES_LIST_FIELD = "Files().aFiles()";
 export const getModDownloadUrl = async (
     gamebananaModId: number,
     source: CancelTokenSource,
-): Promise<string | undefined> => {
+): Promise<ModDownloadurl> => {
     //get query url
     const DEFAULT_GAMEBANANA_API_URL_PROPS = {
         itemType: "Mod",

@@ -66,7 +66,20 @@ export const useModImageUrls = (
 
 
         const fetchImageUrls = async () => {
-            const fetchedImageUrls = await getModImageUrls(gamebananaModId, source);
+            let fetchedImageUrls: ModImageUrls;
+
+            try {
+                fetchedImageUrls = await getModImageUrls(gamebananaModId, source);
+            }
+            catch (error) {
+                console.warn(`Failed to fetch image urls for mod ${gamebananaModId}.`);
+                console.error(error);
+
+                return;
+            }
+
+            if (fetchedImageUrls.length === 0) return;
+
 
             setImageUrls(fetchedImageUrls);
 
