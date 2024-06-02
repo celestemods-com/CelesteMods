@@ -94,9 +94,13 @@ const FAQ: NextPage = () => {
                             Mons is a commandline Everest installer and mod manager for Celeste. You can find installation instructions on <Link href={"https://github.com/coloursofnoise/mons"} className={classes.link}>their GitHub</Link>.
                         </p>
                         <h2>Known Issues</h2>
-                        <h4><Link href="https://github.com/celestemods-com/CelesteMods/issues/724">Difficulty Header Separated From Info Header</Link></h4>
+                        <h4><Link href="https://github.com/celestemods-com/CelesteMods/issues/724" className={classes.link}>Difficulty Header Separated From Info Header</Link></h4>
                         <p>
                             The difficulty tabs are separated from the Mods Table in Safari and other Webkit-based browsers. We are aware of this issue and plan to fix it in the future, but it is not currently a high-priority.
+                        </p>
+                        <h4>Other Issues</h4>
+                        <p>
+                            There are other known issues as well, tracked on our <Link href="https://github.com/celestemods-com/CelesteMods/issues" className={classes.link}>GitHub</Link>. If you encounter an issue that is not listed there, please <Link href="https://github.com/celestemods-com/CelesteMods/blob/main/CONTRIBUTING.md?#filing-a-bug-report" className={classes.link}>open a new issue</Link>.
                         </p>
                         <h2>Other FAQ</h2>
                         <p>Coming soon!</p>
