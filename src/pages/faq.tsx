@@ -28,6 +28,7 @@ const useStyles = createStyles(
             },
             scrollArea: {
                 height: `${pageContentHeightPixels}px`,
+                color: theme.white,
             },
             link: {
                 textDecoration: "underline",

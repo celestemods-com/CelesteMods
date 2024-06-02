@@ -9,7 +9,7 @@ import { difficultyColors } from "~/styles/difficultyColors";
 
 
 const useStyles = createStyles(
-    () => ({
+    (theme) => ({
         outerFooter: {
             backgroundColor: blackBackgroundColor,
             /* top | left and right | bottom */
@@ -17,6 +17,7 @@ const useStyles = createStyles(
         },
         footer: {
             padding: "0 12px",
+            color: theme.white,
         },
         horizontalRule: {
             border: "2px solid",
