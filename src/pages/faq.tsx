@@ -1,9 +1,10 @@
 import type { NextPage } from "next";
 import Link from "next/link";
-import { Flex, ScrollArea, createStyles } from "@mantine/core";
+import { Flex, ScrollArea, Title, createStyles } from "@mantine/core";
 import { Layout } from "~/components/layout/layout";
 import { OLYMPUS_INSTALLATION_URL } from "~/consts/olympusInstallationUrl";
 import { pageContentHeightPixels } from "~/styles/pageContentHeightPixels";
+import { pageTitle } from "~/styles/pageTitle";
 
 
 
@@ -30,7 +31,8 @@ const useStyles = createStyles(
             },
             link: {
                 textDecoration: "underline",
-            }
+            },
+            pageTitle,
         });
     }
 );
@@ -48,6 +50,9 @@ const FAQ: NextPage = () => {
             pageDescription="FAQ"
             pathname="/faq"
         >
+            <Title className={classes.pageTitle} order={1} >
+                FAQ
+            </Title>
             <ScrollArea
                 offsetScrollbars
                 className={classes.scrollArea}
