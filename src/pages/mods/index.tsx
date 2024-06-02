@@ -8,17 +8,14 @@ import { Layout } from "~/components/layout/layout";
 import { ModsTable } from "~/components/mods/modsTable";
 import type { ModWithInfo } from "~/components/mods/types";
 import { MODS_PAGE_PATHNAME } from "~/consts/pathnames";
+import { pageTitle } from "~/styles/pageTitle";
 
 
 
 
 const useStyles = createStyles(
     () => ({
-        pageTitle: {
-            color: "white",
-            fontSize: "35px",
-            textAlign: "center",
-        },
+        pageTitle,
     }),
 );
 
