@@ -13,7 +13,7 @@
     "deploy": "git fetch && pm2 stop celestemods && git pull && npm run build && pm2 restart celestemods --watch"
   },
   "dependencies": {
-    "@emotion/react": "^11.11.3",
+    "@emotion/react": "^11.11.4",
     "@emotion/server": "^11.11.0",
     "@mantine/carousel": "^6.0.16",
     "@mantine/core": "^6.0.16",
