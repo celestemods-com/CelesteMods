@@ -39,7 +39,7 @@
     "pino": "^9.0.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "sharp": "^0.33.2",
+    "sharp": "^0.33.4",
     "swagger-ui-react": "^5.17.5",
     "tabler-icons-react": "^1.56.0",
     "trpc-openapi": "^1.2.0",
