@@ -30,7 +30,7 @@
     "@trpc/next": "^10.45.2",
     "@trpc/react-query": "^10.45.2",
     "@trpc/server": "^10.45.2",
-    "axios": "^1.6.7",
+    "axios": "^1.7.2",
     "dayjs": "^1.11.11",
     "embla-carousel-react": "^7.1.0",
     "mantine-datatable": "^6.0.5",
