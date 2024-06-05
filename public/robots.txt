@@ -1,4 +1,3 @@
 User-agent: *
-Disallow: /coming-soon  # must match the path in /consts/pathnames.ts
 Disallow: /api/
 Disallow: /beta/
