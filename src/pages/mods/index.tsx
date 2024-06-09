@@ -269,7 +269,7 @@ const Mods: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = (
 
     const techQuery = api.tech.getAll.useQuery({}, { queryKey: ["tech.getAll", {}] });
     const techs = techQuery.data ?? [];
-
+    
 
     const modsQuery = api.mod.getAll.useQuery({}, { queryKey: ["mod.getAll", {}] });
 
