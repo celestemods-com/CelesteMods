@@ -41,6 +41,9 @@ const config = {
     locales: ["en"],
     defaultLocale: "en",
   },
+  experimental: {
+    largePageDataBytes: 3 * 1024 * 1024, // 3 MB
+  },
   eslint: { ignoreDuringBuilds: true },
 };
 export default withBundleAnalyzer(config);
