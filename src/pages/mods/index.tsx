@@ -1,4 +1,4 @@
-import type { NextPage } from "next";
+import type { InferGetStaticPropsType, NextPage } from "next";
 import { api } from "~/utils/api";
 import { useMemo } from "react";
 import { createStyles, Title } from "@mantine/core";
@@ -9,6 +9,10 @@ import { ModsTable } from "~/components/mods/modsTable";
 import type { ModWithInfo } from "~/components/mods/types";
 import { MODS_PAGE_PATHNAME } from "~/consts/pathnames";
 import { pageTitle } from "~/styles/pageTitle";
+import { createServerSideHelpers } from '@trpc/react-query/server';
+import { appRouter } from "~/server/api/root";
+import { prisma } from "~/server/prisma";
+import superjson from "superjson";
 
 
 
@@ -206,7 +210,50 @@ const getModsWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: Mod
 
 
 
-const Mods: NextPage = () => {
+export async function getStaticProps() {
+    const helpers = createServerSideHelpers({
+        router: appRouter,
+        ctx: {
+            session: null,
+            prisma: prisma,
+        },
+        transformer: superjson,
+    });
+
+    // prefetch data
+    const promises = [
+        helpers.quality.getAll.prefetch({}),
+    ];
+
+    promises.push(helpers.difficulty.getAll.prefetch({}));
+    promises.push(helpers.publisher.getAll.prefetch({}));
+    promises.push(helpers.tech.getAll.prefetch({}));
+    promises.push(helpers.map.getAll.prefetch({}));
+
+
+    const mods = await helpers.mod.getAll.fetch({});
+
+    mods.forEach((mod) => {
+        promises.push(helpers.rating.getModRatingData.prefetch({ modId: mod.id }));
+    });
+
+
+    await Promise.all(promises);
+
+    return {
+        props: {
+            trpcState: helpers.dehydrate(),
+        },
+        revalidate: 5 * 60, // 5 minutes in seconds
+    };
+};
+
+
+
+
+const Mods: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = (
+    props,
+) => {
     //get common data
     const qualityQuery = api.quality.getAll.useQuery({}, { queryKey: ["quality.getAll", {}] });
     const qualities = qualityQuery.data ?? [];
