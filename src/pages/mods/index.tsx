@@ -222,71 +222,7 @@ const Mods: NextPage = () => {
 
     const techQuery = api.tech.getAll.useQuery({}, { queryKey: ["tech.getAll", {}] });
     const techs = techQuery.data ?? [];
-
-
-    /*
-        //get all mod ids   //not using pagination because backend pagination is awkward with mantine-datatable     //TODO: implement this
-        const modIdsQuery = api.mod.getIds.useQuery({}, { queryKey: ["mod.getIds", {}] });
-
-        const isLoadingModIds = modIdsQuery.isLoading;
-
-        const modIds = useMemo(() => {
-            if (isLoadingModIds) return [];
-
-
-            const modIds_maybeEmpty: number[] = modIdsQuery.data ?? [];
-
-            if (!modIds_maybeEmpty.length) console.log(`modIds_maybeEmpty is empty. modIds = "${modIds}"`);
-
-
-            return modIds_maybeEmpty;
-        }, [isLoadingModIds, modIdsQuery.data]);
-
-
-        //get mods data
-        const modsQueries = api.useQueries(
-            (useQueriesApi) => modIds.map(
-                (id) => useQueriesApi.mod.getById(
-                    {
-                        id,
-                        tableName: "Mod",
-                    },
-                    {
-                        queryKey: [
-                            "mod.getById",
-                            { id, tableName: "Mod" },
-                        ],
-                    },
-                ),
-            ),
-        );
-
-        const isLoadingMods = isLoadingModIds || modsQueries.some((query) => query.isLoading);
-
-
-        const mods = useMemo(() => {
-            if (isLoadingMods) return [];
-
-
-            const mods_maybeEmpty: Mod[] = [];
-
-            modsQueries.forEach((modQuery) => {
-                if (!modQuery.data) return;
-
-                const mod = {
-                    ...modQuery.data,
-                    isExpanded: false,
-                } as Mod;   //TODO!: prove this cast is safe
-
-                if (mod) mods_maybeEmpty.push(mod);
-            });
-
-            if (!mods_maybeEmpty.length) console.log(`mods_maybeEmpty is empty. modIds = "${modIds}"`);
-
-
-            return mods_maybeEmpty;
-        }, [isLoadingMods, modsQueries]);
-        */
+    
 
     const modsQuery = api.mod.getAll.useQuery({}, { queryKey: ["mod.getAll", {}] });
 
