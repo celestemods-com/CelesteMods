@@ -10,10 +10,9 @@ import { pageTitle } from "~/styles/pageTitle";
 
 
 const useStyles = createStyles(
-    (theme) => {
-        return ({
+    (theme) => ({
             scrollArea: {
-                height: `${pageContentHeightPixels + 39}px`,
+                height: `${pageContentHeightPixels}px`,
                 color: theme.white,
                 "h2": {
                     margin: `0 ${theme.spacing.sm} ${theme.spacing.xs}`,
@@ -38,8 +37,7 @@ const useStyles = createStyles(
                 textDecoration: "underline",
             },
             pageTitle,
-        });
-    }
+    }),
 );
 
 

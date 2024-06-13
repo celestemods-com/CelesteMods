@@ -1,1 +1,1 @@
-export const pageContentHeightPixels = 550;
+export const pageContentHeightPixels = 588;
