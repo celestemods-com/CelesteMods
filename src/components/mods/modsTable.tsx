@@ -875,7 +875,7 @@ export const ModsTable = ({ qualities, difficulties, techs, modsWithInfo, isLoad
                             );
                         },
                     }}
-                    height={pageContentHeightPixels}
+                    height={pageContentHeightPixels - 28}
                     striped
                     textSelectionDisabled
                     withColumnBorders
