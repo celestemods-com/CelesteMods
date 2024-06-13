@@ -13,7 +13,7 @@ const useStyles = createStyles(
     (theme) => {
         return ({
             scrollArea: {
-                height: `${pageContentHeightPixels}px`,
+                height: `${pageContentHeightPixels + 39}px`,
                 color: theme.white,
                 "h2": {
                     margin: `0 ${theme.spacing.sm} ${theme.spacing.xs}`,
@@ -22,6 +22,9 @@ const useStyles = createStyles(
                     margin: `0 ${theme.spacing.sm} ${theme.spacing.xs}`,
                 },
                 "h4": {
+                    margin: `0 ${theme.spacing.sm} ${theme.spacing.xs}`,
+                },
+                "h5": {
                     margin: `0 ${theme.spacing.sm} ${theme.spacing.xs}`,
                 },
                 "p": {
@@ -72,16 +75,20 @@ const FAQ: NextPage = () => {
                         <h2>Installing Mods</h2>
                         <h3>Everest</h3>
                         <p>
-                            Everest is the modding API for Celeste. It is required to install most mods, and is installed automatically when setting up Olympus. If you need to install Everest manually, you can find it on their <Link href={"https://github.com/EverestAPI/Everest/releases"} className={classes.link}>GitHub</Link>.
+                            Everest is the modding API for Celeste. It is required to install most mods, and is installed automatically when setting up Olympus. If you need to install Everest manually, you can find it on their <Link className={classes.link} href={"https://github.com/EverestAPI/Everest/releases"}>GitHub</Link>.
                         </p>
-                        <h3 id="mod_managers">Mod Managers</h3>
+                        <h2 id="mod_managers">Mod Managers</h2>
                         <h4>Olympus</h4>
                         <p>
-                            Olympus is the recommended mod manager for Celeste. Everest is installed automatically during setup. You can find installation instructions for Windows, Mac, and Linux on the <Link href={OLYMPUS_INSTALLATION_URL} className={classes.link}>Everest website</Link>.
+                            Olympus is the recommended mod manager for Celeste. Everest is installed automatically during setup. You can find installation instructions for Windows, Mac, and Linux on the <Link className={classes.link} href={OLYMPUS_INSTALLATION_URL}>Everest website</Link>.
                         </p>
                         <h4>CeleMod</h4>
                         <p>
-                            CeleMod is a new alternative mod manager for Celeste. You can find installation instructions on <Link href={"https://gamebanana.com/tools/16200"} className={classes.link}>GameBanana</Link>.
+                            CeleMod is a new alternative mod manager for Celeste. You can find installation instructions on <Link className={classes.link} href={"https://gamebanana.com/tools/16200"}>GameBanana</Link>.
+                        </p>
+                        <h4>Mons</h4>
+                        <p>
+                            Mons is a commandline Everest installer and mod manager for Celeste. You can find installation instructions on <Link className={classes.link} href={"https://github.com/coloursofnoise/mons"}>their GitHub</Link>.
                         </p>
                     </Flex>
                     <Flex
@@ -89,21 +96,31 @@ const FAQ: NextPage = () => {
                         direction="column"
                         wrap="wrap"
                     >
-                        <h4>Mons</h4>
+                        <h2>Report An Issue</h2>
                         <p>
-                            Mons is a commandline Everest installer and mod manager for Celeste. You can find installation instructions on <Link href={"https://github.com/coloursofnoise/mons"} className={classes.link}>their GitHub</Link>.
+                            Our full list of known issues can be found on our <Link className={classes.link} href="https://github.com/celestemods-com/CelesteMods/issues">GitHub</Link>. If you encounter a new bug, please <Link className={classes.link} href="https://github.com/celestemods-com/CelesteMods/blob/main/CONTRIBUTING.md?#filing-a-bug-report">open an issue</Link>.
                         </p>
-                        <h2>Known Issues</h2>
-                        <h4><Link href="https://github.com/celestemods-com/CelesteMods/issues/724" className={classes.link}>Difficulty Header Separated From Info Header</Link></h4>
+                        <h3>Known Issues</h3>
+                        <h5><Link className={classes.link} href="https://github.com/celestemods-com/CelesteMods/issues/724">Difficulty Header Separated From Info Header</Link></h5>
                         <p>
-                            The difficulty tabs are separated from the Mods Table in Safari and other Webkit-based browsers. We are aware of this issue and plan to fix it in the future, but it is not currently a high-priority.
+                            The difficulty tabs are separated from the Mods table in Safari and other Webkit-based browsers. We are aware of this issue and plan to fix it in the future, but it is not currently a high-priority.
                         </p>
-                        <h4>Other Issues</h4>
+                        <h2>Roadmap</h2>
                         <p>
-                            There are other known issues as well, tracked on our <Link href="https://github.com/celestemods-com/CelesteMods/issues" className={classes.link}>GitHub</Link>. If you encounter an issue that is not listed there, please <Link href="https://github.com/celestemods-com/CelesteMods/blob/main/CONTRIBUTING.md?#filing-a-bug-report" className={classes.link}>open a new issue</Link>.
+                            The most up-to-date roadmap is our GitHub <Link className={classes.link} href="https://github.com/celestemods-com/CelesteMods/milestones?direction=asc&sort=title">milestones</Link>.
                         </p>
-                        <h2>Other FAQ</h2>
-                        <p>Coming soon!</p>
+                        <h4>v0.2.0</h4>
+                        <p>
+                            This update will add the ability for users to login and submit new map quality and difficulty ratings.
+                        </p>
+                        <h4>v0.3.0</h4>
+                        <p>
+                            This update will add tags to the UI for mods and maps, and will allow users to mark various maps as completed.
+                        </p>
+                        <h4>v0.4.0</h4>
+                        <p>
+                            This update will add the ability for users to submit new mods and maps.
+                        </p>
                     </Flex>
                 </Flex>
             </ScrollArea>
