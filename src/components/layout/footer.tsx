@@ -56,6 +56,7 @@ export const Footer = () => {
                     <Link
                         href={cmlDiscordInviteUrl}
                         className={classes.discordLink}
+                        target="_blank"
                     >
                         Join Our Discord Server!
                     </Link>
