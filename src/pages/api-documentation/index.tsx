@@ -7,7 +7,7 @@ import "swagger-ui-react/swagger-ui.css";
 
 
 const SwaggerUI = dynamic(
-    () => import('swagger-ui-react'),
+    () => import("swagger-ui-react"),
     { ssr: false },
 );
 
@@ -17,9 +17,9 @@ const SwaggerUI = dynamic(
 const ApiDocumentation: NextPage = () => {
     return (
         <MantineProvider withGlobalStyles theme={{
-            colorScheme: 'light',
+            colorScheme: "light",
         }}>
-            <SwaggerUI url={`${process.env.NEXT_PUBLIC_BASE_PATH ? process.env.NEXT_PUBLIC_BASE_PATH : ""}/api/openapi.json`} />
+            <SwaggerUI url="/api/openapi.json" />
         </MantineProvider>
     );
 };
