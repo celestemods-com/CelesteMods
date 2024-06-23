@@ -1,130 +1,121 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { isStringArray } from "~/utils/typeGuards";
+import { writeFile, readFile } from "fs/promises";
+import { parse } from "yaml";
+import { serverLogger as logger } from "~/logger/serverLogger";
 
 
 
 
-type Key = string;
+const MOD_SEARCH_DATABASE_YAML_URL = "https://maddie480.ovh/celeste/mod_search_database.yaml";
 
-const CATEGORY_INFO_KEYS = [
-    "newFiles",
-    "deletedFiles"
-] as const satisfies Key[];
+const MOD_SEARCH_DATABASE_JSON_PATH = process.env.MOD_SEARCH_DATABASE_PATH || "./public/mod_search_database.json";
 
-const FILE_CATEGORIES = [
-    "modFiles",
-    "modImages",
-    "richPresenceIcons"
-] as const satisfies Key[];
+const MOD_SEARCH_DATABASE_FILE_ENCODING = "utf-8";
+
+
+const FILE_SYSTEM_ERROR_STRING = "Failed to write the Mod Search Database to the file system.";
 
 
 
 
-type FileName = string;
+export type ModSearchDatabase = Record<string, unknown>;
 
 
-type CategoryUpdateKeys = typeof CATEGORY_INFO_KEYS[number];
-
-type CategoryUpdate = {
-    [Key in CategoryUpdateKeys]: FileName[];
-};
 
 
-type FileCategory = typeof FILE_CATEGORIES[number];
-
-type Update = {
-    [Key in FileCategory]: CategoryUpdate;
+const isValidModSearchDatabase = (value: unknown): value is ModSearchDatabase => {
+    return true;    //TODO!!!: Implement this
 };
 
 
 
 
 /** This function returns HTTP status codes.
- * 200: If the request is authenticated and the update is valid,
- * 401 or 403: If the request is not authenticated.
+ * 200: The request is authenticated.
+ * 401 or 403: The request is not authenticated.
+ */
+const authenticate = (req: NextApiRequest): number => {
+    //TODO!!!: Implement this
+    return 200;
+}
+
+
+
+
+/** Updates the mod search database json file.
+ * Also returns the parsed and validated object.
 */
-const isAuthenticated = (req: NextApiRequest): number => {
+const getNewModSearchDatabase = async (): Promise<ModSearchDatabase> => {
+    const response = await fetch(MOD_SEARCH_DATABASE_YAML_URL);
 
+    if (!response.ok) {
+        throw `Failed to download the Mod Search Database. Status code: ${response.status}`;
+    }
+
+
+    const newYaml = await response.text();
+
+    const parsedYaml: unknown = parse(newYaml);
+
+    if (!isValidModSearchDatabase(parsedYaml)) {
+        throw "The downloaded Mod Search Database failed validation.";
+    }
+
+
+    try {
+        await writeFile(MOD_SEARCH_DATABASE_JSON_PATH, JSON.stringify(parsedYaml), MOD_SEARCH_DATABASE_FILE_ENCODING);
+    } catch (error) {
+        logger.error(`${FILE_SYSTEM_ERROR_STRING} ${error}`);
+
+        throw FILE_SYSTEM_ERROR_STRING;
+    }
+
+
+    return parsedYaml;
 };
 
 
 
 
-const isValidCategoryUpdate = (value: unknown): value is CategoryUpdate => {
-    if (typeof value !== "object" || value === null) {
-        return false;
-    }
-
-
-    const categoryUpdate = value as Record<Key, unknown>;
-
-
-    for (const key of CATEGORY_INFO_KEYS) {
-        const categoryUpdateArray = categoryUpdate[key];
-
-        if (!isStringArray(categoryUpdateArray)) {
-            return false;
-        }
-    }
-
-
-    return true;
-};
-
-
-const isValidUpdate = (value: unknown): value is Update => {
-    if (typeof value !== "object" || value === null) {
-        return false;
-    }
-
-
-    const update = value as Record<Key, unknown>;
-
-
-    for (const categoryName of FILE_CATEGORIES) {
-        const categoryUpdate = update[categoryName];
-
-        if (!isValidCategoryUpdate(categoryUpdate)) {
-            return false;
-        }
-    }
-
-
-    return true;
-};
-
-
-
-
-const updateStorageBucket = async (categoryName: FileCategory, categoryUpdate: CategoryUpdate): Promise<void> => {
-    //TODO!!! Implement this function
-    // 
-};
-
-
-
-
+/** Downloads the new Mod Search Database before sending a response.
+ * Sends a 200 status code if the download was successful.
+ * Sends a 500 status code if the download was unsuccessful.
+*/
 const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
-    const statusCode = isAuthenticated(req);
+    const authenticationStatusCode = authenticate(req);
 
-    if (statusCode !== 200) {
-        res.status(statusCode).end();
+    if (authenticationStatusCode !== 200) {
+        res.status(authenticationStatusCode).end();
+
         return;
     }
 
 
-    const update = JSON.parse(req.body);
+    // Update the Mod Search Database
+    let modSearchDatabase: ModSearchDatabase;
 
-    if (!isValidUpdate(update)) {
-        res.status(400).end();
+    try {
+        modSearchDatabase = await getNewModSearchDatabase();
+    } catch (error) {
+        if (error !== FILE_SYSTEM_ERROR_STRING) {
+            logger.error(error);
+        }
+
+
+        const errorMessage = typeof error === "string" ? error : "An unknown error occurred while updating the Mod Search Database.";
+
+
+        res.status(500).json(errorMessage);
+
         return;
     }
 
 
-    res.status(202).end();
+    res.status(200).end();
 
 
     // Update the storage buckets
+    //TODO!!!!: continue here
 };
 
 export default handler;
