@@ -16,6 +16,11 @@ const MOD_SEARCH_DATABASE_FILE_ENCODING = "utf-8";
 const FILE_SYSTEM_ERROR_STRING = "Failed to write the Mod Search Database to the file system.";
 
 
+const GAMEBANANA_MOD_DOWNLOAD_BASE_URL = "https://gamebanana.com/dl/";
+
+const FILE_CATEGORIES = ["mods", "screenshots", "richPresenceIcons"] as const satisfies string[];
+
+
 
 
 export type ModSearchDatabase = Record<string, unknown>;
@@ -37,7 +42,7 @@ const isValidModSearchDatabase = (value: unknown): value is ModSearchDatabase =>
 const authenticate = (req: NextApiRequest): number => {
     //TODO!!!: Implement this
     return 200;
-}
+};
 
 
 
@@ -46,11 +51,16 @@ const authenticate = (req: NextApiRequest): number => {
  * Also returns the parsed and validated object.
 */
 const getNewModSearchDatabase = async (): Promise<ModSearchDatabase> => {
+    logger.trace("Downloading the Mod Search Database.");
+
+
     const response = await fetch(MOD_SEARCH_DATABASE_YAML_URL);
 
     if (!response.ok) {
         throw `Failed to download the Mod Search Database. Status code: ${response.status}`;
     }
+
+    logger.trace("Successfully downloaded the Mod Search Database.");
 
 
     const newYaml = await response.text();
@@ -60,6 +70,8 @@ const getNewModSearchDatabase = async (): Promise<ModSearchDatabase> => {
     if (!isValidModSearchDatabase(parsedYaml)) {
         throw "The downloaded Mod Search Database failed validation.";
     }
+
+    logger.trace("Successfully parsed the Mod Search Database.");
 
 
     try {
@@ -77,11 +89,32 @@ const getNewModSearchDatabase = async (): Promise<ModSearchDatabase> => {
 
 
 
+/** Updates the GameBanana mirror.
+ * Returns the HTTP status code of the update.
+*/
+const updateGamebananaMirror = async (modSearchDatabase: ModSearchDatabase): Promise<number> => {
+    //TODO!!!: Implement this
+    //continue here
+};
+
+
+
+
+const sendSuccessSignal = async (updateStatus: number): Promise<void> => {
+    //TODO!!!: Implement this
+};
+
+
+
+
 /** Downloads the new Mod Search Database before sending a response.
  * Sends a 200 status code if the download was successful.
  * Sends a 500 status code if the download was unsuccessful.
 */
 const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
+    logger.trace("GameBanana mirror update request received.");
+
+
     const authenticationStatusCode = authenticate(req);
 
     if (authenticationStatusCode !== 200) {
@@ -89,6 +122,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void>
 
         return;
     }
+
+    logger.info("Authentic GameBanana mirror update request received.")
 
 
     // Update the Mod Search Database
@@ -110,12 +145,26 @@ const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void>
         return;
     }
 
+    logger.info("The Mod Search Database has been updated.");
 
-    res.status(200).end();
+
+    res.status(202).end();
 
 
-    // Update the storage buckets
-    //TODO!!!!: continue here
+    // Update the GameBanana mirror
+    const mirrorUpdateStatus = await updateGamebananaMirror(modSearchDatabase);
+
+    if (mirrorUpdateStatus !== 200) {
+        logger.error(`Failed to update the GameBanana mirror. Status code: ${mirrorUpdateStatus}`);
+
+        return;
+    }
+
+    logger.info("Successfully updated the GameBanana mirror.");
+
+
+    // Send a success signal
+    await sendSuccessSignal(mirrorUpdateStatus);
 };
 
 export default handler;
