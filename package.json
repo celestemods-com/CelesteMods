@@ -58,7 +58,7 @@
     "@typescript-eslint/parser": "^7.13.0",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.3",
-    "pino-pretty": "^11.1.0",
+    "pino-pretty": "^11.2.1",
     "prisma": "^5.15.0",
     "tsx": "^4.15.4",
     "typescript": "^5.4.5"
