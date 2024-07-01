@@ -39,7 +39,7 @@ const isValidModSearchDatabase = (value: unknown): value is ModSearchDatabase =>
  * 200: The request is authenticated.
  * 401 or 403: The request is not authenticated.
  */
-const authenticate = (req: NextApiRequest): number => {
+const authenticateRequest = (req: NextApiRequest): number => {
     //TODO!!!: Implement this
     return 200;
 };
@@ -115,7 +115,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void>
     logger.trace("GameBanana mirror update request received.");
 
 
-    const authenticationStatusCode = authenticate(req);
+    const authenticationStatusCode = authenticateRequest(req);
 
     if (authenticationStatusCode !== 200) {
         res.status(authenticationStatusCode).end();
