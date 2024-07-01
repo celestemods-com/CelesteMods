@@ -2,6 +2,8 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { writeFile, readFile } from "fs/promises";
 import { parse } from "yaml";
 import { serverLogger as logger } from "~/logger/serverLogger";
+import { sendSuccessSignal } from "~/server/gamebananaMirror/sendSuccessSignal";
+import { authenticateUpdateWebhookRequest } from "~/server/gamebananaMirror/authentication/authenticateUpdateWebhookRequest";
 
 
 
@@ -30,18 +32,6 @@ export type ModSearchDatabase = Record<string, unknown>;
 
 const isValidModSearchDatabase = (value: unknown): value is ModSearchDatabase => {
     return true;    //TODO!!!: Implement this
-};
-
-
-
-
-/** This function returns HTTP status codes.
- * 200: The request is authenticated.
- * 401 or 403: The request is not authenticated.
- */
-const authenticateRequest = (req: NextApiRequest): number => {
-    //TODO!!!: Implement this
-    return 200;
 };
 
 
@@ -100,13 +90,6 @@ const updateGamebananaMirror = async (modSearchDatabase: ModSearchDatabase): Pro
 
 
 
-const sendSuccessSignal = async (updateStatus: number): Promise<void> => {
-    //TODO!!!: Implement this
-};
-
-
-
-
 /** Downloads the new Mod Search Database before sending a response.
  * Sends a 200 status code if the download was successful.
  * Sends a 500 status code if the download was unsuccessful.
@@ -115,7 +98,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void>
     logger.trace("GameBanana mirror update request received.");
 
 
-    const authenticationStatusCode = authenticateRequest(req);
+    const authenticationStatusCode = await authenticateUpdateWebhookRequest(req);
 
     if (authenticationStatusCode !== 200) {
         res.status(authenticationStatusCode).end();
@@ -123,7 +106,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void>
         return;
     }
 
-    logger.info("Authentic GameBanana mirror update request received.")
+    logger.info("Authentic GameBanana mirror update request received.");
 
 
     // Update the Mod Search Database
