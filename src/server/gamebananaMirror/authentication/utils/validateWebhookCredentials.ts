@@ -1,8 +1,8 @@
 import type { NextApiRequest } from "next";
-import { stringToArrayBuffer } from "./stringToArrayBuffer";
-import { importPublicKey } from "./importPublicKey";
+import { stringToArrayBuffer } from "./keyHandling/stringToArrayBuffer";
+import { importPublicKey } from "./keyHandling/importPublicKey";
 import { getCurrentTime } from "~/server/api/utils/getCurrentTime";
-import { base64StringToArrayBuffer } from "./base64StringToArrayBuffer";
+import { base64StringToArrayBuffer } from "./keyHandling/base64StringToArrayBuffer";
 
 
 

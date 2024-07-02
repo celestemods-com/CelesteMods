@@ -1,4 +1,5 @@
 import { type ModSearchDatabase } from "./yamlHandlers/modSearchDatabase";
+import { serverLogger as logger } from "~/logger/serverLogger";
 
 
 

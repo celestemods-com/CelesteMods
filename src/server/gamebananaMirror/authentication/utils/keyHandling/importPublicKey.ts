@@ -10,6 +10,7 @@ import { base64StringToArrayBuffer } from "./base64StringToArrayBuffer";
 export const importPublicKey = (publicKeyString: string): Promise<CryptoKey> => {
     const binaryDer = base64StringToArrayBuffer(publicKeyString);
 
+    
     // parse the DER-encoded binary data
     const publicKey = crypto.subtle.importKey(
         "spki",
