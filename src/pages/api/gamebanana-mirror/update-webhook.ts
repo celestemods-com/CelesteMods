@@ -4,18 +4,12 @@ import { sendSuccessSignal } from "~/server/gamebananaMirror/sendSuccessSignal";
 import { authenticateUpdateWebhookRequest } from "~/server/gamebananaMirror/authentication/authenticateUpdateWebhookRequest";
 import { type ModSearchDatabase, modSearchDatabaseFileSystemErrorString, getUpdatedModSearchDatabase } from "~/server/gamebananaMirror/yamlHandlers/modSearchDatabase";
 import { updateGamebananaMirror } from "~/server/gamebananaMirror/updateGamebananaMirror";
+import { type EverestUpdateDatabase, everestUpdateDatabaseFileSystemErrorString, getUpdatedEverestUpdateDatabase } from "~/server/gamebananaMirror/yamlHandlers/everestUpdateDatabase";
 
 
 
 
-const GAMEBANANA_MOD_DOWNLOAD_BASE_URL = "https://gamebanana.com/dl/";
-
-const FILE_CATEGORIES = ["mods", "screenshots", "richPresenceIcons"] as const satisfies string[];
-
-
-
-
-/** Downloads the new Mod Search Database before sending a response.
+/** Downloads the new Everest Update Database and Mod Search Database before sending a response.
  * Sends a 200 status code if the download was successful.
  * Sends a 500 status code if the download was unsuccessful.
  * Sends 40X or 500 status codes if the authentication fails.
@@ -33,6 +27,28 @@ const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void>
     }
 
     logger.info("Authentic GameBanana mirror update request received.");
+
+
+    // Update the Everest Update Database
+    let everestUpdateDatabase: EverestUpdateDatabase;
+
+    try {
+        everestUpdateDatabase = await getUpdatedEverestUpdateDatabase();
+    } catch (error) {
+        if (error !== everestUpdateDatabaseFileSystemErrorString) {
+            logger.error(error);
+        }
+
+
+        const errorMessage = typeof error === "string" ? error : "An unknown error occurred while updating the Everest Update Database.";
+
+
+        res.status(500).json(errorMessage);
+
+        return;
+    }
+
+    logger.info("The Everest Update Database has been updated.");
 
 
     // Update the Mod Search Database
@@ -61,7 +77,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void>
 
 
     // Update the GameBanana mirror
-    const mirrorUpdateStatus = await updateGamebananaMirror(modSearchDatabase);
+    const mirrorUpdateStatus = await updateGamebananaMirror(everestUpdateDatabase, modSearchDatabase);
 
     if (mirrorUpdateStatus !== 200) {
         logger.error(`Failed to update the GameBanana mirror. Status code: ${mirrorUpdateStatus}`);

@@ -1,4 +1,4 @@
-import { getCurrentYaml, getFileSystemErrorString, getUpdatedYaml } from "../utils/getUpdatedYamlFile";
+import { getCurrentYaml, getFileSystemErrorString, getUpdatedYaml } from "./utils/getUpdatedYamlFile";
 
 
 
@@ -28,6 +28,7 @@ const isValidModSearchDatabase = (value: unknown): value is ModSearchDatabase =>
 
 
 
+/** Returns the mod search database json file currently stored on disk. */
 export const getCurrentModSearchDatabase = async (): Promise<ModSearchDatabase> => {
     const parsedYaml = getCurrentYaml(
         MOD_SEARCH_DATABASE_YAML_NAME,
