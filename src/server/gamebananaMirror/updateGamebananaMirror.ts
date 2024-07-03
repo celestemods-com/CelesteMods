@@ -5,13 +5,6 @@ import { serverLogger as logger } from "~/logger/serverLogger";
 
 
 
-const GAMEBANANA_MOD_DOWNLOAD_BASE_URL = "https://gamebanana.com/dl/";
-
-const FILE_CATEGORIES = ["mods", "screenshots", "richPresenceIcons"] as const satisfies string[];
-
-
-
-
 /** Updates the GameBanana mirror.
  * Returns the HTTP status code of the update.
 */

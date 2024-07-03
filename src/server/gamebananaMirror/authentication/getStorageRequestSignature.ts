@@ -1,6 +1,6 @@
-import { stringToArrayBuffer } from "./utils/keyHandling/stringToArrayBuffer";
-import { importPrivateKey } from "./utils/keyHandling/importPrivateKey";
-import { arrayBufferToBase64String } from "./utils/keyHandling/base64StringToArrayBuffer";
+import { stringToArrayBuffer } from "../arrayBufferProcessing/stringToArrayBuffer";
+import { importPrivateKey } from "./utils/importPrivateKey";
+import { arrayBufferToBase64String } from "../arrayBufferProcessing/base64StringToArrayBuffer";
 
 
 
