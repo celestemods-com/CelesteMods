@@ -59,7 +59,7 @@ export const getUpdatedYaml = async <
     jsonPath: string,
     isValidParsedYaml: TypePredicate,
 ): Promise<ParsedYaml> => {
-    logger.trace(`Downloading the ${yamlName}.`);
+    logger.debug(`Downloading the ${yamlName}.`);
 
 
     const response = await fetch(yamlUrl);
@@ -68,7 +68,7 @@ export const getUpdatedYaml = async <
         throw `Failed to download the ${yamlName}. Status code: ${response.status}`;
     }
 
-    logger.trace(`Successfully downloaded the ${yamlName}.`);
+    logger.debug(`Successfully downloaded the ${yamlName}.`);
 
 
     const newYaml = await response.text();
@@ -79,7 +79,7 @@ export const getUpdatedYaml = async <
         throw `The downloaded ${yamlName} failed validation.`;
     }
 
-    logger.trace(`Successfully parsed the ${yamlName}.`);
+    logger.debug(`Successfully parsed the ${yamlName}.`);
 
 
     try {

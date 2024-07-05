@@ -2,9 +2,126 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { serverLogger as logger } from "~/logger/serverLogger";
 import { sendSuccessSignal } from "~/server/gamebananaMirror/sendSuccessSignal";
 import { authenticateUpdateWebhookRequest } from "~/server/gamebananaMirror/authentication/authenticateUpdateWebhookRequest";
-import { type ModSearchDatabase, modSearchDatabaseFileSystemErrorString, getUpdatedModSearchDatabase } from "~/server/gamebananaMirror/yamlHandlers/modSearchDatabase";
-import { updateGamebananaMirror } from "~/server/gamebananaMirror/updateGamebananaMirror";
-import { type EverestUpdateDatabase, everestUpdateDatabaseFileSystemErrorString, getUpdatedEverestUpdateDatabase } from "~/server/gamebananaMirror/yamlHandlers/everestUpdateDatabase";
+import { modSearchDatabaseFileSystemErrorString, getUpdatedModSearchDatabase } from "~/server/gamebananaMirror/yamlHandlers/modSearchDatabase";
+import { FILE_CATEGORIES, type FileCategory } from "~/server/gamebananaMirror/cloudflareApi/constsAndTypes";
+
+
+
+
+const FILE_EXTENSIONS_BY_CATEGORY = {
+    "mods": ".zip",
+    "screenshots": ".png",
+    "richPresenceIcons": ".png",
+} as const satisfies {
+    [Category in FileCategory]: string;
+};
+
+
+
+
+/** For each FileCategory, contains an array with the file names of all of the files that should now exist for that Category.
+ * Each file name must be a non-empty string, and must contain a file extension matching its Category.
+ * Duplicate file names are ignored.
+ */
+type Update_FileCategories = {
+    [Category in FileCategory]: string[];
+};
+
+
+/** For each FileCategory, contains an array with the file names of all of the files that should now exist for that Category.
+ * Each file name must be a non-empty string, and must contain a file extension matching its Category.
+ * Duplicate file names are ignored.
+ * isModSearchDatabaseUpdate may be omitted.
+ */
+type Update = {
+    isModSearchDatabaseUpdate?: boolean;
+} & Update_FileCategories;
+
+
+
+
+const isValidFileExtension = <
+    Category extends FileCategory,
+>(fileExtension: string, fileCategory: Category): boolean => {
+    const expectedFileExtension = FILE_EXTENSIONS_BY_CATEGORY[fileCategory];
+
+    return fileExtension === expectedFileExtension;
+};
+
+
+const isValidFileName = <
+    Category extends FileCategory,
+>(
+    value: unknown,
+    fileCategory: Category,
+): value is string => {
+    if (typeof value !== "string") {
+        return false;
+    }
+
+
+    const hasFileExtension = value.includes(".");
+
+    if (!hasFileExtension) {
+        return false;
+    }
+
+    const fileExtension = value.slice(value.lastIndexOf("."));
+
+
+    return isValidFileExtension(fileExtension, fileCategory);
+};
+
+
+const isFileCategory = (value: string): value is FileCategory => FILE_CATEGORIES.includes(value as FileCategory);
+
+
+const isUpdate = (value: unknown): value is Update => {
+    if (typeof value !== "object" || value === null) {
+        return false;
+    }
+
+
+    if ("isModSearchDatabaseUpdate" in value && typeof value.isModSearchDatabaseUpdate !== "boolean") {
+        return false;
+    }
+
+
+    for (const [fileCategory, fileNames] of Object.entries(value)) {
+        if (!isFileCategory(fileCategory)) {
+            return false;
+        }
+
+
+        if (!Array.isArray(fileNames)) {
+            return false;
+        }
+
+        for (const fileName of fileNames) {
+            if (!isValidFileName(fileName, fileCategory)) {
+                return false;
+            }
+        }
+    }
+
+
+    return true;
+};
+
+
+
+
+/** Updates the GameBanana mirror.
+ * Returns the HTTP status code of the update.
+*/
+const updateGamebananaMirror = async (): Promise<number> => {
+    logger.debug("Updating the GameBanana mirror.");
+
+    return 200;
+
+    //TODO!!!: Implement this
+    // continue here
+};
 
 
 
@@ -15,9 +132,20 @@ import { type EverestUpdateDatabase, everestUpdateDatabaseFileSystemErrorString,
  * Sends 40X or 500 status codes if the authentication fails.
 */
 const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
-    logger.trace("GameBanana mirror update request received.");
+    logger.info("GameBanana mirror update request received.");
 
 
+    // Validate the request method
+    if (req.method !== "POST") {
+        res.status(405).end();
+
+        return;
+    }
+
+    logger.info("Request method validated.");
+
+
+    // Authenticate the request
     const authenticationStatusCode = await authenticateUpdateWebhookRequest(req);
 
     if (authenticationStatusCode !== 200) {
@@ -26,58 +154,54 @@ const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void>
         return;
     }
 
-    logger.info("Authentic GameBanana mirror update request received.");
+    logger.info("GameBanana mirror update request authenticated.");
 
 
-    // Update the Everest Update Database
-    let everestUpdateDatabase: EverestUpdateDatabase;
+    // Parse the request body
+    const update: unknown = req.body;
 
-    try {
-        everestUpdateDatabase = await getUpdatedEverestUpdateDatabase();
-    } catch (error) {
-        if (error !== everestUpdateDatabaseFileSystemErrorString) {
-            logger.error(error);
-        }
-
-
-        const errorMessage = typeof error === "string" ? error : "An unknown error occurred while updating the Everest Update Database.";
-
-
-        res.status(500).json(errorMessage);
+    if (!isUpdate(update)) {
+        res.status(400).json("Invalid request body.");
 
         return;
     }
 
-    logger.info("The Everest Update Database has been updated.");
+    logger.info("Request body parsed.");
 
 
-    // Update the Mod Search Database
-    let modSearchDatabase: ModSearchDatabase;
+    // Update the Mod Search Database if requested
+    if (update.isModSearchDatabaseUpdate) {
+        logger.info("Updating the Mod Search Database.");
 
-    try {
-        modSearchDatabase = await getUpdatedModSearchDatabase();
-    } catch (error) {
-        if (error !== modSearchDatabaseFileSystemErrorString) {
-            logger.error(error);
+        try {
+            await getUpdatedModSearchDatabase();
+        } catch (error) {
+            if (error !== modSearchDatabaseFileSystemErrorString) {
+                logger.error(error);
+            }
+
+
+            const errorMessage = typeof error === "string" ? error : "An unknown error occurred while updating the Mod Search Database.";
+
+
+            res.status(500).json(errorMessage);
+
+            return;
         }
 
 
-        const errorMessage = typeof error === "string" ? error : "An unknown error occurred while updating the Mod Search Database.";
+        logger.info("The Mod Search Database has been updated.");
 
+        res.status(200).end();
+    } else {
+        logger.debug("The Mod Search Database does not need to be updated.");
 
-        res.status(500).json(errorMessage);
-
-        return;
+        res.status(202).end();
     }
-
-    logger.info("The Mod Search Database has been updated.");
-
-
-    res.status(202).end();
 
 
     // Update the GameBanana mirror
-    const mirrorUpdateStatus = await updateGamebananaMirror(everestUpdateDatabase, modSearchDatabase);
+    const mirrorUpdateStatus = await updateGamebananaMirror();
 
     if (mirrorUpdateStatus !== 200) {
         logger.error(`Failed to update the GameBanana mirror. Status code: ${mirrorUpdateStatus}`);

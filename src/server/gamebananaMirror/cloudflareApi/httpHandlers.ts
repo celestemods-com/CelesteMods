@@ -1,5 +1,3 @@
-import type { ModSearchDatabase } from "../yamlHandlers/modSearchDatabase";
-import type { EverestUpdateDatabase } from "../yamlHandlers/everestUpdateDatabase";
 import { serverLogger as logger } from "~/logger/serverLogger";
 import { type FileCategory, type FileDownloadRequestBody, type FileUploadRequestBody, type FileDeletionRequestBody, GAMEBANANA_MIRROR_WORKER_URL, DELETE_BATCH_SIZE } from "./constsAndTypes";
 import { getStorageRequestSignature } from "../authentication/getStorageRequestSignature";
@@ -20,7 +18,7 @@ const getFullFileName = (fileNameNoExtension: string, fileExtension: string): st
 
 
 
-const sendDownloadUrlToMirror = async (fileCategory: FileCategory, fileNameNoExtension: string, fileExtension: string): Promise<void> => {
+export const sendDownloadUrlToMirror = async (fileCategory: FileCategory, fileNameNoExtension: string, fileExtension: string): Promise<void> => {
     const fullFileName = getFullFileName(fileNameNoExtension, fileExtension);
 
 
@@ -57,7 +55,7 @@ const sendDownloadUrlToMirror = async (fileCategory: FileCategory, fileNameNoExt
     const signature = await getStorageRequestSignature(requestBodyString);
 
 
-    logger.trace(`Sending download URL to the GameBanana mirror: ${requestBodyString}`);
+    logger.debug(`Sending download URL to the GameBanana mirror: ${requestBodyString}`);
 
     const response = await fetch(GAMEBANANA_MIRROR_WORKER_URL, {
         method: "PUT",
@@ -72,7 +70,7 @@ const sendDownloadUrlToMirror = async (fileCategory: FileCategory, fileNameNoExt
         throw `Failed to download file to the GameBanana mirror via URL. Status code: ${response.status}`;
     }
 
-    logger.trace(`Downloaded file to the GameBanana mirror via URL: ${fullFileName}`);
+    logger.debug(`Downloaded file to the GameBanana mirror via URL: ${fullFileName}`);
 };
 
 
@@ -101,7 +99,7 @@ export const uploadFileToMirror = async (
     const signature = await getStorageRequestSignature(requestBodyString);
 
 
-    logger.trace(`Uploading file to the GameBanana mirror: ${JSON.stringify({ fileCategory, fileName: fullFileName })}`);   // Do not log the file content
+    logger.debug(`Uploading file to the GameBanana mirror: ${JSON.stringify({ fileCategory, fileName: fullFileName })}`);   // Do not log the file content
 
     const response = await fetch(GAMEBANANA_MIRROR_WORKER_URL, {
         method: "PUT",
@@ -116,14 +114,14 @@ export const uploadFileToMirror = async (
         throw `Failed to upload file to the GameBanana mirror. Status code: ${response.status}`;
     }
 
-    logger.trace(`Uploaded file to the GameBanana mirror: ${fullFileName}`);
+    logger.debug(`Uploaded file to the GameBanana mirror: ${fullFileName}`);
 };
 
 
 
 
 export const deleteFilesFromMirror = async (fileCategory: FileCategory, fileNames: [string, ...string[]]): Promise<void> => {
-    logger.trace(`Deleting files from the GameBanana mirror: ${JSON.stringify({ fileCategory, fileNames })}`);
+    logger.debug(`Deleting files from the GameBanana mirror: ${JSON.stringify({ fileCategory, fileNames })}`);
 
 
     for (let index = 0; index < fileNames.length; index += DELETE_BATCH_SIZE) {
@@ -145,7 +143,7 @@ export const deleteFilesFromMirror = async (fileCategory: FileCategory, fileName
         const signature = await getStorageRequestSignature(requestBodyString);
 
 
-        logger.trace(`Deleting a batch of files from the GameBanana mirror: ${JSON.stringify({ fileCategory, fileNames: fileNamesBatch })}`);
+        logger.debug(`Deleting a batch of files from the GameBanana mirror: ${JSON.stringify({ fileCategory, fileNames: fileNamesBatch })}`);
 
         const response = await fetch(GAMEBANANA_MIRROR_WORKER_URL, {
             method: "DELETE",
@@ -164,5 +162,5 @@ export const deleteFilesFromMirror = async (fileCategory: FileCategory, fileName
     }
 
 
-    logger.trace(`Deleted files from the GameBanana mirror: ${JSON.stringify({ fileCategory, fileNames })}`);
+    logger.debug(`Deleted files from the GameBanana mirror: ${JSON.stringify({ fileCategory, fileNames })}`);
 };
