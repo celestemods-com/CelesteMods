@@ -19,18 +19,18 @@ const FILE_EXTENSIONS_BY_CATEGORY = {
 
 
 
-/** For each FileCategory, contains an array with the file names of all of the files that should now exist for that Category.
- * Each file name must be a non-empty string, and must contain a file extension matching its Category.
- * Duplicate file names are ignored.
+/** For each FileCategory, contains an array with the download URLs of all of the files that should now exist for that Category.
+ * Each download URL must be a non-empty string. If the URL contains a file extension, it must match its Category.
+ * Duplicate URLs are ignored.
  */
 type Update_FileCategories = {
     [Category in FileCategory]: string[];
 };
 
 
-/** For each FileCategory, contains an array with the file names of all of the files that should now exist for that Category.
- * Each file name must be a non-empty string, and must contain a file extension matching its Category.
- * Duplicate file names are ignored.
+/** For each FileCategory, contains an array with the download URLs of all of the files that should now exist for that Category.
+ * Each download URL must be a non-empty string. If the URL contains a file extension, it must match its Category.
+ * Duplicate URLs are ignored.
  * isModSearchDatabaseUpdate may be omitted.
  */
 type Update = {
@@ -49,7 +49,7 @@ const isValidFileExtension = <
 };
 
 
-const isValidFileName = <
+const isValidDownloadUrl = <
     Category extends FileCategory,
 >(
     value: unknown,
@@ -63,7 +63,7 @@ const isValidFileName = <
     const hasFileExtension = value.includes(".");
 
     if (!hasFileExtension) {
-        return false;
+        return true;
     }
 
     const fileExtension = value.slice(value.lastIndexOf("."));
@@ -98,7 +98,7 @@ const isUpdate = (value: unknown): value is Update => {
         }
 
         for (const fileName of fileNames) {
-            if (!isValidFileName(fileName, fileCategory)) {
+            if (!isValidDownloadUrl(fileName, fileCategory)) {
                 return false;
             }
         }
