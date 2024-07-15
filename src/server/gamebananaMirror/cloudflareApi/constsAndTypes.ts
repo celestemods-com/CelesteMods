@@ -12,6 +12,8 @@ export const FILE_CATEGORIES = ["mods", "screenshots", "richPresenceIcons"] as c
 
 export type FileCategory = typeof FILE_CATEGORIES[number];
 
+export const isFileCategory = (value: string): value is FileCategory => FILE_CATEGORIES.includes(value as FileCategory);
+
 
 
 

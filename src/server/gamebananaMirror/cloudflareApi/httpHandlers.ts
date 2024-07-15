@@ -6,46 +6,11 @@ import { arrayBufferToBase64String } from "../arrayBufferProcessing/base64String
 
 
 
-const GAMEBANANA_MOD_DOWNLOAD_BASE_URL = "https://gamebanana.com/dl/";
-
-
-
-
-const getModDownloadUrl = (fileNameNoExtension: string): string => `${GAMEBANANA_MOD_DOWNLOAD_BASE_URL}${fileNameNoExtension}`;
-
-const getFullFileName = (fileNameNoExtension: string, fileExtension: string): string => `${fileNameNoExtension}.${fileExtension}`;
-
-
-
-
-export const sendDownloadUrlToMirror = async (fileCategory: FileCategory, fileNameNoExtension: string, fileExtension: string): Promise<void> => {
-    const fullFileName = getFullFileName(fileNameNoExtension, fileExtension);
-
-
-    let downloadUrl: string;
-
-    switch (fileCategory) {
-        case "mods": {
-            downloadUrl = getModDownloadUrl(fileNameNoExtension);
-            break;
-        }
-        case "screenshots": {
-            //TODO!!!: Implement this
-            throw "Not implemented";
-        }
-        case "richPresenceIcons": {
-            //TODO!!!: Implement this
-            throw "Not implemented";
-        }
-        default: {
-            throw `Invalid file category: ${fileCategory}`;
-        }
-    };
-
-
+/** Returns an HTTP status code */
+export const sendDownloadRequestToMirror = async (fileCategory: FileCategory, fileName: string, downloadUrl: string): Promise<number> => {
     const requestBody: FileDownloadRequestBody = {
         fileCategory,
-        fileName: fullFileName,
+        fileName,
         downloadUrl,
     };
 
@@ -67,29 +32,28 @@ export const sendDownloadUrlToMirror = async (fileCategory: FileCategory, fileNa
     });
 
     if (!response.ok) {
-        throw `Failed to download file to the GameBanana mirror via URL. Status code: ${response.status}`;
+        logger.error(`Failed to send download URL to the GameBanana mirror: ${JSON.stringify({ fileCategory, fileName, downloadUrl, status: response.status })}`);
+
+        return 500;
     }
 
-    logger.debug(`Downloaded file to the GameBanana mirror via URL: ${fullFileName}`);
+
+    logger.debug(`Downloaded file to the GameBanana mirror via URL: ${fileName}`);
+
+    return 200;
 };
 
 
 
 
-export const uploadFileToMirror = async (
-    fileCategory: FileCategory,
-    fileNameNoExtension: string,
-    fileExtension: string,
-    fileBuffer: ArrayBuffer,
-): Promise<void> => {
-    const fullFileName = getFullFileName(fileNameNoExtension, fileExtension);
-
+/** Returns an HTTP status code */
+export const uploadFileToMirror = async (fileCategory: FileCategory, fileName: string, fileBuffer: ArrayBuffer): Promise<number> => {
     const encodedFile = arrayBufferToBase64String(fileBuffer);
 
 
     const requestBody: FileUploadRequestBody = {
         fileCategory,
-        fileName: fullFileName,
+        fileName,
         file: encodedFile,
     };
 
@@ -99,7 +63,7 @@ export const uploadFileToMirror = async (
     const signature = await getStorageRequestSignature(requestBodyString);
 
 
-    logger.debug(`Uploading file to the GameBanana mirror: ${JSON.stringify({ fileCategory, fileName: fullFileName })}`);   // Do not log the file content
+    logger.debug(`Uploading file to the GameBanana mirror: ${JSON.stringify({ fileCategory, fileName })}`);   // Do not log the file content
 
     const response = await fetch(GAMEBANANA_MIRROR_WORKER_URL, {
         method: "PUT",
@@ -111,16 +75,22 @@ export const uploadFileToMirror = async (
     });
 
     if (!response.ok) {
-        throw `Failed to upload file to the GameBanana mirror. Status code: ${response.status}`;
+        logger.error(`Failed to upload file to the GameBanana mirror: ${JSON.stringify({ fileCategory, fileName, status: response.status })}`);
+
+        return 500;
     }
 
-    logger.debug(`Uploaded file to the GameBanana mirror: ${fullFileName}`);
+
+    logger.debug(`Uploaded file to the GameBanana mirror: ${fileName}`);
+
+    return 200;
 };
 
 
 
 
-export const deleteFilesFromMirror = async (fileCategory: FileCategory, fileNames: [string, ...string[]]): Promise<void> => {
+/** Returns an HTTP status code */
+export const deleteFilesFromMirror = async (fileCategory: FileCategory, fileNames: [string, ...string[]]): Promise<number> => {
     logger.debug(`Deleting files from the GameBanana mirror: ${JSON.stringify({ fileCategory, fileNames })}`);
 
 
@@ -130,7 +100,7 @@ export const deleteFilesFromMirror = async (fileCategory: FileCategory, fileName
         if (fileNamesBatch.length === 0) {
             break;
         }
-        
+
 
         const requestBody: FileDeletionRequestBody = {
             fileCategory,
@@ -155,12 +125,17 @@ export const deleteFilesFromMirror = async (fileCategory: FileCategory, fileName
         });
 
         if (!response.ok) {
-            throw `Failed to delete a batch of files from the GameBanana mirror. Status code: ${response.status}`;
+            logger.error(`Failed to delete a batch of files from the GameBanana mirror: ${JSON.stringify({ fileCategory, fileNames: fileNamesBatch, status: response.status })}`);
+
+            return 500;
         }
+
 
         logger.trace(`Deleted a batch of files from the GameBanana mirror: ${JSON.stringify({ fileCategory, fileNames: fileNamesBatch })}`);
     }
 
 
     logger.debug(`Deleted files from the GameBanana mirror: ${JSON.stringify({ fileCategory, fileNames })}`);
+
+    return 200;
 };
