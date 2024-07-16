@@ -10,7 +10,7 @@ const EVEREST_UPDATE_DATABASE_JSON_PATH = process.env.EVEREST_UPDATE_DATABASE_PA
 
 const EVEREST_UPDATE_DATABASE_YAML_NAME = "Everest Update Database";
 
-export const everestUpdateDatabaseFileSystemErrorString = getFileSystemErrorString(EVEREST_UPDATE_DATABASE_YAML_NAME);
+const everestUpdateDatabaseFileSystemErrorString = getFileSystemErrorString(EVEREST_UPDATE_DATABASE_YAML_NAME);
 
 
 
@@ -22,7 +22,7 @@ export type EverestUpdateDatabase = Record<string, unknown>;
 
 /** Only validates the parts of the object that this repository consumes. */
 const isValidEverestUpdateInfo = (value: unknown): value is EverestUpdateDatabase => {
-    return true;    //TODO!!!: Implement this
+    return true;    // currently unused, so not validating anything
 };
 
 

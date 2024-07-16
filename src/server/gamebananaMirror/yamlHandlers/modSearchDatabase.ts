@@ -10,7 +10,7 @@ const MOD_SEARCH_DATABASE_JSON_PATH = process.env.MOD_SEARCH_DATABASE_PATH || ".
 
 const MOD_SEARCH_DATABASE_YAML_NAME = "Mod Search Database";
 
-export const modSearchDatabaseFileSystemErrorString = getFileSystemErrorString(MOD_SEARCH_DATABASE_YAML_NAME);
+const modSearchDatabaseFileSystemErrorString = getFileSystemErrorString(MOD_SEARCH_DATABASE_YAML_NAME);
 
 
 
@@ -22,7 +22,7 @@ export type ModSearchDatabase = Record<string, unknown>;
 
 /** Only validates the parts of the object that this repository consumes. */
 const isValidModSearchDatabase = (value: unknown): value is ModSearchDatabase => {
-    return true;    //TODO!!!: Implement this
+    return true;    // currently unused, so not validating anything
 };
 
 

@@ -65,6 +65,8 @@ export const getUpdatedYaml = async <
     const response = await fetch(yamlUrl);
 
     if (!response.ok) {
+        logger.error(`Failed to download the ${yamlName}. Status code: ${response.status}`);
+        
         throw `Failed to download the ${yamlName}. Status code: ${response.status}`;
     }
 
@@ -76,6 +78,8 @@ export const getUpdatedYaml = async <
     const parsedYaml: unknown = parse(newYaml);
 
     if (!isValidParsedYaml(parsedYaml)) {
+        logger.error(`The downloaded ${yamlName} failed validation.`);
+
         throw `The downloaded ${yamlName} failed validation.`;
     }
 

@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { serverLogger as logger } from "~/logger/serverLogger";
 import { authenticateUpdateWebhookRequest } from "~/server/gamebananaMirror/authentication/authenticateUpdateWebhookRequest";
-import { modSearchDatabaseFileSystemErrorString, getUpdatedModSearchDatabase } from "~/server/gamebananaMirror/yamlHandlers/modSearchDatabase";
+import { getUpdatedModSearchDatabase } from "~/server/gamebananaMirror/yamlHandlers/modSearchDatabase";
 import { DELETE_BATCH_SIZE, FILE_CATEGORIES, isFileCategory, type FileCategory } from "~/server/gamebananaMirror/cloudflareApi/constsAndTypes";
 import { sendDownloadRequestToMirror, deleteFilesFromMirror } from "~/server/gamebananaMirror/cloudflareApi/httpHandlers";
 import { getFileListForCategory } from "~/server/gamebananaMirror/cloudflareApi/getFileListForCategory";
@@ -178,7 +178,7 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
     }
 
     logger.trace(`FileInfo array: ${JSON.stringify(fileInfoArrayOrStatusCode)}`);
-    
+
 
     // Get the existing file names
     logger.debug(`Getting the existing file names for file category: ${fileCategory}`);
@@ -198,7 +198,7 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
     logger.debug(`Comparing the existing files with the new files for file category: ${fileCategory}`);
 
     const filesToDelete: string[] = [];
-    
+
     for (const existingFileName of existingFileNamesOrStatusCode) {
         const existingFileIndex = fileInfoArrayOrStatusCode.findIndex(fileInfo => fileInfo.fileName === existingFileName);
 
@@ -213,7 +213,7 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
     // Delete the files that should no longer exist
     logger.debug(`Deleting ${filesToDelete.length} files from the GameBanana mirror for file category: ${fileCategory}`);
     logger.trace(`Files to delete: ${JSON.stringify(filesToDelete)}`);
-    
+
     const fileDeletionPromises: Promise<number>[] = [];
 
     for (let index = 0; index < filesToDelete.length; index += DELETE_BATCH_SIZE) {
@@ -360,12 +360,15 @@ const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void>
         try {
             await getUpdatedModSearchDatabase();
         } catch (error) {
-            if (error !== modSearchDatabaseFileSystemErrorString) {
-                logger.error(error);
+            let errorMessage: string;
+
+            if (typeof error === "string") {
+                errorMessage = error;   // Error strings are logged in the getUpdatedYaml function
+            } else {
+                logger.error(`Failed to update the Mod Search Database. ${error}`);
+
+                errorMessage = "An unknown error occurred while updating the Mod Search Database.";
             }
-
-
-            const errorMessage = typeof error === "string" ? error : "An unknown error occurred while updating the Mod Search Database.";
 
 
             res.status(500).json(errorMessage);
@@ -385,11 +388,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void>
 
     if (mirrorUpdateStatus === 200) {
         logger.info("Successfully updated the GameBanana mirror.");
-    } // else {
-        // logger.error(`Failed to update the GameBanana mirror. Status code: ${mirrorUpdateStatus}`);  // This is already logged in the httpHandler functions
-    // }
+    }   // The errors are logged in the httpHandler functions
 
-    
+
     res.status(mirrorUpdateStatus).end();
 };
 
