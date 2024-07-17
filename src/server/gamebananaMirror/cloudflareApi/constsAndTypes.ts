@@ -1,7 +1,5 @@
 
-const GAMEBANANA_MIRROR_DOMAIN = "celestemodupdater.celestemods.com";
-
-export const GAMEBANANA_MIRROR_WORKER_URL = `https://${GAMEBANANA_MIRROR_DOMAIN}/worker`;
+export const GAMEBANANA_MIRROR_WORKER_URL: string = process.env.GAMEBANANA_MIRROR_CLOUDFLARE_R2_WORKER_URL ?? "";
 
 export const DELETE_BATCH_SIZE = 50;
 
