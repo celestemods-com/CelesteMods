@@ -15,6 +15,17 @@ export type FileCategory = typeof FILE_CATEGORIES[number];
 export const isFileCategory = (value: unknown): value is FileCategory => FILE_CATEGORIES.includes(value as FileCategory);
 
 
+const modsBucketName = process.env.GAMEBANANA_MIRROR_CLOUDFLARE_R2_MODS_BUCKET_NAME ?? "";
+const screenshotsBucketName = process.env.GAMEBANANA_MIRROR_CLOUDFLARE_R2_SCREENSHOTS_BUCKET_NAME ?? "";
+const richPresenceIconsBucketName = process.env.GAMEBANANA_MIRROR_CLOUDFLARE_R2_RICH_PRESENCE_ICONS_BUCKET_NAME ?? "";
+
+export const R2_BUCKET_NAMES = {
+	mods: modsBucketName,
+	screenshots: screenshotsBucketName,
+	richPresenceIcons: richPresenceIconsBucketName,
+} as const satisfies Record<FileCategory, string>;
+
+
 
 
 type RequestBody_Base = {
