@@ -1,5 +1,5 @@
 import { serverLogger as logger } from "~/logger/serverLogger";
-import { type FileCategory, type FileDownloadRequestBody, type FileUploadRequestBody, type FileDeletionRequestBody, GAMEBANANA_MIRROR_WORKER_URL, DELETE_BATCH_SIZE } from "./constsAndTypes";
+import { type FileCategory, type FileDownloadRequestBody, type FileUploadRequestBody, type FileDeletionRequestBody, GAMEBANANA_MIRROR_WORKER_URL } from "./constsAndTypes";
 import { getStorageRequestSignature } from "../authentication/getStorageRequestSignature";
 import { arrayBufferToBase64String } from "../arrayBufferProcessing/base64StringToArrayBuffer";
 
@@ -75,7 +75,7 @@ export const uploadFileToMirror = async (fileCategory: FileCategory, fileName: s
     });
 
     if (!response.ok) {
-        logger.error(`Failed to upload file to the GameBanana mirror: ${JSON.stringify({ fileCategory, fileName, status: response.status })}`);
+        logger.error(`Failed to upload file to the GameBanana mirror: ${JSON.stringify({ fileCategory, fileName, status: response.status, body: await response.text() })}`);
 
         return 500;
     }
@@ -91,47 +91,32 @@ export const uploadFileToMirror = async (fileCategory: FileCategory, fileName: s
 
 /** Returns an HTTP status code */
 export const deleteFilesFromMirror = async (fileCategory: FileCategory, fileNames: [string, ...string[]]): Promise<number> => {
+    const requestBody: FileDeletionRequestBody = {
+        fileCategory,
+        fileNames: fileNames,
+    };
+
+    const requestBodyString = JSON.stringify(requestBody);
+
+
+    const signature = await getStorageRequestSignature(requestBodyString);
+
+
     logger.debug(`Deleting files from the GameBanana mirror: ${JSON.stringify({ fileCategory, fileNames })}`);
 
+    const response = await fetch(GAMEBANANA_MIRROR_WORKER_URL, {
+        method: "DELETE",
+        headers: {
+            "Authorization": signature,
+            "Content-Type": "application/json",
+        },
+        body: requestBodyString,
+    });
 
-    for (let index = 0; index < fileNames.length; index += DELETE_BATCH_SIZE) {
-        const fileNamesBatch = fileNames.slice(index, index + DELETE_BATCH_SIZE);
+    if (!response.ok) {
+        logger.error(`Failed to delete files from the GameBanana mirror: ${JSON.stringify({ fileCategory, fileNames, status: response.status, body: await response.text() })}`);
 
-        if (fileNamesBatch.length === 0) {
-            break;
-        }
-
-
-        const requestBody: FileDeletionRequestBody = {
-            fileCategory,
-            fileNames: fileNamesBatch as [string, ...string[]], // This is safe because the length is checked above
-        };
-
-        const requestBodyString = JSON.stringify(requestBody);
-
-
-        const signature = await getStorageRequestSignature(requestBodyString);
-
-
-        logger.debug(`Deleting a batch of files from the GameBanana mirror: ${JSON.stringify({ fileCategory, fileNames: fileNamesBatch })}`);
-
-        const response = await fetch(GAMEBANANA_MIRROR_WORKER_URL, {
-            method: "DELETE",
-            headers: {
-                "Authorization": signature,
-                "Content-Type": "application/json",
-            },
-            body: requestBodyString,
-        });
-
-        if (!response.ok) {
-            logger.error(`Failed to delete a batch of files from the GameBanana mirror: ${JSON.stringify({ fileCategory, fileNames: fileNamesBatch, status: response.status })}`);
-
-            return 500;
-        }
-
-
-        logger.trace(`Deleted a batch of files from the GameBanana mirror: ${JSON.stringify({ fileCategory, fileNames: fileNamesBatch })}`);
+        return 500;
     }
 
 
