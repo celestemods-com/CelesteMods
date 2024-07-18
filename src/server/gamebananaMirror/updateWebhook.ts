@@ -119,7 +119,7 @@ const isUpdate = (value: unknown): value is Update => {
 
 
 /** Returns a FileInfo array, or an HTTP status code if there was an error. */
-const getFileInfoArrayFromDownloadUrls = (fileCategory: FileCategory, downloadUrls: string[]): FileInfo[] | number => {
+const getFileInfoArrayFromDownloadUrls = (fileCategory: FileCategory, downloadUrls: string[], performLogging: boolean): FileInfo[] | number => {
     const validFileExtension = FILE_EXTENSIONS_BY_CATEGORY[fileCategory];
 
 
@@ -130,7 +130,7 @@ const getFileInfoArrayFromDownloadUrls = (fileCategory: FileCategory, downloadUr
         let fileName = downloadUrl.slice(downloadUrl.lastIndexOf("/") + 1);
 
         if (fileName === "") {
-            logger.trace(`Download URL has an empty file name: ${downloadUrl}`);
+            if (performLogging) logger.trace(`Download URL has an empty file name: ${downloadUrl}`);
 
             return 422;
         }
@@ -142,7 +142,7 @@ const getFileInfoArrayFromDownloadUrls = (fileCategory: FileCategory, downloadUr
             const fileExtension = fileName.slice(fileName.lastIndexOf("."));
 
             if (!isValidFileExtension(fileExtension, fileCategory)) {
-                logger.trace(`Download URL has an invalid file extension: ${downloadUrl}`);
+                if (performLogging) logger.trace(`Download URL has an invalid file extension: ${downloadUrl}`);
 
                 return 422;
             }
@@ -165,37 +165,37 @@ const getFileInfoArrayFromDownloadUrls = (fileCategory: FileCategory, downloadUr
  * Assumes that files with the same name are the same file.
  * Returns the HTTP status code of the update.
  */
-const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: string[]): Promise<number> => {
+const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: string[], performLogging: boolean): Promise<number> => {
     // Get the FileInfo array
-    logger.debug(`Getting the FileInfo array for file category: ${fileCategory}`);
+    if (performLogging) logger.debug(`Getting the FileInfo array for file category: ${fileCategory}`);
 
-    const fileInfoArrayOrStatusCode = getFileInfoArrayFromDownloadUrls(fileCategory, downloadUrls);
+    const fileInfoArrayOrStatusCode = getFileInfoArrayFromDownloadUrls(fileCategory, downloadUrls, performLogging);
 
     if (typeof fileInfoArrayOrStatusCode === "number") {
-        logger.error(`Failed to generate fileInfoArray for file category: ${fileCategory}. Status code: ${fileInfoArrayOrStatusCode}`);
+        if (performLogging) logger.error(`Failed to generate fileInfoArray for file category: ${fileCategory}. Status code: ${fileInfoArrayOrStatusCode}`);
 
         return fileInfoArrayOrStatusCode;
     }
 
-    logger.trace(`FileInfo array: ${JSON.stringify(fileInfoArrayOrStatusCode)}`);
+    if (performLogging) logger.trace(`FileInfo array: ${JSON.stringify(fileInfoArrayOrStatusCode)}`);
 
 
     // Get the existing file names
-    logger.debug(`Getting the existing file names for file category: ${fileCategory}`);
+    if (performLogging) logger.debug(`Getting the existing file names for file category: ${fileCategory}`);
 
     const existingFileNamesOrStatusCode = await getFileListForCategory(fileCategory);
 
     if (typeof existingFileNamesOrStatusCode === "number") {
-        logger.error(`Failed to get existing file names for file category: ${fileCategory}. Status code: ${existingFileNamesOrStatusCode}`);
+        if (performLogging) logger.error(`Failed to get existing file names for file category: ${fileCategory}. Status code: ${existingFileNamesOrStatusCode}`);
 
         return existingFileNamesOrStatusCode;
     }
 
-    logger.trace(`Existing file names: ${JSON.stringify(existingFileNamesOrStatusCode)}`);
+    if (performLogging) logger.trace(`Existing file names: ${JSON.stringify(existingFileNamesOrStatusCode)}`);
 
 
     // Determine which files already exist (so don't need to be downloaded) and which files should be deleted
-    logger.debug(`Comparing the existing files with the new files for file category: ${fileCategory}`);
+    if (performLogging) logger.debug(`Comparing the existing files with the new files for file category: ${fileCategory}`);
 
     const filesToDelete: string[] = [];
 
@@ -211,8 +211,10 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
 
 
     // Delete the files that should no longer exist
-    logger.debug(`Deleting ${filesToDelete.length} files from the GameBanana mirror for file category: ${fileCategory}`);
-    logger.trace(`Files to delete: ${JSON.stringify(filesToDelete)}`);
+    if (performLogging) {
+        logger.debug(`Deleting ${filesToDelete.length} files from the GameBanana mirror for file category: ${fileCategory}`);
+        logger.trace(`Files to delete: ${JSON.stringify(filesToDelete)}`);
+    }
 
     const fileDeletionPromises: Promise<number>[] = [];
 
@@ -231,8 +233,10 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
 
 
     // Download the new files
-    logger.debug(`Downloading ${fileInfoArrayOrStatusCode.length} new files to the GameBanana mirror for file category: ${fileCategory}`);
-    logger.trace(`Files to download: ${JSON.stringify(fileInfoArrayOrStatusCode)}`);
+    if (performLogging) {
+        logger.debug(`Downloading ${fileInfoArrayOrStatusCode.length} new files to the GameBanana mirror for file category: ${fileCategory}`);
+        logger.trace(`Files to download: ${JSON.stringify(fileInfoArrayOrStatusCode)}`);
+    }
 
     const newFileDownloadPromises: Promise<number>[] = [];
 
@@ -247,9 +251,11 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
     const deletionResults = await Promise.all(fileDeletionPromises);
     const downloadResults = await Promise.all(newFileDownloadPromises);
 
-    logger.debug(`All deletions and downloads have completed for file category: ${fileCategory}`);
-    logger.trace(`Deletion results: ${JSON.stringify(deletionResults)}`);
-    logger.trace(`Download results: ${JSON.stringify(downloadResults)}`);
+    if (performLogging) {
+        logger.debug(`All deletions and downloads have completed for file category: ${fileCategory}`);
+        logger.trace(`Deletion results: ${JSON.stringify(deletionResults)}`);
+        logger.trace(`Download results: ${JSON.stringify(downloadResults)}`);
+    }
 
 
     // Check for any errors
@@ -258,13 +264,13 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
     const hasError = allResults.some(result => result !== 200);
 
     if (hasError) {
-        logger.debug(`Failed to update the GameBanana mirror for file category: ${fileCategory}`);
+        if (performLogging) logger.debug(`Failed to update the GameBanana mirror for file category: ${fileCategory}`);
 
         return 500;
     }
 
 
-    logger.debug(`Successfully updated the GameBanana mirror for file category: ${fileCategory}`);
+    if (performLogging) logger.debug(`Successfully updated the GameBanana mirror for file category: ${fileCategory}`);
 
     return 200;
 };
@@ -276,16 +282,16 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
  * Assumes that files with the same name are the same file.
  * Returns the HTTP status code of the update.
 */
-const updateGamebananaMirror = async (update: Update): Promise<number> => {
+const updateGamebananaMirror = async (update: Update, performLogging: boolean): Promise<number> => {
     const updatePromises: Promise<number>[] = [];
 
 
-    logger.debug("Updating the GameBanana mirror.");
+    if (performLogging) logger.debug("Updating the GameBanana mirror.");
 
     for (const fileCategory of FILE_CATEGORIES) {
         const downloadUrls = update[fileCategory];
 
-        const updatePromise = updateFileCategory(fileCategory, downloadUrls);
+        const updatePromise = updateFileCategory(fileCategory, downloadUrls, performLogging);
 
         updatePromises.push(updatePromise);
     }
@@ -293,7 +299,7 @@ const updateGamebananaMirror = async (update: Update): Promise<number> => {
 
     const updateResults = await Promise.all(updatePromises);
 
-    logger.debug("All file categories have been updated.");
+    if (performLogging) logger.debug("All file categories have been updated.");
 
 
     const hasError = updateResults.some(result => result !== 200);
@@ -315,8 +321,18 @@ const updateGamebananaMirror = async (update: Update): Promise<number> => {
  * Sends a 500 status code if the download was unsuccessful.
  * Sends 40X or 500 status codes if the authentication fails.
 */
-const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
-    logger.info("GameBanana mirror update request received.");
+export const updateWebhookHandler = async <
+    IsUpdateWebhook extends boolean,
+    IsAuthenticationTest extends (
+        IsUpdateWebhook extends true ? false : boolean // If this is the actual update webhook, then this is not an authentication test
+    ),
+>(
+    req: NextApiRequest,
+    res: NextApiResponse,
+    isUpdateWebhook: IsUpdateWebhook,
+    isAuthenticationTest: IsAuthenticationTest,
+): Promise<void> => {
+    if (isUpdateWebhook) logger.info("GameBanana mirror update request received."); // Only log requests to the actual update webhook
 
 
     // Validate the request method
@@ -326,19 +342,28 @@ const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void>
         return;
     }
 
-    logger.info("Request method validated.");
+    if (isUpdateWebhook) logger.info("Request method validated.");
 
 
     // Authenticate the request
-    const authenticationStatusCode = await authenticateUpdateWebhookRequest(req);
+    if (isUpdateWebhook || isAuthenticationTest) {
+        const authenticationStatusCode = await authenticateUpdateWebhookRequest(req);
 
-    if (authenticationStatusCode !== 200) {
-        res.status(authenticationStatusCode).end();
+        if (authenticationStatusCode !== 200) {
+            res.status(authenticationStatusCode).end();
 
-        return;
+            return;
+        }
+
+
+        if (isAuthenticationTest) {
+            res.status(200).end();
+
+            return; // Early return for authentication tests
+        }
+
+        logger.info("GameBanana mirror update request authenticated."); // Don't need to check isUpdateWebhook because authentication tests will never reach this point
     }
-
-    logger.info("GameBanana mirror update request authenticated.");
 
 
     // Parse the request body
@@ -350,7 +375,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void>
         return;
     }
 
-    logger.info("Request body parsed.");
+    if (isUpdateWebhook) logger.info("Request body parsed.");
+    else {
+        res.status(200).end();
+
+        return; // Early return for non-authentication tests
+    }
 
 
     // Update the Mod Search Database if requested
@@ -384,7 +414,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void>
 
 
     // Update the GameBanana mirror
-    const mirrorUpdateStatus = await updateGamebananaMirror(update);
+    const mirrorUpdateStatus = await updateGamebananaMirror(update, isUpdateWebhook);
 
     if (mirrorUpdateStatus === 200) {
         logger.info("Successfully updated the GameBanana mirror.");
@@ -393,5 +423,3 @@ const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void>
 
     res.status(mirrorUpdateStatus).end();
 };
-
-export default handler;
