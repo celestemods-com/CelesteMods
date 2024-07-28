@@ -332,7 +332,9 @@ export const updateWebhookHandler = async <
     isUpdateWebhook: IsUpdateWebhook,
     isAuthenticationTest: IsAuthenticationTest,
 ): Promise<void> => {
-    if (isUpdateWebhook) logger.info("GameBanana mirror update request received."); // Only log requests to the actual update webhook
+    const isDev = process.env.NODE_ENV === "development";
+    
+    if (isUpdateWebhook || isDev) logger.info("GameBanana mirror update request received."); // Only log requests to the actual update webhook
 
 
     // Validate the request method
@@ -342,7 +344,7 @@ export const updateWebhookHandler = async <
         return;
     }
 
-    if (isUpdateWebhook) logger.info("Request method validated.");
+    if (isUpdateWebhook || isDev) logger.info("Request method validated.");
 
 
     // Authenticate the request
@@ -414,7 +416,9 @@ export const updateWebhookHandler = async <
 
 
     // Update the GameBanana mirror
-    const mirrorUpdateStatus = await updateGamebananaMirror(update, isUpdateWebhook);
+    const performLogging = isUpdateWebhook || isDev;
+
+    const mirrorUpdateStatus = await updateGamebananaMirror(update, performLogging);
 
     if (mirrorUpdateStatus === 200) {
         logger.info("Successfully updated the GameBanana mirror.");
