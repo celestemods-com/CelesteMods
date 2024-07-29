@@ -1,4 +1,4 @@
-import type { NextApiRequest } from "next";
+import type { headers } from "next/headers";
 import { serverLogger as logger } from "~/logger/serverLogger";
 
 
@@ -11,17 +11,15 @@ const IP_HEADER_NAME = "CF-Connecting-IP";
 
 /** Expects one IP address in the CF-Connecting-IP header */
 const isValidIp = (
-    request: NextApiRequest,
+    requestIpHeaderString: string,
     validIps: string[],
 ): boolean => {
-    const requestIp = request.headers[IP_HEADER_NAME];
-
-    if (typeof requestIp !== "string" || requestIp === "") {
+    if (requestIpHeaderString === "") {
         return false;
     }
 
 
-    const isValid = validIps.includes(requestIp);
+    const isValid = validIps.includes(requestIpHeaderString);
 
 
     return isValid;
@@ -38,7 +36,7 @@ const isValidIp = (
  * 500: Other error.
  */
 export const validateIp = (
-    request: NextApiRequest,
+    requestHeadersList: ReturnType<typeof headers>,
     validIpsEnvironmentVariableName: string,
 ): number => {
     const validIpsString = process.env[validIpsEnvironmentVariableName];
@@ -50,23 +48,37 @@ export const validateIp = (
     }
 
 
-    const validIps = validIpsString.split(",");
+    const requestIpHeader = requestHeadersList.get(IP_HEADER_NAME);
 
-    if (validIps.length === 0) {
-        logger.error(`The environment variable ${validIpsEnvironmentVariableName} is empty.`);
+    
+    if (process.env.NODE_ENV !== "development") {
+        const validIps = validIpsString.split(",");
 
-        return 500;
+        if (validIps.length === 0) {
+            logger.error(`The environment variable ${validIpsEnvironmentVariableName} is empty.`);
+
+            return 500;
+        }
+
+
+        if (requestIpHeader === null) {
+            logger.info(`The request did not contain the ${IP_HEADER_NAME} header.`);
+
+            return 401;
+        }
+
+
+        const isValid = isValidIp(requestIpHeader, validIps);
+
+        if (!isValid) {
+            logger.info(`Invalid IP address: ${requestIpHeader}`);
+
+            return 401;
+        }
     }
 
 
-    const isValid = isValidIp(request, validIps);
-
-    if (!isValid) {
-        logger.info(`Invalid IP address: ${request.headers[IP_HEADER_NAME]}`);
-
-        return 401;
-    }
-
+    logger.info(`Valid IP address: ${requestIpHeader}`);
 
     return 200;
 };

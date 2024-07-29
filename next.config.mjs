@@ -15,7 +15,7 @@ const withBundleAnalyzer = bundleAnalyzer({
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
-  images: {    //TODO!: figure out how to fix crash on next.config.mjs change
+  images: {
     remotePatterns: [
       {
         protocol: "https",
@@ -42,6 +42,8 @@ const config = {
   },
   experimental: {
     largePageDataBytes: 3 * 1024 * 1024, // 3 MB
+    serverComponentsExternalPackages: ['pino'], // Context: https://github.com/vercel/next.js/issues/54289#issuecomment-1686401300
   },
+  eslint: { ignoreDuringBuilds: true },
 };
 export default withBundleAnalyzer(config);

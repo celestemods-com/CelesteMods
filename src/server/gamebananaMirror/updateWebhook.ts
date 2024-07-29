@@ -1,4 +1,5 @@
-import type { NextApiRequest, NextApiResponse } from "next";
+import { type NextRequest, NextResponse } from "next/server";
+import { headers } from "next/headers";
 import { serverLogger as logger } from "~/logger/serverLogger";
 import { authenticateUpdateWebhookRequest } from "~/server/gamebananaMirror/authentication/authenticateUpdateWebhookRequest";
 import { getUpdatedModSearchDatabase } from "~/server/gamebananaMirror/yamlHandlers/modSearchDatabase";
@@ -327,41 +328,70 @@ export const updateWebhookHandler = async <
         IsUpdateWebhook extends true ? false : boolean // If this is the actual update webhook, then this is not an authentication test
     ),
 >(
-    req: NextApiRequest,
-    res: NextApiResponse,
+    request: NextRequest,
     isUpdateWebhook: IsUpdateWebhook,
     isAuthenticationTest: IsAuthenticationTest,
-): Promise<void> => {
+): Promise<NextResponse> => {
     const isDev = process.env.NODE_ENV === "development";
-    
+
     if (isUpdateWebhook || isDev) logger.info("GameBanana mirror update request received."); // Only log requests to the actual update webhook
 
 
     // Validate the request method
-    if (req.method !== "POST") {
-        res.status(405).end();
-
-        return;
+    if (request.method !== "POST") {
+        return new NextResponse(
+            null,
+            {
+                status: 405,
+            }
+        );
     }
 
     if (isUpdateWebhook || isDev) logger.info("Request method validated.");
 
 
+    const requestBodyString: unknown = request.json();
+
+    if (typeof requestBodyString !== "string" || requestBodyString === "") {
+        const errorMessage = "The request body was missing or otherwise unparsable.";
+
+        logger.info(errorMessage);
+        logger.info(requestBodyString);
+
+        return new NextResponse(
+            errorMessage,
+            {
+                status: 400,
+            }
+        );
+    }
+
+
+    const requestHeadersList = headers();
+
+
     // Authenticate the request
     if (isUpdateWebhook || isAuthenticationTest) {
-        const authenticationStatusCode = await authenticateUpdateWebhookRequest(req);
+        const authenticationStatusCode = await authenticateUpdateWebhookRequest(requestHeadersList, requestBodyString);
 
         if (authenticationStatusCode !== 200) {
-            res.status(authenticationStatusCode).end();
-
-            return;
+            return new NextResponse(
+                null,
+                {
+                    status: authenticationStatusCode,
+                }
+            );
         }
 
 
         if (isAuthenticationTest) {
-            res.status(200).end();
-
-            return; // Early return for authentication tests
+            // Early return for authentication tests
+            return new NextResponse(
+                null,
+                {
+                    status: 200,
+                }
+            );
         }
 
         logger.info("GameBanana mirror update request authenticated."); // Don't need to check isUpdateWebhook because authentication tests will never reach this point
@@ -369,19 +399,27 @@ export const updateWebhookHandler = async <
 
 
     // Parse the request body
-    const update: unknown = req.body;
+    const update: unknown = request.body;
 
     if (!isUpdate(update)) {
-        res.status(400).json("Invalid request body.");
-
-        return;
+        return new NextResponse(
+            "Invalid request body.",
+            {
+                status: 400,
+            }
+        );
     }
+
 
     if (isUpdateWebhook) logger.info("Request body parsed.");
     else {
-        res.status(200).end();
-
-        return; // Early return for non-authentication tests
+        // Early return for non-authentication tests
+        return new NextResponse(
+            null,
+            {
+                status: 200,
+            }
+        );
     }
 
 
@@ -403,9 +441,12 @@ export const updateWebhookHandler = async <
             }
 
 
-            res.status(500).json(errorMessage);
-
-            return;
+            return new NextResponse(
+                errorMessage,
+                {
+                    status: 500,
+                }
+            );
         }
 
 
@@ -425,5 +466,10 @@ export const updateWebhookHandler = async <
     }   // The errors are logged in the httpHandler functions
 
 
-    res.status(mirrorUpdateStatus).end();
+    return new NextResponse(
+        null,
+        {
+            status: mirrorUpdateStatus,
+        }
+    );
 };

@@ -1,8 +1,9 @@
-import type { NextApiRequest } from "next";
+import type { headers } from "next/headers";
+import { serverLogger as logger } from "~/logger/serverLogger";
 import { stringToArrayBuffer } from "../../arrayBufferProcessing/stringToArrayBuffer";
 import { importPublicKey } from "./importPublicKey";
 import { getCurrentTime } from "~/server/api/utils/getCurrentTime";
-import { base64StringToArrayBuffer } from "../../arrayBufferProcessing/base64StringToArrayBuffer"; 
+import { base64StringToArrayBuffer } from "../../arrayBufferProcessing/base64StringToArrayBuffer";
 
 
 
@@ -18,16 +19,25 @@ import { base64StringToArrayBuffer } from "../../arrayBufferProcessing/base64Str
 
 
 // based on https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#subjectpublickeyinfo_import
-export const validateWebhookCredentials = async (request: NextApiRequest, permittedStalenessSeconds: number, permittedEarlienessSeconds: number): Promise<number> => {
+export const validateWebhookCredentials = async (
+    requestHeadersList: ReturnType<typeof headers>,
+    permittedStalenessSeconds: number,
+    permittedEarlienessSeconds: number,
+    requestBodyString: string,
+): Promise<number> => {
     const publicKeysString = process.env.GAMEBANANA_MIRROR_UPDATE_WEBHOOK_PUBLIC_KEYS;
 
     if (publicKeysString === undefined) {
+        logger.error("The environment variable GAMEBANANA_MIRROR_UPDATE_WEBHOOK_PUBLIC_KEYS is not defined.");
+
         return 500;
     }
 
     const publicKeysStringArray = publicKeysString.split(",");
 
     if (publicKeysStringArray.length === 0) {
+        logger.error("The environment variable GAMEBANANA_MIRROR_UPDATE_WEBHOOK_PUBLIC_KEYS is empty.");
+
         return 500;
     }
 
@@ -37,36 +47,48 @@ export const validateWebhookCredentials = async (request: NextApiRequest, permit
     try {
         publicKeysArray = await Promise.all(publicKeysStringArray.map(importPublicKey));
     } catch (error) {
+        logger.error("Error importing public keys.", error);
+
         return 500;
     }
 
 
-    const requestBodyString = request.body;
+    const requestBody = JSON.parse(requestBodyString);
 
-    if (typeof requestBodyString !== "string" || requestBodyString === "") {
-        return 401;
-    }
+    if (typeof requestBody !== "object" || "timestamp" in requestBody === false) {
+        logger.debug("The request body was invalid or did not contain a timestamp.");
 
+        return 400;
+    };
 
-    const requestBodyNumber = Number(requestBodyString);
+    const timestamp = requestBody.timestamp;
 
-    if (Number.isNaN(requestBodyNumber)) {
+    if (Number.isNaN(timestamp)) {
+        logger.debug("The timestamp was not a number.");
+
         return 400;
     }
+
 
     const currentTime = getCurrentTime();
 
-    if (requestBodyNumber < 0 || requestBodyNumber > currentTime + permittedStalenessSeconds || requestBodyNumber < currentTime - permittedEarlienessSeconds) {
+    if (timestamp < 0 || timestamp > currentTime + permittedStalenessSeconds || timestamp < currentTime - permittedEarlienessSeconds) {
+        logger.info(`The timestamp was not accepted: ${timestamp}`);
+
         return 400;
     }
+
+
 
 
     const requestBodyArrayBuffer = stringToArrayBuffer(requestBodyString);
 
 
-    const signatureString = request.headers["Authorization"];
+    const signatureString = requestHeadersList.get("Authorization");
 
     if (typeof signatureString !== "string" || signatureString === "") {
+        logger.info("The credentials were missing or otherwise unparsable.");
+
         return 401;
     }
 
@@ -91,9 +113,15 @@ export const validateWebhookCredentials = async (request: NextApiRequest, permit
     const isVerified = isVerifiedArray.some((value) => value);
 
     if (!isVerified) {
+        logger.info("The credentials were invalid.");
+
         return 403;
     }
 
+
+
+
+    logger.info("The credentials are valid.");
 
     return 200;
 };
