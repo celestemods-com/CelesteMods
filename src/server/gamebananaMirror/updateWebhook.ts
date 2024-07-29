@@ -337,19 +337,6 @@ export const updateWebhookHandler = async <
     if (isUpdateWebhook || isDev) logger.info("GameBanana mirror update request received."); // Only log requests to the actual update webhook
 
 
-    // Validate the request method
-    if (request.method !== "POST") {
-        return new NextResponse(
-            null,
-            {
-                status: 405,
-            }
-        );
-    }
-
-    if (isUpdateWebhook || isDev) logger.info("Request method validated.");
-
-
     const requestBodyString: unknown = request.json();
 
     if (typeof requestBodyString !== "string" || requestBodyString === "") {
