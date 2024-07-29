@@ -1,4 +1,4 @@
-import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
+import { S3Client, ListObjectsV2Command, type ListObjectsV2CommandOutput } from "@aws-sdk/client-s3";
 import { serverLogger as logger } from "~/logger/serverLogger";
 import { type FileCategory, R2_BUCKET_NAMES } from "./constsAndTypes";
 
@@ -31,22 +31,32 @@ export const getFileListForCategory = async (fileCategory: FileCategory): Promis
 
     logger.info(`Retrieving file list for category ${fileCategory}`);
 
-    let responseContents;
+    let response: ListObjectsV2CommandOutput;
 
     try {
-        const response = await s3Client.send(command);
-
-        responseContents = response.Contents;
+        response = await s3Client.send(command);
     } catch (error) {
         logger.error(`Error retrieving file list for category ${fileCategory}: ${error}`);
 
         return 500;
     }
 
-    if (!responseContents) {
-        logger.error(`Error retrieving file list for category ${fileCategory}: No response contents`);
 
-        return 500;
+    const responseContents = response.Contents;
+
+    if (!responseContents) {
+        const httpStatusCode = response.$metadata.httpStatusCode;
+
+        if (typeof httpStatusCode !== "number" || httpStatusCode !== 200) {
+            logger.error(`Failed to retrieve file list for category ${fileCategory} - HTTP status code: ${httpStatusCode}`);
+
+            return Number(httpStatusCode ?? 500);
+        }
+
+
+        logger.info(`File list for category ${fileCategory} is empty - HTTP status code: ${httpStatusCode}`);
+
+        return [];
     }
 
 
