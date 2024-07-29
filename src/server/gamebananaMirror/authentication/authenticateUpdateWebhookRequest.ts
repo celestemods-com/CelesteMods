@@ -15,6 +15,7 @@ import { logGeneratedSignature } from "./logGeneratedSignature";
 export const authenticateUpdateWebhookRequest = async (
     requestHeadersList: ReturnType<typeof headers>,
     requestBodyString: string,
+    requestBodyObject: object,
 ): Promise<number> => {
     const ipStatusCode = validateIp(requestHeadersList, "GAMEBANANA_MIRROR_UPDATE_WEBHOOK_IPS");
 
@@ -25,7 +26,7 @@ export const authenticateUpdateWebhookRequest = async (
 
     if (process.env.NODE_ENV === "development") await logGeneratedSignature(requestBodyString);
 
-    const authenticationStatusCode = await validateWebhookCredentials(requestHeadersList, 15, 5, requestBodyString);
+    const authenticationStatusCode = await validateWebhookCredentials(requestHeadersList, 15, 5, requestBodyString, requestBodyObject);
 
 
     return authenticationStatusCode;

@@ -16,7 +16,7 @@ export const getStorageRequestSignature = async (requestBodyString: string): Pro
     }
 
 
-    const privateKeyString = process.env.STORAGE_REQUEST_SIGNATURE_PRIVATE_KEY;
+    const privateKeyString = process.env.GAMEBANANA_MIRROR_STORAGE_API_PRIVATE_KEY;
 
     if (privateKeyString === undefined || privateKeyString === "") {
         throw "Private key string is empty";

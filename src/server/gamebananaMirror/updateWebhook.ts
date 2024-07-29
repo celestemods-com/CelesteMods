@@ -38,6 +38,7 @@ type Update_FileCategories = {
  */
 type Update = {
     isModSearchDatabaseUpdate?: boolean;
+    timestamp: number;
 } & Update_FileCategories;
 
 
@@ -56,7 +57,13 @@ const isValidFileExtension = <
 >(fileExtension: string, fileCategory: Category): boolean => {
     const expectedFileExtension = FILE_EXTENSIONS_BY_CATEGORY[fileCategory];
 
-    return fileExtension === expectedFileExtension;
+
+    const isValid = fileExtension === expectedFileExtension;
+
+    if (!isValid) logger.info(`Invalid file extension. Expected: ${expectedFileExtension}, actual: ${fileExtension}`);
+
+
+    return isValid;
 };
 
 
@@ -67,17 +74,30 @@ const isValidDownloadUrl = <
     fileCategory: Category,
 ): value is string => {
     if (typeof value !== "string") {
+        logger.info(`Invalid value: ${JSON.stringify(value)}`);
+
         return false;
     }
 
 
-    const hasFileExtension = value.includes(".");
+    const urlSlug = value.slice(value.lastIndexOf("/") + 1);
+
+    if (urlSlug === "") {
+        logger.info(`Download URL has an empty URL slug. value: ${value}, urlSlug: ${urlSlug}`);
+
+        return false;
+    }
+
+
+    const hasFileExtension = urlSlug.includes(".");
 
     if (!hasFileExtension) {
+        logger.debug(`Download URL does not contain a file extension. value: ${value}, urlSlug: ${urlSlug}`);
+
         return true;
     }
 
-    const fileExtension = value.slice(value.lastIndexOf("."));
+    const fileExtension = urlSlug.slice(urlSlug.lastIndexOf("."));
 
 
     return isValidFileExtension(fileExtension, fileCategory);
@@ -86,27 +106,62 @@ const isValidDownloadUrl = <
 
 const isUpdate = (value: unknown): value is Update => {
     if (typeof value !== "object" || value === null) {
+        logger.info(`Invalid value: ${JSON.stringify(value)}`);
+
         return false;
     }
 
 
-    if ("isModSearchDatabaseUpdate" in value && typeof value.isModSearchDatabaseUpdate !== "boolean") {
+    if ("timestamp" in value === false) {
+        logger.info("Missing timestamp");
+        
         return false;
     }
 
 
-    for (const [fileCategory, fileNames] of Object.entries(value)) {
-        if (!isFileCategory(fileCategory)) {
-            return false;
+    for (const [key, property] of Object.entries(value)) {
+        if (key === "isModSearchDatabaseUpdate") {
+            if (typeof property !== "boolean") {
+                logger.info(`Invalid isModSearchDatabaseUpdate: ${property}`);
+                
+                return false;
+            }
+
+            logger.info(`isModSearchDatabaseUpdate: ${property}`);
+            
+            continue;
         }
 
 
-        if (!Array.isArray(fileNames)) {
+        if (key === "timestamp") {
+            if (typeof property !== "number") {
+                logger.info(`Invalid timestamp: ${property}`);
+                
+                return false;
+            }
+
+            logger.info(`timestamp: ${property}`);
+            
+            continue;
+        }
+
+
+        if (!isFileCategory(key)) {
+            logger.info(`Invalid file category: ${key}`);
+            
             return false;
         }
 
-        for (const fileName of fileNames) {
-            if (!isValidDownloadUrl(fileName, fileCategory)) {
+        if (!Array.isArray(property)) {
+            logger.info(`Invalid property for file category. key: ${key}, property: ${property}`);
+            
+            return false;
+        }
+
+        for (const fileName of property) {
+            if (!isValidDownloadUrl(fileName, key)) {
+                logger.info(`Invalid download URL for file category. key: ${key}, fileName: ${fileName}`);
+                
                 return false;
             }
         }
@@ -284,7 +339,7 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
  * Returns the HTTP status code of the update.
 */
 const updateGamebananaMirror = async (update: Update, performLogging: boolean): Promise<number> => {
-    const updatePromises: Promise<number>[] = [];
+    const updatePromises: number[] = []; //Promise<number>[] = [];  //TODO!!! change this back to Promise<number>[]
 
 
     if (performLogging) logger.debug("Updating the GameBanana mirror.");
@@ -292,7 +347,10 @@ const updateGamebananaMirror = async (update: Update, performLogging: boolean): 
     for (const fileCategory of FILE_CATEGORIES) {
         const downloadUrls = update[fileCategory];
 
-        const updatePromise = updateFileCategory(fileCategory, downloadUrls, performLogging);
+        logger.debug(`Download URLs for ${fileCategory}: ${downloadUrls}`);
+
+        
+        const updatePromise = await updateFileCategory(fileCategory, downloadUrls, performLogging); //TODO!!! remove this await
 
         updatePromises.push(updatePromise);
     }
@@ -337,13 +395,13 @@ export const updateWebhookHandler = async <
     if (isUpdateWebhook || isDev) logger.info("GameBanana mirror update request received."); // Only log requests to the actual update webhook
 
 
-    const requestBodyString: unknown = request.json();
+    const requestBodyString = await request.text(); // most route handlers should use request.json(), but this one needs to handle the raw string
 
     if (typeof requestBodyString !== "string" || requestBodyString === "") {
         const errorMessage = "The request body was missing or otherwise unparsable.";
 
-        logger.info(errorMessage);
-        logger.info(requestBodyString);
+        logger.info(`${errorMessage} Request body: "${requestBodyString}"`);
+
 
         return new NextResponse(
             errorMessage,
@@ -354,12 +412,43 @@ export const updateWebhookHandler = async <
     }
 
 
+    let requestBodyObject: unknown;
+
+    try {
+        requestBodyObject = JSON.parse(requestBodyString);
+    } catch (error) {
+        const message = "The request body was not parsable.";
+
+        logger.info(`${message} ${error}`);
+
+        return new NextResponse(
+            message,
+            {
+                status: 400,
+            }
+        );
+    }
+
+    if (typeof requestBodyObject !== "object" || requestBodyObject === null) {
+        const message = "The request body was not a valid object.";
+
+        logger.info(message);
+
+        return new NextResponse(
+            message,
+            {
+                status: 400,
+            }
+        );
+    };
+
+
     const requestHeadersList = headers();
 
 
     // Authenticate the request
     if (isUpdateWebhook || isAuthenticationTest) {
-        const authenticationStatusCode = await authenticateUpdateWebhookRequest(requestHeadersList, requestBodyString);
+        const authenticationStatusCode = await authenticateUpdateWebhookRequest(requestHeadersList, requestBodyString, requestBodyObject);
 
         if (authenticationStatusCode !== 200) {
             return new NextResponse(
@@ -371,10 +460,14 @@ export const updateWebhookHandler = async <
         }
 
 
+        // Early return for authentication tests
         if (isAuthenticationTest) {
-            // Early return for authentication tests
+            const message = "Authentication test passed.";
+
+            logger.info(message);
+
             return new NextResponse(
-                null,
+                message,
                 {
                     status: 200,
                 }
@@ -382,13 +475,14 @@ export const updateWebhookHandler = async <
         }
 
         logger.info("GameBanana mirror update request authenticated."); // Don't need to check isUpdateWebhook because authentication tests will never reach this point
+    } else if (isDev) {
+        logger.info("Non-authentication test request received.");   // In production only log requests to the actual update webhook
     }
 
 
     // Parse the request body
-    const update: unknown = request.body;
-
-    if (!isUpdate(update)) {
+    if (!isUpdate(requestBodyObject)) {
+        logger.info(`Invalid request body: ${JSON.stringify(requestBodyObject)}`);  //TODO!!! remove this line
         return new NextResponse(
             "Invalid request body.",
             {
@@ -398,11 +492,14 @@ export const updateWebhookHandler = async <
     }
 
 
-    if (isUpdateWebhook) logger.info("Request body parsed.");
-    else {
-        // Early return for non-authentication tests
+    const message = "Request body parsed.";
+
+    if (isUpdateWebhook || isDev) logger.info(message);
+
+    // Early return for non-authentication tests
+    if (!isUpdateWebhook) {
         return new NextResponse(
-            null,
+            message,
             {
                 status: 200,
             }
@@ -411,7 +508,7 @@ export const updateWebhookHandler = async <
 
 
     // Update the Mod Search Database if requested
-    if (update.isModSearchDatabaseUpdate) {
+    if (requestBodyObject.isModSearchDatabaseUpdate) {
         logger.info("Updating the Mod Search Database.");
 
         try {
@@ -446,7 +543,7 @@ export const updateWebhookHandler = async <
     // Update the GameBanana mirror
     const performLogging = isUpdateWebhook || isDev;
 
-    const mirrorUpdateStatus = await updateGamebananaMirror(update, performLogging);
+    const mirrorUpdateStatus = await updateGamebananaMirror(requestBodyObject, performLogging);
 
     if (mirrorUpdateStatus === 200) {
         logger.info("Successfully updated the GameBanana mirror.");

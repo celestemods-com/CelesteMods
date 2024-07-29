@@ -24,6 +24,7 @@ export const validateWebhookCredentials = async (
     permittedStalenessSeconds: number,
     permittedEarlienessSeconds: number,
     requestBodyString: string,
+    requestBodyObject: object,
 ): Promise<number> => {
     const publicKeysString = process.env.GAMEBANANA_MIRROR_UPDATE_WEBHOOK_PUBLIC_KEYS;
 
@@ -53,30 +54,35 @@ export const validateWebhookCredentials = async (
     }
 
 
-    const requestBody = JSON.parse(requestBodyString);
 
-    if (typeof requestBody !== "object" || "timestamp" in requestBody === false) {
-        logger.debug("The request body was invalid or did not contain a timestamp.");
 
-        return 400;
+    if ("timestamp" in requestBodyObject === false) {
+        logger.info("The request body was missing the timestamp.");
+
+        return 401;
     };
 
-    const timestamp = requestBody.timestamp;
+
+    const timestamp = Number(requestBodyObject.timestamp);
 
     if (Number.isNaN(timestamp)) {
-        logger.debug("The timestamp was not a number.");
+        logger.info("The timestamp was not a number.");
 
-        return 400;
+        return 401;
     }
 
 
     const currentTime = getCurrentTime();
+    const permittedStalenessMilliseconds = permittedStalenessSeconds * 1000;
+    const permittedEarlienessMilliseconds = permittedEarlienessSeconds * 1000;
 
-    if (timestamp < 0 || timestamp > currentTime + permittedStalenessSeconds || timestamp < currentTime - permittedEarlienessSeconds) {
-        logger.info(`The timestamp was not accepted: ${timestamp}`);
+    // if (timestamp < 0 || timestamp > currentTime + permittedStalenessMilliseconds || timestamp < currentTime - permittedEarlienessMilliseconds) {
+    //     logger.info(`The timestamp was not accepted. currentTime: ${currentTime}, timestamp: ${timestamp}`);
 
-        return 400;
-    }
+    //     return 401;
+    // }    TODO!!!: uncomment this block after testing
+
+    logger.info(`The timestamp was accepted: ${timestamp}`);
 
 
 

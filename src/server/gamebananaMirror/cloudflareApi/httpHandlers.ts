@@ -32,7 +32,7 @@ export const sendDownloadRequestToMirror = async (fileCategory: FileCategory, fi
     });
 
     if (!response.ok) {
-        logger.error(`Failed to send download URL to the GameBanana mirror: ${JSON.stringify({ fileCategory, fileName, downloadUrl, status: response.status })}`);
+        logger.error(`Failed to send download URL to the GameBanana mirror: ${JSON.stringify({ fileCategory, fileName, downloadUrl, status: response.status, body: await response.text() })}`);
 
         return 500;
     }
