@@ -10,7 +10,7 @@
     "lint": "next lint",
     "start": "next start",
     "db-reset": "npx prisma migrate reset",
-    "deploy": "git fetch && pm2 stop celestemods && git pull && npm run build && pm2 restart celestemods"
+    "deploy": "git fetch && pm2 stop celestemods && git pull && npm run build && pm2 restart celestemods --time"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.614.0",
