@@ -175,7 +175,7 @@ const isUpdate = (value: unknown): value is Update => {
 
 
 /** Returns a FileInfo array, or an HTTP status code if there was an error. */
-const getFileInfoArrayFromDownloadUrls = (fileCategory: FileCategory, downloadUrls: string[], performLogging: boolean): FileInfo[] | number => {
+const getFileInfoArrayFromDownloadUrls = (fileCategory: FileCategory, downloadUrls: string[]): FileInfo[] | number => {
     const validFileExtension = FILE_EXTENSIONS_BY_CATEGORY[fileCategory];
 
 
@@ -186,7 +186,7 @@ const getFileInfoArrayFromDownloadUrls = (fileCategory: FileCategory, downloadUr
         let fileName = downloadUrl.slice(downloadUrl.lastIndexOf("/") + 1);
 
         if (fileName === "") {
-            if (performLogging) logger.trace(`Download URL has an empty file name: ${downloadUrl}`);
+            logger.debug(`Download URL has an empty file name: ${downloadUrl}`);
 
             return 422;
         }
@@ -198,7 +198,7 @@ const getFileInfoArrayFromDownloadUrls = (fileCategory: FileCategory, downloadUr
             const fileExtension = fileName.slice(fileName.lastIndexOf("."));
 
             if (!isValidFileExtension(fileExtension, fileCategory)) {
-                if (performLogging) logger.trace(`Download URL has an invalid file extension: ${downloadUrl}`);
+                logger.debug(`Download URL has an invalid file extension: ${downloadUrl}`);
 
                 return 422;
             }
@@ -221,37 +221,37 @@ const getFileInfoArrayFromDownloadUrls = (fileCategory: FileCategory, downloadUr
  * Assumes that files with the same name are the same file.
  * Returns the HTTP status code of the update.
  */
-const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: string[], performLogging: boolean): Promise<number> => {
+const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: string[]): Promise<number> => {
     // Get the FileInfo array
-    if (performLogging) logger.debug(`Getting the FileInfo array for file category: ${fileCategory}`);
+    logger.debug(`Getting the FileInfo array for file category: ${fileCategory}`);
 
-    const fileInfoArrayOrStatusCode = getFileInfoArrayFromDownloadUrls(fileCategory, downloadUrls, performLogging);
+    const fileInfoArrayOrStatusCode = getFileInfoArrayFromDownloadUrls(fileCategory, downloadUrls);
 
     if (typeof fileInfoArrayOrStatusCode === "number") {
-        if (performLogging) logger.error(`Failed to generate fileInfoArray for file category: ${fileCategory}. Status code: ${fileInfoArrayOrStatusCode}`);
+        logger.error(`Failed to generate fileInfoArray for file category: ${fileCategory}. Status code: ${fileInfoArrayOrStatusCode}`);
 
         return fileInfoArrayOrStatusCode;
     }
 
-    if (performLogging) logger.trace(`FileInfo array: ${JSON.stringify(fileInfoArrayOrStatusCode)}`);
+    logger.debug(`FileInfo array: ${JSON.stringify(fileInfoArrayOrStatusCode)}`);
 
 
     // Get the existing file names
-    if (performLogging) logger.debug(`Getting the existing file names for file category: ${fileCategory}`);
+    logger.debug(`Getting the existing file names for file category: ${fileCategory}`);
 
     const existingFileNamesOrStatusCode = await getFileListForCategory(fileCategory);
 
     if (typeof existingFileNamesOrStatusCode === "number") {
-        if (performLogging) logger.error(`Failed to get existing file names for file category: ${fileCategory}. Status code: ${existingFileNamesOrStatusCode}`);
+        logger.error(`Failed to get existing file names for file category: ${fileCategory}. Status code: ${existingFileNamesOrStatusCode}`);
 
         return existingFileNamesOrStatusCode;
     }
 
-    if (performLogging) logger.trace(`Existing file names: ${JSON.stringify(existingFileNamesOrStatusCode)}`);
+    logger.debug(`Existing file names: ${JSON.stringify(existingFileNamesOrStatusCode)}`);
 
 
     // Determine which files already exist (so don't need to be downloaded) and which files should be deleted
-    if (performLogging) logger.debug(`Comparing the existing files with the new files for file category: ${fileCategory}`);
+    logger.debug(`Comparing the existing files with the new files for file category: ${fileCategory}`);
 
     const filesToDelete: string[] = [];
 
@@ -267,10 +267,8 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
 
 
     // Delete the files that should no longer exist
-    if (performLogging) {
-        logger.debug(`Deleting ${filesToDelete.length} files from the GameBanana mirror for file category: ${fileCategory}`);
-        logger.trace(`Files to delete: ${JSON.stringify(filesToDelete)}`);
-    }
+        logger.info(`Deleting ${filesToDelete.length} files from the GameBanana mirror for file category: ${fileCategory}`);
+        logger.debug(`Files to delete: ${JSON.stringify(filesToDelete)}`);
 
     const fileDeletionPromises: Promise<number>[] = [];
 
@@ -289,10 +287,8 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
 
 
     // Download the new files
-    if (performLogging) {
-        logger.debug(`Downloading ${fileInfoArrayOrStatusCode.length} new files to the GameBanana mirror for file category: ${fileCategory}`);
-        logger.trace(`Files to download: ${JSON.stringify(fileInfoArrayOrStatusCode)}`);
-    }
+        logger.info(`Downloading ${fileInfoArrayOrStatusCode.length} new files to the GameBanana mirror for file category: ${fileCategory}`);
+        logger.debug(`Files to download: ${JSON.stringify(fileInfoArrayOrStatusCode)}`);
 
     const newFileDownloadPromises: Promise<number>[] = [];
 
@@ -307,11 +303,9 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
     const deletionResults = await Promise.all(fileDeletionPromises);
     const downloadResults = await Promise.all(newFileDownloadPromises);
 
-    if (performLogging) {
         logger.debug(`All deletions and downloads have completed for file category: ${fileCategory}`);
-        logger.trace(`Deletion results: ${JSON.stringify(deletionResults)}`);
-        logger.trace(`Download results: ${JSON.stringify(downloadResults)}`);
-    }
+        logger.debug(`Deletion results: ${JSON.stringify(deletionResults)}`);
+        logger.debug(`Download results: ${JSON.stringify(downloadResults)}`);
 
 
     // Check for any errors
@@ -320,13 +314,13 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
     const hasError = allResults.some(result => result !== 200);
 
     if (hasError) {
-        if (performLogging) logger.debug(`Failed to update the GameBanana mirror for file category: ${fileCategory}`);
+        logger.warn(`Failed to update the GameBanana mirror for file category: ${fileCategory}`);
 
         return 500;
     }
 
 
-    if (performLogging) logger.debug(`Successfully updated the GameBanana mirror for file category: ${fileCategory}`);
+    logger.info(`Successfully updated the GameBanana mirror for file category: ${fileCategory}`);
 
     return 200;
 };
@@ -338,11 +332,11 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
  * Assumes that files with the same name are the same file.
  * Returns the HTTP status code of the update.
 */
-const updateGamebananaMirror = async (update: Update, performLogging: boolean): Promise<number> => {
-    const updatePromises: number[] = []; //Promise<number>[] = [];  //TODO!!! change this back to Promise<number>[]
+const updateGamebananaMirror = async (update: Update): Promise<number> => {
+    const updatePromises: Promise<number>[] = [];
 
 
-    if (performLogging) logger.debug("Updating the GameBanana mirror.");
+    logger.info("Updating the GameBanana mirror.");
 
     for (const fileCategory of FILE_CATEGORIES) {
         const downloadUrls = update[fileCategory];
@@ -350,7 +344,7 @@ const updateGamebananaMirror = async (update: Update, performLogging: boolean): 
         logger.debug(`Download URLs for ${fileCategory}: ${downloadUrls}`);
 
         
-        const updatePromise = await updateFileCategory(fileCategory, downloadUrls, performLogging); //TODO!!! remove this await
+        const updatePromise = updateFileCategory(fileCategory, downloadUrls);
 
         updatePromises.push(updatePromise);
     }
@@ -358,7 +352,7 @@ const updateGamebananaMirror = async (update: Update, performLogging: boolean): 
 
     const updateResults = await Promise.all(updatePromises);
 
-    if (performLogging) logger.debug("All file categories have been updated.");
+    logger.info("All file categories have been updated.");
 
 
     const hasError = updateResults.some(result => result !== 200);
@@ -482,7 +476,8 @@ export const updateWebhookHandler = async <
 
     // Parse the request body
     if (!isUpdate(requestBodyObject)) {
-        logger.info(`Invalid request body: ${JSON.stringify(requestBodyObject)}`);  //TODO!!! remove this line
+        logger.info(`Invalid request body: ${JSON.stringify(requestBodyObject)}`);
+        
         return new NextResponse(
             "Invalid request body.",
             {
@@ -541,9 +536,7 @@ export const updateWebhookHandler = async <
 
 
     // Update the GameBanana mirror
-    const performLogging = isUpdateWebhook || isDev;
-
-    const mirrorUpdateStatus = await updateGamebananaMirror(requestBodyObject, performLogging);
+    const mirrorUpdateStatus = await updateGamebananaMirror(requestBodyObject);
 
     if (mirrorUpdateStatus === 200) {
         logger.info("Successfully updated the GameBanana mirror.");

@@ -6,6 +6,11 @@ import { arrayBufferToBase64String } from "../arrayBufferProcessing/base64String
 
 
 
+const MAX_REQUEST_BODY_SIZE_IN_LOG = 500;
+
+
+
+
 /** Returns an HTTP status code */
 export const sendDownloadRequestToMirror = async (fileCategory: FileCategory, fileName: string, downloadUrl: string): Promise<number> => {
     const requestBody: FileDownloadRequestBody = {
@@ -31,8 +36,11 @@ export const sendDownloadRequestToMirror = async (fileCategory: FileCategory, fi
         body: requestBodyString,
     });
 
+
     if (!response.ok) {
-        logger.error(`Failed to send download URL to the GameBanana mirror: ${JSON.stringify({ fileCategory, fileName, downloadUrl, status: response.status, body: await response.text() })}`);
+        const responseBody = await response.text();
+
+        logger.error(`Failed to send download URL to the GameBanana mirror: ${JSON.stringify({ fileCategory, fileName, downloadUrl, status: response.status, body: responseBody.slice(0, MAX_REQUEST_BODY_SIZE_IN_LOG) })}`);
 
         return 500;
     }
