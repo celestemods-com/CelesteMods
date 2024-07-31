@@ -73,10 +73,8 @@ export const validateWebhookCredentials = async (
 
 
     const currentTime = getCurrentTime();
-    const permittedStalenessMilliseconds = permittedStalenessSeconds * 1000;
-    const permittedEarlienessMilliseconds = permittedEarlienessSeconds * 1000;
 
-    if (timestamp < 0 || timestamp > currentTime + permittedStalenessMilliseconds || timestamp < currentTime - permittedEarlienessMilliseconds) {
+    if (timestamp < 0 || timestamp > currentTime + permittedStalenessSeconds || timestamp < currentTime - permittedEarlienessSeconds) {
         logger.info(`The timestamp was not accepted. currentTime: ${currentTime}, timestamp: ${timestamp}`);
 
         return 401;

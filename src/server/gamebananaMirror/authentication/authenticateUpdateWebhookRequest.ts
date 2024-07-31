@@ -6,6 +6,12 @@ import { logGeneratedSignature } from "./logGeneratedSignature";
 
 
 
+const PERMITTED_STALENESS_SECONDS = 60;
+const PERMITTED_EARLINESS_SECONDS = 15;
+
+
+
+
 /** This function returns HTTP status codes.
  * 200: The request is authenticated.
  * 400: The request body was missing or otherwise unparsable.
@@ -26,7 +32,7 @@ export const authenticateUpdateWebhookRequest = async (
 
     if (process.env.NODE_ENV === "development") await logGeneratedSignature(requestBodyString);
 
-    const authenticationStatusCode = await validateWebhookCredentials(requestHeadersList, 15, 5, requestBodyString, requestBodyObject);
+    const authenticationStatusCode = await validateWebhookCredentials(requestHeadersList, PERMITTED_STALENESS_SECONDS, PERMITTED_EARLINESS_SECONDS, requestBodyString, requestBodyObject);
 
 
     return authenticationStatusCode;
