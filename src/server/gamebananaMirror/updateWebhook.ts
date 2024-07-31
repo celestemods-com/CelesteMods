@@ -35,6 +35,7 @@ type Update_FileCategories = {
  * Each download URL must be a non-empty string, and must not contain a trailing slash. If the URL contains a file extension, it must match its Category.
  * Duplicate URLs are ignored.
  * isModSearchDatabaseUpdate may be omitted.
+ * timestamp must be a Unix timestamp in seconds that is less than 15 seconds in the future and less than 60 seconds in the past.
  */
 type Update = {
     isModSearchDatabaseUpdate?: boolean;
