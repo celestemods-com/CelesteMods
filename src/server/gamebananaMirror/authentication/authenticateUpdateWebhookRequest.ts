@@ -7,7 +7,7 @@ import { logGeneratedSignature } from "./logGeneratedSignature";
 
 
 const PERMITTED_STALENESS_SECONDS = 60;
-const PERMITTED_EARLINESS_SECONDS = 15;
+const PERMITTED_EARLINESS_SECONDS = 120;
 
 
 
