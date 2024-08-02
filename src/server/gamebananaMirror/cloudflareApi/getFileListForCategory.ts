@@ -24,58 +24,71 @@ export const getFileListForCategory = async (fileCategory: FileCategory): Promis
     const bucketName = R2_BUCKET_NAMES[fileCategory];
 
 
-    const command = new ListObjectsV2Command({
-        Bucket: bucketName,
-    });
-
-
-    logger.info(`Retrieving file list for category ${fileCategory}`);
-
-    let response: ListObjectsV2CommandOutput;
-
-    try {
-        response = await s3Client.send(command);
-    } catch (error) {
-        logger.error(`Error retrieving file list for category ${fileCategory}: ${error}`);
-
-        return 500;
-    }
-
-
-    const responseContents = response.Contents;
-
-    if (!responseContents) {
-        const httpStatusCode = response.$metadata.httpStatusCode;
-
-        if (typeof httpStatusCode !== "number" || httpStatusCode !== 200) {
-            logger.error(`Failed to retrieve file list for category ${fileCategory} - HTTP status code: ${httpStatusCode}`);
-
-            return Number(httpStatusCode ?? 500);
-        }
-
-
-        logger.info(`File list for category ${fileCategory} is empty - HTTP status code: ${httpStatusCode}`);
-
-        return [];
-    }
-
-
     const fileNames: string[] = [];
+    let continuationToken: string | undefined = undefined;
+    let isMoreData = true;
     let isInvalidFileName = false;
 
-    for (const object of responseContents) {
-        const fileName = object.Key;
+    while (isMoreData) {
+        const command = new ListObjectsV2Command({
+            Bucket: bucketName,
+            ContinuationToken: continuationToken,
+        });
 
-        if (typeof fileName !== "string") {
-            logger.warn(`Skipping invalid file name: ${fileName}`);
 
-            isInvalidFileName = true;
+        logger.info(`Retrieving file list for category ${fileCategory}`);
 
-            continue;
+        let response: ListObjectsV2CommandOutput;
+
+        try {
+            response = await s3Client.send(command);
+        } catch (error) {
+            logger.error(`Error retrieving file list for category ${fileCategory}: ${error}`);
+
+            return 500;
         }
 
 
-        fileNames.push(fileName);
+        const responseContents = response.Contents;
+
+        if (!responseContents) {
+            const httpStatusCode = response.$metadata.httpStatusCode;
+
+            if (typeof httpStatusCode !== "number" || httpStatusCode !== 200) {
+                logger.error(`Failed to retrieve file list for category ${fileCategory} - HTTP status code: ${httpStatusCode}`);
+
+                return Number(httpStatusCode ?? 500);
+            }
+
+
+            logger.info(`File list for category ${fileCategory} is empty - HTTP status code: ${httpStatusCode}`);
+
+            return [];
+        }
+
+
+        for (const object of responseContents) {
+            const fileName = object.Key;
+
+            if (typeof fileName !== "string") {
+                logger.warn(`Skipping invalid file name: ${fileName}`);
+
+                isInvalidFileName = true;
+
+                continue;
+            }
+
+
+            fileNames.push(fileName);
+        }
+
+
+        continuationToken = response.NextContinuationToken; // undefined if there is no more data. continuationToken gives the token used to get the current response. NextContinuationToken gives the token to get the next response.
+
+
+        if (continuationToken === undefined) {
+            isMoreData = false;
+        }
     }
 
 
