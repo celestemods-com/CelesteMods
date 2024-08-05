@@ -642,7 +642,7 @@ model Account {
 
 model Session {
   id           String   @id @default(cuid())
-  sessionToken String
+  sessionToken String   @unique
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
   userId       String
   expires      DateTime

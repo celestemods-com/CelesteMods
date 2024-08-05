@@ -1,6 +1,6 @@
 import { createStyles, Flex, ScrollArea } from "@mantine/core";
 import { type NextPage } from "next";
-import { signIn, useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { Layout } from "~/components/layout/layout";
@@ -78,13 +78,14 @@ const Home: NextPage = () => {
             direction="column"
             wrap="wrap"
           >
-            <h2>CML Public Beta</h2>
-            <p>Welcome! The site is currently in early beta.</p>
-            <p>For now, <Link className={classes.link} href={MODS_PAGE_PATHNAME}>mods</Link> can only be browsed.</p>
             <button onClick={() => signIn("discord")}>Sign in</button>
             <p>
               {`Logged in: ${isLoggedIn ? "yes" : "no"}`}
             </p>
+            <button onClick={() => signOut()}>Sign out</button>
+            <h2>CML Public Beta</h2>
+            <p>Welcome! The site is currently in early beta.</p>
+            <p>For now, <Link className={classes.link} href={MODS_PAGE_PATHNAME}>mods</Link> can only be browsed.</p>
             <h2>Community Projects</h2>
             <h3 style={{ marginTop: "2px" }}>Celeste Mountain Lego Idea</h3>
             <Image
