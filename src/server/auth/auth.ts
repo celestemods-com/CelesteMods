@@ -34,6 +34,9 @@ declare module "next-auth" {
 
 
 const getPermissionArray = (permissionsString: string): Permission[] => {
+  if (!permissionsString) return [];
+
+  
   const uncheckedStringArray = permissionsString.split(",");
 
   if (!uncheckedStringArray.length) throw "uncheckedStringArray is empty";
