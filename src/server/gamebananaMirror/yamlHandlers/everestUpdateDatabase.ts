@@ -5,7 +5,7 @@ import { getCurrentYaml, getFileSystemErrorString, getUpdatedYaml } from "./util
 
 const EVEREST_UPDATE_DATABASE_YAML_URL = "https://maddie480.ovh/celeste/everest_update.yaml";
 
-const EVEREST_UPDATE_DATABASE_JSON_PATH = process.env.EVEREST_UPDATE_DATABASE_PATH || "";
+const EVEREST_UPDATE_DATABASE_JSON_PATH = process.env.EVEREST_UPDATE_DATABASE_JSON_PATH || "";
 
 
 const EVEREST_UPDATE_DATABASE_YAML_NAME = "Everest Update Database";

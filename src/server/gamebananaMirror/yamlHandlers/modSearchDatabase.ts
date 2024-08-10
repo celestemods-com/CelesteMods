@@ -5,7 +5,7 @@ import { getCurrentYaml, getFileSystemErrorString, getUpdatedYaml } from "./util
 
 const MOD_SEARCH_DATABASE_YAML_URL = "https://maddie480.ovh/celeste/mod_search_database.yaml";
 
-const MOD_SEARCH_DATABASE_JSON_PATH = process.env.MOD_SEARCH_DATABASE_PATH || "";
+const MOD_SEARCH_DATABASE_JSON_PATH = process.env.MOD_SEARCH_DATABASE_JSON_PATH || "";
 
 
 const MOD_SEARCH_DATABASE_YAML_NAME = "Mod Search Database";
