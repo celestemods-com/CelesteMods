@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { ContextState } from "./globalContextsProvider";
-import { getModDownloadUrl } from "../gamebananaApi/getModDownloadUrl";
+import { getNewestFileIdFromGameBanana } from "../gamebananaApi/getNewestFileIdFromGameBanana";
 import type { GamebananaModId } from "~/components/mods/types";
-import type { ModDownloadurl } from "../gamebananaApi/getModDownloadUrl";
 import axios from "axios";
+import { getNewestFileIdFromModSearchDatabaseModFiles, type ModSearchDatabase_ModInfo_File } from "~/server/gamebananaMirror/yamlHandlers/modSearchDatabase";
 
 
 
@@ -39,15 +39,35 @@ export const ModDownloadUrlsContextProvider = ({ children }: { children: React.R
 
 
 
-type useModDownloadUrlProps = {
+export type NewestFileId = string;
+
+
+const GAMEBANANA_MOD_DOWNLOAD_BASE_URL = "everest:https://gamebanana.com/mmdl/";
+
+
+const getModDownloadUrl = (
     gamebananaModId: number,
+    newestFileId: NewestFileId,
+) => {
+    const downloadUrl = newestFileId === "" ? "" : `${GAMEBANANA_MOD_DOWNLOAD_BASE_URL}${newestFileId},Mod,${gamebananaModId}`;
+
+    return downloadUrl;
+};
+
+
+
+
+export type UseModDownloadUrlProps = {
+    gamebananaModId: number,
+    filesFromModSearchDatabase: ModSearchDatabase_ModInfo_File[] | undefined,
 };
 
 
 export const useModDownloadUrl = (
     {
         gamebananaModId,
-    }: useModDownloadUrlProps,
+        filesFromModSearchDatabase,
+    }: UseModDownloadUrlProps,
 ): string => {
     const contextOrUndefined = useContext(modDownloadUrlContext);
 
@@ -62,31 +82,52 @@ export const useModDownloadUrl = (
         if (contextOrUndefined === undefined) throw "useModDownloadUrl must be used within a ModDownloadUrlsContextProvider";
 
 
+        if (filesFromModSearchDatabase !== undefined) {
+            const newestFileId = getNewestFileIdFromModSearchDatabaseModFiles(filesFromModSearchDatabase);
+
+            if (newestFileId) {
+                const downloadUrl = getModDownloadUrl(gamebananaModId, newestFileId);
+
+                setDownloadUrl(downloadUrl);
+
+                contextOrUndefined.update(
+                    (previousState) => ({
+                        ...previousState,
+                        [gamebananaModId]: downloadUrl,
+                    })
+                );
+                
+                return;
+            }
+        }
+
+
         const source = axios.CancelToken.source();
 
-
         const fetchDownloadUrl = async () => {
-            let fetchedDownloadUrl: ModDownloadurl;
+            let newestFileId: NewestFileId | undefined;
 
             try {
-                fetchedDownloadUrl = await getModDownloadUrl(gamebananaModId, source);
+                newestFileId = await getNewestFileIdFromGameBanana(gamebananaModId, source);
             }
             catch (error) {
                 console.warn(`Failed to fetch download url for mod ${gamebananaModId}.`);
                 console.error(error);
-                
+
                 return;
             }
 
-            if (fetchedDownloadUrl === undefined) return;
-            
+            if (newestFileId === undefined) return;
 
-            setDownloadUrl(fetchedDownloadUrl);
+
+            const downloadUrl = getModDownloadUrl(gamebananaModId, newestFileId);
+
+            setDownloadUrl(downloadUrl);
 
             contextOrUndefined.update(
                 (previousState) => ({
                     ...previousState,
-                    [gamebananaModId]: fetchedDownloadUrl,
+                    [gamebananaModId]: downloadUrl,
                 })
             );
         };
@@ -97,7 +138,7 @@ export const useModDownloadUrl = (
         return () => {
             source.cancel();
         };
-    }, [gamebananaModId, contextOrUndefined, cachedDownloadUrl]);
+    }, [gamebananaModId, filesFromModSearchDatabase, contextOrUndefined, cachedDownloadUrl]);
 
 
     return downloadUrl;

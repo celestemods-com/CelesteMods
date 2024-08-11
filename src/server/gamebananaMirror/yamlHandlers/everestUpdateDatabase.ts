@@ -15,6 +15,9 @@ const everestUpdateDatabaseFileSystemErrorString = getFileSystemErrorString(EVER
 
 
 
+export type EverestUpdateDatabaseYamlName = typeof EVEREST_UPDATE_DATABASE_YAML_NAME;
+
+
 export type EverestUpdateDatabase = Record<string, unknown>;
 
 
@@ -57,5 +60,5 @@ export const getUpdatedEverestUpdateDatabase = async (): Promise<EverestUpdateDa
     );
 
 
-    return parsedYaml;
+    return parsedYaml as Promise<EverestUpdateDatabase>; //TODO!!!: remove this cast if possible
 };

@@ -1,11 +1,13 @@
 import { createContext, useEffect, useMemo, useState, useContext } from "react";
 import type { ContextState } from "./globalContextsProvider";
-import { getModImageUrls } from "~/hooks/gamebananaApi/getModImageUrls";
+import { getModImageUrlsFromGameBanana } from "~/hooks/gamebananaApi/getModImageUrlsFromGameBanana";
 import type { GamebananaModId } from "~/components/mods/types";
-import type { ModImageUrls } from "~/hooks/gamebananaApi/getModImageUrls";
 import axios from 'axios';
 
 
+
+
+export type ModImageUrls = string[];
 
 
 export type ModImageUrlsState = Record<GamebananaModId, ModImageUrls>;
@@ -39,14 +41,19 @@ export const ModImageUrlsContextProvider = ({ children }: { children: React.Reac
 
 
 
+export const GAMEBANANA_MOD_IMAGES_BASE_URL = "https://images.gamebanana.com/img/ss/mods/";
+
+
 type useModImageUrlsProps = {
     gamebananaModId: number,
+    screenshotsFromModSearchDatabase: ModImageUrls | undefined,
 };
 
 
 export const useModImageUrls = (
     {
         gamebananaModId,
+        screenshotsFromModSearchDatabase,
     }: useModImageUrlsProps,
 ): ModImageUrls => {
     const contextOrUndefined = useContext(modImageUrlsContext);
@@ -62,14 +69,27 @@ export const useModImageUrls = (
         if (contextOrUndefined === undefined) throw "useModImageUrlContext must be used within a ModImageUrlsContextProvider";
 
 
-        const source = axios.CancelToken.source();
+        if (screenshotsFromModSearchDatabase !== undefined && screenshotsFromModSearchDatabase.length > 0) {
+            setImageUrls(screenshotsFromModSearchDatabase);
 
+            contextOrUndefined.update(
+                (previousState) => ({
+                    ...previousState,
+                    [gamebananaModId]: screenshotsFromModSearchDatabase,
+                })
+            );
+
+            return;
+        }
+
+
+        const source = axios.CancelToken.source();
 
         const fetchImageUrls = async () => {
             let fetchedImageUrls: ModImageUrls;
 
             try {
-                fetchedImageUrls = await getModImageUrls(gamebananaModId, source);
+                fetchedImageUrls = await getModImageUrlsFromGameBanana(gamebananaModId, source);
             }
             catch (error) {
                 console.warn(`Failed to fetch image urls for mod ${gamebananaModId}.`);
@@ -97,7 +117,7 @@ export const useModImageUrls = (
         return () => {
             source.cancel();
         };
-    }, [gamebananaModId, contextOrUndefined, cachedImageUrls]);
+    }, [gamebananaModId, screenshotsFromModSearchDatabase, contextOrUndefined, cachedImageUrls]);
 
 
     return imageUrls;

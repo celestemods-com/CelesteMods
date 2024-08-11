@@ -15,8 +15,12 @@ import { selectIdObject } from "../../utils/selectIdObject";
 import { IfElse } from "../../../../utils/typeHelpers";
 import { getCheckedTableNames } from "../../utils/getCheckedTableNames";
 import { zodOutputIdObject } from "../../utils/zodOutputIdObject";
+import { getCurrentModSearchDatabase, type ModSearchDatabase_ModInfo } from "~/server/gamebananaMirror/yamlHandlers/modSearchDatabase";
 
 
+
+
+type ModSearchDatabase_ModInfo_NoId_Partial = Partial<Omit<ModSearchDatabase_ModInfo, "GameBananaId">>;
 
 
 type IdObjectArray = { id: number; }[];
@@ -27,7 +31,7 @@ type ExpandedMod = Mod & {
     Mod_Archive: IdObjectArray;
     Mod_Edit: IdObjectArray;
     Map_NewSolo: IdObjectArray;
-};
+} & ModSearchDatabase_ModInfo_NoId_Partial;
 type ExpandedModArchive = Mod_Archive;
 type ExpandedModEdit = Mod_Edit;
 type ExpandedModNew = Mod_New & { Map_NewWithMod_New: IdObjectArray; };
@@ -316,6 +320,14 @@ export const getModById = async<
         }
 
 
+        if (tableName === "Mod") {
+            const modSearchDatabaseInfo = await getModSearchDatabaseInfoForMod(mod.gamebananaModId);
+
+            (mod as NonNullable<ModUnion<"Mod", ReturnAll>>).Screenshots = modSearchDatabaseInfo.Screenshots;   // this cast is safe because the tableName was checked above
+            (mod as NonNullable<ModUnion<"Mod", ReturnAll>>).Files = modSearchDatabaseInfo.Files;   // this cast is safe because the tableName was checked above
+        }
+
+
         return mod as ReturnType;
     }
 };
@@ -418,6 +430,22 @@ const getModByName = async<
     }
 
 
+    if (tableName === "Mod") {
+        for (const mod of mods) {
+            if (!mod) throw new TRPCError({
+                code: "INTERNAL_SERVER_ERROR",
+                message: "Error getting mod info: mod is undefined. This should not happen. Please contact an admin.",
+            });
+
+
+            const modSearchDatabaseInfo = await getModSearchDatabaseInfoForMod(mod.gamebananaModId);
+
+            (mod as NonNullable<ModUnion<"Mod", ReturnAll>>).Screenshots = modSearchDatabaseInfo.Screenshots;   // this cast is safe because the tableName was checked above
+            (mod as NonNullable<ModUnion<"Mod", ReturnAll>>).Files = modSearchDatabaseInfo.Files;   // this cast is safe because the tableName was checked above
+        }
+    }
+
+
     return mods as ReturnType;
 };
 
@@ -432,6 +460,7 @@ type GamebananaModInfo = {
 };
 
 
+/** Using GameBanana instead of the mod search database to ensure only up-to-date information is ingested */
 const getGamebananaModInfo = async (gamebananaModID: number): Promise<GamebananaModInfo> => {
     try {
         const options = {
@@ -477,6 +506,30 @@ const getGamebananaModInfo = async (gamebananaModID: number): Promise<Gamebanana
 
 
 
+const getModSearchDatabaseInfoForMod = async (gamebananaModID: number): Promise<ModSearchDatabase_ModInfo_NoId_Partial> => {
+    const modSearchDatabase = await getCurrentModSearchDatabase();
+
+
+    let modInfo: ModSearchDatabase_ModInfo_NoId_Partial | undefined = undefined;
+
+    for (const mod of modSearchDatabase) {
+        if (mod.GameBananaId === gamebananaModID) {
+            modInfo = {
+                Screenshots: mod.Screenshots,
+                Files: mod.Files,
+            };
+
+            break;
+        }
+    }
+
+
+    return modInfo ?? {};
+};
+
+
+
+
 type UpdateGamebananaModIdObject = {
     name: string,
     gamebananaModId: number,
@@ -511,11 +564,28 @@ const getUpdateGamebananaModIdObject = async (newGamebananaModId: number): Promi
 export const modRouter = createTRPCRouter({
     getAll: publicProcedure
         .input(modOrderSchema)
-        .query(({ ctx, input }) => {
-            return ctx.prisma.mod.findMany({
+        .query(async ({ ctx, input }) => {
+            const mods = await ctx.prisma.mod.findMany({
                 select: defaultModSelect,
                 orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
+
+
+            for (const mod of mods) {
+                if (!mod) throw new TRPCError({
+                    code: "INTERNAL_SERVER_ERROR",
+                    message: "Error getting mod info: mod is undefined. This should not happen. Please contact an admin.",
+                });
+
+
+                const modSearchDatabaseInfo = await getModSearchDatabaseInfoForMod(mod.gamebananaModId);
+
+                (mod as NonNullable<ModUnion<"Mod", false>>).Screenshots = modSearchDatabaseInfo.Screenshots;
+                (mod as NonNullable<ModUnion<"Mod", false>>).Files = modSearchDatabaseInfo.Files;
+            }
+
+
+            return mods;
         }),
 
     rest_getAll: publicProcedure
@@ -605,33 +675,37 @@ export const modRouter = createTRPCRouter({
             };
 
 
-            const mapCreateDataArray_base: (Prisma.MapCreateWithoutModInput & MapperUserId)[] | (Prisma.Map_NewWithMod_NewCreateWithoutMod_NewInput & MapperUserId)[] = input.maps.map((map) => {
-                return {
-                    User_MapperUser: "mapperUserId" in map ? { connect: { id: map.mapperUserId ?? undefined } } : undefined,
-                    mapperNameString: ("mapperNameString" in map ? map.mapperNameString : undefined) ?? gamebananaModInfo.publisherName,
-                    name: map.name,
-                    description: map.description,
-                    notes: map.notes,
-                    chapter: "chapter" in map ? map.chapter : undefined,
-                    side: "side" in map ? map.side : undefined,
-                    overallRank: "overallRank" in map ? map.overallRank : undefined,
-                    mapRemovedFromModBool: map.mapRemovedFromModBool,
-                    timeSubmitted: currentTime,
-                    User_SubmittedBy: { connect: { id: ctx.user.id } },
-                    Difficulty: { connect: { id: map.canonicalDifficultyId } },
-                    Length: { connect: { id: map.lengthId } },
-                };
-            });
+            const mapCreateDataArray_base: (Prisma.MapCreateWithoutModInput & MapperUserId)[] | (Prisma.Map_NewWithMod_NewCreateWithoutMod_NewInput & MapperUserId)[] = input.maps.map(
+                (map) => {
+                    return {
+                        User_MapperUser: "mapperUserId" in map ? { connect: { id: map.mapperUserId ?? undefined } } : undefined,
+                        mapperNameString: ("mapperNameString" in map ? map.mapperNameString : undefined) ?? gamebananaModInfo.publisherName,
+                        name: map.name,
+                        description: map.description,
+                        notes: map.notes,
+                        chapter: "chapter" in map ? map.chapter : undefined,
+                        side: "side" in map ? map.side : undefined,
+                        overallRank: "overallRank" in map ? map.overallRank : undefined,
+                        mapRemovedFromModBool: map.mapRemovedFromModBool,
+                        timeSubmitted: currentTime,
+                        User_SubmittedBy: { connect: { id: ctx.user.id } },
+                        Difficulty: { connect: { id: map.canonicalDifficultyId } },
+                        Length: { connect: { id: map.lengthId } },
+                    };
+                }
+            );
 
 
             if (checkPermissions(MODLIST_MODERATOR_PERMISSION_STRINGS, ctx.user.permissions)) {
-                const mapCreateDataArray_approved: Prisma.MapCreateWithoutModInput[] = mapCreateDataArray_base.map((map) => {
-                    return {
-                        ...map,
-                        timeApproved: currentTime,
-                        user_map_approvedByTouser: { connect: { id: ctx.user.id } },
-                    };
-                });
+                const mapCreateDataArray_approved: Prisma.MapCreateWithoutModInput[] = mapCreateDataArray_base.map(
+                    (map) => {
+                        return {
+                            ...map,
+                            timeApproved: currentTime,
+                            user_map_approvedByTouser: { connect: { id: ctx.user.id } },
+                        };
+                    }
+                );
 
 
                 mod = await ctx.prisma.mod.create({

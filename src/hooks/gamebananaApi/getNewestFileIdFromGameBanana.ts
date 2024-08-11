@@ -2,6 +2,7 @@ import { getGamebananaApiUrl } from "./getGamebananaApiUrl";
 import { fetchWithAxios } from "../useFetch";
 import { GAMEBANANA_API_ERROR_STRING, type GamebananaApiResponse } from "./typesAndConsts";
 import type { CancelTokenSource } from "axios";
+import type { NewestFileId } from "../globalContexts/modDownloadUrl";
 
 
 
@@ -67,17 +68,13 @@ const isGamebananaFilesObject = (data: unknown): data is Record<string, Gamebana
 
 
 
-export type ModDownloadurl = string | undefined;
-
-
-const GAMEBANANA_MOD_DOWNLOAD_BASE_URL = "everest:https://gamebanana.com/mmdl/";
 const GAMEBANANA_MOD_FILES_LIST_FIELD = "Files().aFiles()";
 
 
-export const getModDownloadUrl = async (
+export const getNewestFileIdFromGameBanana = async (
     gamebananaModId: number,
     source: CancelTokenSource,
-): Promise<ModDownloadurl> => {
+): Promise<NewestFileId | undefined> => {
     //get query url
     const DEFAULT_GAMEBANANA_API_URL_PROPS = {
         itemType: "Mod",
@@ -106,6 +103,8 @@ export const getModDownloadUrl = async (
     let newestFileDateAdded = 0;
 
     for (const [fileId, fileData] of Object.entries(filesObject)) {
+        if (fileId === "") continue;
+        
         if (fileData._tsDateAdded > newestFileDateAdded) {
             newestFileId = fileId;
             newestFileDateAdded = fileData._tsDateAdded;
@@ -113,8 +112,5 @@ export const getModDownloadUrl = async (
     }
 
 
-    const downloadUrl = newestFileId === "" ? "" : `${GAMEBANANA_MOD_DOWNLOAD_BASE_URL}${newestFileId},Mod,${gamebananaModId}`;
-
-
-    return downloadUrl;
+    return newestFileId;
 };

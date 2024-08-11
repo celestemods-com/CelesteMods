@@ -3,7 +3,7 @@ import Image from "next/image";
 import { Group, Popover, Text, createStyles } from "@mantine/core";
 import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
 import { LinkButton } from "~/components/linkButton";
-import { useModDownloadUrl } from "~/hooks/globalContexts/modDownloadUrl";
+import { useModDownloadUrl, type UseModDownloadUrlProps } from "~/hooks/globalContexts/modDownloadUrl";
 import { FAQ_PAGE_PATHNAME } from "~/consts/pathnames";
 import { OLYMPUS_INSTALLATION_URL } from "~/consts/olympusInstallationUrl";
 import everestLogo from "../../../public/images/everest-logo/everest-logo.png";
@@ -11,9 +11,7 @@ import everestLogo from "../../../public/images/everest-logo/everest-logo.png";
 
 
 
-type ModDownloadButtonProps = {
-    gamebananaModId: number;
-};
+type ModDownloadButtonProps = UseModDownloadUrlProps;
 
 
 
@@ -45,8 +43,8 @@ const useStyles = createStyles(
 
 
 
-export const ModDownloadButton = ({ gamebananaModId }: ModDownloadButtonProps) => {
-    const downloadUrl = useModDownloadUrl({ gamebananaModId });
+export const ModDownloadButton = (props: ModDownloadButtonProps) => {
+    const downloadUrl = useModDownloadUrl(props);
 
     const [isOpened, { close, open }] = useDisclosure(false);
 

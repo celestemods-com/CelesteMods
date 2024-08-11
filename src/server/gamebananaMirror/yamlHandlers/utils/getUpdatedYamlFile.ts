@@ -1,11 +1,30 @@
 import { writeFile, readFile } from "fs/promises";
 import { parse } from "yaml";
 import { serverLogger as logger } from "~/logger/serverLogger";
+import type { ModSearchDatabase, ModSearchDatabaseYamlName } from "../modSearchDatabase";
+import type { EverestUpdateDatabase, EverestUpdateDatabaseYamlName } from "../everestUpdateDatabase";
 
 
 
 
 const JSON_FILE_ENCODING = "utf-8";
+
+
+
+
+type YamlName = ModSearchDatabaseYamlName | EverestUpdateDatabaseYamlName;
+
+type ParsedYaml<
+    FileName extends YamlName,
+> = FileName extends ModSearchDatabaseYamlName ? (
+    ModSearchDatabase
+) : (
+        FileName extends EverestUpdateDatabaseYamlName ? (
+            EverestUpdateDatabase
+        ) : (
+            never
+        )
+    );
 
 
 
@@ -16,14 +35,15 @@ export const getFileSystemErrorString = (yamlName: string) => `Failed to write t
 
 
 export const getCurrentYaml = async <
-    ParsedYaml extends Record<string, unknown>,
-    TypePredicate extends (value: unknown) => value is ParsedYaml = (value: unknown) => value is ParsedYaml,
+    FileName extends YamlName,
+    ParsedFile extends ParsedYaml<FileName> = ParsedYaml<FileName>,
+    TypePredicate extends (value: unknown) => value is ParsedFile = (value: unknown) => value is ParsedFile,
 >(
-    yamlName: string,
+    yamlName: FileName,
     fileSystemErrorString: string,
     jsonPath: string,
     isValidParsedYaml: TypePredicate,
-): Promise<ParsedYaml> => {
+): Promise<ParsedFile> => {
     try {
         const currentModSearchDatabase = await readFile(jsonPath, JSON_FILE_ENCODING);
 
@@ -50,15 +70,16 @@ export const getCurrentYaml = async <
  * Also returns the parsed and validated object.
 */
 export const getUpdatedYaml = async <
-    ParsedYaml extends Record<string, unknown>,
-    TypePredicate extends (value: unknown) => value is ParsedYaml = (value: unknown) => value is ParsedYaml,
+    FileName extends YamlName,
+    ParsedFile extends ParsedYaml<FileName> = ParsedYaml<FileName>,
+    TypePredicate extends (value: unknown) => value is ParsedFile = (value: unknown) => value is ParsedFile,
 >(
     yamlUrl: string,
-    yamlName: string,
+    yamlName: YamlName,
     fileSystemErrorString: string,
     jsonPath: string,
     isValidParsedYaml: TypePredicate,
-): Promise<ParsedYaml> => {
+): Promise<ParsedFile> => {
     logger.debug(`Downloading the ${yamlName}.`);
 
 
@@ -66,7 +87,7 @@ export const getUpdatedYaml = async <
 
     if (!response.ok) {
         logger.error(`Failed to download the ${yamlName}. Status code: ${response.status}`);
-        
+
         throw `Failed to download the ${yamlName}. Status code: ${response.status}`;
     }
 

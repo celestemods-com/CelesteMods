@@ -2,6 +2,7 @@ import { getGamebananaApiUrl } from "./getGamebananaApiUrl";
 import { fetchWithAxios } from "../useFetch";
 import { GAMEBANANA_API_ERROR_STRING, type GamebananaApiResponse } from "./typesAndConsts";
 import type { CancelTokenSource } from "axios";
+import { GAMEBANANA_MOD_IMAGES_BASE_URL, type ModImageUrls } from "../globalContexts/modImageUrls";
 
 
 
@@ -34,15 +35,7 @@ const isGamebananaScreenshotDataArray = (data: unknown): data is GamebananaScree
 
 
 
-export type ModImageUrls = string[];
-
-
-const GAMEBANANA_MOD_IMAGES_BASE_URL = "https://images.gamebanana.com/img/ss/mods/";
-
-
-
-
-export const getModImageUrls = async (
+export const getModImageUrlsFromGameBanana = async (
     gamebananaModId: number,
     source: CancelTokenSource,
 ): Promise<ModImageUrls> => {
