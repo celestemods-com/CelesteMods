@@ -1,5 +1,5 @@
 import type { NewestFileId } from "~/hooks/globalContexts/modDownloadUrl/constAndTypes";
-import { getCurrentYaml, getFileSystemErrorString, getUpdatedYaml } from "./utils/getUpdatedYamlFile";
+import { getCurrentYaml, getFileSystemErrorString, getFileSystemPath, getUpdatedYaml } from "./utils/getUpdatedYamlFile";
 import { GAMEBANANA_MOD_IMAGES_BASE_URL } from "~/hooks/globalContexts/modImageUrls/constsAndTypes";
 
 
@@ -7,7 +7,9 @@ import { GAMEBANANA_MOD_IMAGES_BASE_URL } from "~/hooks/globalContexts/modImageU
 
 const MOD_SEARCH_DATABASE_YAML_URL = "https://maddie480.ovh/celeste/mod_search_database.yaml";
 
-const MOD_SEARCH_DATABASE_JSON_PATH = process.env.MOD_SEARCH_DATABASE_JSON_PATH || "";
+const MOD_SEARCH_DATABASE_JSON_FILENAME = process.env.MOD_SEARCH_DATABASE_JSON_FILENAME || "mod_search_database.json";
+
+const modSearchDatabaseJsonPath = getFileSystemPath(MOD_SEARCH_DATABASE_JSON_FILENAME);
 
 
 const MOD_SEARCH_DATABASE_YAML_NAME = "Mod Search Database";
@@ -168,7 +170,7 @@ export const getCurrentModSearchDatabase = async (): Promise<ModSearchDatabase> 
     const parsedYaml = getCurrentYaml(
         MOD_SEARCH_DATABASE_YAML_NAME,
         modSearchDatabaseFileSystemErrorString,
-        MOD_SEARCH_DATABASE_JSON_PATH,
+        modSearchDatabaseJsonPath,
         isValidModSearchDatabase,
     );
 
@@ -187,7 +189,7 @@ export const getUpdatedModSearchDatabase = async (): Promise<ModSearchDatabase> 
         MOD_SEARCH_DATABASE_YAML_URL,
         MOD_SEARCH_DATABASE_YAML_NAME,
         modSearchDatabaseFileSystemErrorString,
-        MOD_SEARCH_DATABASE_JSON_PATH,
+        modSearchDatabaseJsonPath,
         isValidModSearchDatabase,
     );
 

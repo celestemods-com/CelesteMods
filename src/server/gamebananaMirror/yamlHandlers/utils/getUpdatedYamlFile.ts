@@ -1,4 +1,5 @@
 import { writeFile, readFile } from "fs/promises";
+import path from "path";
 import { parse } from "yaml";
 import { serverLogger as logger } from "~/logger/serverLogger";
 import type { ModSearchDatabase, ModSearchDatabaseYamlName } from "../modSearchDatabase";
@@ -8,6 +9,20 @@ import type { EverestUpdateDatabase, EverestUpdateDatabaseYamlName } from "../ev
 
 
 const JSON_FILE_ENCODING = "utf-8";
+
+
+
+
+export const getFileSystemPath = (fileName: string)  => {
+    if (!fileName.endsWith(".json")) throw "The file name must end with '.json'.";
+
+
+    const filePath = path.resolve("~/../cache", fileName);
+    // const filePath = path.resolve(process.cwd(),"cache", fileName);
+
+
+    return filePath;
+};
 
 
 

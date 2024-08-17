@@ -1,11 +1,13 @@
-import { getCurrentYaml, getFileSystemErrorString, getUpdatedYaml } from "./utils/getUpdatedYamlFile";
+import { getCurrentYaml, getFileSystemErrorString, getFileSystemPath, getUpdatedYaml } from "./utils/getUpdatedYamlFile";
 
 
 
 
 const EVEREST_UPDATE_DATABASE_YAML_URL = "https://maddie480.ovh/celeste/everest_update.yaml";
 
-const EVEREST_UPDATE_DATABASE_JSON_PATH = process.env.EVEREST_UPDATE_DATABASE_JSON_PATH || "";
+const EVEREST_UPDATE_DATABASE_JSON_FILENAME = process.env.EVEREST_UPDATE_DATABASE_JSON_FILENAME || "everest_update_database.json";
+
+const everestUpdateDatabaseJsonPath = getFileSystemPath(EVEREST_UPDATE_DATABASE_JSON_FILENAME);
 
 
 const EVEREST_UPDATE_DATABASE_YAML_NAME = "Everest Update Database";
@@ -36,7 +38,7 @@ export const getCurrentEverestUpdateDatabase = async (): Promise<EverestUpdateDa
     const parsedYaml = getCurrentYaml(
         EVEREST_UPDATE_DATABASE_YAML_NAME,
         everestUpdateDatabaseFileSystemErrorString,
-        EVEREST_UPDATE_DATABASE_JSON_PATH,
+        everestUpdateDatabaseJsonPath,
         isValidEverestUpdateInfo,
     );
     
@@ -55,7 +57,7 @@ export const getUpdatedEverestUpdateDatabase = async (): Promise<EverestUpdateDa
         EVEREST_UPDATE_DATABASE_YAML_URL,
         EVEREST_UPDATE_DATABASE_YAML_NAME,
         everestUpdateDatabaseFileSystemErrorString,
-        EVEREST_UPDATE_DATABASE_JSON_PATH,
+        everestUpdateDatabaseJsonPath,
         isValidEverestUpdateInfo,
     );
 
