@@ -10,7 +10,7 @@ import type { ModWithInfo } from "~/components/mods/types";
 import { MODS_PAGE_PATHNAME } from "~/consts/pathnames";
 import { pageTitle } from "~/styles/pageTitle";
 import { createServerSideHelpers } from '@trpc/react-query/server';
-import { appRouter } from "~/server/api/root";
+import { apiRouter } from "~/server/api/root";
 import { prisma } from "~/server/prisma";
 import superjson from "superjson";
 
@@ -212,7 +212,7 @@ const getModsWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: Mod
 
 export async function getStaticProps() {
     const helpers = createServerSideHelpers({
-        router: appRouter,
+        router: apiRouter,
         ctx: {
             session: null,
             prisma: prisma,
@@ -252,7 +252,7 @@ export async function getStaticProps() {
 
 
 const Mods: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = (
-    props,
+    _props,
 ) => {
     //get common data
     const qualityQuery = api.quality.getAll.useQuery({}, { queryKey: ["quality.getAll", {}] });
