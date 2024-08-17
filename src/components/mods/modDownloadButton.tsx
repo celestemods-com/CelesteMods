@@ -3,7 +3,7 @@ import Image from "next/image";
 import { Group, Popover, Text, createStyles } from "@mantine/core";
 import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
 import { LinkButton } from "~/components/linkButton";
-import { useModDownloadUrl, type UseModDownloadUrlProps } from "~/hooks/globalContexts/modDownloadUrl";
+import { useModDownloadUrl, type UseModDownloadUrlProps } from "~/hooks/globalContexts/modDownloadUrl/useModDownloadUrl";
 import { FAQ_PAGE_PATHNAME } from "~/consts/pathnames";
 import { OLYMPUS_INSTALLATION_URL } from "~/consts/olympusInstallationUrl";
 import everestLogo from "../../../public/images/everest-logo/everest-logo.png";

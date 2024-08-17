@@ -1,48 +1,11 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { ContextState } from "./globalContextsProvider";
-import { getNewestFileIdFromGameBanana } from "../gamebananaApi/getNewestFileIdFromGameBanana";
-import type { GamebananaModId } from "~/components/mods/types";
 import axios from "axios";
+import { useContext, useEffect, useState } from "react";
+import { getNewestFileIdFromGameBanana } from "../../gamebananaApi/getNewestFileIdFromGameBanana";
 import { getNewestFileIdFromModSearchDatabaseModFiles, type ModSearchDatabase_ModInfo_File } from "~/server/gamebananaMirror/yamlHandlers/modSearchDatabase";
+import { GAMEBANANA_MOD_DOWNLOAD_BASE_URL, type NewestFileId } from "./constAndTypes";
+import { modDownloadUrlContext } from "./modDownloadUrlContext";
 
 
-
-
-export type ModDownloadUrlState = Record<GamebananaModId, string>;
-
-
-
-
-const modDownloadUrlContext = createContext<ContextState<ModDownloadUrlState> | undefined>(undefined);
-
-
-export const ModDownloadUrlsContextProvider = ({ children }: { children: React.ReactNode; }) => {
-    const [modDownloadUrls, setModDownloadUrls] = useState<ModDownloadUrlState>({});
-
-
-    const modDownloadUrlsState = useMemo(
-        () => ({
-            state: modDownloadUrls,
-            update: setModDownloadUrls,
-        }),
-        [modDownloadUrls],
-    );
-
-
-    return (
-        <modDownloadUrlContext.Provider value={modDownloadUrlsState}>
-            {children}
-        </modDownloadUrlContext.Provider>
-    );
-};
-
-
-
-
-export type NewestFileId = string;
-
-
-const GAMEBANANA_MOD_DOWNLOAD_BASE_URL = "everest:https://gamebanana.com/mmdl/";
 
 
 const getModDownloadUrl = (

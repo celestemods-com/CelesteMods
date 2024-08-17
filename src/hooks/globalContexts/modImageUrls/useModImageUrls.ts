@@ -1,47 +1,12 @@
-import { createContext, useEffect, useMemo, useState, useContext } from "react";
-import type { ContextState } from "./globalContextsProvider";
-import { getModImageUrlsFromGameBanana } from "~/hooks/gamebananaApi/getModImageUrlsFromGameBanana";
-import type { GamebananaModId } from "~/components/mods/types";
+"use client";
+
 import axios from 'axios';
+import { useEffect, useState, useContext } from "react";
+import { getModImageUrlsFromGameBanana } from "~/hooks/gamebananaApi/getModImageUrlsFromGameBanana";
+import type { ModImageUrls } from "./constsAndTypes";
+import { modImageUrlsContext } from "./modImageUrlsContext";
 
 
-
-
-export type ModImageUrls = string[];
-
-
-export type ModImageUrlsState = Record<GamebananaModId, ModImageUrls>;
-
-
-
-
-const modImageUrlsContext = createContext<ContextState<ModImageUrlsState> | undefined>(undefined);
-
-
-export const ModImageUrlsContextProvider = ({ children }: { children: React.ReactNode; }) => {
-    const [modImageUrls, setModImageUrls] = useState<ModImageUrlsState>({});
-
-
-    const modImageUrlsStateRecord = useMemo(
-        () => ({
-            state: modImageUrls,
-            update: setModImageUrls,
-        }),
-        [modImageUrls],
-    );
-
-
-    return (
-        <modImageUrlsContext.Provider value={modImageUrlsStateRecord}>
-            {children}
-        </modImageUrlsContext.Provider>
-    );
-};
-
-
-
-
-export const GAMEBANANA_MOD_IMAGES_BASE_URL = "https://images.gamebanana.com";
 
 
 type useModImageUrlsProps = {

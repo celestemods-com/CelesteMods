@@ -2,7 +2,7 @@ import { getGamebananaApiUrl } from "./getGamebananaApiUrl";
 import { fetchWithAxios } from "../useFetch";
 import { GAMEBANANA_API_ERROR_STRING, type GamebananaApiResponse } from "./typesAndConsts";
 import type { CancelTokenSource } from "axios";
-import type { NewestFileId } from "../globalContexts/modDownloadUrl";
+import type { NewestFileId } from "../globalContexts/modDownloadUrl/constAndTypes";
 
 
 

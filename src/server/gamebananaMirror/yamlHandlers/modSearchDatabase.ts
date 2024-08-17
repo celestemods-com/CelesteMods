@@ -1,6 +1,6 @@
-import type { NewestFileId } from "~/hooks/globalContexts/modDownloadUrl";
+import type { NewestFileId } from "~/hooks/globalContexts/modDownloadUrl/constAndTypes";
 import { getCurrentYaml, getFileSystemErrorString, getUpdatedYaml } from "./utils/getUpdatedYamlFile";
-import { GAMEBANANA_MOD_IMAGES_BASE_URL } from "~/hooks/globalContexts/modImageUrls";
+import { GAMEBANANA_MOD_IMAGES_BASE_URL } from "~/hooks/globalContexts/modImageUrls/constsAndTypes";
 
 
 
