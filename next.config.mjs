@@ -42,7 +42,7 @@ const config = {
   },
   experimental: {
     largePageDataBytes: 3 * 1024 * 1024, // 3 MB
-    serverComponentsExternalPackages: ['pino'], // Context: https://github.com/vercel/next.js/issues/54289#issuecomment-1686401300
+    serverComponentsExternalPackages: ["pino"], // Context: https://github.com/vercel/next.js/issues/54289#issuecomment-1686401300
   },
   eslint: { ignoreDuringBuilds: true },
 };

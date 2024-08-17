@@ -1,6 +1,6 @@
 import type { NewestFileId } from "~/hooks/globalContexts/modDownloadUrl";
 import { getCurrentYaml, getFileSystemErrorString, getUpdatedYaml } from "./utils/getUpdatedYamlFile";
-import { GAMEBANANA_MOD_IMAGES_BASE_URL, type ModImageUrls } from "~/hooks/globalContexts/modImageUrls";
+import { GAMEBANANA_MOD_IMAGES_BASE_URL } from "~/hooks/globalContexts/modImageUrls";
 
 
 
@@ -157,5 +157,5 @@ export const getUpdatedModSearchDatabase = async (): Promise<ModSearchDatabase> 
     );
 
 
-    return parsedYaml as Promise<ModSearchDatabase>; //TODO!!!: remove this cast if possible
+    return parsedYaml as Promise<ModSearchDatabase>; //TODO!!: remove this cast if possible
 };

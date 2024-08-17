@@ -41,7 +41,7 @@ export const ModImageUrlsContextProvider = ({ children }: { children: React.Reac
 
 
 
-export const GAMEBANANA_MOD_IMAGES_BASE_URL = "https://images.gamebanana.com/img/ss/mods/";
+export const GAMEBANANA_MOD_IMAGES_BASE_URL = "https://images.gamebanana.com";
 
 
 type useModImageUrlsProps = {

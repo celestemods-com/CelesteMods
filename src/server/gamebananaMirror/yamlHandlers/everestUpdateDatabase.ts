@@ -60,5 +60,5 @@ export const getUpdatedEverestUpdateDatabase = async (): Promise<EverestUpdateDa
     );
 
 
-    return parsedYaml as Promise<EverestUpdateDatabase>; //TODO!!!: remove this cast if possible
+    return parsedYaml as Promise<EverestUpdateDatabase>; //TODO!!: remove this cast if possible
 };
