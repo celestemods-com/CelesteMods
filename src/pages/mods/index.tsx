@@ -220,25 +220,30 @@ export async function getStaticProps() {
         transformer: superjson,
     });
 
-    // prefetch data
-    const promises = [
-        helpers.quality.getAll.prefetch({}),
-    ];
+    console.log("Prefetching data for mods page...")
 
+    // prefetch data
+    let promises: Promise<void>[] = [];
+
+    promises.push(helpers.quality.getAll.prefetch({}));
     promises.push(helpers.difficulty.getAll.prefetch({}));
     promises.push(helpers.publisher.getAll.prefetch({}));
     promises.push(helpers.tech.getAll.prefetch({}));
     promises.push(helpers.map.getAll.prefetch({}));
 
+    await Promise.all(promises);
 
-    const mods = await helpers.mod.getAll.fetch({});
+    console.log("location 1")
 
-    mods.forEach((mod) => {
-        promises.push(helpers.rating.getModRatingData.prefetch({ modId: mod.id }));
+    const mods = await helpers.mod.getAll.fetch({});    //TODO!!!!: this is taking over 20 seconds to load. figure out why. i figure it has something to do with us accessing the file system now.
+
+    console.log(`mods.length = ${mods.length}`)
+
+    mods.forEach(async (mod) => {
+        await helpers.rating.getModRatingData.prefetch({ modId: mod.id });   //TODO!!!: getting stack flow error here during build if this isn't awaited indivudually. if this still happens after fixing the mod.getAll issue, try to fix this
     });
 
-
-    await Promise.all(promises);
+    console.log("Prefetched data for mods page.")
 
     return {
         props: {
@@ -269,7 +274,7 @@ const Mods: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = (
 
     const techQuery = api.tech.getAll.useQuery({}, { queryKey: ["tech.getAll", {}] });
     const techs = techQuery.data ?? [];
-    
+
 
     const modsQuery = api.mod.getAll.useQuery({}, { queryKey: ["mod.getAll", {}] });
 
