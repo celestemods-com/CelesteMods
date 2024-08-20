@@ -13,7 +13,7 @@ const JSON_FILE_ENCODING = "utf-8";
 
 
 
-export const getFileSystemPath = (fileName: string)  => {
+export const getFileSystemPath = (fileName: string) => {
     if (!fileName.endsWith(".json")) throw "The file name must end with '.json'.";
 
 
@@ -94,6 +94,7 @@ export const getUpdatedYaml = async <
     fileSystemErrorString: string,
     jsonPath: string,
     isValidParsedYaml: TypePredicate,
+    trimFile?: (parsedFile: ParsedFile) => ParsedFile,
 ): Promise<ParsedFile> => {
     logger.debug(`Downloading the ${yamlName}.`);
 
@@ -122,8 +123,17 @@ export const getUpdatedYaml = async <
     logger.debug(`Successfully parsed the ${yamlName}.`);
 
 
+    let trimmedfile: ParsedFile;
+
+    if (trimFile) {
+        trimmedfile = trimFile(parsedYaml);
+    } else {
+        trimmedfile = parsedYaml;
+    }
+
+
     try {
-        await writeFile(jsonPath, JSON.stringify(parsedYaml), JSON_FILE_ENCODING);
+        await writeFile(jsonPath, JSON.stringify(trimmedfile), JSON_FILE_ENCODING);
     } catch (error) {
         logger.error(`${fileSystemErrorString} ${error}`);
 
@@ -131,5 +141,5 @@ export const getUpdatedYaml = async <
     }
 
 
-    return parsedYaml;
+    return trimmedfile;
 };

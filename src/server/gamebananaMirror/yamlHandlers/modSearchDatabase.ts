@@ -35,6 +35,7 @@ export type ModSearchDatabase_ModInfo = {
     GameBananaId: number;
     Screenshots: string[];
     Files: ModSearchDatabase_ModInfo_File[];
+    CategoryName: string;
 };
 
 
@@ -111,7 +112,7 @@ const isValidModSearchDatabase = (value: unknown): value is ModSearchDatabase =>
     const modSearchDatabase = value as ModSearchDatabase;
 
     for (const mod of modSearchDatabase) {
-        if (typeof mod !== "object" || mod === null || "GameBananaId" in mod === false || "Screenshots" in mod === false || "Files" in mod === false) {
+        if (typeof mod !== "object" || mod === null || "GameBananaId" in mod === false || "Screenshots" in mod === false || "Files" in mod === false || "CategoryName" in mod === false) {
             console.log("mod is not an object or is null");
             return false;
         }
@@ -128,7 +129,12 @@ const isValidModSearchDatabase = (value: unknown): value is ModSearchDatabase =>
 
         if (!isValidModSearchDatabase_ModInfo_Files(mod.Files)) {
             console.log("Files are invalid");
-            console.log(JSON.stringify(mod))
+            console.log(JSON.stringify(mod));
+            return false;
+        }
+
+        if (typeof mod.CategoryName !== "string") {
+            console.log("CategoryName is not a string");
             return false;
         }
     }
@@ -160,7 +166,7 @@ export const getNewestFileIdFromModSearchDatabaseModFiles = (files: ModSearchDat
 
 
     return newestFileId;
-}
+};
 
 
 
@@ -181,6 +187,27 @@ export const getCurrentModSearchDatabase = async (): Promise<ModSearchDatabase> 
 
 
 
+const trimModSearchDatabase = (modSearchDatabase: ModSearchDatabase): ModSearchDatabase => {
+    const trimmedModSearchDatabase: ModSearchDatabase = [];
+
+    for (const mod of modSearchDatabase) {
+        if (mod.CategoryName !== "Maps") continue;
+
+        const trimmedMod = {
+            GameBananaId: mod.GameBananaId,
+            Screenshots: mod.Screenshots,
+            Files: mod.Files,
+            CategoryName: mod.CategoryName,
+        };
+
+        trimmedModSearchDatabase.push(trimmedMod);
+    }
+
+
+    return trimmedModSearchDatabase;
+};
+
+
 /** Updates the mod search database json file.
  * Also returns the parsed and validated object.
 */
@@ -191,6 +218,7 @@ export const getUpdatedModSearchDatabase = async (): Promise<ModSearchDatabase> 
         modSearchDatabaseFileSystemErrorString,
         modSearchDatabaseJsonPath,
         isValidModSearchDatabase,
+        trimModSearchDatabase,
     );
 
 
