@@ -528,6 +528,28 @@ const getModSearchDatabaseInfoForMod = async (gamebananaModID: number): Promise<
 };
 
 
+const getModSearchDatabaseInfoForAllMods = async (mods: TrimmedMod[]): Promise<TrimmedMod[]> => {
+    const modSearchDatabase = await getCurrentModSearchDatabase();
+
+
+    outerLoop: for (const mod of mods) {
+        for (const modSearchDatabaseMod of modSearchDatabase) {
+            if (mod.gamebananaModId === modSearchDatabaseMod.GameBananaId) {
+                mod.Screenshots = modSearchDatabaseMod.Screenshots;
+                mod.Files = modSearchDatabaseMod.Files;
+                continue outerLoop;
+            }
+        }
+
+        // if the mod is not found in the mod search database, log a warning
+        console.warn(`Mod with gamebananaModId ${mod.gamebananaModId} not found in mod search database`);
+    }
+
+
+    return mods;
+};
+
+
 
 
 type UpdateGamebananaModIdObject = {
@@ -565,27 +587,16 @@ export const modRouter = createTRPCRouter({
     getAll: publicProcedure
         .input(modOrderSchema)
         .query(async ({ ctx, input }) => {
-            const mods = await ctx.prisma.mod.findMany({
+            const modsFromDatabase = await ctx.prisma.mod.findMany({
                 select: defaultModSelect,
                 orderBy: getOrderObjectArray(input.selectors, input.directions),
             });
 
 
-            for (const mod of mods) {
-                if (!mod) throw new TRPCError({
-                    code: "INTERNAL_SERVER_ERROR",
-                    message: "Error getting mod info: mod is undefined. This should not happen. Please contact an admin.",
-                });
+            const modsWithModSearchDatabaseInfo = await getModSearchDatabaseInfoForAllMods(modsFromDatabase);
 
 
-                const modSearchDatabaseInfo = await getModSearchDatabaseInfoForMod(mod.gamebananaModId);
-
-                (mod as NonNullable<ModUnion<"Mod", false>>).Screenshots = modSearchDatabaseInfo.Screenshots;
-                (mod as NonNullable<ModUnion<"Mod", false>>).Files = modSearchDatabaseInfo.Files;
-            }
-
-
-            return mods;
+            return modsWithModSearchDatabaseInfo;
         }),
 
     rest_getAll: publicProcedure

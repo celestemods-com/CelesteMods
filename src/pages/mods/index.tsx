@@ -17,6 +17,11 @@ import superjson from "superjson";
 
 
 
+const MOD_DATA_PREFETCH_BATCH_SIZE = 500;
+
+
+
+
 const useStyles = createStyles(
     () => ({
         pageTitle,
@@ -220,7 +225,8 @@ export async function getStaticProps() {
         transformer: superjson,
     });
 
-    console.log("Prefetching data for mods page...")
+
+    console.log("Prefetching data for mods page...");
 
     // prefetch data
     let promises: Promise<void>[] = [];
@@ -231,19 +237,22 @@ export async function getStaticProps() {
     promises.push(helpers.tech.getAll.prefetch({}));
     promises.push(helpers.map.getAll.prefetch({}));
 
+
+    const mods = await helpers.mod.getAll.fetch({});
+
+    for (const mod of mods) {
+        if (promises.length >= MOD_DATA_PREFETCH_BATCH_SIZE) {  // batching the prefetches to avoid a nextjs worker running out of memory during the build
+            await Promise.all(promises);
+            promises = [];
+        }
+
+        promises.push(helpers.rating.getModRatingData.prefetch({ modId: mod.id }));
+    }
+
     await Promise.all(promises);
 
-    console.log("location 1")
+    console.log("Prefetched data for mods page.");
 
-    const mods = await helpers.mod.getAll.fetch({});    //TODO!!!!: this is taking over 20 seconds to load. figure out why. i figure it has something to do with us accessing the file system now.
-
-    console.log(`mods.length = ${mods.length}`)
-
-    mods.forEach(async (mod) => {
-        await helpers.rating.getModRatingData.prefetch({ modId: mod.id });   //TODO!!!: getting stack flow error here during build if this isn't awaited indivudually. if this still happens after fixing the mod.getAll issue, try to fix this
-    });
-
-    console.log("Prefetched data for mods page.")
 
     return {
         props: {
