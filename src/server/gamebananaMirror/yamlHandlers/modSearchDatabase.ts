@@ -171,22 +171,6 @@ export const getNewestFileIdFromModSearchDatabaseModFiles = (files: ModSearchDat
 
 
 
-/** Returns the mod search database json file currently stored on disk. */
-export const getCurrentModSearchDatabase = async (): Promise<ModSearchDatabase> => {
-    const parsedYaml = getCurrentYaml(
-        MOD_SEARCH_DATABASE_YAML_NAME,
-        modSearchDatabaseFileSystemErrorString,
-        modSearchDatabaseJsonPath,
-        isValidModSearchDatabase,
-    );
-
-
-    return parsedYaml;
-};
-
-
-
-
 const trimModSearchDatabase = (modSearchDatabase: ModSearchDatabase): ModSearchDatabase => {
     const trimmedModSearchDatabase: ModSearchDatabase = [];
 
@@ -206,6 +190,26 @@ const trimModSearchDatabase = (modSearchDatabase: ModSearchDatabase): ModSearchD
 
     return trimmedModSearchDatabase;
 };
+
+
+
+
+/** Returns the mod search database json file currently stored on disk. */
+export const getCurrentModSearchDatabase = async (): Promise<ModSearchDatabase> => {
+    const parsedYaml = getCurrentYaml(
+        MOD_SEARCH_DATABASE_YAML_URL,
+        MOD_SEARCH_DATABASE_YAML_NAME,
+        modSearchDatabaseFileSystemErrorString,
+        modSearchDatabaseJsonPath,
+        isValidModSearchDatabase,
+        trimModSearchDatabase,
+    );
+
+
+    return parsedYaml;
+};
+
+
 
 
 /** Updates the mod search database json file.

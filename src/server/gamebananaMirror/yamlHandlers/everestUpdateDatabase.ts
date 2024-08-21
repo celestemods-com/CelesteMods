@@ -33,13 +33,22 @@ const isValidEverestUpdateInfo = (value: unknown): value is EverestUpdateDatabas
 
 
 
+const trimEverestUpdateDatabase = (everestUpdateDatabase: EverestUpdateDatabase): EverestUpdateDatabase => {
+    return everestUpdateDatabase;   // currently unused, so not implemented
+}
+
+
+
+
 /** Returns the everest update database json file currently stored on disk. */
 export const getCurrentEverestUpdateDatabase = async (): Promise<EverestUpdateDatabase> => {
     const parsedYaml = getCurrentYaml(
+        EVEREST_UPDATE_DATABASE_YAML_URL,
         EVEREST_UPDATE_DATABASE_YAML_NAME,
         everestUpdateDatabaseFileSystemErrorString,
         everestUpdateDatabaseJsonPath,
         isValidEverestUpdateInfo,
+        trimEverestUpdateDatabase,
     );
     
 
@@ -59,6 +68,7 @@ export const getUpdatedEverestUpdateDatabase = async (): Promise<EverestUpdateDa
         everestUpdateDatabaseFileSystemErrorString,
         everestUpdateDatabaseJsonPath,
         isValidEverestUpdateInfo,
+        trimEverestUpdateDatabase,
     );
 
 

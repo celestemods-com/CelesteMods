@@ -10,6 +10,9 @@ import type { EverestUpdateDatabase, EverestUpdateDatabaseYamlName } from "../ev
 
 const JSON_FILE_ENCODING = "utf-8";
 
+/** The beginning of the error when reading a non-extant file */
+const NO_SUCH_FILE_ERROR = "Error: ENOENT: no such file or directory";
+
 
 
 
@@ -54,10 +57,12 @@ export const getCurrentYaml = async <
     ParsedFile extends ParsedYaml<FileName> = ParsedYaml<FileName>,
     TypePredicate extends (value: unknown) => value is ParsedFile = (value: unknown) => value is ParsedFile,
 >(
+    yamlUrl: string,
     yamlName: FileName,
     fileSystemErrorString: string,
     jsonPath: string,
     isValidParsedYaml: TypePredicate,
+    trimFile: (parsedFile: ParsedFile) => ParsedFile,
 ): Promise<ParsedFile> => {
     try {
         const currentModSearchDatabase = await readFile(jsonPath, JSON_FILE_ENCODING);
@@ -72,9 +77,19 @@ export const getCurrentYaml = async <
 
         return currentYaml;
     } catch (error) {
-        logger.error(`Failed to read the ${yamlName} from the file system. ${error}`);
+        logger.warn(`Failed to read the ${yamlName} from the file system. ${error}`);
 
-        throw fileSystemErrorString;
+        if (!String(error).startsWith(NO_SUCH_FILE_ERROR)) throw fileSystemErrorString;
+
+        
+        return getUpdatedYaml(
+            yamlUrl,
+            yamlName,
+            fileSystemErrorString,
+            jsonPath,
+            isValidParsedYaml,
+            trimFile,
+        );
     }
 };
 
@@ -94,7 +109,7 @@ export const getUpdatedYaml = async <
     fileSystemErrorString: string,
     jsonPath: string,
     isValidParsedYaml: TypePredicate,
-    trimFile?: (parsedFile: ParsedFile) => ParsedFile,
+    trimFile: (parsedFile: ParsedFile) => ParsedFile,
 ): Promise<ParsedFile> => {
     logger.debug(`Downloading the ${yamlName}.`);
 
