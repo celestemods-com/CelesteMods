@@ -3,7 +3,9 @@
   "version": "0.2.0",
   "private": true,
   "scripts": {
+    "prebuild": "tsx scripts/prebuild.ts",
     "build": "npm i && next build",
+    "predev": "tsx scripts/predev.ts",
     "dev": "next dev",
     "idev": "npm i && npm run dev",
     "postinstall": "prisma generate",
