@@ -15,7 +15,8 @@ import { selectIdObject } from "../../utils/selectIdObject";
 import { IfElse } from "../../../../utils/typeHelpers";
 import { getCheckedTableNames } from "../../utils/getCheckedTableNames";
 import { zodOutputIdObject } from "../../utils/zodOutputIdObject";
-import { getCurrentModSearchDatabase, type ModSearchDatabase_ModInfo } from "~/server/gamebananaMirror/yamlHandlers/modSearchDatabase";
+import { getCurrentModSearchDatabase } from "~/server/gamebananaMirror/yamlHandlers/modSearchDatabase/modSearchDatabase";
+import type { ModSearchDatabase_ModInfo } from "~/server/gamebananaMirror/yamlHandlers/modSearchDatabase/constAndTypes";
 
 
 

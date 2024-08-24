@@ -1,8 +1,7 @@
 import { writeFile, readFile } from "fs/promises";
-import path from "path";
 import { parse } from "yaml";
 import { serverLogger as logger } from "~/logger/serverLogger";
-import type { ModSearchDatabase, ModSearchDatabaseYamlName } from "../modSearchDatabase";
+import type { ModSearchDatabase, ModSearchDatabaseYamlName } from "../modSearchDatabase/constAndTypes";
 import type { EverestUpdateDatabase, EverestUpdateDatabaseYamlName } from "../everestUpdateDatabase";
 
 
@@ -12,20 +11,6 @@ const JSON_FILE_ENCODING = "utf-8";
 
 /** The beginning of the error when reading a non-extant file */
 const NO_SUCH_FILE_ERROR = "Error: ENOENT: no such file or directory";
-
-
-
-
-export const getFileSystemPath = (fileName: string) => {
-    if (!fileName.endsWith(".json")) throw "The file name must end with '.json'.";
-
-
-    const filePath = path.resolve("~/../cache", fileName);
-    // const filePath = path.resolve(process.cwd(),"cache", fileName);
-
-
-    return filePath;
-};
 
 
 
@@ -43,11 +28,6 @@ type ParsedYaml<
             never
         )
     );
-
-
-
-
-export const getFileSystemErrorString = (yamlName: string) => `Failed to write the ${yamlName} to the file system.`;
 
 
 
@@ -81,7 +61,7 @@ export const getCurrentYaml = async <
 
         if (!String(error).startsWith(NO_SUCH_FILE_ERROR)) throw fileSystemErrorString;
 
-        
+
         return getUpdatedYaml(
             yamlUrl,
             yamlName,

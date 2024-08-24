@@ -1,45 +1,6 @@
-import type { NewestFileId } from "~/hooks/globalContexts/modDownloadUrl/constAndTypes";
-import { getCurrentYaml, getFileSystemErrorString, getFileSystemPath, getUpdatedYaml } from "./utils/getUpdatedYamlFile";
+import { getCurrentYaml, getUpdatedYaml } from "../utils/getYamlFile";
 import { GAMEBANANA_MOD_IMAGES_BASE_URL } from "~/hooks/globalContexts/modImageUrls/constsAndTypes";
-
-
-
-
-const MOD_SEARCH_DATABASE_YAML_URL = "https://maddie480.ovh/celeste/mod_search_database.yaml";
-
-const MOD_SEARCH_DATABASE_JSON_FILENAME = process.env.MOD_SEARCH_DATABASE_JSON_FILENAME || "mod_search_database.json";
-
-const modSearchDatabaseJsonPath = getFileSystemPath(MOD_SEARCH_DATABASE_JSON_FILENAME);
-
-
-const MOD_SEARCH_DATABASE_YAML_NAME = "Mod Search Database";
-
-const modSearchDatabaseFileSystemErrorString = getFileSystemErrorString(MOD_SEARCH_DATABASE_YAML_NAME);
-
-
-const MOD_SEARCH_DATABASE_FILE_URL_PREFIX = "https://gamebanana.com/dl/";
-
-
-
-
-export type ModSearchDatabaseYamlName = typeof MOD_SEARCH_DATABASE_YAML_NAME;
-
-
-export type ModSearchDatabase_ModInfo_File = {
-    URL: string;
-    CreatedDate: number;
-};
-
-
-export type ModSearchDatabase_ModInfo = {
-    GameBananaId: number;
-    Screenshots: string[];
-    Files: ModSearchDatabase_ModInfo_File[];
-    CategoryName: string;
-};
-
-
-export type ModSearchDatabase = ModSearchDatabase_ModInfo[];
+import { MOD_SEARCH_DATABASE_FILE_URL_PREFIX, MOD_SEARCH_DATABASE_YAML_NAME, MOD_SEARCH_DATABASE_YAML_URL, type ModSearchDatabase, type ModSearchDatabase_ModInfo, modSearchDatabaseFileSystemErrorString, modSearchDatabaseJsonPath } from "./constAndTypes";
 
 
 
@@ -141,31 +102,6 @@ const isValidModSearchDatabase = (value: unknown): value is ModSearchDatabase =>
 
 
     return true;
-};
-
-
-
-
-export const getNewestFileIdFromModSearchDatabaseModFiles = (files: ModSearchDatabase_ModInfo_File[] | undefined): NewestFileId | undefined => {
-    if (!files || files.length === 0) return undefined;
-
-
-    let newestFileId = "";
-    let newestFileDateAdded = 0;
-
-    for (const file of files) {
-        const fileId = file.URL.slice(MOD_SEARCH_DATABASE_FILE_URL_PREFIX.length);
-
-        if (fileId === "") continue;
-
-        if (file.CreatedDate > newestFileDateAdded) {
-            newestFileId = fileId;
-            newestFileDateAdded = file.CreatedDate;
-        }
-    }
-
-
-    return newestFileId;
 };
 
 

@@ -1,9 +1,10 @@
 import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import { getNewestFileIdFromGameBanana } from "../../gamebananaApi/getNewestFileIdFromGameBanana";
-import { getNewestFileIdFromModSearchDatabaseModFiles, type ModSearchDatabase_ModInfo_File } from "~/server/gamebananaMirror/yamlHandlers/modSearchDatabase";
+import type { ModSearchDatabase_ModInfo_File } from "~/server/gamebananaMirror/yamlHandlers/modSearchDatabase/constAndTypes";
 import { GAMEBANANA_MOD_DOWNLOAD_BASE_URL, type NewestFileId } from "./constAndTypes";
 import { modDownloadUrlContext } from "./modDownloadUrlContext";
+import { getNewestFileIdFromModSearchDatabaseModFiles } from "~/server/gamebananaMirror/yamlHandlers/modSearchDatabase/getNewestFileIdFromModSearchDatabaseModFiles";
 
 
 
