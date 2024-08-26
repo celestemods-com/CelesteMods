@@ -533,21 +533,34 @@ const getModSearchDatabaseInfoForAllMods = async (mods: TrimmedMod[]): Promise<T
     const modSearchDatabase = await getCurrentModSearchDatabase();
 
 
-    outerLoop: for (const mod of mods) {
-        for (const modSearchDatabaseMod of modSearchDatabase) {
-            if (mod.gamebananaModId === modSearchDatabaseMod.GameBananaId) {
-                mod.Screenshots = modSearchDatabaseMod.Screenshots;
-                mod.Files = modSearchDatabaseMod.Files;
-                continue outerLoop;
+    const modSearchDatabaseTuples: [number, ModSearchDatabase_ModInfo][] = modSearchDatabase.map((modSearchDatabaseMod) => [modSearchDatabaseMod.GameBananaId, modSearchDatabaseMod]);
+
+    const modSearchDatabaseMap = new Map<number, ModSearchDatabase_ModInfo>(modSearchDatabaseTuples);
+
+
+    const modsWithModSearchDatabaseInfo = mods.map(
+        (mod) => {
+            const modSearchDatabaseMod = modSearchDatabaseMap.get(mod.gamebananaModId);
+
+
+            if (modSearchDatabaseMod) {
+                return {
+                    ...mod,
+                    Screenshots: modSearchDatabaseMod.Screenshots,
+                    Files: modSearchDatabaseMod.Files,
+                };
             }
+
+
+            // if the mod is not found in the mod search database, log a warning
+            console.warn(`Mod with gamebananaModId ${mod.gamebananaModId} not found in mod search database`);
+
+            return mod;
         }
-
-        // if the mod is not found in the mod search database, log a warning
-        console.warn(`Mod with gamebananaModId ${mod.gamebananaModId} not found in mod search database`);
-    }
+    );
 
 
-    return mods;
+    return modsWithModSearchDatabaseInfo;
 };
 
 
