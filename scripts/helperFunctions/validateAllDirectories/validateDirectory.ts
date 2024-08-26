@@ -16,7 +16,7 @@ import { serverLogger as logger } from "~/logger/serverLogger";
  * @throws {Error} If the directory does not exist or Node does not have the specified permissions.
  */
 export const validateDirectory = async (relativeDirectoryPath: string, mode = constants.W_OK): Promise<void> => {
-    const absoluteDirectoryPath = path.resolve("~/../", relativeDirectoryPath);
+    const absoluteDirectoryPath = path.resolve(relativeDirectoryPath);
     // const absoluteDirectoryPath = path.resolve(process.cwd(), relativeDirectoryPath);  // This is how Next.js recommends, but the above seems simpler and works fine. Apparently process.cwd() can behave differently in different environments?
 
 

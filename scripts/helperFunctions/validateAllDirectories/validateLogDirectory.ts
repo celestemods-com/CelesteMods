@@ -4,6 +4,4 @@ import { validateDirectory } from "./validateDirectory";
 
 
 
-export const validateLogDirectory = async (): Promise<void> => {
-    validateDirectory("logs", constants.W_OK);
-};
+export const validateLogDirectory = (): Promise<void> => validateDirectory("logs", constants.W_OK);

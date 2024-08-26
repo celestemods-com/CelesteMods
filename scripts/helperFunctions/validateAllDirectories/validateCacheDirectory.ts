@@ -4,6 +4,4 @@ import { validateDirectory } from "./validateDirectory";
 
 
 
-export const validateCacheDirectory = async (): Promise<void> => {
-    validateDirectory("cache", constants.W_OK);
-};
+export const validateCacheDirectory = (): Promise<void> => validateDirectory("cache", constants.W_OK);

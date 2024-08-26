@@ -32,8 +32,13 @@ const isValidModSearchDatabase_ModInfo_Files = (value: unknown): value is ModSea
 
 
     for (const file of value) {
-        if (typeof file !== "object" || file === null || "URL" in file === false || "CreatedDate" in file === false) {
+        if (typeof file !== "object" || file === null) {
             console.log("file is not an object or is null");
+            return false;
+        }
+
+        if ("URL" in file === false || "CreatedDate" in file === false) {
+            console.log("file is missing URL or CreatedDate");
             return false;
         }
 
@@ -73,8 +78,13 @@ const isValidModSearchDatabase = (value: unknown): value is ModSearchDatabase =>
     const modSearchDatabase = value as ModSearchDatabase;
 
     for (const mod of modSearchDatabase) {
-        if (typeof mod !== "object" || mod === null || "GameBananaId" in mod === false || "Screenshots" in mod === false || "Files" in mod === false || "CategoryName" in mod === false) {
+        if (typeof mod !== "object" || mod === null) {
             console.log("mod is not an object or is null");
+            return false;
+        }
+
+        if ("GameBananaId" in mod === false || "Screenshots" in mod === false || "Files" in mod === false || "CategoryName" in mod === false) {
+            console.log("mod is missing GameBananaId, Screenshots, Files, or CategoryName");
             return false;
         }
 
