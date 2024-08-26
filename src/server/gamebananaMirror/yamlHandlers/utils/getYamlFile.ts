@@ -57,10 +57,14 @@ export const getCurrentYaml = async <
 
         return currentYaml;
     } catch (error) {
-        logger.warn(`Failed to read the ${yamlName} from the file system. ${error}`);
+        if (!String(error).startsWith(NO_SUCH_FILE_ERROR)) {
+            logger.error(`Failed to read the ${yamlName} from the file system. ${error}`);
 
-        if (!String(error).startsWith(NO_SUCH_FILE_ERROR)) throw fileSystemErrorString;
+            throw fileSystemErrorString;
+        }
 
+
+        logger.warn(`Failed to read the ${yamlName} from the file system as it does not exist. Downloading the latest ${yamlName}.`);
 
         return getUpdatedYaml(
             yamlUrl,
