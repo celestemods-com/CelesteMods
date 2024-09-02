@@ -4,9 +4,7 @@ import { cmlDiscordInviteUrl } from "~/consts/cmlDiscordInviteUrl";
 import { COMING_SOON_PATHNAME } from "~/consts/pathnames";
 import { blackBackgroundColor } from "~/styles/layoutColors";
 import { difficultyColors } from "~/styles/difficultyColors";
-import { getSession, signIn, signOut } from "next-auth/react";
-import { useEffect, useState } from "react";
-import type { Session } from "next-auth";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 
 
@@ -38,12 +36,7 @@ const useStyles = createStyles(
 
 export const Footer = () => {
     const { classes } = useStyles();
-    const [session, setSession] = useState<Session | null>(null);
-
-    useEffect(() => {
-        void getSession().then(session => setSession(session));
-    }, []);
-
+    const { data: session } = useSession();
 
     return (
         <Box className={classes.outerFooter}>

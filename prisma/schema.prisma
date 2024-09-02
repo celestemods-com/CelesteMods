@@ -580,6 +580,18 @@ model UsersToCompletedMaps {
   @@map("users-to-completed-maps")
 }
 
+model UserClaim {
+  User_UserClaim_claimBy   User   @relation("UserClaim_claimBy", fields: [claimByUserId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  claimByUserId  String
+  User_UserClaim_claimFor  User   @relation("UserClaim_claimFor", fields: [claimForUserId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  claimForUserId String
+  id        Int  @id @default(autoincrement()) @db.UnsignedMediumInt
+
+  @@unique([claimByUserId, claimForUserId])
+  @@index([claimByUserId])
+  @@map("user-claim")
+}
+
 // Next auth models
 model User {
   id                                    String                 @id @default(cuid())
@@ -616,6 +628,8 @@ model User {
   Map_NewWithMod_New_submittedByToUser  Map_NewWithMod_New[]   @relation("Map_NewWithMod_New_SubmittedByToUser")
   Map_NewSolo_mapperUserIdToUser        Map_NewSolo[]          @relation("Map_NewSolo_MapperUserIdToUser")
   Map_NewSolo_submittedByToUser         Map_NewSolo[]          @relation("Map_NewSolo_SubmittedByToUser")
+  UserClaim_UserClaim_claimBy           UserClaim[]            @relation("UserClaim_claimBy")
+  UserClaim_UserClaim_claimFor          UserClaim[]            @relation("UserClaim_claimFor")
 
   @@unique([discordUsername, discordDiscriminator])
   @@map("user")

@@ -203,6 +203,59 @@ export const userRouter = createTRPCRouter({
             return users;
         }),
 
+    getUnlinked: publicProcedure
+        .input(userOrderSchema)
+        .query(async ({ ctx, input }) => {
+            return await ctx.prisma.user.findMany({
+                where: {
+                    accountStatus: 'Unlinked',
+                },
+                select: {
+                    id: true,
+                    discordUsername: true,
+                    discordDiscriminator: true,
+                },
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
+            });
+        }),
+
+    getUserClaims: loggedInProcedure
+        .query(async ({ ctx }) => {
+            return await ctx.prisma.userClaim.findMany({
+                where: {
+                    claimByUserId: ctx.user.id,
+                },
+                select: {
+                    id: true,
+                    claimForUserId: true,
+                    User_UserClaim_claimFor: {
+                        select: {
+                            discordUsername: true,
+                            discordDiscriminator: true,
+                        }
+                    }
+                },
+                orderBy: {
+                    id: 'asc'
+                },
+            });
+        }),
+
+    createUserClaim: loggedInProcedure
+        .input(z.object({
+            forUserId: z.string()
+        }))
+        .mutation(async ({ ctx, input }) => {
+            const claim = await ctx.prisma.userClaim.create({
+                data: {
+                    claimByUserId: ctx.user.id,
+                    claimForUserId: input.forUserId
+                },
+            });
+
+            return claim;
+        }),
+
     add: loggedInProcedure
         .input(userPostSchema)
         .mutation(async ({ ctx, input }) => {
