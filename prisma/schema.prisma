@@ -582,10 +582,10 @@ model UsersToCompletedMaps {
 
 model UserClaim {
   User_UserClaim_claimBy   User   @relation("UserClaim_claimBy", fields: [claimByUserId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  claimByUserId  String
+  claimByUserId            String
   User_UserClaim_claimFor  User   @relation("UserClaim_claimFor", fields: [claimForUserId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  claimForUserId String
-  id        Int  @id @default(autoincrement()) @db.UnsignedMediumInt
+  claimForUserId           String
+  id                       Int    @id @default(autoincrement()) @db.UnsignedMediumInt
 
   @@unique([claimByUserId, claimForUserId])
   @@index([claimByUserId])

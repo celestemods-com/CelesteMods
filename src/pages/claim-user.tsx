@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Layout } from "~/components/layout/layout";
 import { cmlDiscordInviteUrl } from "~/consts/cmlDiscordInviteUrl";
-import { CLAIM_USER } from "~/consts/pathnames";
+import { CLAIM_USER_PATHNAME } from "~/consts/pathnames";
 import { pageContentHeightPixels } from "~/styles/pageContentHeightPixels";
 import { api } from "~/utils/api";
 
@@ -31,11 +31,8 @@ const ClaimUser : NextPage = () => {
     const unclaimedUsers = unlinkedUsers.filter(user => !claims.find(claim => claim.claimForUserId === user.id));
 
     const createUserClaimMutation = api.user.createUserClaim.useMutation({
-        async onSuccess() {
-            await Promise.all([
-                utils.user.getUnlinked.invalidate(),
-                utils.user.getUserClaims.invalidate()
-            ]);
+        onSuccess() {
+            void utils.user.getUserClaims.invalidate();
         }
     });
 
@@ -46,7 +43,7 @@ const ClaimUser : NextPage = () => {
             <Layout
               pageTitle="Claim user"
               pageDescription="Claim user"
-              pathname={CLAIM_USER}
+              pathname={CLAIM_USER_PATHNAME}
             >
                 Login to claim users.
             </Layout>
@@ -57,7 +54,7 @@ const ClaimUser : NextPage = () => {
         <Layout
           pageTitle="Claim user"
           pageDescription="Claim user"
-          pathname={CLAIM_USER}
+          pathname={CLAIM_USER_PATHNAME}
         >
           <ScrollArea
             offsetScrollbars
@@ -73,7 +70,6 @@ const ClaimUser : NextPage = () => {
                         <th>Claim ID</th>
                         <th>User ID</th>
                         <th>Username</th>
-                        <th>Discriminator</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -81,8 +77,7 @@ const ClaimUser : NextPage = () => {
                         <tr key={claim.id}>
                             <td>{claim.id}</td>
                             <td>{claim.claimForUserId}</td>
-                            <td>{claim.User_UserClaim_claimFor.discordUsername}</td>
-                            <td>{claim.User_UserClaim_claimFor.discordDiscriminator}</td>
+                            <td>{claim.User_UserClaim_claimFor.discordUsername}#{claim.User_UserClaim_claimFor.discordDiscriminator}</td>
                         </tr>
                     ))}
                 </tbody>
@@ -91,16 +86,14 @@ const ClaimUser : NextPage = () => {
             <Table>
                 <thead>
                     <tr>
-                        <th>Username</th>
-                        <th>Discriminator</th>
+                        <th>User</th>
                         <th></th>
                     </tr>
                 </thead>
                 <tbody>
                     {unclaimedUsers.map(user => (
                         <tr key={user.id}>
-                            <td>{user.discordUsername}</td>
-                            <td>{user.discordDiscriminator}</td>
+                            <td>{user.discordUsername}#{user.discordDiscriminator}</td>
                             <td>
                                 <Button onClick={() => {
                                     if (!createUserClaimMutation.isLoading) {

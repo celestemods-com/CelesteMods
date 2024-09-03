@@ -203,7 +203,7 @@ export const userRouter = createTRPCRouter({
             return users;
         }),
 
-    getUnlinked: publicProcedure
+    getUnlinked: loggedInProcedure
         .input(userOrderSchema)
         .query(async ({ ctx, input }) => {
             return await ctx.prisma.user.findMany({
@@ -240,6 +240,30 @@ export const userRouter = createTRPCRouter({
                 },
             });
         }),
+    
+    getAllUserClaims: adminProcedure
+        .query(async ({ ctx }) => {
+            return await ctx.prisma.userClaim.findMany({
+                select: {
+                    id: true,
+                    User_UserClaim_claimBy: {
+                        select: {
+                            discordUsername: true,
+                            discordDiscriminator: true,
+                        }
+                    },
+                    User_UserClaim_claimFor: {
+                        select: {
+                            discordUsername: true,
+                            discordDiscriminator: true,
+                        }
+                    },
+                },
+                orderBy: {
+                    id: 'asc',
+                }
+            });
+        }),
 
     createUserClaim: loggedInProcedure
         .input(z.object({
@@ -254,6 +278,255 @@ export const userRouter = createTRPCRouter({
             });
 
             return claim;
+        }),
+    
+    verifyUserClaim: adminProcedure
+        .input(z.object({
+            id: z.number()
+        }))
+        .mutation(async ({ ctx, input }) => {
+            const claim = await ctx.prisma.userClaim.findFirst({
+                where: {
+                    id: input.id,
+                }
+            });
+            if (!claim) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: `No user claim exists with id "${input.id}"`,
+                });
+            }
+
+            await ctx.prisma.publisher.updateMany({
+                where: {
+                    userId: {
+                        equals: claim.claimForUserId,
+                    }
+                },
+                data: {
+                    userId: claim.claimByUserId,
+                }
+            });
+            await ctx.prisma.mod.updateMany({
+                where: {
+                    submittedBy: {
+                        equals: claim.claimForUserId,
+                    }
+                },
+                data: {
+                    submittedBy: claim.claimByUserId,
+                }
+            });
+            await ctx.prisma.mod.updateMany({
+                where: {
+                    approvedBy: {
+                        equals: claim.claimForUserId,
+                    }
+                },
+                data: {
+                    approvedBy: claim.claimByUserId,
+                }
+            });
+            await ctx.prisma.map.updateMany({
+                where: {
+                    mapperUserId: {
+                        equals: claim.claimForUserId,
+                    }
+                },
+                data: {
+                    mapperUserId: claim.claimByUserId,
+                }
+            });
+            await ctx.prisma.map.updateMany({
+                where: {
+                    submittedBy: {
+                        equals: claim.claimForUserId,
+                    }
+                },
+                data: {
+                    submittedBy: claim.claimByUserId,
+                }
+            });
+            await ctx.prisma.map.updateMany({
+                where: {
+                    approvedBy: {
+                        equals: claim.claimForUserId,
+                    }
+                },
+                data: {
+                    approvedBy: claim.claimByUserId,
+                }
+            });
+            await ctx.prisma.mod_Archive.updateMany({
+                where: {
+                    submittedBy: {
+                        equals: claim.claimForUserId,
+                    }
+                },
+                data: {
+                    submittedBy: claim.claimByUserId,
+                }
+            });
+            await ctx.prisma.mod_Archive.updateMany({
+                where: {
+                    approvedBy: {
+                        equals: claim.claimForUserId,
+                    }
+                },
+                data: {
+                    approvedBy: claim.claimByUserId,
+                }
+            });
+            await ctx.prisma.map_Archive.updateMany({
+                where: {
+                    mapperUserId: {
+                        equals: claim.claimForUserId,
+                    }
+                },
+                data: {
+                    mapperUserId: claim.claimByUserId,
+                }
+            });
+            await ctx.prisma.map_Archive.updateMany({
+                where: {
+                    submittedBy: {
+                        equals: claim.claimForUserId,
+                    }
+                },
+                data: {
+                    submittedBy: claim.claimByUserId,
+                }
+            });
+            await ctx.prisma.map_Archive.updateMany({
+                where: {
+                    approvedBy: {
+                        equals: claim.claimForUserId,
+                    }
+                },
+                data: {
+                    approvedBy: claim.claimByUserId,
+                }
+            });
+            await ctx.prisma.mod_Edit.updateMany({
+                where: {
+                    submittedBy: {
+                        equals: claim.claimForUserId,
+                    }
+                },
+                data: {
+                    submittedBy: claim.claimByUserId,
+                }
+            });
+            await ctx.prisma.map_Edit.updateMany({
+                where: {
+                    mapperUserId: {
+                        equals: claim.claimForUserId,
+                    }
+                },
+                data: {
+                    mapperUserId: claim.claimByUserId,
+                }
+            });
+            await ctx.prisma.map_Edit.updateMany({
+                where: {
+                    submittedBy: {
+                        equals: claim.claimForUserId,
+                    }
+                },
+                data: {
+                    submittedBy: claim.claimByUserId,
+                }
+            });
+            await ctx.prisma.mod_New.updateMany({
+                where: {
+                    submittedBy: {
+                        equals: claim.claimForUserId,
+                    }
+                },
+                data: {
+                    submittedBy: claim.claimByUserId,
+                }
+            });
+            await ctx.prisma.map_NewWithMod_New.updateMany({
+                where: {
+                    mapperUserId: {
+                        equals: claim.claimForUserId,
+                    }
+                },
+                data: {
+                    mapperUserId: claim.claimByUserId,
+                }
+            });
+            await ctx.prisma.map_NewWithMod_New.updateMany({
+                where: {
+                    submittedBy: {
+                        equals: claim.claimForUserId,
+                    }
+                },
+                data: {
+                    submittedBy: claim.claimByUserId,
+                }
+            });
+            await ctx.prisma.map_NewSolo.updateMany({
+                where: {
+                    mapperUserId: {
+                        equals: claim.claimForUserId,
+                    }
+                },
+                data: {
+                    mapperUserId: claim.claimByUserId,
+                }
+            });
+            await ctx.prisma.map_NewSolo.updateMany({
+                where: {
+                    submittedBy: {
+                        equals: claim.claimForUserId,
+                    }
+                },
+                data: {
+                    submittedBy: claim.claimByUserId,
+                }
+            });
+            await ctx.prisma.rating.updateMany({
+                where: {
+                    submittedBy: {
+                        equals: claim.claimForUserId,
+                    }
+                },
+                data: {
+                    submittedBy: claim.claimByUserId,
+                }
+            });
+            await ctx.prisma.reviewCollection.updateMany({
+                where: {
+                    userId: {
+                        equals: claim.claimForUserId,
+                    }
+                },
+                data: {
+                    userId: claim.claimByUserId,
+                }
+            });
+            await ctx.prisma.usersToCompletedMaps.updateMany({
+                where: {
+                    userId: {
+                        equals: claim.claimForUserId,
+                    }
+                },
+                data: {
+                    userId: claim.claimByUserId,
+                }
+            });
+            await ctx.prisma.userClaim.delete({
+                where: {
+                    id: claim.id,
+                }
+            });
+            await ctx.prisma.user.delete({
+                where: {
+                    id: claim.claimForUserId,
+                }
+            });
         }),
 
     add: loggedInProcedure
