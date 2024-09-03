@@ -1,10 +1,9 @@
-import { Box, Button, Group, Stack, createStyles } from "@mantine/core";
+import { Box, Group, Stack, createStyles } from "@mantine/core";
 import Link from "next/link";
 import { cmlDiscordInviteUrl } from "~/consts/cmlDiscordInviteUrl";
 import { COMING_SOON_PATHNAME } from "~/consts/pathnames";
 import { blackBackgroundColor } from "~/styles/layoutColors";
 import { difficultyColors } from "~/styles/difficultyColors";
-import { signIn, signOut, useSession } from "next-auth/react";
 
 
 
@@ -36,7 +35,6 @@ const useStyles = createStyles(
 
 export const Footer = () => {
     const { classes } = useStyles();
-    const { data: session } = useSession();
 
     return (
         <Box className={classes.outerFooter}>
@@ -51,9 +49,6 @@ export const Footer = () => {
                         align="start"
                         spacing="1px"
                     >
-                        { !session && <Button onClick={() => { void signIn("discord"); }}>Login</Button> }
-                        { session && <span>{session.user.name}</span> }
-                        { session && <Button onClick={() => { void signOut(); }}>Logout</Button> }
                         <Link href={COMING_SOON_PATHNAME}>Settings</Link>
                     </Stack>
                     <Link
