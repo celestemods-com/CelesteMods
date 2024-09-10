@@ -1,3 +1,4 @@
+import Head from "next/head";
 import { type LayoutProps } from "./layout";
 
 
@@ -21,7 +22,8 @@ export function CustomHead({
 
 
     return (
-        <>
+        <Head>
+            <title>{pageTitle}</title>
             <meta charSet="utf-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -67,6 +69,6 @@ export function CustomHead({
             <meta name="twitter:description" content={pageDescription} />
             <meta name="twitter:image" content={socialMediaImageUrl} />
             <meta name="twitter:image:alt" content={socialMediaImageAlt} />
-        </>
+        </Head>
     );
 }
