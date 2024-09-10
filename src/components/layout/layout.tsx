@@ -1,4 +1,3 @@
-import Head from "next/head";
 import { CustomHead } from "./customHead";
 import { BackgroundImage, Grid, createStyles } from "@mantine/core";
 import { Header } from "./header";
@@ -68,17 +67,15 @@ export const Layout = ({
 
     return (
         <>
-            <Head>
-                <CustomHead
-                    pageTitle={pageTitle}
-                    pageDescription={pageDescription}
-                    pathname={pathname}
-                    siteName={siteName}
-                    robotsText={robotsText}
-                    socialMediaImageUrl={socialMediaImageUrl}
-                    socialMediaImageAlt={socialMediaImageAlt}
-                />
-            </Head>
+            <CustomHead
+                pageTitle={pageTitle}
+                pageDescription={pageDescription}
+                pathname={pathname}
+                siteName={siteName}
+                robotsText={robotsText}
+                socialMediaImageUrl={socialMediaImageUrl}
+                socialMediaImageAlt={socialMediaImageAlt}
+            />
             <BackgroundImage
                 src="/images/cml_background1.png"
                 className={classes.backgroundImage}
