@@ -1,4 +1,5 @@
-import { type LayoutProps } from "./layout";
+import Head from "next/head";
+import type { LayoutProps } from "./layout";
 
 
 
@@ -21,7 +22,7 @@ export function CustomHead({
 
 
     return (
-        <>
+        <Head>
             <meta charSet="utf-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -32,11 +33,13 @@ export function CustomHead({
             <link rel="preload" href="/media/renogare/renogare_regular.woff2" as="font" type="font/woff2" crossOrigin />
             */}
 
+
             <title>{pageTitle}</title>
             <meta name="description" content={pageDescription} />
             <meta name="robots" content={robotsText} />
 
             <meta name="application-name" content={siteName} />
+
 
             {/* generated using https://realfavicongenerator.net */}
             {/*favicons*/}
@@ -49,6 +52,7 @@ export function CustomHead({
             <meta name="msapplication-TileColor" content="#2d89ef" />
             <meta name="msapplication-config" content="/images/logo/icon/browserconfig.xml" />
             <meta name="theme-color" content="#2d89ef" />
+
 
             {/*Facebook embed stuff*/}
             <meta property="og:url" content={url} />
@@ -67,6 +71,6 @@ export function CustomHead({
             <meta name="twitter:description" content={pageDescription} />
             <meta name="twitter:image" content={socialMediaImageUrl} />
             <meta name="twitter:image:alt" content={socialMediaImageAlt} />
-        </>
+        </Head>
     );
 }
