@@ -1,5 +1,5 @@
 import { CustomHead } from "./customHead";
-import { BackgroundImage, Grid, Title, createStyles } from "@mantine/core";
+import { BackgroundImage, Grid, createStyles } from "@mantine/core";
 import { Header } from "./header";
 import { Navbar } from "./navbar/navbar";
 import { Footer } from "./footer";
