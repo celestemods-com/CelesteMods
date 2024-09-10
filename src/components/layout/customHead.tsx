@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { type LayoutProps } from "./layout";
+import type { LayoutProps } from "./layout";
 
 
 
