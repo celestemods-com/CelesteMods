@@ -1,5 +1,6 @@
 import { Carousel } from "@mantine/carousel";
-import { useModImageUrls } from "~/hooks/globalContexts/modImageUrls";
+import { useModImageUrls } from "~/hooks/globalContexts/modImageUrls/useModImageUrls";
+import type { ModImageUrls } from "~/hooks/globalContexts/modImageUrls/constsAndTypes";
 import { createStyles } from "@mantine/core";
 import { Image } from "@mantine/core";      //TODO!: replace with nextjs Image component once next.config.mjs is fixed
 // import Image from "next/image";
@@ -60,6 +61,7 @@ const useStyles = createStyles(
 
 type modCarouselProps = {
     gamebananaModId: number,
+    screenshotsFromModSearchDatabase: ModImageUrls | undefined,
     numberOfMaps: number,
     colors: DifficultyColor,
 };
@@ -67,8 +69,8 @@ type modCarouselProps = {
 
 
 
-export const ModCarousel = ({ gamebananaModId, numberOfMaps, colors }: modCarouselProps) => {
-    const imageUrls = useModImageUrls({ gamebananaModId });
+export const ModCarousel = ({ gamebananaModId, screenshotsFromModSearchDatabase, numberOfMaps, colors }: modCarouselProps) => {
+    const imageUrls = useModImageUrls({ gamebananaModId, screenshotsFromModSearchDatabase });
 
 
     const { cx, classes } = useStyles({ colors });

@@ -84,6 +84,7 @@ const Home: NextPage = () => {
               alt="A render of the proposed Celeste Mountain Lego set."
               height={height}
               width={width}
+              priority
             />
             <p>
               A lego set for Celeste. If you want this to exist, vote for it <Link className={classes.link} href="https://ideas.lego.com/projects/ac89cbf0-9d0b-401d-b8cb-5316056d498f">here</Link>.

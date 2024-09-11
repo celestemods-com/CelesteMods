@@ -42,8 +42,14 @@ const config = {
   },
   experimental: {
     largePageDataBytes: 3 * 1024 * 1024, // 3 MB
-    serverComponentsExternalPackages: ['pino'], // Context: https://github.com/vercel/next.js/issues/54289#issuecomment-1686401300
+    serverComponentsExternalPackages: ["pino"], // Context: https://github.com/vercel/next.js/issues/54289#issuecomment-1686401300
   },
   eslint: { ignoreDuringBuilds: true },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback.fs = false; // Fix "Module not found: Error: Can't resolve 'fs/promises'" error
+    }
+    return config;
+  },
 };
 export default withBundleAnalyzer(config);

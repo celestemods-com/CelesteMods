@@ -1,52 +1,24 @@
-import { createContext, useEffect, useMemo, useState, useContext } from "react";
-import type { ContextState } from "./globalContextsProvider";
-import { getModImageUrls } from "~/hooks/gamebananaApi/getModImageUrls";
-import type { GamebananaModId } from "~/components/mods/types";
-import type { ModImageUrls } from "~/hooks/gamebananaApi/getModImageUrls";
+"use client";
+
 import axios from 'axios';
-
-
-
-
-export type ModImageUrlsState = Record<GamebananaModId, ModImageUrls>;
-
-
-
-
-const modImageUrlsContext = createContext<ContextState<ModImageUrlsState> | undefined>(undefined);
-
-
-export const ModImageUrlsContextProvider = ({ children }: { children: React.ReactNode; }) => {
-    const [modImageUrls, setModImageUrls] = useState<ModImageUrlsState>({});
-
-
-    const modImageUrlsStateRecord = useMemo(
-        () => ({
-            state: modImageUrls,
-            update: setModImageUrls,
-        }),
-        [modImageUrls],
-    );
-
-
-    return (
-        <modImageUrlsContext.Provider value={modImageUrlsStateRecord}>
-            {children}
-        </modImageUrlsContext.Provider>
-    );
-};
+import { useEffect, useState, useContext } from "react";
+import { getModImageUrlsFromGameBanana } from "~/hooks/gamebananaApi/getModImageUrlsFromGameBanana";
+import type { ModImageUrls } from "./constsAndTypes";
+import { modImageUrlsContext } from "./modImageUrlsContext";
 
 
 
 
 type useModImageUrlsProps = {
     gamebananaModId: number,
+    screenshotsFromModSearchDatabase: ModImageUrls | undefined,
 };
 
 
 export const useModImageUrls = (
     {
         gamebananaModId,
+        screenshotsFromModSearchDatabase,
     }: useModImageUrlsProps,
 ): ModImageUrls => {
     const contextOrUndefined = useContext(modImageUrlsContext);
@@ -62,14 +34,27 @@ export const useModImageUrls = (
         if (contextOrUndefined === undefined) throw "useModImageUrlContext must be used within a ModImageUrlsContextProvider";
 
 
-        const source = axios.CancelToken.source();
+        if (screenshotsFromModSearchDatabase !== undefined && screenshotsFromModSearchDatabase.length > 0) {
+            setImageUrls(screenshotsFromModSearchDatabase);
 
+            contextOrUndefined.update(
+                (previousState) => ({
+                    ...previousState,
+                    [gamebananaModId]: screenshotsFromModSearchDatabase,
+                })
+            );
+
+            return;
+        }
+
+
+        const source = axios.CancelToken.source();
 
         const fetchImageUrls = async () => {
             let fetchedImageUrls: ModImageUrls;
 
             try {
-                fetchedImageUrls = await getModImageUrls(gamebananaModId, source);
+                fetchedImageUrls = await getModImageUrlsFromGameBanana(gamebananaModId, source);
             }
             catch (error) {
                 console.warn(`Failed to fetch image urls for mod ${gamebananaModId}.`);
@@ -97,7 +82,7 @@ export const useModImageUrls = (
         return () => {
             source.cancel();
         };
-    }, [gamebananaModId, contextOrUndefined, cachedImageUrls]);
+    }, [gamebananaModId, screenshotsFromModSearchDatabase, contextOrUndefined, cachedImageUrls]);
 
 
     return imageUrls;

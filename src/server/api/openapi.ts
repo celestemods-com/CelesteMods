@@ -1,12 +1,12 @@
 import { generateOpenApiDocument } from "trpc-openapi";
 
-import { appRouter } from "./root";
+import { apiRouter } from "./root";
 
 
 
 
 export const openApiDocument = generateOpenApiDocument(
-    appRouter,
+    apiRouter,
     {
         title: "Celeste Mods List API",
         version: "1.0.0",

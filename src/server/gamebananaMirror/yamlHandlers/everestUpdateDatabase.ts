@@ -1,11 +1,15 @@
-import { getCurrentYaml, getFileSystemErrorString, getUpdatedYaml } from "./utils/getUpdatedYamlFile";
+import { getFileSystemErrorString } from "./utils/getFileSystemErrorString";
+import { getFileSystemPath } from "./utils/getFileSystemPath";
+import { getCurrentYaml, getUpdatedYaml } from "./utils/getYamlFile";
 
 
 
 
 const EVEREST_UPDATE_DATABASE_YAML_URL = "https://maddie480.ovh/celeste/everest_update.yaml";
 
-const EVEREST_UPDATE_DATABASE_JSON_PATH = process.env.EVEREST_UPDATE_DATABASE_JSON_PATH || "";
+const EVEREST_UPDATE_DATABASE_JSON_FILENAME = process.env.EVEREST_UPDATE_DATABASE_JSON_FILENAME || "everest_update_database.json";
+
+const everestUpdateDatabaseJsonPath = getFileSystemPath(EVEREST_UPDATE_DATABASE_JSON_FILENAME);
 
 
 const EVEREST_UPDATE_DATABASE_YAML_NAME = "Everest Update Database";
@@ -13,6 +17,9 @@ const EVEREST_UPDATE_DATABASE_YAML_NAME = "Everest Update Database";
 const everestUpdateDatabaseFileSystemErrorString = getFileSystemErrorString(EVEREST_UPDATE_DATABASE_YAML_NAME);
 
 
+
+
+export type EverestUpdateDatabaseYamlName = typeof EVEREST_UPDATE_DATABASE_YAML_NAME;
 
 
 export type EverestUpdateDatabase = Record<string, unknown>;
@@ -28,13 +35,22 @@ const isValidEverestUpdateInfo = (value: unknown): value is EverestUpdateDatabas
 
 
 
+const trimEverestUpdateDatabase = (everestUpdateDatabase: EverestUpdateDatabase): EverestUpdateDatabase => {
+    return everestUpdateDatabase;   // currently unused, so not implemented
+}
+
+
+
+
 /** Returns the everest update database json file currently stored on disk. */
 export const getCurrentEverestUpdateDatabase = async (): Promise<EverestUpdateDatabase> => {
     const parsedYaml = getCurrentYaml(
+        EVEREST_UPDATE_DATABASE_YAML_URL,
         EVEREST_UPDATE_DATABASE_YAML_NAME,
         everestUpdateDatabaseFileSystemErrorString,
-        EVEREST_UPDATE_DATABASE_JSON_PATH,
+        everestUpdateDatabaseJsonPath,
         isValidEverestUpdateInfo,
+        trimEverestUpdateDatabase,
     );
     
 
@@ -52,10 +68,11 @@ export const getUpdatedEverestUpdateDatabase = async (): Promise<EverestUpdateDa
         EVEREST_UPDATE_DATABASE_YAML_URL,
         EVEREST_UPDATE_DATABASE_YAML_NAME,
         everestUpdateDatabaseFileSystemErrorString,
-        EVEREST_UPDATE_DATABASE_JSON_PATH,
+        everestUpdateDatabaseJsonPath,
         isValidEverestUpdateInfo,
+        trimEverestUpdateDatabase,
     );
 
 
-    return parsedYaml;
+    return parsedYaml as Promise<EverestUpdateDatabase>; //TODO!!: remove this cast if possible
 };

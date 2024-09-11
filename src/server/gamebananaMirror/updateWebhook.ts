@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { serverLogger as logger } from "~/logger/serverLogger";
 import { authenticateUpdateWebhookRequest } from "~/server/gamebananaMirror/authentication/authenticateUpdateWebhookRequest";
-import { getUpdatedModSearchDatabase } from "~/server/gamebananaMirror/yamlHandlers/modSearchDatabase";
+import { getUpdatedModSearchDatabase } from "~/server/gamebananaMirror/yamlHandlers/modSearchDatabase/modSearchDatabase";
 import { DELETE_BATCH_SIZE, FILE_CATEGORIES, isFileCategory, type FileCategory } from "~/server/gamebananaMirror/cloudflareApi/constsAndTypes";
 import { sendDownloadRequestToMirror, deleteFilesFromMirror } from "~/server/gamebananaMirror/cloudflareApi/httpHandlers";
 import { getFileListForCategory } from "~/server/gamebananaMirror/cloudflareApi/getFileListForCategory";
