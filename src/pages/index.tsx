@@ -79,12 +79,11 @@ const Home: NextPage = () => {
             <h2>CML Public Beta</h2>
             <p>Welcome! The site is currently in early beta.</p>
             <p>For now, <Link className={classes.link} href={MODS_PAGE_PATHNAME}>mods</Link> can only be browsed.</p>
-            { status === "authenticated" && (
+            {status === "authenticated" && (
               <p>
-                If you submitted ratings via the google form, you can claim your old user
-                from <Link className={classes.link} href="/claim-user">here</Link>.
+                If you submitted ratings via the google form, <strong>PLEASE <Link className={classes.link} href="/claim-user">CLAIM YOUR OLD USER</Link></strong> instead of submitting duplicate ratings for the same maps!
               </p>
-            ) }
+            )}
             <h2>Community Projects</h2>
             <h3 style={{ marginTop: "2px" }}>Celeste Mountain Lego Idea</h3>
             <Image
@@ -99,7 +98,7 @@ const Home: NextPage = () => {
           </Flex>
         </Flex>
       </ScrollArea>
-    </Layout>
+    </Layout >
   );
 };
 
