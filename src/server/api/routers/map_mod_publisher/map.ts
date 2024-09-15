@@ -12,7 +12,7 @@ import { getModById } from "./mod";
 import { getPublisherById } from "./publisher";
 import { difficultyIdSchema_NonObject } from "../difficulty";
 import { lengthIdSchema_NonObject } from "../length";
-import { techIdSchema_NonObject } from "../tech_techVideo/techVideo";
+import { techIdSchema_NonObject } from "../tech_techVideo/tech";
 import { IfElse, ArrayIncludes } from "../../../../utils/typeHelpers";
 import { getCurrentTime } from "../../utils/getCurrentTime";
 import { getCheckedTableNames } from "../../utils/getCheckedTableNames";

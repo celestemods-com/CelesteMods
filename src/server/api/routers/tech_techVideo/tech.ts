@@ -6,7 +6,7 @@ import { Prisma, Tech } from "@prisma/client";
 import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
-import { techVideoRouter, defaultTechVideoSelect, techVideoPostWithTechSchema, techIdSchema_NonObject } from "./techVideo";
+import { techVideoRouter, defaultTechVideoSelect, techVideoPostWithTechSchema } from "./techVideo";
 
 
 
@@ -29,6 +29,9 @@ const defaultTechSelect = Prisma.validator<Prisma.TechSelect>()({
 });
 
 
+
+
+export const techIdSchema_NonObject = z.number().int().gte(1).lte(INT_MAX_SIZES.smallInt.unsigned); //this needs to be here to resolve webpack error in ~\src\pages\api\panel.ts
 
 
 const techNameSchema_NonObject = z.string().min(1).max(50);
