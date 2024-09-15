@@ -278,16 +278,30 @@ export const userClaimRouter = createTRPCRouter({
             // A deeply nested request *may* work here, but I'm not sure. It would be more work and harder to read, but would probably be marginally faster. IMO, it's not worth bothering.
             await ctx.prisma.$transaction(
                 async (transactionPrisma) => {  // using an interactive transaction to allow verifying that the claiming user still exists before making changes
-                    const claimingUser = await transactionPrisma.user.findUnique({
+                    const claimedByUser = await transactionPrisma.user.findUnique({
                         where: {
                             id: claim.claimedBy,
                         }
                     });
 
-                    if (!claimingUser) {
+                    if (!claimedByUser) {
                         throw new TRPCError({
                             code: "INTERNAL_SERVER_ERROR",
                             message: `Invalid userClaim. No user exists with id ${claim.claimedBy}, which is the claimedBy user of this userClaim. Please contact an admin.`,
+                        });
+                    }
+
+
+                    const claimedUser = await transactionPrisma.user.findUnique({
+                        where: {
+                            id: claim.claimedUserId,
+                        }
+                    });
+
+                    if (!claimedUser) {
+                        throw new TRPCError({
+                            code: "INTERNAL_SERVER_ERROR",
+                            message: `Invalid userClaim. No user exists with id ${claim.claimedUserId}, which is the claimed user of this userClaim. Please contact an admin.`,
                         });
                     }
 
