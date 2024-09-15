@@ -1244,7 +1244,7 @@ export const mapRouter = createTRPCRouter({
     deleteMap_total: adminProcedure
         .input(mapIdSchema)
         .mutation(async ({ ctx, input }) => {
-            const mapFromId = await getMapById("Map", false, false, ctx.prisma, input.id);  //check that id matches an existing map
+            await getMapById("Map", false, false, ctx.prisma, input.id);  //check that id matches an existing map
 
             await ctx.prisma.map.delete({ where: { id: input.id } });   //the deletion should cascade to any maps, mapEdits, and mapArchives
 
