@@ -10,7 +10,7 @@ export type Permission = typeof permissionArray[number];
 
 const getPermissions = <T extends readonly Permission[]>(array: T) => {
   return array;
-}
+};
 
 
 export const ADMIN_PERMISSION_STRINGS = getPermissions(["Super_Admin", "Admin"] as const);
@@ -48,15 +48,21 @@ export const checkPermissions = (validPermissionsArray: readonly Permission[], u
 
 
   return false;
-}
+};
 
 
 
 /**
  *  throws on failure
  */
-export const checkIsPrivileged = (validPermissionsArray: readonly Permission[], sessionUser: SessionUser, targetUserId: string): void => {
-  if (sessionUser.id === targetUserId) return;
+export const checkIsPrivileged = (validPermissionsArray: readonly Permission[], sessionUser: SessionUser, targetUserIdOrArray: string | string[]): void => {
+  if (Array.isArray(targetUserIdOrArray)) {
+    for (const targetUserId of targetUserIdOrArray) {
+      if (sessionUser.id === targetUserId) return;
+    }
+  } else {
+    if (sessionUser.id === targetUserIdOrArray) return;
+  }
 
 
   const isPrivileged = checkPermissions(validPermissionsArray, sessionUser.permissions);
@@ -64,4 +70,4 @@ export const checkIsPrivileged = (validPermissionsArray: readonly Permission[], 
   if (!isPrivileged) throw new TRPCError({
     code: "FORBIDDEN",
   });
-}
+};
