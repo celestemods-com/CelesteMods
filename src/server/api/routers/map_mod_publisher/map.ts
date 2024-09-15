@@ -6,7 +6,7 @@ import { Prisma, Map, MapSide, Map_NewWithMod_New, Map_Edit, Map_Archive, Map_Ne
 import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
-import { displayNameSchema_NonObject, getUserById, userIdSchema_NonObject } from "../user";
+import { displayNameSchema_NonObject, getUserById, userIdSchema_NonObject } from "../user_userClaim/user";
 import { MODLIST_MODERATOR_PERMISSION_STRINGS, checkPermissions } from "../../utils/permissions";
 import { getModById } from "./mod";
 import { getPublisherById } from "./publisher";
@@ -326,35 +326,35 @@ export const getMapById = async<
                 map = await prisma.map.findUnique({
                     where: whereObject,
                     include: { MapToTechs: includeTechObject },
-                }) as Union;
+                }) as Union;    // this is safe because map is checked to be non-null in the next block. this cast is required to make TypeScript happy.
                 break;
             }
             case "Map_Archive": {
                 map = await prisma.map_Archive.findUnique({
                     where: whereObject as Prisma.Map_ArchiveWhereUniqueInput,
                     include: { Map_ArchiveToTechs: includeTechObject },
-                }) as Union;
+                }) as Union;    // this is safe because map is checked to be non-null in the next block. this cast is required to make TypeScript happy.
                 break;
             }
             case "Map_Edit": {
                 map = await prisma.map_Edit.findUnique({
                     where: whereObject as Prisma.Map_EditWhereUniqueInput,
                     include: { Map_EditToTechs: includeTechObject },
-                }) as Union;
+                }) as Union;    // this is safe because map is checked to be non-null in the next block. this cast is required to make TypeScript happy.
                 break;
             }
             case "Map_NewWithMod_New": {
                 map = await prisma.map_NewWithMod_New.findUnique({
                     where: whereObject as Prisma.Map_NewWithMod_NewWhereUniqueInput,
                     include: { Map_NewWithMod_NewToTechs: includeTechObject },
-                }) as Union;
+                }) as Union;    // this is safe because map is checked to be non-null in the next block. this cast is required to make TypeScript happy.
                 break;
             }
             case "Map_NewSolo": {
                 map = await prisma.map_NewSolo.findUnique({
                     where: whereObject as Prisma.Map_NewSoloWhereUniqueInput,
                     include: { Map_NewSoloToTechs: includeTechObject },
-                }) as Union;
+                }) as Union;    // this is safe because map is checked to be non-null in the next block. this cast is required to make TypeScript happy.
                 break;
             }
             default: {
@@ -368,35 +368,35 @@ export const getMapById = async<
                 map = await prisma.map.findUnique({
                     where: whereObject,
                     select: defaultMapSelect,
-                }) as Union;
+                }) as Union;    // this is safe because map is checked to be non-null in the next block. this cast is required to make TypeScript happy.
                 break;
             }
             case "Map_Archive": {
                 map = await prisma.map_Archive.findUnique({
                     where: whereObject as Prisma.Map_ArchiveWhereUniqueInput,
                     select: defaultMapArchiveSelect,
-                }) as Union;
+                }) as Union;    // this is safe because map is checked to be non-null in the next block. this cast is required to make TypeScript happy.
                 break;
             }
             case "Map_Edit": {
                 map = await prisma.map_Edit.findUnique({
                     where: whereObject as Prisma.Map_EditWhereUniqueInput,
                     select: defaultMapEditSelect,
-                }) as Union;
+                }) as Union;    // this is safe because map is checked to be non-null in the next block. this cast is required to make TypeScript happy.
                 break;
             }
             case "Map_NewWithMod_New": {
                 map = await prisma.map_NewWithMod_New.findUnique({
                     where: whereObject as Prisma.Map_NewWithMod_NewWhereUniqueInput,
                     select: defaultMapNewWithModNewSelect,
-                }) as Union;
+                }) as Union;    // this is safe because map is checked to be non-null in the next block. this cast is required to make TypeScript happy.
                 break;
             }
             case "Map_NewSolo": {
                 map = await prisma.map_NewSolo.findUnique({
                     where: whereObject as Prisma.Map_NewSoloWhereUniqueInput,
                     select: defaultMapNewSoloSelect,
-                }) as Union;
+                }) as Union;    // this is safe because map is checked to be non-null in the next block. this cast is required to make TypeScript happy.
                 break;
             }
             default: {
@@ -802,7 +802,7 @@ export const mapRouter = createTRPCRouter({
                 let mapperNameString: string;
 
                 if (nonNormalInput.mapperUserId) {
-                    const userFromId = await getUserById(ctx.prisma, nonNormalInput.mapperUserId, undefined);
+                    const userFromId = await getUserById(ctx.prisma, nonNormalInput.mapperUserId, undefined, undefined);
 
                     mapperNameString = userFromId.name;
                 }
@@ -977,13 +977,13 @@ export const mapRouter = createTRPCRouter({
                 let mapperNameString: string;
 
                 if (nonNormalInput.mapperUserId) {
-                    const userFromId = await getUserById(ctx.prisma, nonNormalInput.mapperUserId, undefined);
+                    const userFromId = await getUserById(ctx.prisma, nonNormalInput.mapperUserId, undefined, undefined);
 
                     mapperUserId = userFromId.id;
                     mapperNameString = userFromId.name;
                 }
                 else if (nonNormalInput.mapperUserId !== null && existingMap.mapperUserId) {
-                    const userFromId = await getUserById(ctx.prisma, existingMap.mapperUserId, undefined);
+                    const userFromId = await getUserById(ctx.prisma, existingMap.mapperUserId, undefined, undefined);
 
                     mapperUserId = undefined;
                     mapperNameString = userFromId.name;

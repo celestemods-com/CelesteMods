@@ -6,7 +6,7 @@ import { Prisma, ReviewCollection } from "@prisma/client";
 import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
-import { userIdSchema_NonObject } from "../user";
+import { userIdSchema_NonObject } from "../user_userClaim/user";
 import { ADMIN_PERMISSION_STRINGS, MODLIST_MODERATOR_PERMISSION_STRINGS, checkIsPrivileged } from "../../utils/permissions";
 
 

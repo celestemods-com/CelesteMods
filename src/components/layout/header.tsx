@@ -46,9 +46,9 @@ export const Header = () => {
                 />
                 <Title className={classes.siteTitle} order={1}>Celeste Mods List</Title>
                 <Flex w={width} gap="sm" align="center" justify="flex-end">
-                    { !session && <Button onClick={() => { void signIn("discord"); }}>Login</Button> }
-                    { session && <span>{session.user.name}</span> }
-                    { session && <Button onClick={() => { void signOut(); }}>Logout</Button> }
+                    {!session && <Button onClick={() => { void signIn("discord"); }}>Login</Button>}
+                    {session && <span>{session.user.name}</span>}
+                    {session && <Button onClick={() => { void signOut(); }}>Logout</Button>}
                 </Flex>
             </Flex>
         </header>
