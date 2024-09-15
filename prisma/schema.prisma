@@ -581,14 +581,16 @@ model UsersToCompletedMaps {
 }
 
 model UserClaim {
-  User_UserClaim_claimBy   User   @relation("UserClaim_claimBy", fields: [claimByUserId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  claimByUserId            String
-  User_UserClaim_claimFor  User   @relation("UserClaim_claimFor", fields: [claimForUserId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  claimForUserId           String
-  id                       Int    @id @default(autoincrement()) @db.UnsignedMediumInt
+  id               Int    @id @default(autoincrement()) @db.UnsignedMediumInt
+  User_claimedBy   User   @relation("UserClaim_ClaimedBy", fields: [claimedBy], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  claimedBy        String
+  User_claimedUser User   @relation("UserClaim_ClaimedUserId", fields: [claimedUserId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  claimedUserId    String
+  User_ApprovedBy  User?  @relation("UserClaim_ApprovedBy", fields: [approvedBy], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  approvedBy       String?
 
-  @@unique([claimByUserId, claimForUserId])
-  @@index([claimByUserId])
+  @@unique([claimedBy, claimedUserId])
+  @@index([claimedBy])
   @@map("user-claim")
 }
 
@@ -628,8 +630,9 @@ model User {
   Map_NewWithMod_New_submittedByToUser  Map_NewWithMod_New[]   @relation("Map_NewWithMod_New_SubmittedByToUser")
   Map_NewSolo_mapperUserIdToUser        Map_NewSolo[]          @relation("Map_NewSolo_MapperUserIdToUser")
   Map_NewSolo_submittedByToUser         Map_NewSolo[]          @relation("Map_NewSolo_SubmittedByToUser")
-  UserClaim_UserClaim_claimBy           UserClaim[]            @relation("UserClaim_claimBy")
-  UserClaim_UserClaim_claimFor          UserClaim[]            @relation("UserClaim_claimFor")
+  UserClaim_claimedByToUser             UserClaim[]            @relation("UserClaim_ClaimedBy")
+  UserClaim_claimedUserIdToUser         UserClaim[]            @relation("UserClaim_ClaimedUserId")
+  UserClaim_approvedByToUser            UserClaim[]            @relation("UserClaim_ApprovedBy")
 
   @@unique([discordUsername, discordDiscriminator])
   @@map("user")
