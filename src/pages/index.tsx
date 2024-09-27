@@ -1,10 +1,10 @@
 import { createStyles, Flex, ScrollArea } from "@mantine/core";
 import { type NextPage } from "next";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { Layout } from "~/components/layout/layout";
-import { MODS_PAGE_PATHNAME } from "~/consts/pathnames";
+import { CLAIM_USER_PATHNAME, MODS_PAGE_PATHNAME } from "~/consts/pathnames";
 import { pageContentHeightPixels } from "~/styles/pageContentHeightPixels";
 
 
@@ -50,11 +50,39 @@ const useStyles = createStyles(
 
 
 
+type ClaimUserLinkProps = {
+  isAuthenticated: boolean;
+  classes: ReturnType<typeof useStyles>["classes"];
+};
+
+
+const ClaimUserLink = ({
+  isAuthenticated,
+  classes,
+}: ClaimUserLinkProps) => {
+  const linkText = "CLAIM YOUR OLD USER";
+
+
+  if (isAuthenticated) {
+    return <Link className={classes.link} href={CLAIM_USER_PATHNAME}>{linkText}</Link>;
+  }
+
+
+  return <a className={classes.link} onClick={() => signIn("discord", { callbackUrl: CLAIM_USER_PATHNAME })}>{linkText}</a>;
+};
+
+
+
+
 const Home: NextPage = () => {
   const { classes } = useStyles();
   const height = 280;
   const width = height / 577 * 867;
+
+
   const { status } = useSession();
+  const isAuthenticated = status === "authenticated";
+
 
   return (
     <Layout
@@ -79,11 +107,9 @@ const Home: NextPage = () => {
             <h2>CML Public Beta</h2>
             <p>Welcome! The site is currently in early beta.</p>
             <p>For now, <Link className={classes.link} href={MODS_PAGE_PATHNAME}>mods</Link> can only be browsed.</p>
-            {status === "authenticated" && (
-              <p>
-                If you submitted ratings via the google form, <strong>PLEASE <Link className={classes.link} href="/claim-user">CLAIM YOUR OLD USER</Link></strong> instead of submitting duplicate ratings for the same maps!
-              </p>
-            )}
+            <p>
+              If you submitted ratings via the google form, <strong>PLEASE <ClaimUserLink isAuthenticated={isAuthenticated} classes={classes} /></strong> instead of submitting duplicate ratings for the same maps!
+            </p>
             <h2>Community Projects</h2>
             <h3 style={{ marginTop: "2px" }}>Celeste Mountain Lego Idea</h3>
             <Image
