@@ -2,18 +2,26 @@ import { z } from "zod";
 import { createTRPCRouter, adminProcedure, loggedInProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { MyPrismaClient } from "~/server/prisma";
-import { Prisma, UserClaim } from "@prisma/client";
+import { Prisma, UserClaim as PrismaUserClaim } from "@prisma/client";
 import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
 import { userIdSchema_NonObject } from "./user";
-import { IfElse } from "~/utils/typeHelpers";
 import { ADMIN_PERMISSION_STRINGS, checkIsPrivileged, checkPermissions } from "../../utils/permissions";
 
 
 
 
-type TrimmedUserClaim = Omit<UserClaim, "approvedBy"> & {
+type ExpandedUserClaim = PrismaUserClaim & {
+    User_claimedUser: {
+        id: string;
+        discordUsername: string | null;
+        discordDiscriminator: string | null;
+    };
+};
+
+
+type TrimmedUserClaim = Omit<ExpandedUserClaim, "approvedBy"> & {
     approvedBy: undefined;
 };
 
@@ -25,6 +33,13 @@ export const defaultUserClaimSelect = Prisma.validator<Prisma.UserClaimSelect>()
     claimedBy: true,
     claimedUserId: true,
     approvedBy: true,
+    User_claimedUser: {
+        select: {
+            id: true,
+            discordUsername: true,
+            discordDiscriminator: true,
+        },
+    },
 });
 
 
@@ -54,28 +69,14 @@ const userClaimOrderSchema = getCombinedSchema(
 
 
 
-const getUserClaimById = async<
-    ReturnAll extends boolean,
-    Union extends IfElse<ReturnAll, UserClaim, TrimmedUserClaim>,
-    ReturnType extends NonNullable<Union>
->(
-    returnAll: ReturnAll,
+const getUserClaimById = async(
     prisma: MyPrismaClient,
     id: number
-): Promise<ReturnType> => {
-    let userClaim: Union | null;
-
-    if (returnAll) {
-        userClaim = await prisma.userClaim.findUnique({   //having type declaration here AND in function signature is safer
-            where: { id: id },
-        }) as Union;    // this is safe because userClaim is checked to be non-null in the next block. this cast is required to make TypeScript happy.
-
-    } else {
-        userClaim = await prisma.userClaim.findUnique({   //having type declaration here AND in function signature is safer
-            where: { id: id },
-            select: defaultUserClaimSelect,
-        }) as Union;    // this is safe because userClaim is checked to be non-null in the next block. this cast is required to make TypeScript happy.
-    }
+): Promise<ExpandedUserClaim> => {
+    const userClaim = await prisma.userClaim.findUnique({
+        where: { id: id },
+        select: defaultUserClaimSelect,
+    });
 
 
     if (!userClaim) {
@@ -86,13 +87,13 @@ const getUserClaimById = async<
     }
 
 
-    return userClaim as unknown as ReturnType;  // this cast is required to make TypeScript happy.
+    return userClaim;
 };
 
 
 
 
-const getTrimmedUserClaim = (userClaim: UserClaim): TrimmedUserClaim => ({
+const getTrimmedUserClaim = (userClaim: ExpandedUserClaim): TrimmedUserClaim => ({
     ...userClaim,
     approvedBy: undefined,
 });
@@ -113,7 +114,7 @@ export const userClaimRouter = createTRPCRouter({
     getById: loggedInProcedure
         .input(userClaimIdSchema)
         .query(async ({ ctx, input }) => {
-            const userClaim = await getUserClaimById(true, ctx.prisma, input.id);
+            const userClaim = await getUserClaimById(ctx.prisma, input.id);
 
 
             const isAdmin = checkPermissions(ADMIN_PERMISSION_STRINGS, ctx.user.permissions);
@@ -200,7 +201,7 @@ export const userClaimRouter = createTRPCRouter({
     delete: loggedInProcedure
         .input(userClaimIdSchema)
         .mutation(async ({ ctx, input }) => {
-            const userClaimFromId = await getUserClaimById(false, ctx.prisma, input.id);  //check that id matches an existing userClaim
+            const userClaimFromId = await getUserClaimById(ctx.prisma, input.id);  //check that id matches an existing userClaim
 
 
             checkIsPrivileged(ADMIN_PERMISSION_STRINGS, ctx.user, userClaimFromId.claimedBy);   //check that the user has permission to delete this userClaim
