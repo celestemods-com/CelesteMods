@@ -8,6 +8,7 @@ import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { ADMIN_PERMISSION_STRINGS, Permission, checkIsPrivileged, checkPermissions } from "../../utils/permissions";
 import { selectIdObject } from "../../utils/selectIdObject";
 import { userClaimRouter } from "./userClaim";
+import { userIdSchema_NonObject } from "../../schemas/userIdSchema_NonObject";
 
 
 
@@ -86,8 +87,6 @@ const getUserSelect = (permissions: Permission[] | undefined, overwrite?: boolea
 
 export const displayNameSchema_NonObject = z.string().min(1).max(50);
 
-
-export const userIdSchema_NonObject = z.string().cuid();    //TODO!: figure out if we need to add z.coerce before string()
 
 const userIdSchema = z.object({
     id: userIdSchema_NonObject,

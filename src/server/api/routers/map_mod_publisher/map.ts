@@ -6,13 +6,14 @@ import { Prisma, Map, MapSide, Map_NewWithMod_New, Map_Edit, Map_Archive, Map_Ne
 import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
-import { displayNameSchema_NonObject, getUserById, userIdSchema_NonObject } from "../user_userClaim/user";
+import { displayNameSchema_NonObject, getUserById } from "../user_userClaim/user";
 import { MODLIST_MODERATOR_PERMISSION_STRINGS, checkPermissions } from "../../utils/permissions";
 import { getModById } from "./mod";
 import { getPublisherById } from "./publisher";
 import { difficultyIdSchema_NonObject } from "../difficulty";
 import { lengthIdSchema_NonObject } from "../length";
-import { techIdSchema_NonObject } from "../tech_techVideo/tech";
+import { techIdSchema_NonObject } from "../../schemas/techIdSchema_NonObject";
+import { userIdSchema_NonObject } from "../../schemas/userIdSchema_NonObject";
 import { IfElse, ArrayIncludes } from "../../../../utils/typeHelpers";
 import { getCurrentTime } from "../../utils/getCurrentTime";
 import { getCheckedTableNames } from "../../utils/getCheckedTableNames";

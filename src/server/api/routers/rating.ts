@@ -12,7 +12,7 @@ import { difficultyIdSchema_NonObject } from "./difficulty";
 import { getCurrentTime } from "../utils/getCurrentTime";
 import { ADMIN_PERMISSION_STRINGS, checkIsPrivileged } from "../utils/permissions";
 import { getModById } from "./map_mod_publisher/mod";
-import { userIdSchema_NonObject } from "./user_userClaim/user";
+import { userIdSchema_NonObject } from "../schemas/userIdSchema_NonObject";
 
 
 

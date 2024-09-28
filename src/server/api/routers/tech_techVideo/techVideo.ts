@@ -6,7 +6,7 @@ import { Prisma, TechVideo } from "@prisma/client";
 import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
-import { techIdSchema_NonObject } from "./tech";
+import { techIdSchema_NonObject } from "../../schemas/techIdSchema_NonObject";
 
 
 
