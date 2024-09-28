@@ -1,4 +1,4 @@
-import { Button, createStyles, ScrollArea, Table } from "@mantine/core";
+import { Button, createStyles, LoadingOverlay, ScrollArea, Table } from "@mantine/core";
 import type { NextPage } from "next";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -76,7 +76,7 @@ const ClaimUser: NextPage = () => {
     const { classes } = useStyles();
 
 
-    if (status === 'unauthenticated') {
+    if (status === "unauthenticated") {
         return (
             <Layout
                 pageTitle={PAGE_TITLE}
@@ -95,64 +95,68 @@ const ClaimUser: NextPage = () => {
             pageDescription={PAGE_DESCRIPTION}
             pathname={CLAIM_USER_PATHNAME}
         >
-            <ScrollArea
-                offsetScrollbars
-                className={classes.scrollArea}
+            <LoadingOverlay
+                visible={status === "loading"}
             >
-                <h1>{PAGE_TITLE}</h1>
-                <h2>Claimed Users</h2>
-                <p>
-                    Contact us on <Link href={cmlDiscordInviteUrl} className={classes.discordLink} target="_blank">Discord</Link> to get your claim verified.
-                </p>
-                <Table>
-                    <thead>
-                        <tr>
-                            <th>Claim ID</th>
-                            <th>User ID</th>
-                            <th>Username</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {userClaims.map(claim => (
-                            <tr key={claim.id}>
-                                <td>{claim.id}</td>
-                                <td>{claim.claimedUserId}</td>
-                                <td>{claim.User_claimedUser.discordUsername}#{claim.User_claimedUser.discordDiscriminator}</td>
+                <ScrollArea
+                    offsetScrollbars
+                    className={classes.scrollArea}
+                >
+                    <h1>{PAGE_TITLE}</h1>
+                    <h2>Claimed Users</h2>
+                    <p>
+                        Contact us on <Link href={cmlDiscordInviteUrl} className={classes.discordLink} target="_blank">Discord</Link> to get your claim verified.
+                    </p>
+                    <Table>
+                        <thead>
+                            <tr>
+                                <th>Claim ID</th>
+                                <th>User ID</th>
+                                <th>Username</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </Table>
-                <h2>Unclaimed Users</h2>
-                <Table>
-                    <thead>
-                        <tr>
-                            <th>User</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {unclaimedUsers.map(unclaimedUser => (
-                            <tr key={unclaimedUser.id}>
-                                <td>{unclaimedUser.discordUsername}#{unclaimedUser.discordDiscriminator}</td>
-                                <td>
-                                    <Button
-                                        disabled={createUserClaimMutation.isLoading}
-                                        onClick={() => {
-                                            if (!createUserClaimMutation.isLoading) {
-                                                createUserClaimMutation.mutate({
-                                                    claimedUserId: unclaimedUser.id
-                                                });
-                                            }
-                                        }}
-                                    >
-                                        Claim
-                                    </Button>
-                                </td>
+                        </thead>
+                        <tbody>
+                            {userClaims.map(
+                                (claim) => (
+                                    <tr key={claim.id}>
+                                        <td>{claim.id}</td>
+                                        <td>{claim.claimedUserId}</td>
+                                        <td>{claim.User_claimedUser.discordUsername}#{claim.User_claimedUser.discordDiscriminator}</td>
+                                    </tr>
+                                )
+                            )}
+                        </tbody>
+                    </Table>
+                    <h2>Unclaimed Users</h2>
+                    <Table>
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th></th>
                             </tr>
-                        ))}
-                    </tbody>
-                </Table>
-            </ScrollArea>
+                        </thead>
+                        <tbody>
+                            {unclaimedUsers.map(
+                                (unclaimedUser) => (
+                                    <tr key={unclaimedUser.id}>
+                                        <td>
+                                            {unclaimedUser.discordUsername}#{unclaimedUser.discordDiscriminator}
+                                        </td>
+                                        <td>
+                                            <Button
+                                                disabled={createUserClaimMutation.isLoading}
+                                                onClick={() => createUserClaimMutation.isLoading ? createUserClaimMutation.mutate({ claimedUserId: unclaimedUser.id }) : undefined}
+                                            >
+                                                Claim
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                )
+                            )}
+                        </tbody>
+                    </Table>
+                </ScrollArea>
+            </LoadingOverlay>
         </Layout>
     );
 };

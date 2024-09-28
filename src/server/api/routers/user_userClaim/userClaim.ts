@@ -12,12 +12,16 @@ import { ADMIN_PERMISSION_STRINGS, checkIsPrivileged, checkPermissions } from ".
 
 
 
+type RelatedUser = {
+    id: string;
+    discordUsername: string | null;
+    discordDiscriminator: string | null;
+};
+
+
 type ExpandedUserClaim = PrismaUserClaim & {
-    User_claimedUser: {
-        id: string;
-        discordUsername: string | null;
-        discordDiscriminator: string | null;
-    };
+    User_claimedBy: RelatedUser;
+    User_claimedUser: RelatedUser;
 };
 
 
@@ -28,18 +32,22 @@ type TrimmedUserClaim = Omit<ExpandedUserClaim, "approvedBy"> & {
 
 
 
-export const defaultUserClaimSelect = Prisma.validator<Prisma.UserClaimSelect>()({
+const relatedUserSelectObject = {
+    id: true,
+    discordUsername: true,
+    discordDiscriminator: true,
+} satisfies { [Key in keyof RelatedUser]: true };   // make this relationship explicit/type-safe    //TODO!!!: do this throughout the api, or make a follow-up issue to do so
+
+const relatedUserSelect = Prisma.validator<Prisma.UserSelect>()(relatedUserSelectObject);
+
+
+const defaultUserClaimSelect = Prisma.validator<Prisma.UserClaimSelect>()({
     id: true,
     claimedBy: true,
     claimedUserId: true,
     approvedBy: true,
-    User_claimedUser: {
-        select: {
-            id: true,
-            discordUsername: true,
-            discordDiscriminator: true,
-        },
-    },
+    User_claimedBy: { select: relatedUserSelect },
+    User_claimedUser: { select: relatedUserSelect },
 });
 
 
@@ -69,7 +77,7 @@ const userClaimOrderSchema = getCombinedSchema(
 
 
 
-const getUserClaimById = async(
+const getUserClaimById = async (
     prisma: MyPrismaClient,
     id: number
 ): Promise<ExpandedUserClaim> => {
