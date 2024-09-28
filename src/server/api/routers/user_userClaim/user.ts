@@ -5,8 +5,10 @@ import { MyPrismaClient } from "~/server/prisma";
 import { Prisma, User } from "@prisma/client";
 import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
-import { ADMIN_PERMISSION_STRINGS, Permission, checkIsPrivileged, checkPermissions } from "../utils/permissions";
-import { selectIdObject } from "../utils/selectIdObject";
+import { ADMIN_PERMISSION_STRINGS, Permission, checkIsPrivileged, checkPermissions } from "../../utils/permissions";
+import { selectIdObject } from "../../utils/selectIdObject";
+import { userClaimRouter } from "./userClaim";
+import { userIdSchema_NonObject } from "../../schemas/userIdSchema_NonObject";
 
 
 
@@ -86,8 +88,6 @@ const getUserSelect = (permissions: Permission[] | undefined, overwrite?: boolea
 export const displayNameSchema_NonObject = z.string().min(1).max(50);
 
 
-export const userIdSchema_NonObject = z.string().cuid();    //TODO!: figure out if we need to add z.coerce before string()
-
 const userIdSchema = z.object({
     id: userIdSchema_NonObject,
 }).strict();
@@ -118,7 +118,7 @@ export const getUserById = async (
     prisma: MyPrismaClient,
     id: string,
     permissions: Permission[] | undefined,
-    overwrite?: boolean,
+    overwrite: boolean | undefined,
 ): Promise<
     TrimmedUser |
     ExpandedUser
@@ -184,7 +184,7 @@ export const userRouter = createTRPCRouter({
     getById: publicProcedure
         .input(userIdSchema)
         .query(async ({ ctx, input }) => {
-            return await getUserById(ctx.prisma, input.id, ctx.session?.user.permissions);
+            return await getUserById(ctx.prisma, input.id, ctx.session?.user.permissions, undefined);
         }),
 
     getByName: publicProcedure
@@ -201,6 +201,22 @@ export const userRouter = createTRPCRouter({
             });
 
             return users;
+        }),
+
+    getUnlinked: loggedInProcedure
+        .input(userOrderSchema)
+        .query(async ({ ctx, input }) => {
+            return await ctx.prisma.user.findMany({
+                where: {
+                    accountStatus: 'Unlinked',
+                },
+                select: {
+                    id: true,
+                    discordUsername: true,
+                    discordDiscriminator: true,
+                },
+                orderBy: getOrderObjectArray(input.selectors, input.directions),
+            });
         }),
 
     add: loggedInProcedure
@@ -223,7 +239,7 @@ export const userRouter = createTRPCRouter({
 
     delete: loggedInProcedure
         .input(userIdSchema)
-        .mutation(async ({ ctx, input }) => {
+        .mutation(async ({ ctx, input }) => {   //TODO!!!: mark the user as deleted here and update the other endpoints to not return deleted users. can be a follow-up issue. need to tidy up this whole router lol.
             if (!ctx.session?.user) throw undefinedSessionError;
 
 
@@ -247,4 +263,7 @@ export const userRouter = createTRPCRouter({
 
             throw "not implemented";
         }),
+
+
+    userClaim: userClaimRouter,
 });

@@ -12,7 +12,7 @@ import { difficultyIdSchema_NonObject } from "./difficulty";
 import { getCurrentTime } from "../utils/getCurrentTime";
 import { ADMIN_PERMISSION_STRINGS, checkIsPrivileged } from "../utils/permissions";
 import { getModById } from "./map_mod_publisher/mod";
-import { userIdSchema_NonObject } from "./user";
+import { userIdSchema_NonObject } from "../schemas/userIdSchema_NonObject";
 
 
 
@@ -91,8 +91,7 @@ const getRatingById = async<
         }
 
         return undefined as ReturnType;
-    }
-    else {
+    } else {
         if (!rating) {
             throw new TRPCError({
                 code: "NOT_FOUND",
@@ -393,7 +392,7 @@ export const ratingRouter = createTRPCRouter({
     getById: adminProcedure
         .input(ratingIdSchema)
         .query(async ({ ctx, input }) => {
-            return await getRatingById(false, ctx.prisma, input.id);
+            return getRatingById(false, ctx.prisma, input.id);
         }),
 
     getByModId: adminProcedure
@@ -403,7 +402,7 @@ export const ratingRouter = createTRPCRouter({
             }).strict(),
         )
         .query(async ({ ctx, input }) => {
-            return await ctx.prisma.rating.findMany({ where: { Map: { modId: input.modId } } });
+            return ctx.prisma.rating.findMany({ where: { Map: { modId: input.modId } } });
         }),
 
     getByMapId: adminProcedure
@@ -413,17 +412,21 @@ export const ratingRouter = createTRPCRouter({
             }).strict(),
         )
         .query(async ({ ctx, input }) => {
-            return await ctx.prisma.rating.findMany({ where: { mapId: input.mapId } });
+            return ctx.prisma.rating.findMany({ where: { mapId: input.mapId } });
         }),
 
-    getByUserId: adminProcedure
+    getByUserId: loggedInProcedure
         .input(
             z.object({
                 userId: userIdSchema_NonObject,
             }).strict(),
         )
         .query(async ({ ctx, input }) => {
-            return await ctx.prisma.rating.findMany({ where: { submittedBy: input.userId } });
+            const ratingsFromId = await ctx.prisma.rating.findMany({ where: { submittedBy: input.userId } });
+
+            checkIsPrivileged(ADMIN_PERMISSION_STRINGS, ctx.user, input.userId);    //check that user has permission to view this user's ratings
+
+            return ctx.prisma.rating.findMany({ where: { submittedBy: input.userId } });
         }),
 
     add: loggedInProcedure

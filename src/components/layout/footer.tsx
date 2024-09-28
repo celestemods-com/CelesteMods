@@ -36,7 +36,6 @@ const useStyles = createStyles(
 export const Footer = () => {
     const { classes } = useStyles();
 
-
     return (
         <Box className={classes.outerFooter}>
             <hr className={classes.horizontalRule} />
@@ -50,7 +49,6 @@ export const Footer = () => {
                         align="start"
                         spacing="1px"
                     >
-                        <Link href={COMING_SOON_PATHNAME}>My Account</Link>
                         <Link href={COMING_SOON_PATHNAME}>Settings</Link>
                     </Stack>
                     <Link

@@ -1,4 +1,5 @@
-import { Flex, createStyles, Title, Box } from "@mantine/core";
+import { Flex, createStyles, Title, Button } from "@mantine/core";
+import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import cmlLogo from "~/../public/images/logo/cml_logo.png";
 import { blackBackgroundColor } from "~/styles/layoutColors";
@@ -31,6 +32,7 @@ export const Header = () => {
     const height = 115;
     const width = height / 694 * 774;
 
+    const { data: session } = useSession();
 
     return (
         <header>
@@ -43,7 +45,11 @@ export const Header = () => {
                     alt="CML Logo"
                 />
                 <Title className={classes.siteTitle} order={1}>Celeste Mods List</Title>
-                <Box w={width} />
+                <Flex w={width} gap="sm" align="center" justify="flex-end">
+                    {!session && <Button onClick={() => { void signIn("discord"); }}>Login</Button>}
+                    {session && <span>{session.user.name}</span>}
+                    {session && <Button onClick={() => { void signOut(); }}>Logout</Button>}
+                </Flex>
             </Flex>
         </header>
     );
