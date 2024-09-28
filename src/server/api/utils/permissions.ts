@@ -1,4 +1,3 @@
-import { Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { SessionUser } from "next-auth";
 
