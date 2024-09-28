@@ -1,5 +1,5 @@
 import { Button, createStyles, ScrollArea, Table } from "@mantine/core";
-import { type NextPage } from "next";
+import type { NextPage } from "next";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Layout } from "~/components/layout/layout";

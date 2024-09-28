@@ -1,5 +1,5 @@
 import { createStyles, Flex, ScrollArea } from "@mantine/core";
-import { type NextPage } from "next";
+import type { NextPage } from "next";
 import { signIn, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
