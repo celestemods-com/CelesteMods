@@ -47,8 +47,9 @@ const ClaimUser: NextPage = () => {
     const userClaims = userClaimsQuery.data ?? [];
 
 
-    // Separate legacy users based on if the current user has claimed them
+    // Sort legacy users based on if the current user has claimed them
     type UnlinkedUser = typeof unlinkedUsers[number];
+
     const claimedUsers: UnlinkedUser[] = [];
     const unclaimedUsers: UnlinkedUser[] = [];
 
@@ -67,7 +68,7 @@ const ClaimUser: NextPage = () => {
 
     const createUserClaimMutation = api.user.userClaim.add.useMutation({
         onSuccess() {
-            void utils.user.userClaim.getByClaimingUserId.invalidate();
+            utils.user.userClaim.getByClaimingUserId.invalidate({ userId });
         }
     });
 
