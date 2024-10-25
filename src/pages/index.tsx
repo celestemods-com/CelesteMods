@@ -68,7 +68,7 @@ const ClaimUserLink = ({
   }
 
 
-  return <a className={classes.link} onClick={() => signIn("discord", { callbackUrl: CLAIM_USER_PATHNAME })}>{linkText}</a>;  //TODO!!!: Refactor this to use a Next.js Link component with an href so that logged-out users can see where they're going before they click the link. This can be a followup issue.
+  return <a className={classes.link} onClick={() => signIn("discord", { callbackUrl: CLAIM_USER_PATHNAME })}>{linkText}</a>;
 };
 
 

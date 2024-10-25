@@ -36,7 +36,7 @@ const relatedUserSelectObject = {
     id: true,
     discordUsername: true,
     discordDiscriminator: true,
-} satisfies { [Key in keyof RelatedUser]: true };   // make this relationship explicit/type-safe    //TODO!!!: do this throughout the api, or make a follow-up issue to do so
+} satisfies { [Key in keyof RelatedUser]: true };   // make this relationship explicit/type-safe
 
 const relatedUserSelect = Prisma.validator<Prisma.UserSelect>()(relatedUserSelectObject);
 
