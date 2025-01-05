@@ -1,4 +1,4 @@
-import { Flex, createStyles, Title, Button } from "@mantine/core";
+import { Group, Stack, createStyles, Title, Button } from "@mantine/core";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import cmlLogo from "~/../public/images/logo/cml_logo.png";
@@ -36,21 +36,51 @@ export const Header = () => {
 
     return (
         <header>
-            <Flex className={classes.header}>
-                <Image
-                    priority
-                    src={cmlLogo}
-                    height={height}
-                    width={width}
-                    alt="CML Logo"
-                />
-                <Title className={classes.siteTitle} order={1}>Celeste Mods List</Title>
-                <Flex w={width} gap="sm" align="center" justify="flex-end">
-                    {!session && <Button onClick={() => { void signIn("discord"); }}>Login</Button>}
-                    {session && <span>{session.user.name}</span>}
-                    {session && <Button onClick={() => { void signOut(); }}>Logout</Button>}
-                </Flex>
-            </Flex>
+            <Group className={classes.header}>
+                <Stack
+                    align="center"
+                    spacing="1px"
+                >
+                    <Image
+                        priority
+                        src={cmlLogo}
+                        height={height}
+                        width={width}
+                        alt="CML Logo"
+                    />
+                </Stack>
+                <Title
+                    className={classes.siteTitle}
+                    order={1}
+                >Celeste Mods List
+                </Title>
+                <Stack
+                    w={width}
+                    align="center"
+                    spacing="1px"
+                    justify="flex-end"
+                >
+                    {!session && (
+                        <Button
+                            onClick={() => { void signIn("discord"); }}
+                        >
+                            Login
+                        </Button>
+                    )}
+                    {session && (
+                        <>
+                            <span>
+                                {session.user.name}
+                            </span>
+                            <Button
+                                onClick={() => { void signOut(); }}
+                            >
+                                Logout
+                            </Button>
+                        </>
+                    )}
+                </Stack>
+            </Group>
         </header>
     );
 };
