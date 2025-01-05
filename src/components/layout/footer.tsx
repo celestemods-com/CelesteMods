@@ -37,9 +37,15 @@ export const Footer = () => {
     const { classes } = useStyles();
 
     return (
-        <Box className={classes.outerFooter}>
-            <hr className={classes.horizontalRule} />
-            <footer className={classes.footer}>
+        <Box
+            className={classes.outerFooter}
+        >
+            <hr
+                className={classes.horizontalRule}
+            />
+            <footer
+                className={classes.footer}
+            >
                 <Group
                     align="center"
                     grow
@@ -49,7 +55,11 @@ export const Footer = () => {
                         align="center"
                         spacing="1px"
                     >
-                        <Link href={COMING_SOON_PATHNAME}>Cookie Policy</Link>
+                        <Link
+                            href={COMING_SOON_PATHNAME}
+                        >
+                            Cookie Policy
+                        </Link>
                     </Stack>
                     <Link
                         href={cmlDiscordInviteUrl}
@@ -62,7 +72,11 @@ export const Footer = () => {
                         align="center"
                         spacing="1px"
                     >
-                        <Link href={COMING_SOON_PATHNAME}>Privacy Policy</Link>
+                        <Link
+                            href={COMING_SOON_PATHNAME}
+                        >
+                            Privacy Policy
+                        </Link>
                     </Stack>
                 </Group>
             </footer>
