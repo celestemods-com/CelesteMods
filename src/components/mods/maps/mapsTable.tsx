@@ -1,7 +1,7 @@
 import { type Dispatch, type SetStateAction, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ActionIcon, Text, createStyles } from "@mantine/core";
-import { DataTable, type DataTableSortStatus } from "mantine-datatable";
+import { type DataTableSortStatus, DataTable } from "mantine-datatable";
 import type { MapWithTechAndRatingInfo, Mod } from "~/components/mods/types";
 import { CirclePlus } from "tabler-icons-react";
 import { ModsTableTooltip } from "../modsTableTooltip";
@@ -11,6 +11,7 @@ import type { DifficultyColor } from "~/styles/difficultyColors";
 import { getOrdinal } from "~/utils/getOrdinal";
 import { COMING_SOON_PATHNAME } from "~/consts/pathnames";
 import { truncateString } from "~/utils/truncateString";
+import { colorObject } from "~/styles/colorObjects";
 
 
 
@@ -25,92 +26,95 @@ const useStyles = createStyles(
     (
         theme,
         { colors }: { colors: DifficultyColor; },
-    ) => ({
-        mapTable: {
-            // double ampersand to increase selectivity of class to ensure it overrides any other css
-            "&&": {
-                /* top | left and right | bottom */
-                margin: `0 ${theme.spacing.sm} ${theme.spacing.xl}`,
-                backgroundColor: expandedModColors.default.backgroundColor,
-            },
-            "&&&&&& table": {
-                borderSpacing: "0 8px",
-                // Border spacing adds space before the header, so we move the table up
-                transform: 'translate(0, -8px)',
-                "tbody": {
-                    transform: 'translate(0, 3px)',
+    ) => {
+        return {
+            mapTable: {
+                // double ampersand to increase selectivity of class to ensure it overrides any other css
+                "&&": {
+                    /* top | left and right | bottom */
+                    margin: `0 ${theme.spacing.sm} ${theme.spacing.xl}`,
+                    backgroundColor: expandedModColors.default.backgroundColor,
                 },
-            },
-            "&&&&&& thead": {
-                top: "0",
-            },
-            "&&&& th": {
-                fontWeight: "bold",
-                border: "none",
-                backgroundColor: colors.primary.backgroundColor,
-                color: colors.primary.textColor,
-                // The down arrow appears blurry due to rotation, so we zoom in to fix that.
-                // https://stackoverflow.com/a/53556981
-                ".mantine-Center-root": {
-                    zoom: TABLE_HEADER_ARROW_ZOOM,
+                "&&&&&& table": {
+                    borderSpacing: "0 8px",
+                    // Border spacing adds space before the header, so we move the table up
+                    transform: 'translate(0, -8px)',
+                    "tbody": {
+                        transform: 'translate(0, 3px)',
+                    },
                 },
-                "svg": {
+                "&&&&&& thead": {
+                    top: "0",
+                },
+                "&&&& th": {
+                    fontWeight: "bold",
+                    border: "none",
+                    backgroundColor: colors.primary.backgroundColor,
                     color: colors.primary.textColor,
+                    // The down arrow appears blurry due to rotation, so we zoom in to fix that.
+                    // https://stackoverflow.com/a/53556981
+                    ".mantine-Center-root": {
+                        zoom: TABLE_HEADER_ARROW_ZOOM,
+                    },
+                    "svg": {
+                        color: colors.primary.textColor,
+                    },
                 },
-            },
-            "&&&& th:hover": {
-                backgroundColor: colors.primaryHover.backgroundColor,
-                color: colors.primaryHover.textColor,
-                "svg": {
+                "&&&& th:hover": {
+                    backgroundColor: colors.primaryHover.backgroundColor,
                     color: colors.primaryHover.textColor,
+                    "svg": {
+                        color: colors.primaryHover.textColor,
+                    },
                 },
             },
-        },
-        leftColumnTitle: {
-            "&&": {
-                borderRadius: "20px 0 0 20px",
+            leftColumnTitle: {
+                "&&": {
+                    borderRadius: "20px 0 0 20px",
+                },
             },
-        },
-        rightColumnTitle: {
-            "&&": {
-                borderRadius: "0 20px 20px 0"
+            rightColumnTitle: {
+                "&&": {
+                    borderRadius: "0 20px 20px 0"
+                },
             },
-        },
-        columnCells: {
-            "&&&&": {
-                fontWeight: "bold",
-                backgroundColor: theme.white,
-                color: theme.black,
-                borderLeft: "none",
-                borderRight: "none",
-                borderTop: "2px solid",
-                borderBottom: "2px solid",
-                borderColor: colors.primary.backgroundColor,
+            columnCells: {
+                "&&&&": {
+                    fontWeight: "bold",
+                    backgroundColor: theme.white,
+                    color: theme.black,
+                    borderLeft: "none",
+                    borderRight: "none",
+                    borderTop: "2px solid",
+                    borderBottom: "2px solid",
+                    borderColor: colors.primary.backgroundColor,
+                },
             },
-        },
-        leftColumnCells: {
-            "&&&&": {
-                fontWeight: "bold",
-                backgroundColor: theme.white,
-                color: theme.black,
-                borderRadius: "20px 0 0 20px",
-                border: "2px solid",
-                borderColor: colors.primary.backgroundColor,
-                borderRight: "none",
+            leftColumnCells: {
+                "&&&&": {
+                    fontWeight: "bold",
+                    backgroundColor: theme.white,
+                    color: theme.black,
+                    borderRadius: "20px 0 0 20px",
+                    border: "2px solid",
+                    borderColor: colors.primary.backgroundColor,
+                    borderRight: "none",
+                },
             },
-        },
-        rightColumnCells: {
-            "&&&&": {
-                fontWeight: "bold",
-                backgroundColor: theme.white,
-                color: theme.black,
-                borderRadius: "0 20px 20px 0",
-                border: "2px solid",
-                borderColor: colors.primary.backgroundColor,
-                borderLeft: "none",
+            rightColumnCells: {
+                "&&&&": {
+                    fontWeight: "bold",
+                    backgroundColor: theme.white,
+                    color: theme.black,
+                    borderRadius: "0 20px 20px 0",
+                    border: "2px solid",
+                    borderColor: colors.primary.backgroundColor,
+                    borderLeft: "none",
+                },
             },
-        },
-    }),
+            icon: colorObject(theme.black),
+        };
+    },
 );
 
 
@@ -417,7 +421,7 @@ export const MapsTable = (
                                         aria-label="Rate this map"
                                     >
                                         <CirclePlus
-                                            color="black"
+                                            className={classes.icon}
                                         />
                                     </ActionIcon>
                                 </Link>
