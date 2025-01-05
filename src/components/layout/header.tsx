@@ -1,4 +1,4 @@
-import { Group, Stack, createStyles, Title, Button } from "@mantine/core";
+import { Group, Flex, createStyles, Title, Button } from "@mantine/core";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import cmlLogo from "~/../public/images/logo/cml_logo.png";
@@ -11,9 +11,10 @@ const useStyles = createStyles(
     (theme) => ({
         header: {
             color: theme.white,
+        },
+        group: {
             backgroundColor: blackBackgroundColor,
-            padding: "10px 45px",
-            alignItems: "center",
+            padding: "10px 45px",   /*top and bottom | left and right*/
         },
         siteTitle: {
             fontSize: "45px",
@@ -35,30 +36,36 @@ export const Header = () => {
     const { data: session } = useSession();
 
     return (
-        <header>
-            <Group className={classes.header}>
-                <Stack
-                    align="center"
-                    spacing="1px"
+        <header
+            className={classes.header}
+        >
+            <Group
+                className={classes.group}  /* Use a class to assign `backgroundColor`, as `Group` doesn't expose a `backgroundColor` prop.  */
+                align="center"
+                grow
+                position="apart"
+            >
+                <Flex
+                    gap="1px 1px" /*row-gap column-gap*/
+                    justify="start"
                 >
                     <Image
                         priority
                         src={cmlLogo}
-                        height={height}
+                        // height={height}
                         width={width}
                         alt="CML Logo"
                     />
-                </Stack>
+                </Flex>
                 <Title
                     className={classes.siteTitle}
                     order={1}
                 >Celeste Mods List
                 </Title>
-                <Stack
+                <Flex
                     w={width}
-                    align="center"
-                    spacing="1px"
-                    justify="flex-end"
+                    gap="1px 1px" /*row-gap column-gap*/
+                    justify="end"
                 >
                     {!session && (
                         <Button
@@ -79,8 +86,8 @@ export const Header = () => {
                             </Button>
                         </>
                     )}
-                </Stack>
+                </Flex>
             </Group>
-        </header>
+        </header >
     );
 };
