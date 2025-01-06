@@ -12,6 +12,12 @@ import { ADMIN_PERMISSION_STRINGS, checkIsPrivileged, checkPermissions } from ".
 
 
 
+const VERIFY_CLAIM_TRANSACTION_MAXWAIT_SECONDS = 5;
+const VERIFY_CLAIM_TRANSACTION_TIMEOUT_SECONDS = 60;
+
+
+
+
 type RelatedUser = {
     id: string;
     discordUsername: string | null;
@@ -361,7 +367,11 @@ export const userClaimRouter = createTRPCRouter({
                             id: claim.claimedUserId,
                         }
                     });
-                }
+                },
+                {
+                    maxWait: VERIFY_CLAIM_TRANSACTION_MAXWAIT_SECONDS * 1000,
+                    timeout: VERIFY_CLAIM_TRANSACTION_TIMEOUT_SECONDS * 1000,
+                },
             );
 
 
