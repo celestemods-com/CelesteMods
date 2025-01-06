@@ -634,7 +634,7 @@ model User {
   UserClaim_claimedUserIdToUser         UserClaim[]            @relation("UserClaim_ClaimedUserId")
   UserClaim_approvedByToUser            UserClaim[]            @relation("UserClaim_ApprovedBy")
 
-  @@unique([discordUsername, discordDiscriminator])
+  @@index([discordUsername, discordDiscriminator])
   @@map("user")
 }
 
