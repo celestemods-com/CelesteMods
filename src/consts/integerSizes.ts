@@ -1,3 +1,4 @@
+/** Contains the maximum absolute values of the various integer sizes defined in MariaDB. */
 export const INT_MAX_SIZES = {
     tinyInt: {
         signed: 127 - 1,
