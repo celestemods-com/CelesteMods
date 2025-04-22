@@ -6,11 +6,79 @@ I want to start using github copilot (hello!) in my workspace. I have read that 
 
 ### Definitions
 
+#### Mod
+A user generated asset (binary, image, video, etc) that is used to extend/modify a video game that is used to create, share, and consumpe user-generated content.
+
+#### Modding
+Creating and/or consuming mods.
+
+#### Celeste
+Celeste is a 2018 platformer video game. It released on various PC operating systems as well as several consoles. However, creating and playing mods is only possible on the various PC operating systems.
+
+#### Celeste Mod
+A mod for Celeste. Mods are zip files containing a variety of subfiles. These files are hosted on GameBanana. These mods can add new levels to the game, modify/add/remove game mechanics, and/or cosmetically alter graphic assets, the UI, gameplay mechanics, or any other parts of the game.
+
+#### Celeste Modding Community
+The community of people that create, play, consume other content (livestreams or let's plays), or otherwise interact with Celeste mods.
+
+#### GameBanana
+The website that the Celeste modding community uses to host Celeste mods. See the related section within the `Third Party Documentation` section.
+
 #### Celeste Mods List
-The name of this project. Refer to the project README for more information about the project.
+The name of this project.
+* Refer to the project README for more information about the purpose and motivation behind this project.
+* Also refers to to the organization working on this project.
+  * For design, (other than graphical assets in the Public folder): @otobot1, @merganzic, @ShouvikGhosh2048
+  * For code:
+    * Active/Semi-Active: @otobot1, @ShouvikGhosh2048
+    * Database contents: Mostly touhoe (an active member of the Celeste Modding Community).
+      * Some others:
+        * See [the original website](https://celestemods.weebly.com/).
+          Read the web page and follow the other links yourself if needed.
+
+          * See [the original spreadsheet](https://docs.google.com/spreadsheets/d/1_fYM8JABpChRmwvyydB3a6C5AkiFRqYLus4NWHJbJpU/edit?gid=537820755#gid=537820755).
+          
+          * The original website still operates (the averages update every 12 hours), but cannot add more mods due to inefficient API calls slowing down the script and runtime limits being exceeded.
+          * This website (the original/old website) is abandoned in place.
+          * Once the current/new website reaches its [v0.2.0 milestone](https://github.com/celestemods-com/CelesteMods/milestone/5), the old website will have its data exported one last time and then be shut down and pointed at the new website.
+    * Other: See other GitHub contributors.
+* The "current" version of the website, which is created by a forked branch within this git repository, is hosted [here](https://celestemods.com/)
 
 #### CML
 Short for "Celeste Mods List".
+
+#### Everest
+The modding API used by Celeste mods. Automatically updates mods after the game launches.
+
+#### Olympus
+The mod manager officially recommended for managing Everest installs and updates and for managing mod installs and updates.
+
+#### GameBanana Mirrors
+"A" GameBanana Mirror is any data repository that monitors and duplicates the contents of "the" GameBanana Mirror or of GameBanana itself.
+
+* "The" GameBanana Mirror
+  * Its URL is somewhere in this git repository.
+  * Hosted by Jade/0x0ade.
+  * The original GameBanana mirror.
+  * Contents are managed by Maddie (who hosts [a lot of Celeste modding infrastructure and other stuff](https://maddie480.ovh/))
+    * Managed by [this service](https://github.com/maddie480/EverestUpdateCheckerServer) that Maddie hosts.
+    * Various indices provided.
+      * These are the most important for this project.
+      * Indices update automatically on timescales of less than 1 hour but more than 5 minutes.
+      * https://maddie480.ovh/celeste/everest_update.yaml
+      * https://maddie480.ovh/celeste/mod_search_database.yaml
+* WEGFan Mirror:
+  * Hosted by WEGFan.
+  * https://celeste.weg.fan/
+  * Works better (at all?) in mainland China.
+* The CML GameBanana Mirror
+  * A GameBanana mirror hosted by @otobot1 as part of the CML project.
+  * Hosted through the CloudFlare CDN on CloudFlare's R2 storage.
+    * It's cheap.
+    * It's fast.
+    * It has no per-byte data egress fees.
+  * The code used to host it is present in this git repository and another hosted in the same GitHub organization as this repository.
+  * It mostly piggy-backs off of Maddie's Everest Update Checker service.
 
 ### Third Party Documentation
 
@@ -67,6 +135,17 @@ Prisma ORM (Prisma for short) is an Object-Relational-Mapping (ORM) library. We 
 
 #### Pino
 The library we use for server-side logging.
+* Try and find a documentation link (and then ask for approval before using it) if one is ever needed to satisfy a prompt.
+
+#### GameBanana
+The website used to host celeste mod files and various other modding community assets.
+  * Mostly the mods themselves (zip files), images, and text (comments, titles, descriptions, etc).
+  * GameBanana hosts assets for the modding communities of many video games.
+    * The portion of the site dedicated to Celeste can be found here: https://gamebanana.com/games/6460
+  * We pull some data from them through one of their APIs.
+    * They offer access to the same database through multiple APIs accessible through various URL and/or subdomain schemes.
+    * We use [this API](https://api.gamebanana.com/) to fetch various data and avoid hosting it as part of the website.
+    * There is a PR currently open working on preferentially using the data stored in the CML GameBanana Mirror, with fallback to GameBanana itself only if required. Ignore this PR unless it is obviously relevant to the current prompt.
 
 ### File Structure
 * Good suggestions are welcome!
@@ -224,6 +303,7 @@ Specifies the files/folders to be excluded by git. The files/folders excluded by
 #### `SECURITY.md`
 
 #### `tsconfig.json`
+TypeScript config file.
 
 ### Specifications
 * All specifications are defined in spec files within the specifications directory.
