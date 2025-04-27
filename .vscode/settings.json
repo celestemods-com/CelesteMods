@@ -1,0 +1,15 @@
+{
+	"editor.tabSize": 4,
+	"editor.insertSpaces": false,
+	"editor.detectIndentation": false,
+	"files.eol": "\n",
+	"files.insertFinalNewline": false,
+	"files.trimFinalNewlines": true,
+	"files.encoding": "utf8",
+	"json.format.keepLines": true,
+	"evenBetterToml.formatter.trailingNewline": true,
+	"[yaml]": {
+		"editor.tabSize": 4, 
+		"editor.insertSpaces": true
+	}
+}
