@@ -4,13 +4,16 @@ I want to start using github copilot (hello!) in my workspace. I have read that 
 ## Supporting Information
 - For this prompt only, the information in this section should either be documented somewhere and referred to in future prompts or split out into a sub-prompt that can be reused in the future.
 - Always check if a file/folder exists before asking to create it.
+- For this prompt only, existing files `.github/copilot-instructions.md`, `.github/prompts/reusable/style.md`, `docs/definitions/README.md`, `docs/definitions/celesteModsList/celesteModsList.md`, `docs/third-party/README.md`, `docs/third-party/celeste/celeste.md`, `docs/third-party/celeste/gamebanana/gamebanana.md`, and `docs/third-party/` take precedence over the content in this prompt.
+  - Do not overwrite these files with content from this prompt.
+- Note: This prompt has been processed up to the end of step 4.
 
 ### Definitions
 - General rules for processing definitions:
   - All definitions listed the "Definitions" section should be transcribed in their own file within `docs/definitions/` if it relates directly to this repository or within `docs/third-party/` if it does not.
     - `docs/definitions/` should use the same file extension and sub-folder rules as `docs/third-party/` (see the `Third Party Documentation` section for details).
       - CML should be nested under Celeste Mods List.
-    - Definitions that relate to third-party libraries/tools/other software should be placed within a `# Definitions` section in the appropriate file within `docs/third-party/` (see the `Third Party Documentation` section for details).
+    - Definitions that relate to third-party libraries/tools/other software should be placed within a `## Definitions` section in the appropriate file within `docs/third-party/` (see the `Third Party Documentation` section for details).
 	  - Mod, Modding, Celeste Mod, and Celeste Modding Community should be nested under `docs/third-party/Celeste/`.
 	  - GameBanana, Everest, and Olympus should be nested under Celeste Mod.
 	  - GameBanana Mirrors should be nested under GameBanana.
@@ -93,7 +96,7 @@ The mod manager officially recommended for managing Everest installs and updates
 
 ### Third Party Documentation
 - General rules for processing third party documentation:
-  - All direct child sub-sections listed the "Third Party Documentation" section should be transcribed within a `# Documentation` section at the top of their own file within `docs/third-party/`.
+  - All direct child sub-sections listed the "Third Party Documentation" section should be transcribed within a `## Documentation` section at the top of their own file within `docs/third-party/`.
     - The file extension should be `.md`.
     - Sub-folders may be used if appropriate.
 	  - If sub-folder(s) is(are) needed for a library, then that library's file should be moved inside of its own folder along with the sub-folder(s).
@@ -406,8 +409,8 @@ Spec files will have the following sections:
     - Each feature of the Nextjs server should be described in a specification.
     - If a file or directory outside of the `src/` directory is included in the `Directory/File Coverage` section, their features should be described in specifications.
       - Avoid information duplication.
-        - If there is a README, summarize it in one sentence and refer to that file for details.
-        - If there is a config file, summarize what it's for and any general guiding principles/other notes related to how it was configured, and then refer to that file.
+        - If there is a README, include its information in the specificiation and refer to it from the README.
+        - If there is a config file, summarize what it's for and any general guiding principles/other notes related to how it was configured in the specification, and then reference the specification in comments in the config file, if possible.
 
 #### Specification
 - Each function/feature of the Nextjs application should typically be covered by one specification.
@@ -512,7 +515,7 @@ Examples:
 - Delete user "mike"
 
 ### Style
-- For now, 
+- For now, put all styling instructions in a `.github\prompts\reusable\style.md` and refer to it from the custom instructions file.
 
 #### First Party Docs
 
@@ -545,7 +548,8 @@ Examples:
 
 ##### Other Code Style
 - Prefer double quotes over single quotes.
-- Prefer spaces over tabs for whitespace in code (not in UI).
+- Prefer tabs over spaces for whitespace in code.
+- Tab width = 2 spaces.
 
 #### Other Style
 - Always use Oxford commas in prose (comments/documentation/etc) (not in code).
@@ -568,7 +572,9 @@ Examples:
 	  - If any are found, add them to either the custom instructions file or a reusable prompt file that is referred to in the custom instructions file, and stop processing and allow the user to approve all changes before instructing you to continue.
 	  - If none are found, carry on.
 	4. Review the prompt for definitions and process them according to the general rules for definitions.
+	  - If any file changes were made, stop processing and allow the user to approve all changes before instructing you to continue.
 	5. Review the prompt for third-party documentation and process it according the the general rules for third-party documentation.
+	  - If any file changes were made, stop processing and allow the user to approve all changes before instructing you to continue.
 	6. Evaluate the prompt to determine what specifications should exist before proceeding.
 	  - Review existing specifications.
 	  - Create/update specifications as required.
