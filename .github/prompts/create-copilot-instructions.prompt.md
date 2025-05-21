@@ -4,9 +4,9 @@ I want to start using github copilot (hello!) in my workspace. I have read that 
 ## Supporting Information
 - For this prompt only, the information in this section should either be documented somewhere and referred to in future prompts or split out into a sub-prompt that can be reused in the future.
 - Always check if a file/folder exists before asking to create it.
-- For this prompt only, existing files `.github/copilot-instructions.md`, `.github/prompts/reusable/style.md`, `docs/definitions/README.md`, `docs/definitions/celesteModsList/celesteModsList.md`, `docs/third-party/README.md`, `docs/third-party/celeste/celeste.md`, `docs/third-party/celeste/gamebanana/gamebanana.md`, and `docs/third-party/` take precedence over the content in this prompt.
+- For this prompt only, existing files `.github/copilot-instructions.md`, `.github/prompts/reusable/style.md`, all files within `docs/definitions/README.md`, and all documents within `docs/third-party/` take precedence over the content in this prompt.
   - Do not overwrite these files with content from this prompt.
-- Note: This prompt has been processed up to the end of step 4.
+- Note: This prompt has been processed up to the end of step 5.
 
 ### Definitions
 - General rules for processing definitions:
@@ -583,3 +583,4 @@ Examples:
 	  - If any file changes were made, stop processing and allow the user to approve all changes before instructing you to continue.
 	7. Proceed with the rest of the prompt.
 	  - Always check if there is a `Steps To Complete` section - follow these instructions if present.
+	  - For this prompt only, don't execute step 7.

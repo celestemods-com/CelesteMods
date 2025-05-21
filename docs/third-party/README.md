@@ -34,6 +34,8 @@ The documentation and definitions in this directory serve as a reference for dev
 | File/Directory | Description |
 |---------------|-------------|
 | `celeste/` | Documentation related to the Celeste game and its modding ecosystem. |
-| `reactjs/` | Documentation for React and related libraries. |
+| `githubCopilot/` | Documentation for GitHub Copilot customization. |
 | `node/` | Documentation for Node.js and related tools. |
-| `node_modules/` | Documentation for libraries other than React. |
+| `pino/` | Documentation for the Pino logging library. |
+| `prismaORM/` | Documentation for the Prisma ORM database toolkit. |
+| `reactjs/` | Documentation for React and related libraries. |
