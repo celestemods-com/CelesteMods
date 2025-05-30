@@ -4,9 +4,9 @@ I want to start using github copilot (hello!) in my workspace. I have read that 
 ## Supporting Information
 - For this prompt only, the information in this section should either be documented somewhere and referred to in future prompts or split out into a sub-prompt that can be reused in the future.
 - Always check if a file/folder exists before asking to create it.
-- For this prompt only, existing files `.github/copilot-instructions.md`, `.github/prompts/reusable/style.md`, all files within `docs/definitions/README.md`, and all documents within `docs/third-party/` take precedence over the content in this prompt.
+- For this prompt only, existing files `.github/copilot-instructions.md`, `.github/prompts/reusable/style.md`, all files within `docs/definitions/README.md`, all documents within `docs/third-party/`, and all files in `docs/specifications/` take precedence over the content in this prompt.
   - Do not overwrite these files with content from this prompt.
-- Note: This prompt has been processed up to the end of step 5.
+- Note: This prompt has been processed up to the end of step 6.
 
 ### Definitions
 - General rules for processing definitions:

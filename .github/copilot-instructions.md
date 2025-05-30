@@ -30,6 +30,7 @@ CelesteMods is a website for listing, searching, and discovering Celeste mods. I
      - If any file changes were made, stop processing and allow the user to approve all changes before instructing you to continue.
   7. Proceed with the rest of the prompt.
      - Always check if there is a `Steps To Complete` section - follow these instructions if present.
+- At the end of each step, always check if you have updated any files during that step. If you have, stop making changes and ask the user to review your work.
 
 ### Definitions Processing
 - All definitions listed in the "Definitions" section of a prompt should be transcribed in their own file.
