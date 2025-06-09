@@ -6,8 +6,11 @@
 ## .vscode
 - Contains Visual Studio Code editor configuration and recommended settings.
 
+## .next
+- Contains Nextjs's outputs. Should generally be ignored, but sometimes may need to be considered if troubleshooting a bug that may be caused by Nextjs itself.
+
 ## docs
-- Contains documentation files for the project. Documentation for this directory is in its README files.
+- Contains documentation files for the project. No specifications are created for this directory - README files are used instead.
 
 ## logs
 - Contains application log files.
@@ -26,6 +29,9 @@
 
 # Files
 
+## .env
+- Environment file containing secrets. No AI/LLM should ever read this file.
+
 ## .env.example
 - Example environment file showing required environment variables without actual secrets.
 
@@ -33,16 +39,16 @@
 - ESLint configuration file. Currently not actively used in the project.
 
 ## .gitignore
-- Specifies files and directories to be excluded from git version control.
+- Specifies files and directories to be excluded from git version control. Files/folders excluded by git should usually be excluded from a prompt's context.
 
 ## CONTRIBUTING.md
-- Guidelines for contributing to the CelesteMods project.
+- Guidelines for contributing to the Celeste Mods List project.
 
 ## LICENSE.md
-- License information for the CelesteMods project.
+- License information for the Celeste Mods List project.
 
 ## next-env.d.ts
-- TypeScript declarations for Next.js.
+- References TypeScript declarations for Next.js - not to be edited.
 
 ## next.config.mjs
 - Next.js configuration file.
@@ -54,52 +60,10 @@
 - Defines project metadata, dependencies, and scripts.
 
 ## README.md
-- Main project documentation with overview, setup instructions, and links.
+- Main project description with overview, setup instructions, and links.
 
 ## SECURITY.md
 - Security policy and vulnerability reporting information.
 
 ## tsconfig.json
 - TypeScript configuration file.
-
-### CelesteMods Website
-A website for listing, searching, and discovering Celeste mods.
-
-Tags: website, nextjs
-
-- The website is accessible
-- User has a web browser
-
-#### Browse Mods
-User can view a list of available Celeste mods.
-
-  Tags: mods, list
-- Navigate to the mods page
-- View the list of mods
-- Filter mods by various criteria
-- Sort mods by different properties
-
-#### Search Mods
-User can search for specific mods.
-
-  Tags: mods, search
-- Navigate to the mods page
-- Enter search terms in the search field
-- View filtered results based on search terms
-
-#### View Mod Details
-User can view detailed information about a specific mod.
-
-  Tags: mods, details
-- Navigate to a specific mod page
-- View mod metadata (author, difficulty, etc.)
-- View mod description and images
-- View mod ratings and comments
-
-#### Access GameBanana Mirror
-User can access the CML GameBanana Mirror for mod downloads.
-
-  Tags: mirror, downloads
-- Navigate to the GameBanana Mirror section
-- Select a mod to download
-- Download mod files from the mirror server

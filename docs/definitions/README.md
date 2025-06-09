@@ -1,5 +1,5 @@
 # Definitions
-- This directory contains definitions related to the CelesteMods project.
+- This directory contains definitions related to the Celeste Mods List project.
 - Information regarding third-party libraries, tools, and other external systems is found in `docs/third-party/`.
 
 ## Purpose
