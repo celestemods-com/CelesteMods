@@ -16,7 +16,7 @@
 - Contains application log files.
 
 ## node_modules
-- Contains npm package dependencies. This directory is excluded from git and specifications.
+- Contains npm package dependencies. This directory is excluded both from git and from specifications.
 
 ## prisma
 - Contains Prisma ORM configuration files and database migrations.

@@ -92,7 +92,6 @@ This directory contains specification files that document the functionality of f
 - Common Specifications:
   - A specification describing a function/feature that crosses between multiple files.
   - Add common specifications to the `# Common Specifications` section in the `specifications.spec.md` file for the closest common parent directory.
-  - 
 
 ### When to Split Spec Files
 - Split a spec file when any of the following apply:
