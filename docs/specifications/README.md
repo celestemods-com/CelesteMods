@@ -47,22 +47,16 @@ This directory contains specification files that document the functionality of f
 - Specification files have the following main sections:
 
 #### Directories Section
-- The section header will be an H1 heading using `#` instead of underlines.
-  - `# Directories`
+- Section Header: `# Directories`
 - Contains the names and descriptions of all direct-child subdirectories.
   - This section is omitted if there are no subdirectories.
 - Each directory name is an H2 heading.
-  - Use `##` instead of underlines.
-  - No indentation.
 - A single bullet point nested one level under each directory name will contain that directory's description.
 
 #### Files Section
-- The section header will be an H1 heading using `#` instead of underlines.
-  - `# Files`
+- Section Header: `# Files`
 - Lists all files in the current directory.
 - Each file name (including file extension) in the relevant directory must be listed as an H2 heading.
-  - Use `##` instead of underlines.
-  - No indentation.
 - The first bullet point nested one level under each file name will contain that file's description.
 - If a file does not have its own spec file, then its specification(s) will be listed following its description.
   - A single empty line will separate the description and the first specification.
@@ -70,18 +64,54 @@ This directory contains specification files that document the functionality of f
 - If a file does have its own spec file, then only its name and description will be included in `Files`.
 
 #### Common Specifications Section
-- The section header will be an H1 heading using `#` instead of underlines.
-  - `# Common Specifications`
+- Section Header: `# Common Specifications`
 - This section (if present) appears after the `Files` section.
   - This section is omitted if there are no common specifications.
   - This section is only used in a `specifications.spec.md` file, never in a file-specific spec file.
 - Contains specifications for functions/features that cross between multiple files.
-- Each common specification will be an H2 heading.
-  - Use `##` instead of underlines.
-  - Normal specification indentation.
-- The scenarios under common specifications will be H3 headings.
-  - Use `###` instead of underlines.
-  - Normal scenario indentation.
+
+#### Formatting Rules
+- Specification files must not have an empty line at the end of the file.
+- Content within file sections must be ordered alphabetically:
+  - All entries within the `Directories` section must be listed in alphabetical order by directory name.
+  - All entries within the `Files` section must be listed in alphabetical order by filename (including file extension).
+  - All entries within the `Common Specifications` section must be listed in alphabetical order by specification name.
+- Heading Formatting:
+  - Use `#` symbols instead of underlines for all headings.
+  - When a higher-level heading (such as H1) follows a section headed by a lower-level heading (such as H4), insert two empty lines between the end of the lower-level heading's section and the higher-level heading instead of the usual single empty line.
+    - This applies to any case where a heading with fewer `#` symbols follows a heading with more `#` symbols.
+- Scenario/Specification Description Formatting
+  - One sentence if possible.
+  - Not a bullet point.
+- Tags Formatting:
+  - Format: A single line that starts with `Tags:` followed by the list of tags.
+  - Each tag is preceded by a space.
+  - Tags are separated by a comma followed by a space.
+  - Tags are entirely lowercase.
+  - Each tag must be a single word.
+- Specification Formatting
+  - Specification Names
+    - No indentation.
+    - Normally use H3 headings (`###`).
+	- For common specifications, use H2 headings (`##`).
+  - Specification Descriptions
+    - No indentation.
+  - Specification Tags
+    - No indentation.
+- Scenario Formatting
+  - Must be one empty line between the last step of a scenario and the title of the next scenario.
+  - There must always be two empty lines before the first scenario name, whether or not there are context steps.
+  - Scenario Names
+    - Two-space indentation.
+	- Normally use H4 headings (`####`).
+	- For common specifications, use H3 headings (`###`).
+  - Scenario Descriptions
+    - Two-space indentation.
+  - Scenario Tags
+    - Two-space indentation.
+- Step formatting:
+  - One step per bullet point.
+  - More detail may be added with one level of indented bullet points.
 
 
 ### Where to Include Specifications
@@ -91,7 +121,7 @@ This directory contains specification files that document the functionality of f
   - If the file does have its own dedicated spec file, include the specification there.
 - Common Specifications:
   - A specification describing a function/feature that crosses between multiple files.
-  - Add common specifications to the `# Common Specifications` section in the `specifications.spec.md` file for the closest common parent directory.
+  - Add common specifications to the `Common Specifications` section in the `specifications.spec.md` file for the closest common parent directory.
 
 ### When to Split Spec Files
 - Split a spec file when any of the following apply:
@@ -145,28 +175,17 @@ Tags: [tag1], [tag2]
 
 ### Specification Structure
 - Descriptive Specification Name
-  - H3 heading.
-    - `###` not underlines.
-  - No indentation.
 - Empty Line
 - Specification Description
-  - One sentence, if possible.
-  - No indentation.
-  - Not a bullet point.
 - Empty Line
 - Specification-Level Tags
-  - Format described in the `Tags` section below.
 - Empty Line
 - Optional: Context Steps
-  - Format described in the `Steps` section below.
 - Empty Line(s)
-  - There must always be two empty lines before the first scenario name, whether or not there are context steps.
 - Scenarios
   - Each specification must contain at least one scenario.
-  - Must be one empty line between the last step of a scenario and the title of the next scenario.
 - Empty Line
 - Optional: Teardown Steps
-  - Format described in the `Steps` section below.
 
 ### Scenarios
 - Each scenario represents a single flow in a particular specification.
@@ -174,37 +193,19 @@ Tags: [tag1], [tag2]
 
 #### Scenario Structure:
 - Descriptive Scenario Name
-  - H4 heading.
-    - Use `####` instead of underlines.
-    - Two-space indentation.
 - Scenario Description
-  - One sentence, if possible.
-  - Two-space indentation.
-  - Not a bullet point.
 - Empty Line
 - Scenario-Level Tags
-  - Format described in the `Tags` section below.
 - Empty Line
 - Scenario Steps
   - Each scenario must contain at least one step.
-  - Format described in the `Steps` section below.
 
 
 ### Tags
 - Tags help categorize and filter specifications.
-- Indentation:
-  - Specification tags are not indented.
-  - Scenario tags are indented with two spaces.
-- Format: A single line that starts with `Tags:` followed by the list of tags.
-  - Each tag is preceded by a space.
-  - Each tag is separated by a comma and a space.
-  - Tags must be entirely lowercase.
-  - Each tag must be a single word.
 
 ### Steps
 - Each step contains a single instruction or describes a single piece of state.
-- One step per bullet point.
-  - More detail may be added with one level of indented bullet points.
 - Steps are considered sequentially.
 
 #### Context Steps
