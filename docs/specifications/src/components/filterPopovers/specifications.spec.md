@@ -1,5 +1,3 @@
-# Directories
-
 # Files
 
 ### Filter Popover Components
@@ -13,22 +11,23 @@ Tags: filters, popovers, search
 - Manages filter state and application
 - Ensures accessibility of filter controls
 
-#### Filter Controls
-Describes the UI components for filter controls.
 
-  Tags: controls, user-interface
+  #### Filter Controls
+  Describes the UI components for filter controls.
 
-- Renders filter options based on available filters
-- Handles user selection of filter values
-- Provides clear and reset functionality
-- Ensures mobile-friendly filter controls
+    Tags: controls, userinterface
 
-#### Filter Application
-Describes how filters are applied to content.
+  - Renders filter options based on available filters
+  - Handles user selection of filter values
+  - Provides clear and reset functionality
+  - Ensures mobile-friendly filter controls
 
-  Tags: filtering, content
+  #### Filter Application
+  Describes how filters are applied to content.
 
-- Applies selected filters to data queries
-- Updates content display based on filter changes
-- Provides visual indication of active filters
-- Handles combinations of multiple filters
+    Tags: filtering, content
+
+  - Applies selected filters to data queries
+  - Updates content display based on filter changes
+  - Provides visual indication of active filters
+  - Handles combinations of multiple filters

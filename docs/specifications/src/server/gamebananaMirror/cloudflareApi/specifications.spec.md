@@ -1,5 +1,3 @@
-# Directories
-
 # Files
 
 ### Cloudflare API Integration
@@ -13,22 +11,23 @@ Tags: cloudflare, cdn, caching
 - Optimizes content delivery through Cloudflare
 - Handles Cloudflare-specific headers and requirements
 
-#### Cache Management
-Describes how content caching is managed through Cloudflare.
 
-  Tags: caching, performance
+  #### Cache Management
+  Describes how content caching is managed through Cloudflare.
 
-- GameBanana content is cached on Cloudflare's CDN
-- Cache headers are set appropriately for different content types
-- Cache invalidation is triggered when content is updated
-- Cache analytics are monitored for performance optimization
+    Tags: caching, performance
 
-#### Content Delivery
-Describes how content is delivered through Cloudflare.
+  - GameBanana content is cached on Cloudflare's CDN
+  - Cache headers are set appropriately for different content types
+  - Cache invalidation is triggered when content is updated
+  - Cache analytics are monitored for performance optimization
 
-  Tags: cdn, delivery
+  #### Content Delivery
+  Describes how content is delivered through Cloudflare.
 
-- Content is routed through Cloudflare's global network
-- Edge locations serve content to users based on geographic proximity
-- Performance is optimized through Cloudflare's features
-- Content security is enhanced through Cloudflare protections
+    Tags: cdn, delivery
+
+  - Content is routed through Cloudflare's global network
+  - Edge locations serve content to users based on geographic proximity
+  - Performance is optimized through Cloudflare's features
+  - Content security is enhanced through Cloudflare protections

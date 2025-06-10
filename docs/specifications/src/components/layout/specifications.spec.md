@@ -1,5 +1,3 @@
-# Directories
-
 # Files
 
 ### Layout Components
@@ -13,22 +11,23 @@ Tags: layout, structure, components
 - Manages navigation elements
 - Handles content organization
 
-#### Page Layout
-Describes the main page layout component.
 
-  Tags: page, structure
+  #### Page Layout
+  Describes the main page layout component.
 
-- Renders header, footer, and content area
-- Adjusts layout based on screen size
-- Maintains consistent spacing and margins
-- Handles layout transitions
+    Tags: page, structure
 
-#### Navigation Elements
-Describes navigation components within layouts.
+  - Renders header, footer, and content area
+  - Adjusts layout based on screen size
+  - Maintains consistent spacing and margins
+  - Handles layout transitions
 
-  Tags: navigation, menus
+  #### Navigation Elements
+  Describes navigation components within layouts.
 
-- Renders navigation links and menus
-- Highlights active navigation items
-- Implements responsive navigation for mobile
-- Provides keyboard accessibility for navigation
+    Tags: navigation, menus
+
+  - Renders navigation links and menus
+  - Highlights active navigation items
+  - Implements responsive navigation for mobile
+  - Provides keyboard accessibility for navigation

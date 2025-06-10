@@ -1,5 +1,3 @@
-# Directories
-
 # Files
 
 ### Mod Display Components
@@ -13,23 +11,24 @@ Tags: mods, display, components
 - Handles mod interaction like rating and reviewing
 - Displays mod media and screenshots
 
-#### Mod Card
-Describes the component for displaying mod summaries.
 
-  Tags: card, summary
+  #### Mod Card
+  Describes the component for displaying mod summaries.
 
-- Renders compact mod information
-- Displays mod thumbnail and key details
-- Provides links to detailed mod pages
-- Shows rating and difficulty indicators
+    Tags: card, summary
 
-#### Mod Detail
-Describes the component for displaying comprehensive mod information.
+  - Renders compact mod information
+  - Displays mod thumbnail and key details
+  - Provides links to detailed mod pages
+  - Shows rating and difficulty indicators
 
-  Tags: detail, full-view
+  #### Mod Detail
+  Describes the component for displaying comprehensive mod information.
 
-- Renders detailed mod information
-- Displays screenshots and media galleries
-- Shows installation instructions
-- Renders user reviews and ratings
-- Provides download links and options
+    Tags: detail, fullview
+
+  - Renders detailed mod information
+  - Displays screenshots and media galleries
+  - Shows installation instructions
+  - Renders user reviews and ratings
+  - Provides download links and options

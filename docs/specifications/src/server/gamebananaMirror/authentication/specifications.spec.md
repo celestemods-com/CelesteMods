@@ -1,5 +1,3 @@
-# Directories
-
 # Files
 
 ### GameBanana Authentication
@@ -13,13 +11,14 @@ Tags: authentication, api, gamebanana
 - Handles token refresh when needed
 - Provides authentication headers for API requests
 
-#### Authentication Flow
-Describes the process of authenticating with GameBanana.
 
-  Tags: auth-flow, tokens
+  #### Authentication Flow
+  Describes the process of authenticating with GameBanana.
 
-- Application initializes with stored credentials if available
-- Application authenticates with GameBanana API
-- Authentication token is received and stored securely
-- Token is used for subsequent API requests
-- Token refresh is handled automatically when needed
+    Tags: authflow, tokens
+
+  - Application initializes with stored credentials if available
+  - Application authenticates with GameBanana API
+  - Authentication token is received and stored securely
+  - Token is used for subsequent API requests
+  - Token refresh is handled automatically when needed

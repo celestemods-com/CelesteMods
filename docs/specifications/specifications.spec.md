@@ -3,11 +3,11 @@
 ## .github
 - Contains GitHub-specific files and configurations for the repository.
 
-## .vscode
-- Contains Visual Studio Code editor configuration and recommended settings.
-
 ## .next
 - Contains Nextjs's outputs. Should generally be ignored, but sometimes may need to be considered if troubleshooting a bug that may be caused by Nextjs itself.
+
+## .vscode
+- Contains Visual Studio Code editor configuration and recommended settings.
 
 ## docs
 - Contains documentation files for the project. No specifications are created for this directory - README files are used instead.

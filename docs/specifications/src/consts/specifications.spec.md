@@ -1,5 +1,3 @@
-# Directories
-
 # Files
 
 ## cmlDiscordInviteUrl.ts

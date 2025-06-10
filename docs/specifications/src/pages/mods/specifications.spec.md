@@ -1,5 +1,3 @@
-# Directories
-
 # Files
 
 ### Mod Pages
@@ -13,22 +11,23 @@ Tags: mods, pages, browsing
 - Pages for filtering and searching mods
 - Pages for mod-related functionality like ratings or comments
 
-#### Mod Listing
-Describes how mods are listed and displayed.
 
-  Tags: listing, display
+  #### Mod Listing
+  Describes how mods are listed and displayed.
 
-- Mods are displayed in a grid or list format
-- Mods can be sorted by various criteria
-- Mods can be filtered by various attributes
-- Pagination is implemented for large numbers of mods
+    Tags: listing, display
 
-#### Mod Details
-Describes the individual mod detail page.
+  - Mods are displayed in a grid or list format
+  - Mods can be sorted by various criteria
+  - Mods can be filtered by various attributes
+  - Pagination is implemented for large numbers of mods
 
-  Tags: details, single-mod
+  #### Mod Details
+  Describes the individual mod detail page.
 
-- Displays comprehensive information about a single mod
-- Shows screenshots and other media if available
-- Provides download links and installation instructions
-- Shows ratings, reviews, and other user-generated content
+    Tags: details, singlemod
+
+  - Displays comprehensive information about a single mod
+  - Shows screenshots and other media if available
+  - Provides download links and installation instructions
+  - Shows ratings, reviews, and other user-generated content

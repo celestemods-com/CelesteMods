@@ -1,5 +1,3 @@
-# Directories
-
 # Files
 
 ### API Documentation Pages
@@ -13,12 +11,13 @@ Tags: api, documentation, swagger
 - Documentation is interactive where possible
 - Documentation is kept in sync with the actual API implementation
 
-#### Documentation Navigation
-Describes how users navigate the API documentation.
 
-  Tags: navigation, user-experience
+  #### Documentation Navigation
+  Describes how users navigate the API documentation.
 
-- Users can browse API endpoints by category
-- Users can search for specific endpoints
-- Users can see request and response examples
-- Users can try out API calls directly from the documentation
+    Tags: navigation, userexperience
+
+  - Users can browse API endpoints by category
+  - Users can search for specific endpoints
+  - Users can see request and response examples
+  - Users can try out API calls directly from the documentation

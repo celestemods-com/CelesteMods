@@ -1,5 +1,3 @@
-# Directories
-
 # Files
 
 ### API Routes
@@ -14,13 +12,14 @@ Tags: api, routes, server
 - Routes validate incoming requests
 - Routes use appropriate status codes in responses
 
-#### Request Processing
-Describes how API requests are processed.
 
-  Tags: request, processing
+  #### Request Processing
+  Describes how API requests are processed.
 
-- Request is received by the API route
-- Request parameters and body are validated
-- Business logic is executed
-- Response is formatted according to API standards
-- Response is returned with appropriate status code
+    Tags: request, processing
+
+  - Request is received by the API route
+  - Request parameters and body are validated
+  - Business logic is executed
+  - Response is formatted according to API standards
+  - Response is returned with appropriate status code

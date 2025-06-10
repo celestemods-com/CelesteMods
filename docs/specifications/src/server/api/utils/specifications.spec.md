@@ -1,5 +1,3 @@
-# Directories
-
 # Files
 
 ### API Utilities
@@ -13,22 +11,23 @@ Tags: api, utilities, trpc
 - Includes utilities for error handling and formatting
 - Helps maintain consistency across API endpoints
 
-#### Error Handling
-Describes how API errors are handled and formatted.
 
-  Tags: errors, formatting
+  #### Error Handling
+  Describes how API errors are handled and formatted.
 
-- API errors follow a consistent format
-- Error types are categorized for easier client handling
-- Internal errors are properly sanitized before sending to clients
-- Error logging captures necessary debugging information
+    Tags: errors, formatting
 
-#### Request Processing
-Describes utilities for processing API requests.
+  - API errors follow a consistent format
+  - Error types are categorized for easier client handling
+  - Internal errors are properly sanitized before sending to clients
+  - Error logging captures necessary debugging information
 
-  Tags: requests, processing
+  #### Request Processing
+  Describes utilities for processing API requests.
 
-- Request validation is standardized
-- Common request transformations are implemented
-- Request context is properly managed
-- Request performance is monitored
+    Tags: requests, processing
+
+  - Request validation is standardized
+  - Common request transformations are implemented
+  - Request context is properly managed
+  - Request performance is monitored
