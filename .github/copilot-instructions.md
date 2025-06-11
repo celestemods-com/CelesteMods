@@ -8,6 +8,8 @@ CelesteMods is a website for listing, searching, and discovering Celeste mods. I
 
 ## General Rules
 
+- Never read the contents of `.env`. Also, any change to `.env` must be performed by the user.
+
 ### Prompt Processing
 - When responding to a prompt, use the following numbered steps to process the main prompt and any other prompts that aren't standard reused prompts:
   1. Review the prompt for any spelling mistakes.
@@ -55,7 +57,7 @@ CelesteMods is a website for listing, searching, and discovering Celeste mods. I
     - Library E is not used by any other library - its info should be in a file or subfolder within `docs/third-party/`.
 - After putting all third party documentation in their files and making any required updates, stop processing and allow the user to approve all changes before instructing you to continue.
 
-### Documentation File
+### Documentation Files
 - File extension: `.md`
 - File name: `[libraryName].md`
 - The first section is `## Documentation`, if present.
