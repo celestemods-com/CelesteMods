@@ -1,0 +1,1 @@
+export const GAMEBANANA_MOD_BASE_URL = "https://gamebanana.com/mods" as const;
