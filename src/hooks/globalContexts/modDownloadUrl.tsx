@@ -49,58 +49,56 @@ export const useModDownloadUrl = (
         gamebananaModId,
     }: useModDownloadUrlProps,
 ): string => {
-	/* Temporarily disable most of this function to restore some functionality */
+    const contextOrUndefined = useContext(modDownloadUrlContext);
 
-    // const contextOrUndefined = useContext(modDownloadUrlContext);
+    const cachedDownloadUrl = contextOrUndefined?.state[gamebananaModId];
 
-    // const cachedDownloadUrl = contextOrUndefined?.state[gamebananaModId];
-
-    // const [downloadUrl, setDownloadUrl] = useState<string>(cachedDownloadUrl ?? "");
+    const [downloadUrl, setDownloadUrl] = useState<string>(cachedDownloadUrl ?? "");
 
 
-    // useEffect(() => {
-    //     if (cachedDownloadUrl) return;
+    useEffect(() => {
+        if (cachedDownloadUrl) return;
 
-    //     if (contextOrUndefined === undefined) throw "useModDownloadUrl must be used within a ModDownloadUrlsContextProvider";
-
-
-    //     const source = axios.CancelToken.source();
+        if (contextOrUndefined === undefined) throw "useModDownloadUrl must be used within a ModDownloadUrlsContextProvider";
 
 
-    //     const fetchDownloadUrl = async () => {
-    //         let fetchedDownloadUrl: ModDownloadurl;
+        const source = axios.CancelToken.source();
 
-    //         try {
-    //             fetchedDownloadUrl = await getModDownloadUrl(gamebananaModId, source);
-    //         }
-    //         catch (error) {
-    //             console.warn(`Failed to fetch download url for mod ${gamebananaModId}.`);
-    //             console.error(error);
+
+        const fetchDownloadUrl = async () => {
+            let fetchedDownloadUrl: ModDownloadurl;
+
+            try {
+                fetchedDownloadUrl = await getModDownloadUrl(gamebananaModId, source);
+            }
+            catch (error) {
+                console.warn(`Failed to fetch download url for mod ${gamebananaModId}.`);
+                console.error(error);
                 
-    //             return;
-    //         }
+                return;
+            }
 
-    //         if (fetchedDownloadUrl === undefined) return;
+            if (fetchedDownloadUrl === undefined) return;
             
 
-    //         setDownloadUrl(fetchedDownloadUrl);
+            setDownloadUrl(fetchedDownloadUrl);
 
-    //         contextOrUndefined.update(
-    //             (previousState) => ({
-    //                 ...previousState,
-    //                 [gamebananaModId]: fetchedDownloadUrl,
-    //             })
-    //         );
-    //     };
+            contextOrUndefined.update(
+                (previousState) => ({
+                    ...previousState,
+                    [gamebananaModId]: fetchedDownloadUrl,
+                })
+            );
+        };
 
-    //     fetchDownloadUrl();
-
-
-    //     return () => {
-    //         source.cancel();
-    //     };
-    // }, [gamebananaModId, contextOrUndefined, cachedDownloadUrl]);
+        fetchDownloadUrl();
 
 
-    return `https://gamebanana.com/mods/${gamebananaModId}`; // Temporary fallback
+        return () => {
+            source.cancel();
+        };
+    }, [gamebananaModId, contextOrUndefined, cachedDownloadUrl]);
+
+
+    return downloadUrl;
 };
