@@ -3,7 +3,7 @@
 
 
 
-export const GAMEBANANA_API_BASE_URL = "api.gamebanana.com/Core/Item/Data" as const;
+export const GAMEBANANA_API_BASE_URL = "gamebanana.com/apiv11" as const;
 
 export const GAMEBANANA_API_ERROR_STRING = "GameBanana API not responding as expected." as const;
 
@@ -12,26 +12,21 @@ export const GAMEBANANA_API_ERROR_STRING = "GameBanana API not responding as exp
 
 // type GamebananaModId = Mod["gamebananaModId"];
 
-export type GamebananaApiResponse<
-    ReturnKeys extends boolean,
-    Key extends string = (
-        ReturnKeys extends true ?
-        string :
-        never
-    ),
-    ReturnType = unknown,
-> = (
-        ReturnKeys extends true ?
-        Record<Key, ReturnType> :
-        ReturnType[]
-    );
+export type GamebananaApiResponse = Record<string, Record<string, unknown>[]>;
 
 
 
 
-const GAMEBANANA_ITEM_TYPES = ["Mod"] as const;
+export const GAMEBANANA_API_ITEM_TYPE_MODS_IDENTIFIER = "Mod" as const;
+
+const GAMEBANANA_ITEM_TYPES = [
+	GAMEBANANA_API_ITEM_TYPE_MODS_IDENTIFIER,
+] as const;
 
 export type GamebananaItemType = typeof GAMEBANANA_ITEM_TYPES[number];
+
+
+export const GAMEBANANA_MOD_METADATA_FIELDS_TYPE = "_csvProperties" as const;
 
 
 // const GAMEBANANA_MOD_FIELDS = [

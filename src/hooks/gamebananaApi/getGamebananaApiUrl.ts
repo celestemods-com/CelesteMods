@@ -1,38 +1,34 @@
 import type { GamebananaModId } from "~/components/mods/types";
-import { type GamebananaItemType, GAMEBANANA_API_BASE_URL } from "./typesAndConsts";
+import { type GamebananaItemType, GAMEBANANA_API_BASE_URL, GAMEBANANA_API_ITEM_TYPE_MODS_IDENTIFIER } from "./typesAndConsts";
 
 
 
 
-export type GetGamebananaApiUrlProps<
-    ReturnType extends boolean,
-> = {
+export type GetGamebananaApiUrlProps = {
     itemType: GamebananaItemType;
     itemId: GamebananaModId | undefined;
-    fields: string | string[];
-    returnKeys?: ReturnType;
+	fieldType: string;
+    field: string; //| string[];
 };
 
 
 
 
-export const getGamebananaApiUrl = <
-    ReturnKeys extends boolean,
->(
+export const getGamebananaApiUrl = (
     {
         itemType,
         itemId,
-        fields,
-        returnKeys = false as ReturnKeys,
-    }: GetGamebananaApiUrlProps<ReturnKeys>,
+		fieldType,
+        field,
+    }: GetGamebananaApiUrlProps,
 ): string => {
     //get fieldsString
-    const fieldsString = typeof fields === "string" ? fields : fields.join(",");
+    // const fieldsString = typeof fields === "string" ? fields : fields.join(",");
 
     //get query url
     const queryUrl = itemId === undefined ?
         "" :
-        `https://${GAMEBANANA_API_BASE_URL}?itemtype=${itemType}&itemid=${itemId}&fields=${fieldsString}${returnKeys ? "&return_keys=true" : ""}`;
+        `https://${GAMEBANANA_API_BASE_URL}/${itemType}/${itemId}?${fieldType}=${field}`;
 
     return queryUrl;
 };

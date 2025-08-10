@@ -1,6 +1,6 @@
 import { getGamebananaApiUrl } from "./getGamebananaApiUrl";
 import { fetchWithAxios } from "../useFetch";
-import { GAMEBANANA_API_ERROR_STRING, type GamebananaApiResponse } from "./typesAndConsts";
+import { GAMEBANANA_API_ERROR_STRING, GAMEBANANA_API_ITEM_TYPE_MODS_IDENTIFIER, GAMEBANANA_MOD_METADATA_FIELDS_TYPE, type GamebananaApiResponse } from "./typesAndConsts";
 import type { CancelTokenSource } from "axios";
 import type { JavascriptTypeString } from "~/consts/javascriptTypeStrings";
 
@@ -12,54 +12,52 @@ export type ModDownloadurl = string | undefined;
 
 const GAMEBANANA_MOD_DOWNLOAD_BASE_URL = "everest:https://gamebanana.com/mmdl/";
 
-const GAMEBANANA_MOD_FILES_LIST_FIELD = "Files().aFiles()";
+const GAMEBANANA_MOD_FILES_LIST_FIELD = "_aFiles";
+
+const GAMEBANANA_MOD_FILE_ID_FIELD = "_idRow";
+const GAMEBANANA_MOD_FILE_DATE_ADDED_FIELD = "_tsDateAdded";
 
 
+/** Contains other properties, but we don't use them so they aren't specified or checked. */
 type GamebananaFileMetadataObject = {
+	[GAMEBANANA_MOD_FILE_ID_FIELD]: number;
 	[GAMEBANANA_MOD_FILE_DATE_ADDED_FIELD]: number;
 };
 
-type GamebananaFilesObject = Record<string, GamebananaFileMetadataObject>;
+type GamebananaFileMetadataRequiredKey = keyof GamebananaFileMetadataObject;
+
+type GamebananaFileMetadataRequiredValue = GamebananaFileMetadataObject[GamebananaFileMetadataRequiredKey];
 
 
-const GAMEBANANA_MOD_FILE_DATE_ADDED_FIELD = "_tsDateAdded";
+type GamebananaFilesArray = [GamebananaFileMetadataObject, ...GamebananaFileMetadataObject[]];
+
 
 const GAMEBANANA_FILE_METADATA_REQUIRED_FIELDS = {
+	[GAMEBANANA_MOD_FILE_ID_FIELD]: "number",
 	[GAMEBANANA_MOD_FILE_DATE_ADDED_FIELD]: "number",
 } as const satisfies Record<keyof GamebananaFileMetadataObject, JavascriptTypeString>;
 
-const gamebananaFileMetadataRequiredFieldsCount = Object.keys(GAMEBANANA_FILE_METADATA_REQUIRED_FIELDS).length;
+const gamebananaFileMetadataRequiredKeys = Object.keys(GAMEBANANA_FILE_METADATA_REQUIRED_FIELDS) as GamebananaFileMetadataRequiredKey[];
+
+const gamebananaFileMetadataRequiredFieldsCount = gamebananaFileMetadataRequiredKeys.length;
 
 
-type GamebananaFileMetadataKey = keyof typeof GAMEBANANA_FILE_METADATA_REQUIRED_FIELDS;
 
 
-
-
-const isValidGamebananaFilesObject = (
+const isValidGamebananaFilesArray = (
 	data: unknown,
-	allowNonStringKeysInFileMetadataObject: boolean,
-	keysToCheck: string[],
-	allowUncheckedStringKeys: boolean,
-): data is GamebananaFilesObject => {
-	if (typeof data !== "object" || data === null) return false;
+): data is GamebananaFilesArray => {
+	if (!Array.isArray(data)) return false;
 
-	const dataObject = data as Record<string, unknown>;
+	const dataArray = data as unknown[];
 
 
-	if (Object.keys(dataObject).length === 0) return false; // Ensure there is at least one file
+	if (dataArray.length === 0) return false; // Ensure there is at least one file
 
 
-	for (const [key, value] of Object.entries(dataObject)) {
-		if (typeof key !== "string") return false;
-
-
-		// const keyAsNumber = Number(key);
-		// if (isNaN(keyAsNumber)) console.warn(`Key "${key}" in GameBanana files object is not a valid number. Object: ${JSON.stringify(dataObject)}`);
-
-
-		if (!isValidGamebananaFileMetadataObject(value, allowNonStringKeysInFileMetadataObject, keysToCheck, allowUncheckedStringKeys)) {
-			console.error(`Invalid GameBanana file metadata for key "${key}": ${JSON.stringify(value)}`);
+	for (const element of dataArray) {
+		if (!isValidGamebananaFileMetadataObject(element)) {
+			// console.error(`Invalid GameBanana file metadata for element: ${JSON.stringify(element)}`);
 
 			return false;
 		}
@@ -72,10 +70,7 @@ const isValidGamebananaFilesObject = (
 
 const isValidGamebananaFileMetadataObject = (
 	fileMetadata: unknown,
-	allowNonStringKeysInFileMetadataObject: boolean,
-	keysToCheck: string[],
-	allowUncheckedStringKeys: boolean,
-): fileMetadata is Record<string, GamebananaFileMetadataObject> => {
+): fileMetadata is Record<GamebananaFileMetadataRequiredKey, GamebananaFileMetadataRequiredValue> => {
 	if (typeof fileMetadata !== "object" || fileMetadata === null) return false;
 
 	const fileMetadataObject = fileMetadata as Record<string, unknown>;
@@ -84,13 +79,14 @@ const isValidGamebananaFileMetadataObject = (
 	const keyCount = Object.keys(fileMetadataObject).length;
 
 	if (keyCount < gamebananaFileMetadataRequiredFieldsCount) {
-		console.error(`GameBanana file metadata object has too few keys. Expected at least ${gamebananaFileMetadataRequiredFieldsCount}, got ${keyCount}. Object: ${JSON.stringify(fileMetadataObject)}`);
+		// console.error(`GameBanana file metadata object has too few keys. Expected at least ${gamebananaFileMetadataRequiredFieldsCount}, got ${keyCount}. Object: ${JSON.stringify(fileMetadataObject)}`);
 
 		return false;
 	}
 
+
 	for (const [key, value] of Object.entries(fileMetadataObject)) {
-			if (!isValidGamebananaFileMetadataKeyValuePair(key, value, allowNonStringKeysInFileMetadataObject, keysToCheck, allowUncheckedStringKeys)) return false;
+		if (!isValidGamebananaFileMetadataKeyValuePair(key, value)) return false;
 	}
 
 
@@ -101,58 +97,23 @@ const isValidGamebananaFileMetadataObject = (
 const isValidGamebananaFileMetadataKeyValuePair = (
 	key: unknown,
 	value: unknown,
-	allowNonStringKeysInFileMetadataObject: boolean,
-	keysToCheck: string[],
-	allowUncheckedStringKeys: boolean,
-): value is GamebananaFileMetadataObject[keyof GamebananaFileMetadataObject] => {
-	if (typeof key !== "string") {
-		if (allowNonStringKeysInFileMetadataObject) {
-			console.log(`Accepting non-string key in Gamebanana file metadata object: ${key}`);
-
-			return true;
-		} else {
-			return false;
-		}
-	} else {
-		const isCheckedKey = isCheckedGamebananaMetadataStringKey(key, keysToCheck);
-
-		if (isCheckedKey && !allowUncheckedStringKeys) return false;
+): boolean => {
+	if (typeof key !== "string") return true; // Ignore non-string keys
 
 
-		const checkedKey = key as GamebananaFileMetadataKey;	// Checked by isCheckedGamebananaMetadataStringKey above
+	const isRequiredKey = gamebananaFileMetadataRequiredKeys.includes(key as GamebananaFileMetadataRequiredKey);
 
-		return isCheckedGamebananaMetadataValue(checkedKey, value);
-	}
-};
+	if (!isRequiredKey) return true; // Ignore non-required keys
 
 
-const isCheckedGamebananaMetadataStringKey = (
-	key: string,
-	keysToCheck: string[],
-): key is GamebananaFileMetadataKey => {
-	for (const keyToCheck of keysToCheck) {
-		if (key === keyToCheck) {
-			return true;
-		}
-	}
-
-
-	return false;
-};
-
-
-const isCheckedGamebananaMetadataValue = (
-	key: GamebananaFileMetadataKey,
-	value: unknown,
-): value is GamebananaFileMetadataObject[GamebananaFileMetadataKey] => {
-	const expectedType = GAMEBANANA_FILE_METADATA_REQUIRED_FIELDS[key];
+	const expectedType = GAMEBANANA_FILE_METADATA_REQUIRED_FIELDS[key as GamebananaFileMetadataRequiredKey];
 
 
 	const isValidValue = typeof value === expectedType;
 
-	if (!isValidValue) {
-		console.error(`Invalid type for GameBanana file metadata key "${key}". Expected "${expectedType}", got "${typeof value}". Value: ${JSON.stringify(value)}`);
-	}
+	// if (!isValidValue) {
+	// 	console.error(`Invalid type for GameBanana file metadata key "${key}". Expected "${expectedType}", got "${typeof value}". Value: ${JSON.stringify(value)}`);
+	// }
 
 
 	return isValidValue;
@@ -167,37 +128,37 @@ export const getModDownloadUrl = async (
 ): Promise<ModDownloadurl> => {
 	//get query url
 	const DEFAULT_GAMEBANANA_API_URL_PROPS = {
-		itemType: "Mod",
+		itemType: GAMEBANANA_API_ITEM_TYPE_MODS_IDENTIFIER,
 		itemId: gamebananaModId,
-		fields: GAMEBANANA_MOD_FILES_LIST_FIELD,
-		returnKeys: true,
+		fieldType: GAMEBANANA_MOD_METADATA_FIELDS_TYPE,
+		field: GAMEBANANA_MOD_FILES_LIST_FIELD,
 	} as const;
 
 	const queryUrl = getGamebananaApiUrl(DEFAULT_GAMEBANANA_API_URL_PROPS);
 
 
-	const data = await fetchWithAxios<GamebananaApiResponse<true, typeof GAMEBANANA_MOD_FILES_LIST_FIELD>>(queryUrl, source);
-	console.error(JSON.stringify(data));
+	const data = await fetchWithAxios<GamebananaApiResponse>(queryUrl, source);
+	// console.error(JSON.stringify(data));
 
 
-	let filesObject = data ? data[GAMEBANANA_MOD_FILES_LIST_FIELD] : undefined;
+	const filesArray = data ? data[GAMEBANANA_MOD_FILES_LIST_FIELD] : undefined;
 
-	if (filesObject) {
-		if (!isValidGamebananaFilesObject(filesObject, true, [GAMEBANANA_MOD_FILE_DATE_ADDED_FIELD], true)) {
-			console.error(`Invalid GameBanana files object: ${JSON.stringify(filesObject)}`);
-			//throw new Error(GAMEBANANA_API_ERROR_STRING);
-		}
-	}
-	else {
-		console.error("Undefined files object.");
+	if (!filesArray) {
+		// console.error("Undefined files object.");
 		return undefined;
+	}
+
+
+	if (!isValidGamebananaFilesArray(filesArray)) {
+		// console.error(`Invalid GameBanana files object: ${JSON.stringify(filesObject)}`);
+		throw new Error(GAMEBANANA_API_ERROR_STRING);
 	}
 
 
 	let newestFileId = "";
 	let newestFileDateAdded = 0;
 
-	for (const [fileId, fileData] of Object.entries(filesObject)) {
+	for (const [fileId, fileData] of Object.entries(filesArray)) {
 		const dateAdded = fileData[GAMEBANANA_MOD_FILE_DATE_ADDED_FIELD];
 
 		if (dateAdded > newestFileDateAdded) {
