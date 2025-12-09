@@ -4,6 +4,11 @@ import { isFileCategory } from "~/server/gamebananaMirror/cloudflareApi/constsAn
 import { getFileListForCategory } from "~/server/gamebananaMirror/cloudflareApi/getFileListForCategory";
 
 
+// Force dynamic rendering for this route
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store"; // Unsure if this is necessary - the Next.js documentation isn't very clear.
+
+
 
 
 type GetRequestParams = {
