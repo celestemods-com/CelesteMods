@@ -7,6 +7,7 @@ import { arrayBufferToBase64String } from "../arrayBufferProcessing/base64String
 
 
 const MAX_REQUEST_BODY_SIZE_IN_LOG = 500;
+const PURGE_STATUS_CODE_PREFIX = "Purge status code: ";
 
 
 
@@ -97,8 +98,10 @@ export const uploadFileToMirror = async (fileCategory: FileCategory, fileName: s
 
 
 
-/** Returns an HTTP status code */
-export const deleteFilesFromMirror = async (fileCategory: FileCategory, fileNames: [string, ...string[]]): Promise<number> => {
+/** Returns a tuple of HTTP status codes
+ * `[deletionStatusCode, cachePurgeStatusCode]`
+*/
+export const deleteFilesFromMirror = async (fileCategory: FileCategory, fileNames: [string, ...string[]]): Promise<[number, number]> => {
     const requestBody: FileDeletionRequestBody = {
         fileCategory,
         fileNames: fileNames,
@@ -120,15 +123,28 @@ export const deleteFilesFromMirror = async (fileCategory: FileCategory, fileName
         },
         body: requestBodyString,
     });
+    
+    const responseBody = await response.text();
 
     if (!response.ok) {
-        logger.error(`Failed to delete files from the GameBanana mirror: ${JSON.stringify({ fileCategory, fileNames, status: response.status, body: await response.text() })}`);
+        logger.error(`Failed to delete files from the GameBanana mirror: ${JSON.stringify({ fileCategory, fileNames, status: response.status, body: responseBody })}`);
 
-        return 500;
+        return [500, NaN];
     }
-
 
     logger.debug(`Deleted files from the GameBanana mirror: ${JSON.stringify({ fileCategory, fileNames })}`);
 
-    return 200;
+
+    let cachePurgeStatusCode = NaN;
+
+    const cachePurgeStatusCodeString = responseBody.slice(responseBody.lastIndexOf(PURGE_STATUS_CODE_PREFIX) + PURGE_STATUS_CODE_PREFIX.length);
+    
+    cachePurgeStatusCode = Number(cachePurgeStatusCodeString);
+
+    if (!cachePurgeStatusCodeString.length || Number.isNaN(cachePurgeStatusCode)) {
+        logger.error(`Failed to parse cache purge status code from the GameBanana mirror response: ${JSON.stringify({ fileCategory, fileNames, responseBody })}`);
+    } 
+    
+
+    return [200, cachePurgeStatusCode];
 };

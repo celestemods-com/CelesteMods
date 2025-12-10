@@ -220,9 +220,9 @@ const getFileInfoArrayFromDownloadUrls = (fileCategory: FileCategory, downloadUr
 
 /** Updates a single category of files on the Gamebanana mirror.
  * Assumes that files with the same name are the same file.
- * Returns the HTTP status code of the update.
+ * Returns a tuple of HTTP status codes. First, the overall status code of this file category's update. Second, the cache purge status code.
  */
-const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: string[]): Promise<number> => {
+const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: string[]): Promise<[number, number]> => {
     // Get the FileInfo array
     logger.debug(`Getting the FileInfo array for file category: ${fileCategory}`);
 
@@ -231,7 +231,7 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
     if (typeof fileInfoArrayOrStatusCode === "number") {
         logger.error(`Failed to generate fileInfoArray for file category: ${fileCategory}. Status code: ${fileInfoArrayOrStatusCode}`);
 
-        return fileInfoArrayOrStatusCode;
+        return [fileInfoArrayOrStatusCode, NaN];
     }
 
     logger.debug(`FileInfo array: ${JSON.stringify(fileInfoArrayOrStatusCode)}`);
@@ -245,7 +245,7 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
     if (typeof existingFileNamesOrStatusCode === "number") {
         logger.error(`Failed to get existing file names for file category: ${fileCategory}. Status code: ${existingFileNamesOrStatusCode}`);
 
-        return existingFileNamesOrStatusCode;
+        return [existingFileNamesOrStatusCode, NaN];
     }
 
     logger.debug(`Existing file names: ${JSON.stringify(existingFileNamesOrStatusCode)}`);
@@ -271,7 +271,7 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
     logger.info(`Deleting ${filesToDelete.length} files from the GameBanana mirror for file category: ${fileCategory}`);
     logger.debug(`Files to delete: ${JSON.stringify(filesToDelete)}`);
 
-    const fileDeletionPromises: Promise<number>[] = [];
+    const fileDeletionPromises: Promise<[number, number]>[] = [];
 
     for (let index = 0; index < filesToDelete.length; index += DELETE_BATCH_SIZE) {
         const fileNamesBatch = filesToDelete.slice(index, index + DELETE_BATCH_SIZE);
@@ -301,12 +301,22 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
 
 
     // Wait for all deletions and downloads to complete
-    const deletionResults = await Promise.all(fileDeletionPromises);
+    const deletionAndPurgeResults = await Promise.all(fileDeletionPromises);
     const downloadResults = await Promise.all(newFileDownloadPromises);
 
     logger.debug(`All deletions and downloads have completed for file category: ${fileCategory}`);
-    logger.debug(`Deletion results: ${JSON.stringify(deletionResults)}`);
+    logger.debug(`Deletion results: ${JSON.stringify(deletionAndPurgeResults)}`);
     logger.debug(`Download results: ${JSON.stringify(downloadResults)}`);
+
+
+    // Separate the deletion and purge results
+    const deletionResults: number[] = [];
+    const purgeResults: number[] = [];
+
+    for (const [deletionStatusCode, purgeStatusCode] of deletionAndPurgeResults) {
+        deletionResults.push(deletionStatusCode);
+        purgeResults.push(purgeStatusCode);
+    }
 
 
     // Check for any errors
@@ -317,13 +327,22 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
     if (hasError) {
         logger.warn(`Failed to update the GameBanana mirror for file category: ${fileCategory}`);
 
-        return 500;
+        return [500, NaN];
+    }
+
+    
+    const hasPurgeError = purgeResults.some(statusCode => statusCode !== 200);
+
+    if (hasPurgeError) {
+        logger.warn(`Failed to purge the cache for some files in file category: ${fileCategory}`);
+
+        return [200, 500];
     }
 
 
     logger.info(`Successfully updated the GameBanana mirror for file category: ${fileCategory}`);
 
-    return 200;
+    return [200, 200];
 };
 
 
@@ -331,10 +350,10 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
 
 /** Updates the GameBanana mirror.
  * Assumes that files with the same name are the same file.
- * Returns the HTTP status code of the update.
+ * Returns a tuple of HTTP status codes. First, the overall status code of the update. Second, the cache purge status code.
 */
-const updateGamebananaMirror = async (update: Update): Promise<number> => {
-    const updatePromises: Promise<number>[] = [];
+const updateGamebananaMirror = async (update: Update): Promise<[number, number]> => {
+    const updatePromises: Promise<[number, number]>[] = [];
 
 
     logger.info("Updating the GameBanana mirror.");
@@ -356,14 +375,30 @@ const updateGamebananaMirror = async (update: Update): Promise<number> => {
     logger.info("All file categories have been updated.");
 
 
-    const hasError = updateResults.some(result => result !== 200);
+    const updateStatusCodes: number[] = [];
+    const purgeStatusCodes: number[] = [];
 
-    if (hasError) {
-        return 500;
+    for (const [updateStatusCode, purgeStatusCode] of updateResults) {
+        updateStatusCodes.push(updateStatusCode);
+        purgeStatusCodes.push(purgeStatusCode);
     }
 
 
-    return 200;
+    const hasError = updateStatusCodes.some(statusCode => statusCode !== 200);
+
+    if (hasError) {
+        return [500, NaN];
+    }
+
+    
+    const hasPurgeError = purgeStatusCodes.some(statusCode => statusCode !== 200);
+
+    if (hasPurgeError) {
+        return [200, 500];
+    }
+
+
+    return [200, 200];
 };
 
 
@@ -537,17 +572,24 @@ export const updateWebhookHandler = async <
 
 
     // Update the GameBanana mirror
-    const mirrorUpdateStatus = await updateGamebananaMirror(requestBodyObject);
+    const mirrorUpdateStatusCodes = await updateGamebananaMirror(requestBodyObject);
 
-    if (mirrorUpdateStatus === 200) {
+    const [updateStatusCode, cachePurgeStatusCode] = mirrorUpdateStatusCodes;
+
+    if (updateStatusCode === 200) {
         logger.info("Successfully updated the GameBanana mirror.");
     }   // The errors are logged in the httpHandler functions
 
 
+    const responseBody = {
+        overallPurgeStatusCode: cachePurgeStatusCode,
+    };
+
+
     return new NextResponse(
-        null,
+        JSON.stringify(responseBody),
         {
-            status: mirrorUpdateStatus,
+            status: updateStatusCode,
         }
     );
 };
