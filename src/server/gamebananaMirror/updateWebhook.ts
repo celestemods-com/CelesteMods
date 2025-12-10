@@ -268,8 +268,8 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
 
 
     // Delete the files that should no longer exist
-        logger.info(`Deleting ${filesToDelete.length} files from the GameBanana mirror for file category: ${fileCategory}`);
-        logger.debug(`Files to delete: ${JSON.stringify(filesToDelete)}`);
+    logger.info(`Deleting ${filesToDelete.length} files from the GameBanana mirror for file category: ${fileCategory}`);
+    logger.debug(`Files to delete: ${JSON.stringify(filesToDelete)}`);
 
     const fileDeletionPromises: Promise<number>[] = [];
 
@@ -288,8 +288,8 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
 
 
     // Download the new files
-        logger.info(`Downloading ${fileInfoArrayOrStatusCode.length} new files to the GameBanana mirror for file category: ${fileCategory}`);
-        logger.debug(`Files to download: ${JSON.stringify(fileInfoArrayOrStatusCode)}`);
+    logger.info(`Downloading ${fileInfoArrayOrStatusCode.length} new files to the GameBanana mirror for file category: ${fileCategory}`);
+    logger.debug(`Files to download: ${JSON.stringify(fileInfoArrayOrStatusCode)}`);
 
     const newFileDownloadPromises: Promise<number>[] = [];
 
@@ -304,9 +304,9 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
     const deletionResults = await Promise.all(fileDeletionPromises);
     const downloadResults = await Promise.all(newFileDownloadPromises);
 
-        logger.debug(`All deletions and downloads have completed for file category: ${fileCategory}`);
-        logger.debug(`Deletion results: ${JSON.stringify(deletionResults)}`);
-        logger.debug(`Download results: ${JSON.stringify(downloadResults)}`);
+    logger.debug(`All deletions and downloads have completed for file category: ${fileCategory}`);
+    logger.debug(`Deletion results: ${JSON.stringify(deletionResults)}`);
+    logger.debug(`Download results: ${JSON.stringify(downloadResults)}`);
 
 
     // Check for any errors
