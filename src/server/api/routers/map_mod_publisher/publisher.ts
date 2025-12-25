@@ -6,7 +6,7 @@ import { Prisma, Publisher } from "@prisma/client";
 import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
-import { userIdSchema_NonObject } from "../user";
+import { userIdSchema_NonObject } from "../../schemas/userIdSchema_NonObject";
 import axios from "axios";
 
 
