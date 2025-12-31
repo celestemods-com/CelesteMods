@@ -17,7 +17,7 @@ import { mapReviewRouter } from "./routers/review_reviewCollection_mapReview/map
  *
  * All routers added in /api/routers should be manually added here.
  */
-export const appRouter = createTRPCRouter({
+export const apiRouter = createTRPCRouter({
   healthcheck: publicProcedure.query(() => 'yay!'),
   difficulty: difficultyRouter,
   length: lengthRouter,
@@ -34,4 +34,4 @@ export const appRouter = createTRPCRouter({
 });
 
 // export type definition of API
-export type AppRouter = typeof appRouter;
+export type ApiRouter = typeof apiRouter;

@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { serverLogger as logger } from "~/logger/serverLogger";
-import { getUpdatedModSearchDatabase } from "~/server/gamebananaMirror/yamlHandlers/modSearchDatabase";
+import { getUpdatedModSearchDatabase } from "~/server/gamebananaMirror/yamlHandlers/modSearchDatabase/modSearchDatabase";
 
 
 

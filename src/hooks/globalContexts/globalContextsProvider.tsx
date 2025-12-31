@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
-import { ModImageUrlsContextProvider } from "./modImageUrls";
-import { ModDownloadUrlsContextProvider } from "./modDownloadUrl";
+import { ModImageUrlsContextProvider } from "./modImageUrls/modImageUrlsContext";
+import { ModDownloadUrlsContextProvider } from "./modDownloadUrl/modDownloadUrlContext";
 
 
 

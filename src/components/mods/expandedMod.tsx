@@ -87,17 +87,21 @@ export const ExpandedMod = ({
                     justify="space-around"
                     className={classes.modDetails}
                 >
-                    <ModDownloadButton gamebananaModId={mod.gamebananaModId} />
+                    <ModDownloadButton
+                        gamebananaModId={mod.gamebananaModId}
+                        filesFromModSearchDatabase={mod.Files}
+                    />
                     <LinkButton
                         href={COMING_SOON_PATHNAME}
                     >
                         <Text size={"md"}>
-                        More Info
+                            More Info
                         </Text>
                     </LinkButton>
                 </Flex>
                 <ModCarousel
                     gamebananaModId={mod.gamebananaModId}
+                    screenshotsFromModSearchDatabase={mod.Screenshots}
                     numberOfMaps={mod.mapCount}
                     colors={colors}
                 />

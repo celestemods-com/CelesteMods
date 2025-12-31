@@ -10,9 +10,14 @@ import type { ModWithInfo } from "~/components/mods/types";
 import { MODS_PAGE_PATHNAME } from "~/consts/pathnames";
 import { pageTitle } from "~/styles/pageTitle";
 import { createServerSideHelpers } from '@trpc/react-query/server';
-import { appRouter } from "~/server/api/root";
+import { apiRouter } from "~/server/api/root";
 import { prisma } from "~/server/prisma";
 import superjson from "superjson";
+
+
+
+
+const MOD_DATA_PREFETCH_BATCH_SIZE = 500;
 
 
 
@@ -212,7 +217,7 @@ const getModsWithInfo = (isLoading: boolean, mods: Mod[], ratingsFromModIds: Mod
 
 export async function getStaticProps() {
     const helpers = createServerSideHelpers({
-        router: appRouter,
+        router: apiRouter,
         ctx: {
             session: null,
             prisma: prisma,
@@ -220,11 +225,13 @@ export async function getStaticProps() {
         transformer: superjson,
     });
 
-    // prefetch data
-    const promises = [
-        helpers.quality.getAll.prefetch({}),
-    ];
 
+    console.log("Prefetching data for mods page...");
+
+    // prefetch data
+    let promises: Promise<void>[] = [];
+
+    promises.push(helpers.quality.getAll.prefetch({}));
     promises.push(helpers.difficulty.getAll.prefetch({}));
     promises.push(helpers.publisher.getAll.prefetch({}));
     promises.push(helpers.tech.getAll.prefetch({}));
@@ -233,12 +240,19 @@ export async function getStaticProps() {
 
     const mods = await helpers.mod.getAll.fetch({});
 
-    mods.forEach((mod) => {
-        promises.push(helpers.rating.getModRatingData.prefetch({ modId: mod.id }));
-    });
+    for (const mod of mods) {
+        if (promises.length >= MOD_DATA_PREFETCH_BATCH_SIZE) {  // batching the prefetches to avoid a nextjs worker running out of memory during the build
+            await Promise.all(promises);
+            promises = [];
+        }
 
+        promises.push(helpers.rating.getModRatingData.prefetch({ modId: mod.id }));
+    }
 
     await Promise.all(promises);
+
+    console.log("Prefetched data for mods page.");
+
 
     return {
         props: {
@@ -252,7 +266,7 @@ export async function getStaticProps() {
 
 
 const Mods: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = (
-    props,
+    _props,
 ) => {
     //get common data
     const qualityQuery = api.quality.getAll.useQuery({}, { queryKey: ["quality.getAll", {}] });
@@ -269,7 +283,7 @@ const Mods: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = (
 
     const techQuery = api.tech.getAll.useQuery({}, { queryKey: ["tech.getAll", {}] });
     const techs = techQuery.data ?? [];
-    
+
 
     const modsQuery = api.mod.getAll.useQuery({}, { queryKey: ["mod.getAll", {}] });
 

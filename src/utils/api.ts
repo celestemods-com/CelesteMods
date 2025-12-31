@@ -9,7 +9,7 @@ import { createTRPCNext } from "@trpc/next";
 import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server";
 import { REFETCH_INTERVAL_SECONDS } from "~/consts/refetchInterval";
 
-import { type AppRouter } from "~/server/api/root";
+import { type ApiRouter } from "~/server/api/root";
 
 const getBaseUrl = () => {
   if (typeof window !== "undefined") return ""; // browser should use relative url
@@ -18,7 +18,7 @@ const getBaseUrl = () => {
 };
 
 /** A set of type-safe react-query hooks for your tRPC API. */
-export const api = createTRPCNext<AppRouter>({
+export const api = createTRPCNext<ApiRouter>({
   config() {
     return {
       /**
@@ -60,11 +60,11 @@ export const api = createTRPCNext<AppRouter>({
  *
  * @example type HelloInput = RouterInputs['example']['hello']
  */
-export type RouterInputs = inferRouterInputs<AppRouter>;
+export type RouterInputs = inferRouterInputs<ApiRouter>;
 
 /**
  * Inference helper for outputs.
  *
  * @example type HelloOutput = RouterOutputs['example']['hello']
  */
-export type RouterOutputs = inferRouterOutputs<AppRouter>;
+export type RouterOutputs = inferRouterOutputs<ApiRouter>;
