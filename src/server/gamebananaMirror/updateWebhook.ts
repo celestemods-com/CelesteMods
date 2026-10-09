@@ -1,9 +1,10 @@
+import { setTimeout } from "timers/promises";
 import { type NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { serverLogger as logger } from "~/logger/serverLogger";
 import { authenticateUpdateWebhookRequest } from "~/server/gamebananaMirror/authentication/authenticateUpdateWebhookRequest";
 import { getUpdatedModSearchDatabase } from "~/server/gamebananaMirror/yamlHandlers/modSearchDatabase";
-import { DELETE_BATCH_SIZE, FILE_CATEGORIES, isFileCategory, type FileCategory } from "~/server/gamebananaMirror/cloudflareApi/constsAndTypes";
+import { DELETE_REQUESTS_PER_MINUTE_RATE_LIMIT, DELETE_BATCH_SIZE, FILE_CATEGORIES, isFileCategory, type FileCategory } from "~/server/gamebananaMirror/cloudflareApi/constsAndTypes";
 import { sendDownloadRequestToMirror, deleteFilesFromMirror } from "~/server/gamebananaMirror/cloudflareApi/httpHandlers";
 import { getFileListForCategory } from "~/server/gamebananaMirror/cloudflareApi/getFileListForCategory";
 
@@ -115,7 +116,7 @@ const isUpdate = (value: unknown): value is Update => {
 
     if ("timestamp" in value === false) {
         logger.info("Missing timestamp");
-        
+
         return false;
     }
 
@@ -124,12 +125,12 @@ const isUpdate = (value: unknown): value is Update => {
         if (key === "isModSearchDatabaseUpdate") {
             if (typeof property !== "boolean") {
                 logger.info(`Invalid isModSearchDatabaseUpdate: ${property}`);
-                
+
                 return false;
             }
 
             logger.info(`isModSearchDatabaseUpdate: ${property}`);
-            
+
             continue;
         }
 
@@ -137,32 +138,32 @@ const isUpdate = (value: unknown): value is Update => {
         if (key === "timestamp") {
             if (typeof property !== "number") {
                 logger.info(`Invalid timestamp: ${property}`);
-                
+
                 return false;
             }
 
             logger.info(`timestamp: ${property}`);
-            
+
             continue;
         }
 
 
         if (!isFileCategory(key)) {
             logger.info(`Invalid file category: ${key}`);
-            
+
             return false;
         }
 
         if (!Array.isArray(property)) {
             logger.info(`Invalid property for file category. key: ${key}, property: ${property}`);
-            
+
             return false;
         }
 
         for (const fileName of property) {
             if (!isValidDownloadUrl(fileName, key)) {
                 logger.info(`Invalid download URL for file category. key: ${key}, fileName: ${fileName}`);
-                
+
                 return false;
             }
         }
@@ -273,6 +274,9 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
 
     const fileDeletionPromises: Promise<[number, number]>[] = [];
 
+    let deleteRequestsStartTime = Date.now();
+    let deleteRequestsThisMinute = 0;
+
     for (let index = 0; index < filesToDelete.length; index += DELETE_BATCH_SIZE) {
         const fileNamesBatch = filesToDelete.slice(index, index + DELETE_BATCH_SIZE);
 
@@ -281,6 +285,23 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
         }
 
 
+        // Rate limit the delete requests
+        deleteRequestsThisMinute += DELETE_BATCH_SIZE;
+
+        const currentTime = Date.now();
+        const elapsedMilliseconds = currentTime - deleteRequestsStartTime;
+
+        if (deleteRequestsThisMinute >= DELETE_REQUESTS_PER_MINUTE_RATE_LIMIT) {
+            const millisecondsToWait = 60000 - elapsedMilliseconds;
+
+            if (millisecondsToWait > 0) await setTimeout(millisecondsToWait);
+
+            deleteRequestsStartTime = Date.now();
+            deleteRequestsThisMinute = 0;
+        }
+
+
+        // Trigger the delete request
         const deletionPromise = deleteFilesFromMirror(fileCategory, fileNamesBatch as [string, ...string[]]);   // This is safe because the length is checked above
 
         fileDeletionPromises.push(deletionPromise);
@@ -330,7 +351,7 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
         return [500, NaN];
     }
 
-    
+
     const hasPurgeError = purgeResults.some(statusCode => statusCode !== 200);
 
     if (hasPurgeError) {
@@ -363,7 +384,7 @@ const updateGamebananaMirror = async (update: Update): Promise<[number, number]>
 
         logger.debug(`Download URLs for ${fileCategory}: ${downloadUrls}`);
 
-        
+
         const updatePromise = updateFileCategory(fileCategory, downloadUrls);
 
         updatePromises.push(updatePromise);
@@ -390,7 +411,7 @@ const updateGamebananaMirror = async (update: Update): Promise<[number, number]>
         return [500, NaN];
     }
 
-    
+
     const hasPurgeError = purgeStatusCodes.some(statusCode => statusCode !== 200);
 
     if (hasPurgeError) {
@@ -513,7 +534,7 @@ export const updateWebhookHandler = async <
     // Parse the request body
     if (!isUpdate(requestBodyObject)) {
         logger.info(`Invalid request body: ${JSON.stringify(requestBodyObject)}`);
-        
+
         return new NextResponse(
             "Invalid request body.",
             {
