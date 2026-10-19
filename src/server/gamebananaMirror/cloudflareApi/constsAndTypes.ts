@@ -1,7 +1,9 @@
 
 export const GAMEBANANA_MIRROR_WORKER_URL: string = process.env.GAMEBANANA_MIRROR_CLOUDFLARE_R2_WORKER_URL ?? "";
 
-export const DELETE_BATCH_SIZE = 50;
+export const DELETE_REQUESTS_PER_MINUTE_RATE_LIMIT = 800;   // Cloudflare has a hard limit of 800 single-URL cache purge requests per minute. Deletion requests to the Cloudflare worker cause it to trigger both an R2 deletion request and a cache purge request.
+
+export const DELETE_BATCH_SIZE = 50;    // Must be less than or equal to 100, as this is the maximum file deletions allowed by Cloudflare R2 in a single request - the Cloudflare worker doesn't check.
 
 
 
