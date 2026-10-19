@@ -288,10 +288,10 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
         // Rate limit the delete requests
         deleteRequestsThisMinute += DELETE_BATCH_SIZE;
 
-        const currentTime = Date.now();
-        const elapsedMilliseconds = currentTime - deleteRequestsStartTime;
-
         if (deleteRequestsThisMinute >= DELETE_REQUESTS_PER_MINUTE_RATE_LIMIT) {
+            const currentTime = Date.now();
+            const elapsedMilliseconds = currentTime - deleteRequestsStartTime;
+            
             const millisecondsToWait = 60000 - elapsedMilliseconds;
 
             if (millisecondsToWait > 0) await setTimeout(millisecondsToWait);
