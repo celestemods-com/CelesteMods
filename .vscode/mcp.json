@@ -1,0 +1,15 @@
+{
+    "servers": {
+        "mcpServerMysql": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "-y",
+                "@dotenvx/dotenvx",
+                "run",
+                "npx",
+                "@benborla29/mcp-server-mysql"
+            ]
+        }
+    }
+}
