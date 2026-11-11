@@ -108,7 +108,7 @@ export const StringSearch = ({ value, setValue, iconProps, difficultyIndex }: St
                             {...iconProps}
                             size={iconProps?.size ?? 18   /*TODO!!: get this from MantineTheme*/}
                             strokeWidth={iconProps?.strokeWidth ?? 1.5}
-                            color={iconProps?.color ?? "white"}
+                            color={iconProps?.color ?? "white" /*TODO!!: get this from MantineTheme*/}
                         />
                     </ActionIcon>
                 }

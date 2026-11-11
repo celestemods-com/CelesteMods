@@ -6,6 +6,7 @@ import { Prisma, TechVideo } from "@prisma/client";
 import { getCombinedSchema, getOrderObjectArray } from "~/server/api/utils/sortOrderHelpers";
 import { getNonEmptyArray } from "~/utils/getNonEmptyArray";
 import { INT_MAX_SIZES } from "~/consts/integerSizes";
+import { techIdSchema_NonObject } from "../../schemas/techIdSchema_NonObject";
 
 
 
@@ -29,8 +30,6 @@ export const techVideoPostWithTechSchema = z.object({
 }).strict();
 
 
-export const techIdSchema_NonObject = z.number().int().gte(1).lte(INT_MAX_SIZES.smallInt.unsigned); //this needs to be here to resolve webpack error in ~\src\pages\api\panel.ts
-
 const techIdSchema_forTechVideos = z.object({
     techId: techIdSchema_NonObject,
 }).strict();
@@ -49,7 +48,7 @@ const techVideoOrderSchema = getCombinedSchema(
 
 
 const getTechVideoById = async (prisma: MyPrismaClient, id: number): Promise<Pick<TechVideo, keyof typeof defaultTechVideoSelect>> => {
-    const techVideo: TechVideo | null = await prisma.difficulty.findUnique({   //having type declaration here AND in function signature is safer
+    const techVideo: TechVideo | null = await prisma.techVideo.findUnique({   //having type declaration here AND in function signature is safer
         where: { id: id },
         select: defaultTechVideoSelect,
     });

@@ -478,6 +478,18 @@ CREATE TABLE `users-to-completed-maps` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `user-claim` (
+    `id` MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `claimedBy` VARCHAR(191) NOT NULL,
+    `claimedUserId` VARCHAR(191) NOT NULL,
+    `approvedBy` VARCHAR(191) NULL,
+
+    INDEX `user-claim_claimedBy_idx`(`claimedBy`),
+    UNIQUE INDEX `user-claim_claimedBy_claimedUserId_key`(`claimedBy`, `claimedUserId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `user` (
     `id` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
@@ -520,6 +532,7 @@ CREATE TABLE `session` (
     `userId` VARCHAR(191) NOT NULL,
     `expires` DATETIME(3) NOT NULL,
 
+    UNIQUE INDEX `session_sessionToken_key`(`sessionToken`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -753,8 +766,16 @@ ALTER TABLE `users-to-completed-maps` ADD CONSTRAINT `users-to-completed-maps_us
 ALTER TABLE `users-to-completed-maps` ADD CONSTRAINT `users-to-completed-maps_mapId_fkey` FOREIGN KEY (`mapId`) REFERENCES `map`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
 
 -- AddForeignKey
+ALTER TABLE `user-claim` ADD CONSTRAINT `user-claim_claimedBy_fkey` FOREIGN KEY (`claimedBy`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `user-claim` ADD CONSTRAINT `user-claim_claimedUserId_fkey` FOREIGN KEY (`claimedUserId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `user-claim` ADD CONSTRAINT `user-claim_approvedBy_fkey` FOREIGN KEY (`approvedBy`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+
+-- AddForeignKey
 ALTER TABLE `account` ADD CONSTRAINT `account_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
 
 -- AddForeignKey
 ALTER TABLE `session` ADD CONSTRAINT `session_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
-

@@ -36,22 +36,30 @@ const useStyles = createStyles(
 export const Footer = () => {
     const { classes } = useStyles();
 
-
     return (
-        <Box className={classes.outerFooter}>
-            <hr className={classes.horizontalRule} />
-            <footer className={classes.footer}>
+        <Box
+            className={classes.outerFooter}
+        >
+            <hr
+                className={classes.horizontalRule}
+            />
+            <footer
+                className={classes.footer}
+            >
                 <Group
                     align="center"
                     grow
                     position="apart"
                 >
                     <Stack
-                        align="start"
+                        align="center"
                         spacing="1px"
                     >
-                        <Link href={COMING_SOON_PATHNAME}>My Account</Link>
-                        <Link href={COMING_SOON_PATHNAME}>Settings</Link>
+                        <Link
+                            href={COMING_SOON_PATHNAME}
+                        >
+                            Cookie Policy
+                        </Link>
                     </Stack>
                     <Link
                         href={cmlDiscordInviteUrl}
@@ -61,11 +69,14 @@ export const Footer = () => {
                         Join Our Discord Server!
                     </Link>
                     <Stack
-                        align="end"
+                        align="center"
                         spacing="1px"
                     >
-                        <Link href={COMING_SOON_PATHNAME}>Cookie Policy</Link>
-                        <Link href={COMING_SOON_PATHNAME}>Privacy Policy</Link>
+                        <Link
+                            href={COMING_SOON_PATHNAME}
+                        >
+                            Privacy Policy
+                        </Link>
                     </Stack>
                 </Group>
             </footer>
