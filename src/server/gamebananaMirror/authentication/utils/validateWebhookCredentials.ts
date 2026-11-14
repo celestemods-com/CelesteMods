@@ -1,9 +1,9 @@
 import type { headers } from "next/headers";
 import { serverLogger as logger } from "~/logger/serverLogger";
-import { stringToArrayBuffer } from "../../arrayBufferProcessing/stringToArrayBuffer";
+import { stringToArrayBuffer } from "../../utils/arrayBufferProcessing/stringToArrayBuffer";
 import { importPublicKey } from "./importPublicKey";
 import { getCurrentTime } from "~/server/api/utils/getCurrentTime";
-import { base64StringToArrayBuffer } from "../../arrayBufferProcessing/base64StringToArrayBuffer";
+import { base64StringToArrayBuffer } from "../../utils/arrayBufferProcessing/base64StringToArrayBuffer";
 
 
 

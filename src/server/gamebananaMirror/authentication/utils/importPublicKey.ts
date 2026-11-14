@@ -1,4 +1,4 @@
-import { base64StringToArrayBuffer } from "../../arrayBufferProcessing/base64StringToArrayBuffer";
+import { base64StringToArrayBuffer } from "../../utils/arrayBufferProcessing/base64StringToArrayBuffer";
 
 
 

@@ -1,7 +1,7 @@
 import { serverLogger as logger } from "~/logger/serverLogger";
 import { type FileCategory, type FileDownloadRequestBody, type FileUploadRequestBody, type FileDeletionRequestBody, GAMEBANANA_MIRROR_WORKER_URL } from "./constsAndTypes";
 import { getStorageRequestSignature } from "../authentication/getStorageRequestSignature";
-import { arrayBufferToBase64String } from "../arrayBufferProcessing/base64StringToArrayBuffer";
+import { arrayBufferToBase64String } from "../utils/arrayBufferProcessing/base64StringToArrayBuffer";
 
 
 

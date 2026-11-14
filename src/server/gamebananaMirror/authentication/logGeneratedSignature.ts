@@ -1,5 +1,5 @@
-import { stringToArrayBuffer } from "../arrayBufferProcessing/stringToArrayBuffer";
-import { arrayBufferToBase64String } from "../arrayBufferProcessing/base64StringToArrayBuffer";
+import { stringToArrayBuffer } from "../utils/arrayBufferProcessing/stringToArrayBuffer";
+import { arrayBufferToBase64String } from "../utils/arrayBufferProcessing/base64StringToArrayBuffer";
 import { importPrivateKey } from "./utils/importPrivateKey";
 import { SALT_LENGTH } from "./getStorageRequestSignature";
 
