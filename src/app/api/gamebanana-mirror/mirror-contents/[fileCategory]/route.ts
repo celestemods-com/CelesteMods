@@ -1,4 +1,4 @@
-import type { NextRequest } from "next/server";
+import type { NextRequest, NextResponse } from "next/server";
 import { getFileListHandler } from "~/server/gamebananaMirror/getFileListHandler";
 
 
@@ -6,8 +6,6 @@ import { getFileListHandler } from "~/server/gamebananaMirror/getFileListHandler
 // Force dynamic rendering for this route
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store"; // Unsure if this is necessary - the Next.js documentation isn't very clear.
-
-
 
 
 type GetRequestParams = {
