@@ -1,18 +1,24 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { FILE_CATEGORIES } from "~/server/gamebananaMirror/cloudflareApi/constsAndTypes";
+import type { NextRequest, NextResponse } from "next/server";
+import { getFileListHandler } from "~/server/gamebananaMirror/getFileListHandler";
 
 
 
+// Force dynamic rendering for this route
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store"; // Unsure if this is necessary - the Next.js documentation isn't very clear.
 
-/** Returns the list of valid file categories */
-export const GET = (_request: NextRequest) => {
-    const responseMessage = JSON.stringify(FILE_CATEGORIES);
+
+type GetRequestParams = {
+    fileCategory: string;
+};
 
 
-    return new NextResponse(
-        responseMessage,
-        {
-            status: 200,
-        }
-    );
+/** Returns the list of files currently saved for the specified category */
+export const GET = async (
+    _request: NextRequest,
+    { params }: { params: GetRequestParams; },
+): Promise<NextResponse> => {
+    const { fileCategory } = params;
+
+    return getFileListHandler(fileCategory);
 };
