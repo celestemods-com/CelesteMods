@@ -7,6 +7,7 @@ import { getFileListForCategory } from "~/server/gamebananaMirror/cloudflareApi/
 
 
 
+/** Receives a validated file category and retrieves the corresponding file list. */
 const getFileList = async (fileCategory: FileCategory): Promise<RequestHandlerResult> => {
     logger.debug(`Getting file list for category: ${fileCategory}`);
 
@@ -29,6 +30,10 @@ const getFileList = async (fileCategory: FileCategory): Promise<RequestHandlerRe
 
 
 
+/** 
+ * Retrieves the file list for the specified file category.
+ * Performs validation on the file category parameter, opens a SSE stream, and then retrieves the file list for the specified category.
+ */
 export const getFileListHandler = async (fileCategory: string): Promise<NextResponse> => {
     logger.debug(`Received request to get file list for category: ${fileCategory}`);
 
