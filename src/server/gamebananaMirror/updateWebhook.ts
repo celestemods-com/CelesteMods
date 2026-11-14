@@ -426,9 +426,7 @@ const updateGamebananaMirror = async (update: Update): Promise<[number, number]>
 
 
 
-/**
- * 
- */
+/** Performs initial processing of the update webhook request, including parsing the request body and authenticating the request. */
 const updateWebhook_getRequestBodyObject = async (
     request: NextRequest,
     isUpdateWebhook: boolean,
@@ -574,10 +572,10 @@ const updateWebhook_getRequestBodyObject = async (
 
 
 
-/**
- * 
- */
-const updateWebhook_updateMirror = async (requestBodyObject: Update): Promise<RequestHandlerResult> => {
+/** Receives a validated and authenticated update request body and performs the necessary updates to the GameBanana mirror and the Mod Search Database. */
+const updateWebhook_updateMirror = async (
+    requestBodyObject: Update,
+): Promise<RequestHandlerResult> => {
     // Update the Mod Search Database if requested
     if (requestBodyObject.isModSearchDatabaseUpdate) {
         logger.info("Updating the Mod Search Database.");
@@ -629,7 +627,8 @@ const updateWebhook_updateMirror = async (requestBodyObject: Update): Promise<Re
 
 
 
-/** Downloads the new Everest Update Database and Mod Search Database before sending a response.
+/** Updates the GameBanana mirror. 
+ * Authenticates the request, validates the request body, opens a SSE stream, downloads the new Everest Update Database and Mod Search Database, and then updates the GameBanana mirror.
  * Assumes that files with the same name are the same file.
  * Sends a 200 status code if the download was successful.
  * Sends a 500 status code if the download was unsuccessful.

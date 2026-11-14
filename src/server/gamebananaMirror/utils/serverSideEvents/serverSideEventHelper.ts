@@ -1,4 +1,3 @@
-import { setTimeout } from "timers/promises";
 import { NextResponse } from "next/server";
 import { serverLogger as logger } from "~/logger/serverLogger";
 
@@ -33,7 +32,11 @@ const getValidatedHeartbeatMilliseconds = (value: number): number => {
 
 
 
-/** `status` and `message` are always required. If `status` is "complete" or "error", `code` is also required. */
+/** 
+ * `status` and `message` are always required.
+ * If `status` is "complete" or "error", `code` is also required. `code` represents the HTTP status code for the event.
+ * For `status = "error"`, `code` must be less than 600 and not less than 400.
+ */
 export type EventPayload = {
     message: string;
 } & (
