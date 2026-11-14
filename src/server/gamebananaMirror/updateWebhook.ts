@@ -1,6 +1,7 @@
 import { setTimeout } from "timers/promises";
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { headers } from "next/headers";
+import type { RequestHandlerResult } from "~/server/gamebananaMirror/utils/serverSideEvents/serverSideEventHelper";
 import { serverLogger as logger } from "~/logger/serverLogger";
 import { authenticateUpdateWebhookRequest } from "~/server/gamebananaMirror/authentication/authenticateUpdateWebhookRequest";
 import { getUpdatedModSearchDatabase } from "~/server/gamebananaMirror/yamlHandlers/modSearchDatabase";
@@ -291,7 +292,7 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
         if (deleteRequestsThisMinute >= DELETE_REQUESTS_PER_MINUTE_RATE_LIMIT) {
             const currentTime = Date.now();
             const elapsedMilliseconds = currentTime - deleteRequestsStartTime;
-            
+
             const millisecondsToWait = 60000 - elapsedMilliseconds;
 
             if (millisecondsToWait > 0) await setTimeout(millisecondsToWait);
@@ -440,7 +441,7 @@ export const updateWebhookHandler = async <
     request: NextRequest,
     isUpdateWebhook: IsUpdateWebhook,
     isAuthenticationTest: IsAuthenticationTest,
-): Promise<NextResponse> => {
+): Promise<RequestHandlerResult> => {
     const isDev = process.env.NODE_ENV === "development";
 
     if (isUpdateWebhook || isDev) logger.info("GameBanana mirror update request received."); // Only log requests to the actual update webhook
@@ -453,13 +454,7 @@ export const updateWebhookHandler = async <
 
         logger.info(`${errorMessage} Request body: "${requestBodyString}"`);
 
-
-        return new NextResponse(
-            errorMessage,
-            {
-                status: 400,
-            }
-        );
+        return { status: "error", code: 400, message: errorMessage };
     }
 
 
@@ -468,29 +463,19 @@ export const updateWebhookHandler = async <
     try {
         requestBodyObject = JSON.parse(requestBodyString);
     } catch (error) {
-        const message = "The request body was not parsable.";
+        const errorMessage = "The request body was not parsable.";
 
-        logger.info(`${message} ${error}`);
+        logger.info(`${errorMessage} ${error}`);
 
-        return new NextResponse(
-            message,
-            {
-                status: 400,
-            }
-        );
+        return { status: "error", code: 400, message: errorMessage };
     }
 
     if (typeof requestBodyObject !== "object" || requestBodyObject === null) {
-        const message = "The request body was not a valid object.";
+        const errorMessage = "The request body was not a valid object.";
 
-        logger.info(message);
+        logger.info(errorMessage);
 
-        return new NextResponse(
-            message,
-            {
-                status: 400,
-            }
-        );
+        return { status: "error", code: 400, message: errorMessage };
     };
 
 
@@ -502,12 +487,13 @@ export const updateWebhookHandler = async <
         const authenticationStatusCode = await authenticateUpdateWebhookRequest(requestHeadersList, requestBodyString, requestBodyObject);
 
         if (authenticationStatusCode !== 200) {
-            return new NextResponse(
-                null,
-                {
-                    status: authenticationStatusCode,
-                }
-            );
+            // return new NextResponse(
+            //     null,
+            //     {
+            //         status: authenticationStatusCode,
+            //     }
+            // );
+            return { status: "error", code: authenticationStatusCode, message: "Authentication failed." };
         }
 
 
@@ -517,17 +503,12 @@ export const updateWebhookHandler = async <
 
             logger.info(message);
 
-            return new NextResponse(
-                message,
-                {
-                    status: 200,
-                }
-            );
+            return { status: "complete", code: 200, message: message };
         }
 
         logger.info("GameBanana mirror update request authenticated."); // Don't need to check isUpdateWebhook because authentication tests will never reach this point
     } else if (isDev) {
-        logger.info("Non-authentication test request received.");   // In production only log requests to the actual update webhook
+        logger.info("Non-authentication test request received.");   // In production, only log requests to the actual update webhook
     }
 
 
@@ -535,12 +516,7 @@ export const updateWebhookHandler = async <
     if (!isUpdate(requestBodyObject)) {
         logger.info(`Invalid request body: ${JSON.stringify(requestBodyObject)}`);
 
-        return new NextResponse(
-            "Invalid request body.",
-            {
-                status: 400,
-            }
-        );
+        return { status: "error", code: 400, message: "Invalid request body." };
     }
 
 
@@ -550,12 +526,7 @@ export const updateWebhookHandler = async <
 
     // Early return for non-authentication tests
     if (!isUpdateWebhook) {
-        return new NextResponse(
-            message,
-            {
-                status: 200,
-            }
-        );
+        return { status: "complete", code: 200, message: message };
     }
 
 
@@ -577,12 +548,7 @@ export const updateWebhookHandler = async <
             }
 
 
-            return new NextResponse(
-                errorMessage,
-                {
-                    status: 500,
-                }
-            );
+            return { status: "error", code: 500, message: errorMessage };
         }
 
 
@@ -597,20 +563,17 @@ export const updateWebhookHandler = async <
 
     const [updateStatusCode, cachePurgeStatusCode] = mirrorUpdateStatusCodes;
 
+
+    const responseMessage = JSON.stringify({
+        overallPurgeStatusCode: cachePurgeStatusCode,
+    });
+
+
     if (updateStatusCode === 200) {
         logger.info("Successfully updated the GameBanana mirror.");
-    }   // The errors are logged in the httpHandler functions
 
-
-    const responseBody = {
-        overallPurgeStatusCode: cachePurgeStatusCode,
-    };
-
-
-    return new NextResponse(
-        JSON.stringify(responseBody),
-        {
-            status: updateStatusCode,
-        }
-    );
+        return { status: "complete", code: 200, message: responseMessage };
+    } else {
+        return { status: "error", code: updateStatusCode, message: responseMessage };   // The errors are logged in the httpHandler functions
+    }
 };

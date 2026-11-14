@@ -45,7 +45,7 @@ export type EventStatus = EventPayload["status"];
 
 type SendEvent = (payload: EventPayload) => void;
 
-type RequestHandlerResult = Extract<EventPayload, { status: "complete" | "error"; }>;
+export type RequestHandlerResult = Extract<EventPayload, { status: "complete" | "error"; }>;
 
 /** Represents a handler function for processing a request and returning an HTTP status code. */
 export type RequestHandler = (args?: { sendEvent: SendEvent; }) => Promise<RequestHandlerResult>;
