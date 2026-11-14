@@ -652,5 +652,5 @@ export const updateWebhookHandler = async <
     }
 
 
-    return serverSideEventHelper(() => updateWebhook_updateMirror(result.update))
+    return serverSideEventHelper(() => updateWebhook_updateMirror(result.update));
 };

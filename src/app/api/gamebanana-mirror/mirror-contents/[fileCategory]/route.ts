@@ -17,7 +17,7 @@ type GetRequestParams = {
 export const GET = async (
     _request: NextRequest,
     { params }: { params: GetRequestParams; },
-) => {
+): Promise<NextResponse> => {
     const { fileCategory } = params;
 
     return getFileListHandler(fileCategory);

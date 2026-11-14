@@ -17,13 +17,13 @@ const getFileList = async (fileCategory: FileCategory): Promise<RequestHandlerRe
 
         logger.warn(errorMessage);
 
-        return { status: "error", code:  fileList, message: errorMessage};
+        return { status: "error", code: fileList, message: errorMessage };
     }
 
 
     logger.debug(`Successfully retrieved file list for category: ${fileCategory}`);
 
-    return { status: "complete", code: 200, message: JSON.stringify(fileList)};
+    return { status: "complete", code: 200, message: JSON.stringify(fileList) };
 };
 
 
