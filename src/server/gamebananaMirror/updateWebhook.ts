@@ -1,7 +1,7 @@
 import { setTimeout } from "timers/promises";
-import type { NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
-import type { RequestHandlerResult } from "~/server/gamebananaMirror/utils/serverSideEvents/serverSideEventHelper";
+import { serverSideEventHelper, type RequestHandlerResult } from "~/server/gamebananaMirror/utils/serverSideEvents/serverSideEventHelper";
 import { serverLogger as logger } from "~/logger/serverLogger";
 import { authenticateUpdateWebhookRequest } from "~/server/gamebananaMirror/authentication/authenticateUpdateWebhookRequest";
 import { getUpdatedModSearchDatabase } from "~/server/gamebananaMirror/yamlHandlers/modSearchDatabase";
@@ -426,22 +426,17 @@ const updateGamebananaMirror = async (update: Update): Promise<[number, number]>
 
 
 
-/** Downloads the new Everest Update Database and Mod Search Database before sending a response.
- * Assumes that files with the same name are the same file.
- * Sends a 200 status code if the download was successful.
- * Sends a 500 status code if the download was unsuccessful.
- * Sends 40X or 500 status codes if the authentication fails.
-*/
-export const updateWebhookHandler = async <
-    IsUpdateWebhook extends boolean,
-    IsAuthenticationTest extends (
-        IsUpdateWebhook extends true ? false : boolean // If this is the actual update webhook, then this is not an authentication test
-    ),
->(
+/**
+ * 
+ */
+const updateWebhook_getRequestBodyObject = async (
     request: NextRequest,
-    isUpdateWebhook: IsUpdateWebhook,
-    isAuthenticationTest: IsAuthenticationTest,
-): Promise<RequestHandlerResult> => {
+    isUpdateWebhook: boolean,
+    isAuthenticationTest: boolean,
+): Promise<
+    { update: Update; } |
+    { response: NextResponse; }
+> => {
     const isDev = process.env.NODE_ENV === "development";
 
     if (isUpdateWebhook || isDev) logger.info("GameBanana mirror update request received."); // Only log requests to the actual update webhook
@@ -454,7 +449,14 @@ export const updateWebhookHandler = async <
 
         logger.info(`${errorMessage} Request body: "${requestBodyString}"`);
 
-        return { status: "error", code: 400, message: errorMessage };
+        return {
+            response: new NextResponse(
+                errorMessage,
+                {
+                    status: 400,
+                }
+            )
+        };
     }
 
 
@@ -467,7 +469,14 @@ export const updateWebhookHandler = async <
 
         logger.info(`${errorMessage} ${error}`);
 
-        return { status: "error", code: 400, message: errorMessage };
+        return {
+            response: new NextResponse(
+                errorMessage,
+                {
+                    status: 400,
+                }
+            )
+        };
     }
 
     if (typeof requestBodyObject !== "object" || requestBodyObject === null) {
@@ -475,7 +484,14 @@ export const updateWebhookHandler = async <
 
         logger.info(errorMessage);
 
-        return { status: "error", code: 400, message: errorMessage };
+        return {
+            response: new NextResponse(
+                errorMessage,
+                {
+                    status: 400,
+                }
+            )
+        };
     };
 
 
@@ -487,13 +503,14 @@ export const updateWebhookHandler = async <
         const authenticationStatusCode = await authenticateUpdateWebhookRequest(requestHeadersList, requestBodyString, requestBodyObject);
 
         if (authenticationStatusCode !== 200) {
-            // return new NextResponse(
-            //     null,
-            //     {
-            //         status: authenticationStatusCode,
-            //     }
-            // );
-            return { status: "error", code: authenticationStatusCode, message: "Authentication failed." };
+            return {
+                response: new NextResponse(
+                    null,
+                    {
+                        status: authenticationStatusCode,
+                    }
+                )
+            };
         }
 
 
@@ -503,7 +520,14 @@ export const updateWebhookHandler = async <
 
             logger.info(message);
 
-            return { status: "complete", code: 200, message: message };
+            return {
+                response: new NextResponse(
+                    message,
+                    {
+                        status: 200,
+                    }
+                )
+            };
         }
 
         logger.info("GameBanana mirror update request authenticated."); // Don't need to check isUpdateWebhook because authentication tests will never reach this point
@@ -516,7 +540,14 @@ export const updateWebhookHandler = async <
     if (!isUpdate(requestBodyObject)) {
         logger.info(`Invalid request body: ${JSON.stringify(requestBodyObject)}`);
 
-        return { status: "error", code: 400, message: "Invalid request body." };
+        return {
+            response: new NextResponse(
+                "Invalid request body.",
+                {
+                    status: 400,
+                }
+            )
+        };
     }
 
 
@@ -526,10 +557,27 @@ export const updateWebhookHandler = async <
 
     // Early return for non-authentication tests
     if (!isUpdateWebhook) {
-        return { status: "complete", code: 200, message: message };
+        return {
+            response: new NextResponse(
+                message,
+                {
+                    status: 200,
+                }
+            )
+        };
     }
 
 
+    return { update: requestBodyObject };
+};
+
+
+
+
+/**
+ * 
+ */
+const updateWebhook_updateMirror = async (requestBodyObject: Update): Promise<RequestHandlerResult> => {
     // Update the Mod Search Database if requested
     if (requestBodyObject.isModSearchDatabaseUpdate) {
         logger.info("Updating the Mod Search Database.");
@@ -576,4 +624,33 @@ export const updateWebhookHandler = async <
     } else {
         return { status: "error", code: updateStatusCode, message: responseMessage };   // The errors are logged in the httpHandler functions
     }
+};
+
+
+
+
+/** Downloads the new Everest Update Database and Mod Search Database before sending a response.
+ * Assumes that files with the same name are the same file.
+ * Sends a 200 status code if the download was successful.
+ * Sends a 500 status code if the download was unsuccessful.
+ * Sends 40X or 500 status codes if the authentication fails.
+*/
+export const updateWebhookHandler = async <
+    IsUpdateWebhook extends boolean,
+    IsAuthenticationTest extends (
+        IsUpdateWebhook extends true ? false : boolean // If this is the actual update webhook, then this is not an authentication test
+    ),
+>(
+    request: NextRequest,
+    isUpdateWebhook: IsUpdateWebhook,
+    isAuthenticationTest: IsAuthenticationTest,
+): Promise<NextResponse> => {
+    const result = await updateWebhook_getRequestBodyObject(request, isUpdateWebhook, isAuthenticationTest);
+
+    if ("response" in result) {
+        return result.response;
+    }
+
+
+    return serverSideEventHelper(() => updateWebhook_updateMirror(result.update))
 };
