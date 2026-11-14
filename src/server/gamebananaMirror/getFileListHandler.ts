@@ -44,5 +44,8 @@ export const getFileListHandler = async (fileCategory: string): Promise<NextResp
     }
 
 
-    return serverSideEventHelper(() => getFileList(fileCategory));
+    return serverSideEventHelper({
+        requestHandler: () => getFileList(fileCategory),
+        startMessage: `Starting file list retrieval for category: ${fileCategory}`,
+    });
 };

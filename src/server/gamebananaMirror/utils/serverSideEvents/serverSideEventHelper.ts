@@ -10,6 +10,9 @@ const TASK_ERROR_DEFAULT_MESSAGE = "Task failed";
 const DEFAULT_ERROR_CODE = 500;
 
 
+const DEFAULT_START_MESSAGE = "Starting Server-Sent Events stream";
+
+
 const DEFAULT_HEARTBEAT_SECONDS = 15;
 const MAX_HEARTBEAT_SECONDS = 45;
 const MIN_HEARTBEAT_SECONDS = 5;
@@ -53,15 +56,24 @@ export type RequestHandler = (args?: { sendEvent: SendEvent; }) => Promise<Reque
 
 
 
+export type ServerSideEventHelperArgs = {
+    requestHandler: RequestHandler;
+    startMessage: string;
+    heartbeatSeconds?: number;
+};
+
+
 /**
  * Helper function for handling server-sent events (SSE) with regular heartbeats to keep the connection alive.
  * @param requestHandler The handler function that processes the request and sends mid-flight events.
  * @param heartbeatSeconds The interval in seconds for sending heartbeat messages.
  * @returns A NextResponse object representing the SSE response stream.
  */
-export const serverSideEventHelper = async (
-    requestHandler: RequestHandler,
+export const serverSideEventHelper = async ({
+    requestHandler,
+    startMessage,
     heartbeatSeconds = DEFAULT_HEARTBEAT_SECONDS,
+}: ServerSideEventHelperArgs
 ): Promise<NextResponse> => {
     const encoder = new TextEncoder();
 
@@ -121,8 +133,15 @@ export const serverSideEventHelper = async (
             };
 
 
-            // Call the request handler and handle its result
             try {
+                // Notify the client that the requestHandler has started
+                sendEvent({
+                    status: "started",
+                    message: startMessage || DEFAULT_START_MESSAGE,
+                });
+
+
+                // Call the request handler and handle its result
                 const result = await requestHandler({ sendEvent });
 
                 if (result.status === "complete") {
