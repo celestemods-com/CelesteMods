@@ -155,7 +155,7 @@ export const serverSideEventHelper = async (
 
                 if (typeof error === "string") {
                     errorMessage = error;
-                } else if (Error.isError(error)) {
+                } else if (error instanceof Error) {
                     errorMessage = error.message;
                 } else {
                     errorMessage = TASK_ERROR_DEFAULT_MESSAGE;
