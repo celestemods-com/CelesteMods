@@ -4,5 +4,9 @@ import { updateWebhookHandler } from "~/server/gamebananaMirror/updateWebhook";
 
 
 
+// Force dynamic rendering for this route
+export const dynamic = "force-dynamic";
+
+
 /** Handle non-authentication tests of the update webhook */
 export const POST = async (req: NextRequest) => updateWebhookHandler(req, false, false);
