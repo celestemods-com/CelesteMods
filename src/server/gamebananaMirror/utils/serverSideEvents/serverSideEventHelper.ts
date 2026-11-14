@@ -167,9 +167,6 @@ export const serverSideEventHelper = async ({
                     });
                 }
             } catch (error) {
-                logger.error("Task error:", error); // TODO: Verify that passing `error` here works as expected.
-
-
                 let errorMessage: string;
 
                 if (typeof error === "string") {
@@ -180,6 +177,8 @@ export const serverSideEventHelper = async ({
                     errorMessage = TASK_ERROR_DEFAULT_MESSAGE;
                 }
 
+
+                logger.error(`Task error: ${errorMessage}`);
 
                 sendEvent({
                     status: "error",
