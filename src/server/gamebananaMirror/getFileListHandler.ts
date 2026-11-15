@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { serverLogger as logger } from "~/logger/serverLogger";
 import { type FileCategory, isFileCategory } from "~/server/gamebananaMirror/cloudflareApi/constsAndTypes";
 import { type RequestHandlerResult, serverSideEventHelper } from "~/server/gamebananaMirror/utils/serverSideEvents/serverSideEventHelper";
@@ -34,7 +34,13 @@ const getFileList = async (fileCategory: FileCategory): Promise<RequestHandlerRe
  * Retrieves the file list for the specified file category.
  * Performs validation on the file category parameter, opens a SSE stream, and then retrieves the file list for the specified category.
  */
-export const getFileListHandler = async (fileCategory: string): Promise<NextResponse> => {
+export const getFileListHandler = async ({
+    request,
+    fileCategory,
+}: {
+    request: NextRequest,
+    fileCategory: string
+}): Promise<NextResponse> => {
     logger.debug(`Received request to get file list for category: ${fileCategory}`);
 
     if (!isFileCategory(fileCategory)) {
@@ -50,6 +56,7 @@ export const getFileListHandler = async (fileCategory: string): Promise<NextResp
 
 
     return serverSideEventHelper({
+        request,
         requestHandler: () => getFileList(fileCategory),
         startMessage: `Starting file list retrieval for category: ${fileCategory}`,
     });

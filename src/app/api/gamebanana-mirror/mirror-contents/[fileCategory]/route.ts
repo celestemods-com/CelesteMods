@@ -15,10 +15,10 @@ type GetRequestParams = {
 
 /** Returns the list of files currently saved for the specified category */
 export const GET = async (
-    _request: NextRequest,
+    request: NextRequest,
     { params }: { params: GetRequestParams; },
 ): Promise<NextResponse> => {
     const { fileCategory } = params;
 
-    return getFileListHandler(fileCategory);
+    return getFileListHandler({ request, fileCategory});
 };

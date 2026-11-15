@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { serverLogger as logger } from "~/logger/serverLogger";
 
 
@@ -60,6 +60,7 @@ export type RequestHandler = (args?: { sendEvent: SendEvent; }) => Promise<Reque
 
 
 export type ServerSideEventHelperArgs = {
+    request: NextRequest;
     requestHandler: RequestHandler;
     startMessage: string;
     heartbeatSeconds?: number;
@@ -73,12 +74,14 @@ export type ServerSideEventHelperArgs = {
  * @returns A NextResponse object representing the SSE response stream.
  */
 export const serverSideEventHelper = async ({
+    request,
     requestHandler,
     startMessage,
     heartbeatSeconds = DEFAULT_HEARTBEAT_SECONDS,
 }: ServerSideEventHelperArgs
 ): Promise<NextResponse> => {
     const encoder = new TextEncoder();
+    let heartbeat: NodeJS.Timeout;
 
 
     let heartbeatMilliseconds;
@@ -121,7 +124,7 @@ export const serverSideEventHelper = async ({
             * Send heartbeat at regular intervals to keep the connection alive.
             * Prevents reverse proxies from closing the connection due to inactivity.
             */
-            const heartbeat = setInterval(() => {
+            heartbeat = setInterval(() => {
                 logger.trace("Sending heartbeat");
                 safeEnqueue(": keep-alive\n\n");
             }, heartbeatMilliseconds);
@@ -191,12 +194,18 @@ export const serverSideEventHelper = async ({
             } finally {
                 clearInterval(heartbeat);
 
-
                 try {
                     if (isClientConnected) controller.close();
                 } catch { } // Ignore errors when closing the controller
             }
         },
+        cancel: () => clearInterval(heartbeat), // Clean up the interval when the client disconnects
+    });
+
+
+    // Fallback cleanup in case the controller crashes
+    request.signal.addEventListener("abort", () => {
+        clearInterval(heartbeat);
     });
 
 
