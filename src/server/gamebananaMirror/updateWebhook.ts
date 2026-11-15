@@ -652,6 +652,7 @@ export const updateWebhookHandler = async <
 
 
     return serverSideEventHelper({
+        request,
         requestHandler: () => updateWebhook_updateMirror(result.update),
         startMessage: "Starting GB Mirror update",
     });
