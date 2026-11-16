@@ -29,14 +29,17 @@ const isValidModSearchDatabase = (value: unknown): value is ModSearchDatabase =>
 
 
 /** Returns the mod search database json file currently stored on disk. */
-export const getCurrentModSearchDatabase = async (): Promise<ModSearchDatabase> => {
+export const getCurrentModSearchDatabase = async (
+    abortSignal: AbortSignal,
+): Promise<ModSearchDatabase> => {
     const parsedYaml = getCurrentYaml(
         MOD_SEARCH_DATABASE_YAML_NAME,
         modSearchDatabaseFileSystemErrorString,
         MOD_SEARCH_DATABASE_JSON_PATH,
         isValidModSearchDatabase,
+        abortSignal,
     );
-    
+
 
     return parsedYaml;
 };
@@ -47,13 +50,16 @@ export const getCurrentModSearchDatabase = async (): Promise<ModSearchDatabase> 
 /** Updates the mod search database json file.
  * Also returns the parsed and validated object.
 */
-export const getUpdatedModSearchDatabase = async (): Promise<ModSearchDatabase> => {
+export const getUpdatedModSearchDatabase = async (
+    abortSignal: AbortSignal
+): Promise<ModSearchDatabase> => {
     const parsedYaml = getUpdatedYaml(
         MOD_SEARCH_DATABASE_YAML_URL,
         MOD_SEARCH_DATABASE_YAML_NAME,
         modSearchDatabaseFileSystemErrorString,
         MOD_SEARCH_DATABASE_JSON_PATH,
         isValidModSearchDatabase,
+        abortSignal,
     );
 
 

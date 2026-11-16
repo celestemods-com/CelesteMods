@@ -8,10 +8,13 @@ import { getFileListForCategory } from "~/server/gamebananaMirror/cloudflareApi/
 
 
 /** Receives a validated file category and retrieves the corresponding file list. */
-const getFileList = async (fileCategory: FileCategory): Promise<RequestHandlerResult> => {
+const getFileList = async (
+    fileCategory: FileCategory,
+    abortSignal: AbortSignal,
+): Promise<RequestHandlerResult> => {
     logger.debug(`Getting file list for category: ${fileCategory}`);
 
-    const fileList = await getFileListForCategory(fileCategory);
+    const fileList = await getFileListForCategory(fileCategory, abortSignal);
 
     if (typeof fileList === "number") {
         const errorMessage = `Failed to get file list for category: ${fileCategory}. Status code: ${fileList}`;
@@ -57,7 +60,7 @@ export const getFileListHandler = async ({
 
     return serverSideEventHelper({
         request,
-        requestHandler: () => getFileList(fileCategory),
+        requestHandler: () => getFileList(fileCategory, request.signal),
         startMessage: `Starting file list retrieval for category: ${fileCategory}`,
     });
 };
