@@ -13,7 +13,12 @@ const PURGE_STATUS_CODE_PREFIX = "Purge status code: ";
 
 
 /** Returns an HTTP status code */
-export const sendDownloadRequestToMirror = async (fileCategory: FileCategory, fileName: string, downloadUrl: string): Promise<number> => {
+export const sendDownloadRequestToMirror = async (
+    fileCategory: FileCategory, 
+    fileName: string, 
+    downloadUrl: string,
+    abortSignal: AbortSignal,
+): Promise<number> => {
     const requestBody: FileDownloadRequestBody = {
         fileCategory,
         fileName,
@@ -35,6 +40,7 @@ export const sendDownloadRequestToMirror = async (fileCategory: FileCategory, fi
             "Content-Type": "application/json",
         },
         body: requestBodyString,
+        signal: abortSignal,
     });
 
 
@@ -101,7 +107,11 @@ export const uploadFileToMirror = async (fileCategory: FileCategory, fileName: s
 /** Returns a tuple of HTTP status codes
  * `[deletionStatusCode, cachePurgeStatusCode]`
 */
-export const deleteFilesFromMirror = async (fileCategory: FileCategory, fileNames: [string, ...string[]]): Promise<[number, number]> => {
+export const deleteFilesFromMirror = async (
+    fileCategory: FileCategory, 
+    fileNames: [string, ...string[]], 
+    abortSignal: AbortSignal
+): Promise<[number, number]> => {
     const requestBody: FileDeletionRequestBody = {
         fileCategory,
         fileNames: fileNames,
@@ -122,6 +132,7 @@ export const deleteFilesFromMirror = async (fileCategory: FileCategory, fileName
             "Content-Type": "application/json",
         },
         body: requestBodyString,
+        signal: abortSignal,
     });
     
     const responseBody = await response.text();
