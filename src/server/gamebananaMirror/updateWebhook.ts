@@ -1,4 +1,5 @@
-import { setTimeout } from "timers/promises";
+import { setTimeout as setTimeoutSync } from "timers";
+import { setTimeout as setTimeoutPromise } from "timers/promises";
 import { type NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { serverLogger as logger } from "~/logger/serverLogger";
@@ -9,6 +10,24 @@ import { sendDownloadRequestToMirror, deleteFilesFromMirror } from "~/server/gam
 import { getFileListForCategory } from "~/server/gamebananaMirror/cloudflareApi/getFileListForCategory";
 
 
+
+
+const MAX_UPDATE_MINUTES = 15;
+const maxUpdateMilliseconds = MAX_UPDATE_MINUTES * 60 * 1000;
+const UPDATE_TIMEOUT_ERROR_MESSAGE = `Update timed out after ${MAX_UPDATE_MINUTES} minutes.`;
+
+const UPDATE_STATE_RESET_DELAY_SECONDS = 30;
+const updateStateResetDelayMilliseconds = UPDATE_STATE_RESET_DELAY_SECONDS * 1000;
+
+
+type UpdateProgressState = "1. Starting" | "2. Updating ModSearchDatabase" | "3. Updating GB Mirror";
+
+type UpdateState = (
+    { status: "Not Started"; } |
+    { status: "In Progress"; message: UpdateProgressState; } |
+    { status: "Succeeded"; message: string; code: 200; } |
+    { status: "Failed"; message: string; code: number; }
+);
 
 
 /** File extensions MUST include the leading "." */
@@ -223,7 +242,11 @@ const getFileInfoArrayFromDownloadUrls = (fileCategory: FileCategory, downloadUr
  * Assumes that files with the same name are the same file.
  * Returns a tuple of HTTP status codes. First, the overall status code of this file category's update. Second, the cache purge status code.
  */
-const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: string[]): Promise<[number, number]> => {
+const updateFileCategory = async (
+    fileCategory: FileCategory,
+    downloadUrls: string[],
+    abortSignal: AbortSignal,
+): Promise<[number, number]> => {
     // Get the FileInfo array
     logger.debug(`Getting the FileInfo array for file category: ${fileCategory}`);
 
@@ -231,6 +254,7 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
 
     if (typeof fileInfoArrayOrStatusCode === "number") {
         logger.error(`Failed to generate fileInfoArray for file category: ${fileCategory}. Status code: ${fileInfoArrayOrStatusCode}`);
+        console.error(`Failed to generate fileInfoArray for file category: ${fileCategory}. Status code: ${fileInfoArrayOrStatusCode}`);
 
         return [fileInfoArrayOrStatusCode, NaN];
     }
@@ -241,10 +265,11 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
     // Get the existing file names
     logger.debug(`Getting the existing file names for file category: ${fileCategory}`);
 
-    const existingFileNamesOrStatusCode = await getFileListForCategory(fileCategory);
+    const existingFileNamesOrStatusCode = await getFileListForCategory(fileCategory, abortSignal);
 
     if (typeof existingFileNamesOrStatusCode === "number") {
         logger.error(`Failed to get existing file names for file category: ${fileCategory}. Status code: ${existingFileNamesOrStatusCode}`);
+        console.error(`Failed to get existing file names for file category: ${fileCategory}. Status code: ${existingFileNamesOrStatusCode}`);
 
         return [existingFileNamesOrStatusCode, NaN];
     }
@@ -268,8 +293,25 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
     }
 
 
+    // Download the new files
+    logger.info(`Downloading ${fileInfoArrayOrStatusCode.length} new files to the GameBanana mirror for file category: ${fileCategory}`);
+    console.info(`Downloading ${fileInfoArrayOrStatusCode.length} new files to the GameBanana mirror for file category: ${fileCategory}`);
+
+    logger.debug(`Files to download: ${JSON.stringify(fileInfoArrayOrStatusCode)}`);
+
+    const newFileDownloadPromises: Promise<number>[] = [];
+
+    for (const fileInfo of fileInfoArrayOrStatusCode) {
+        const downloadPromise = sendDownloadRequestToMirror(fileCategory, fileInfo.fileName, fileInfo.downloadUrl, abortSignal);
+
+        newFileDownloadPromises.push(downloadPromise);
+    }
+
+
     // Delete the files that should no longer exist
     logger.info(`Deleting ${filesToDelete.length} files from the GameBanana mirror for file category: ${fileCategory}`);
+    console.info(`Deleting ${filesToDelete.length} files from the GameBanana mirror for file category: ${fileCategory}`);
+
     logger.debug(`Files to delete: ${JSON.stringify(filesToDelete)}`);
 
     const fileDeletionPromises: Promise<[number, number]>[] = [];
@@ -291,10 +333,10 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
         if (deleteRequestsThisMinute >= DELETE_REQUESTS_PER_MINUTE_RATE_LIMIT) {
             const currentTime = Date.now();
             const elapsedMilliseconds = currentTime - deleteRequestsStartTime;
-            
+
             const millisecondsToWait = 60000 - elapsedMilliseconds;
 
-            if (millisecondsToWait > 0) await setTimeout(millisecondsToWait);
+            if (millisecondsToWait > 0) await setTimeoutPromise(millisecondsToWait, { signal: abortSignal });
 
             deleteRequestsStartTime = Date.now();
             deleteRequestsThisMinute = 0;
@@ -302,28 +344,15 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
 
 
         // Trigger the delete request
-        const deletionPromise = deleteFilesFromMirror(fileCategory, fileNamesBatch as [string, ...string[]]);   // This is safe because the length is checked above
+        const deletionPromise = deleteFilesFromMirror(fileCategory, fileNamesBatch as [string, ...string[]], abortSignal);   // This is safe because the length is checked above
 
         fileDeletionPromises.push(deletionPromise);
     }
 
 
-    // Download the new files
-    logger.info(`Downloading ${fileInfoArrayOrStatusCode.length} new files to the GameBanana mirror for file category: ${fileCategory}`);
-    logger.debug(`Files to download: ${JSON.stringify(fileInfoArrayOrStatusCode)}`);
-
-    const newFileDownloadPromises: Promise<number>[] = [];
-
-    for (const fileInfo of fileInfoArrayOrStatusCode) {
-        const downloadPromise = sendDownloadRequestToMirror(fileCategory, fileInfo.fileName, fileInfo.downloadUrl);
-
-        newFileDownloadPromises.push(downloadPromise);
-    }
-
-
     // Wait for all deletions and downloads to complete
-    const deletionAndPurgeResults = await Promise.all(fileDeletionPromises);
     const downloadResults = await Promise.all(newFileDownloadPromises);
+    const deletionAndPurgeResults = await Promise.all(fileDeletionPromises);
 
     logger.debug(`All deletions and downloads have completed for file category: ${fileCategory}`);
     logger.debug(`Deletion results: ${JSON.stringify(deletionAndPurgeResults)}`);
@@ -347,6 +376,7 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
 
     if (hasError) {
         logger.warn(`Failed to update the GameBanana mirror for file category: ${fileCategory}`);
+        console.warn(`Failed to update the GameBanana mirror for file category: ${fileCategory}`);
 
         return [500, NaN];
     }
@@ -356,12 +386,14 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
 
     if (hasPurgeError) {
         logger.warn(`Failed to purge the cache for some files in file category: ${fileCategory}`);
+        console.warn(`Failed to purge the cache for some files in file category: ${fileCategory}`);
 
         return [200, 500];
     }
 
 
     logger.info(`Successfully updated the GameBanana mirror for file category: ${fileCategory}`);
+    console.info(`Successfully updated the GameBanana mirror for file category: ${fileCategory}`);
 
     return [200, 200];
 };
@@ -373,11 +405,15 @@ const updateFileCategory = async (fileCategory: FileCategory, downloadUrls: stri
  * Assumes that files with the same name are the same file.
  * Returns a tuple of HTTP status codes. First, the overall status code of the update. Second, the cache purge status code.
 */
-const updateGamebananaMirror = async (update: Update): Promise<[number, number]> => {
+const updateGamebananaMirror = async (
+    update: Update,
+    abortSignal: AbortSignal,
+): Promise<[number, number]> => {
     const updatePromises: Promise<[number, number]>[] = [];
 
 
     logger.info("Updating the GameBanana mirror.");
+    console.info("Updating the GameBanana mirror.");
 
     for (const fileCategory of FILE_CATEGORIES) {
         const downloadUrls = update[fileCategory];
@@ -385,7 +421,7 @@ const updateGamebananaMirror = async (update: Update): Promise<[number, number]>
         logger.debug(`Download URLs for ${fileCategory}: ${downloadUrls}`);
 
 
-        const updatePromise = updateFileCategory(fileCategory, downloadUrls);
+        const updatePromise = updateFileCategory(fileCategory, downloadUrls, abortSignal);
 
         updatePromises.push(updatePromise);
     }
@@ -394,6 +430,7 @@ const updateGamebananaMirror = async (update: Update): Promise<[number, number]>
     const updateResults = await Promise.all(updatePromises);
 
     logger.info("All file categories have been updated.");
+    console.info("All file categories have been updated.");
 
 
     const updateStatusCodes: number[] = [];
@@ -425,7 +462,329 @@ const updateGamebananaMirror = async (update: Update): Promise<[number, number]>
 
 
 
-/** Downloads the new Everest Update Database and Mod Search Database before sending a response.
+/** Performs initial processing of the update webhook request, including parsing the request body and authenticating the request. */
+const updateWebhook_getRequestBodyObject = async (
+    request: NextRequest,
+    isUpdateWebhook: boolean,
+    isAuthenticationTest: boolean,
+): Promise<
+    { update: Update; } |
+    { response: NextResponse; }
+> => {
+    const isDev = process.env.NODE_ENV === "development";
+
+    if (isUpdateWebhook || isDev) logger.info("GameBanana mirror update request received."); // Only log requests to the actual update webhook
+
+
+    const requestBodyString = await request.text(); // most route handlers should use request.json(), but this one needs to handle the raw string
+
+    if (typeof requestBodyString !== "string" || requestBodyString === "") {
+        const errorMessage = "The request body was missing or otherwise unparsable.";
+
+        logger.info(`${errorMessage} Request body: "${requestBodyString}"`);
+
+        return {
+            response: new NextResponse(
+                errorMessage,
+                {
+                    status: 400,
+                }
+            )
+        };
+    }
+
+
+    let requestBodyObject: unknown;
+
+    try {
+        requestBodyObject = JSON.parse(requestBodyString);
+    } catch (error) {
+        const errorMessage = "The request body was not parsable.";
+
+        logger.info(`${errorMessage} ${error}`);
+
+        return {
+            response: new NextResponse(
+                errorMessage,
+                {
+                    status: 400,
+                }
+            )
+        };
+    }
+
+    if (typeof requestBodyObject !== "object" || requestBodyObject === null) {
+        const errorMessage = "The request body was not a valid object.";
+
+        logger.info(errorMessage);
+
+        return {
+            response: new NextResponse(
+                errorMessage,
+                {
+                    status: 400,
+                }
+            )
+        };
+    };
+
+
+    const requestHeadersList = headers();
+
+
+    // Authenticate the request
+    if (isUpdateWebhook || isAuthenticationTest) {
+        const authenticationStatusCode = await authenticateUpdateWebhookRequest(requestHeadersList, requestBodyString, requestBodyObject);
+
+        if (authenticationStatusCode !== 200) {
+            return {
+                response: new NextResponse(
+                    null,
+                    {
+                        status: authenticationStatusCode,
+                    }
+                )
+            };
+        }
+
+
+        // Early return for authentication tests
+        if (isAuthenticationTest) {
+            const message = "Authentication test passed.";
+
+            logger.info(message);
+
+            return {
+                response: new NextResponse(
+                    message,
+                    {
+                        status: 200,
+                    }
+                )
+            };
+        }
+
+        logger.info("GameBanana mirror update request authenticated."); // Don't need to check isUpdateWebhook because authentication tests will never reach this point
+    } else if (isDev) {
+        logger.info("Non-authentication test request received.");   // In production, only log requests to the actual update webhook
+    }
+
+
+    // Parse the request body
+    if (!isUpdate(requestBodyObject)) {
+        logger.info(`Invalid request body: ${JSON.stringify(requestBodyObject)}`);
+
+        return {
+            response: new NextResponse(
+                "Invalid request body.",
+                {
+                    status: 400,
+                }
+            )
+        };
+    }
+
+
+    const message = "Request body parsed.";
+
+    if (isUpdateWebhook || isDev) {
+        logger.info(message);
+        console.info(message);
+    }
+
+    // Early return for non-authentication tests
+    if (!isUpdateWebhook) {
+        return {
+            response: new NextResponse(
+                message,
+                {
+                    status: 200,
+                }
+            )
+        };
+    }
+
+
+    return { update: requestBodyObject };
+};
+
+
+
+
+let updateState: UpdateState = { status: "Not Started" };
+
+
+/** Receives a validated and authenticated update request body and performs the necessary updates to the GameBanana mirror and the Mod Search Database. */
+const updateWebhook_updateMirror = async (
+    requestBodyObject: Update,
+): Promise<NextResponse> => {
+    updateState = {
+        status: "In Progress",
+        message: "1. Starting",
+    };
+
+
+    const controller = new AbortController();
+    const updateTimeout = setTimeoutSync(
+        () => controller.abort(UPDATE_TIMEOUT_ERROR_MESSAGE),
+        maxUpdateMilliseconds,
+    );
+
+
+    const cleanup = () => {
+        // Clear the update timeout to release memory
+        clearTimeout(updateTimeout);
+        // Abort the controller to stop any ongoing operations
+        controller.abort();
+
+        // Release the update lock after a delay
+        setTimeout(
+            () => updateState = { status: "Not Started" },
+            updateStateResetDelayMilliseconds,
+        );
+    };
+
+
+    // Update the Mod Search Database if requested
+    if (requestBodyObject.isModSearchDatabaseUpdate) {
+        logger.info("Updating the Mod Search Database.");
+        console.info("Updating the Mod Search Database.");
+
+        updateState = {
+            status: "In Progress",
+            message: "2. Updating ModSearchDatabase",
+        };
+
+
+        try {
+            await getUpdatedModSearchDatabase(controller.signal);
+        } catch (error) {
+            let errorMessage: string;
+
+            if (controller.signal.aborted) {
+                errorMessage = controller.signal.reason ?? UPDATE_TIMEOUT_ERROR_MESSAGE;
+
+                logger.error(errorMessage);
+                console.error(errorMessage);
+            } else if (typeof error === "string") {
+                errorMessage = error;   // Error strings are logged in the getUpdatedYaml function
+            } else {
+                logger.error(`Failed to update the Mod Search Database. ${error}`);
+                console.error(`Failed to update the Mod Search Database. ${error}`);
+
+                errorMessage = "An unknown error occurred while updating the Mod Search Database.";
+            }
+
+
+            cleanup();
+
+
+            const code = 500;
+
+            updateState = {
+                status: "Failed",
+                message: errorMessage,
+                code,
+            };
+
+            return new NextResponse(
+                errorMessage,
+                {
+                    status: code,
+                }
+            );
+        }
+
+
+        logger.info("The Mod Search Database has been updated.");
+        console.info("The Mod Search Database has been updated.");
+    } else {
+        logger.info("The Mod Search Database does not need to be updated.");
+        console.info("The Mod Search Database does not need to be updated.");
+    }
+
+
+    // Update the GameBanana mirror
+    let mirrorUpdateStatusCodes: [number, number];
+
+    try {
+        updateState = {
+            status: "In Progress",
+            message: "3. Updating GB Mirror",
+        };
+
+
+        mirrorUpdateStatusCodes = await updateGamebananaMirror(requestBodyObject, controller.signal);
+
+        const [updateStatusCode, cachePurgeStatusCode] = mirrorUpdateStatusCodes;
+
+
+        const responseMessage = JSON.stringify({
+            overallPurgeStatusCode: cachePurgeStatusCode,
+        });
+
+
+        if (updateStatusCode === 200) {
+            logger.info("Successfully updated the GameBanana mirror.");
+            console.info("Successfully updated the GameBanana mirror.");
+
+            updateState = {
+                status: "Succeeded",
+                message: responseMessage,
+                code: 200,
+            };
+
+            return new NextResponse(
+                responseMessage,
+                {
+                    status: 200,
+                }
+            );
+        } else {
+            updateState = {
+                status: "Failed",
+                message: responseMessage,
+                code: updateStatusCode,
+            };
+
+            return new NextResponse(
+                responseMessage,
+                {
+                    status: updateStatusCode,
+                }
+            );
+        }
+    } catch (error) {
+        const errorMessage = `Unexpected error occurred while updating the GameBanana mirror. ${error}`;
+
+        logger.error(errorMessage);
+        console.error(errorMessage);
+
+
+        const code = 500;
+
+        updateState = {
+            status: "Failed",
+            message: errorMessage,
+            code,
+        };
+
+        return new NextResponse(
+            errorMessage,
+            {
+                status: code,
+            }
+        );
+    } finally {
+        cleanup();
+    }
+};
+
+
+
+
+/** Updates the GameBanana mirror. 
+ * Authenticates the request, validates the request body, opens a SSE stream, downloads the new Everest Update Database and Mod Search Database, and then updates the GameBanana mirror.
  * Assumes that files with the same name are the same file.
  * Sends a 200 status code if the download was successful.
  * Sends a 500 status code if the download was unsuccessful.
@@ -441,176 +800,49 @@ export const updateWebhookHandler = async <
     isUpdateWebhook: IsUpdateWebhook,
     isAuthenticationTest: IsAuthenticationTest,
 ): Promise<NextResponse> => {
-    const isDev = process.env.NODE_ENV === "development";
+    if (updateState.status !== "Not Started") {
+        const message = `Update already in progress or not yet ready to try again.`;
 
-    if (isUpdateWebhook || isDev) logger.info("GameBanana mirror update request received."); // Only log requests to the actual update webhook
-
-
-    const requestBodyString = await request.text(); // most route handlers should use request.json(), but this one needs to handle the raw string
-
-    if (typeof requestBodyString !== "string" || requestBodyString === "") {
-        const errorMessage = "The request body was missing or otherwise unparsable.";
-
-        logger.info(`${errorMessage} Request body: "${requestBodyString}"`);
-
-
-        return new NextResponse(
-            errorMessage,
-            {
-                status: 400,
-            }
-        );
-    }
-
-
-    let requestBodyObject: unknown;
-
-    try {
-        requestBodyObject = JSON.parse(requestBodyString);
-    } catch (error) {
-        const message = "The request body was not parsable.";
-
-        logger.info(`${message} ${error}`);
+        logger.warn(message);
+        console.warn(message);
 
         return new NextResponse(
             message,
             {
-                status: 400,
-            }
-        );
-    }
-
-    if (typeof requestBodyObject !== "object" || requestBodyObject === null) {
-        const message = "The request body was not a valid object.";
-
-        logger.info(message);
-
-        return new NextResponse(
-            message,
-            {
-                status: 400,
-            }
-        );
-    };
-
-
-    const requestHeadersList = headers();
-
-
-    // Authenticate the request
-    if (isUpdateWebhook || isAuthenticationTest) {
-        const authenticationStatusCode = await authenticateUpdateWebhookRequest(requestHeadersList, requestBodyString, requestBodyObject);
-
-        if (authenticationStatusCode !== 200) {
-            return new NextResponse(
-                null,
-                {
-                    status: authenticationStatusCode,
-                }
-            );
-        }
-
-
-        // Early return for authentication tests
-        if (isAuthenticationTest) {
-            const message = "Authentication test passed.";
-
-            logger.info(message);
-
-            return new NextResponse(
-                message,
-                {
-                    status: 200,
-                }
-            );
-        }
-
-        logger.info("GameBanana mirror update request authenticated."); // Don't need to check isUpdateWebhook because authentication tests will never reach this point
-    } else if (isDev) {
-        logger.info("Non-authentication test request received.");   // In production only log requests to the actual update webhook
-    }
-
-
-    // Parse the request body
-    if (!isUpdate(requestBodyObject)) {
-        logger.info(`Invalid request body: ${JSON.stringify(requestBodyObject)}`);
-
-        return new NextResponse(
-            "Invalid request body.",
-            {
-                status: 400,
+                status: 409,
             }
         );
     }
 
 
-    const message = "Request body parsed.";
+    const result = await updateWebhook_getRequestBodyObject(request, isUpdateWebhook, isAuthenticationTest);
 
-    if (isUpdateWebhook || isDev) logger.info(message);
-
-    // Early return for non-authentication tests
-    if (!isUpdateWebhook) {
-        return new NextResponse(
-            message,
-            {
-                status: 200,
-            }
-        );
+    // If there is an error in getRequestBodyObject
+    if ("response" in result) {
+        return result.response;
     }
 
 
-    // Update the Mod Search Database if requested
-    if (requestBodyObject.isModSearchDatabaseUpdate) {
-        logger.info("Updating the Mod Search Database.");
-
-        try {
-            await getUpdatedModSearchDatabase();
-        } catch (error) {
-            let errorMessage: string;
-
-            if (typeof error === "string") {
-                errorMessage = error;   // Error strings are logged in the getUpdatedYaml function
-            } else {
-                logger.error(`Failed to update the Mod Search Database. ${error}`);
-
-                errorMessage = "An unknown error occurred while updating the Mod Search Database.";
-            }
-
-
-            return new NextResponse(
-                errorMessage,
-                {
-                    status: 500,
-                }
-            );
-        }
-
-
-        logger.info("The Mod Search Database has been updated.");
-    } else {
-        logger.debug("The Mod Search Database does not need to be updated.");
-    }
-
-
-    // Update the GameBanana mirror
-    const mirrorUpdateStatusCodes = await updateGamebananaMirror(requestBodyObject);
-
-    const [updateStatusCode, cachePurgeStatusCode] = mirrorUpdateStatusCodes;
-
-    if (updateStatusCode === 200) {
-        logger.info("Successfully updated the GameBanana mirror.");
-    }   // The errors are logged in the httpHandler functions
-
-
-    const responseBody = {
-        overallPurgeStatusCode: cachePurgeStatusCode,
-    };
+    // Start updating the mirror without waiting for it to complete
+    updateWebhook_updateMirror(result.update);
 
 
     return new NextResponse(
-        JSON.stringify(responseBody),
+        "Update started",
         {
-            status: updateStatusCode,
+            status: 202,
+        }
+    );
+};
+
+
+
+
+export const getWebhookUpdateState = (): NextResponse => {
+    return new NextResponse(
+        JSON.stringify(updateState),
+        {
+            status: 200,
         }
     );
 };

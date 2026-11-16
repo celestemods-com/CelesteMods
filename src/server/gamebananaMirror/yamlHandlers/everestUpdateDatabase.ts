@@ -29,12 +29,15 @@ const isValidEverestUpdateInfo = (value: unknown): value is EverestUpdateDatabas
 
 
 /** Returns the everest update database json file currently stored on disk. */
-export const getCurrentEverestUpdateDatabase = async (): Promise<EverestUpdateDatabase> => {
+export const getCurrentEverestUpdateDatabase = async (
+    abortSignal: AbortSignal,
+): Promise<EverestUpdateDatabase> => {
     const parsedYaml = getCurrentYaml(
         EVEREST_UPDATE_DATABASE_YAML_NAME,
         everestUpdateDatabaseFileSystemErrorString,
         EVEREST_UPDATE_DATABASE_JSON_PATH,
         isValidEverestUpdateInfo,
+        abortSignal,
     );
     
 
@@ -47,13 +50,16 @@ export const getCurrentEverestUpdateDatabase = async (): Promise<EverestUpdateDa
 /** Updates the everest update database json file.
  * Also returns the parsed and validated object.
 */
-export const getUpdatedEverestUpdateDatabase = async (): Promise<EverestUpdateDatabase> => {
+export const getUpdatedEverestUpdateDatabase = async (
+    abortSignal: AbortSignal,
+): Promise<EverestUpdateDatabase> => {
     const parsedYaml = getUpdatedYaml(
         EVEREST_UPDATE_DATABASE_YAML_URL,
         EVEREST_UPDATE_DATABASE_YAML_NAME,
         everestUpdateDatabaseFileSystemErrorString,
         EVEREST_UPDATE_DATABASE_JSON_PATH,
         isValidEverestUpdateInfo,
+        abortSignal,
     );
 
 

@@ -20,7 +20,10 @@ const s3Client = new S3Client({
 /** Uses the Cloudflare R2 S3 API to get the list of files currently saved for the specified category.
  * Returns the list of file names, or an HTTP status code if there was an error.
  */
-export const getFileListForCategory = async (fileCategory: FileCategory): Promise<string[] | number> => {
+export const getFileListForCategory = async (
+    fileCategory: FileCategory,
+    abortSignal: AbortSignal,
+): Promise<string[] | number> => {
     const bucketName = R2_BUCKET_NAMES[fileCategory];
 
 
@@ -37,13 +40,15 @@ export const getFileListForCategory = async (fileCategory: FileCategory): Promis
 
 
         logger.info(`Retrieving file list for category ${fileCategory}`);
+        console.info(`Retrieving file list for category ${fileCategory}`);
 
         let response: ListObjectsV2CommandOutput;
 
         try {
-            response = await s3Client.send(command);
+            response = await s3Client.send(command, { abortSignal });
         } catch (error) {
             logger.error(`Error retrieving file list for category ${fileCategory}: ${error}`);
+            console.error(`Error retrieving file list for category ${fileCategory}: ${error}`);
 
             return 500;
         }
@@ -56,12 +61,14 @@ export const getFileListForCategory = async (fileCategory: FileCategory): Promis
 
             if (typeof httpStatusCode !== "number" || httpStatusCode !== 200) {
                 logger.error(`Failed to retrieve file list for category ${fileCategory} - HTTP status code: ${httpStatusCode}`);
+                console.error(`Failed to retrieve file list for category ${fileCategory} - HTTP status code: ${httpStatusCode}`);
 
                 return Number(httpStatusCode ?? 500);
             }
 
 
             logger.info(`File list for category ${fileCategory} is empty - HTTP status code: ${httpStatusCode}`);
+            console.info(`File list for category ${fileCategory} is empty - HTTP status code: ${httpStatusCode}`);
 
             return [];
         }
@@ -72,6 +79,7 @@ export const getFileListForCategory = async (fileCategory: FileCategory): Promis
 
             if (typeof fileName !== "string") {
                 logger.warn(`Skipping invalid file name: ${fileName}`);
+                console.warn(`Skipping invalid file name: ${fileName}`);
 
                 isInvalidFileName = true;
 
@@ -94,12 +102,14 @@ export const getFileListForCategory = async (fileCategory: FileCategory): Promis
 
     if (isInvalidFileName && fileNames.length === 0) {
         logger.warn(`Retrieved file list for category ${fileCategory} but all file names were invalid`);
+        console.warn(`Retrieved file list for category ${fileCategory} but all file names were invalid`);
 
         return 520;
     }
 
 
     logger.info(`Retrieved file list for category ${fileCategory}: ${fileNames.length} files`);
+    console.info(`Retrieved file list for category ${fileCategory}: ${fileNames.length} files`);
 
     return fileNames;
 };

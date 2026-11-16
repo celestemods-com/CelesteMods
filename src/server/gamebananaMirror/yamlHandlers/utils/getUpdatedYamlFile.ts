@@ -23,9 +23,10 @@ export const getCurrentYaml = async <
     fileSystemErrorString: string,
     jsonPath: string,
     isValidParsedYaml: TypePredicate,
+    abortSignal: AbortSignal,
 ): Promise<ParsedYaml> => {
     try {
-        const currentModSearchDatabase = await readFile(jsonPath, JSON_FILE_ENCODING);
+        const currentModSearchDatabase = await readFile(jsonPath, { encoding: JSON_FILE_ENCODING, signal: abortSignal });
 
 
         const currentYaml = JSON.parse(currentModSearchDatabase);
@@ -58,15 +59,16 @@ export const getUpdatedYaml = async <
     fileSystemErrorString: string,
     jsonPath: string,
     isValidParsedYaml: TypePredicate,
+    abortSignal: AbortSignal,
 ): Promise<ParsedYaml> => {
     logger.debug(`Downloading the ${yamlName}.`);
 
 
-    const response = await fetch(yamlUrl);
+    const response = await fetch(yamlUrl, { signal: abortSignal });
 
     if (!response.ok) {
         logger.error(`Failed to download the ${yamlName}. Status code: ${response.status}`);
-        
+
         throw `Failed to download the ${yamlName}. Status code: ${response.status}`;
     }
 
@@ -87,7 +89,7 @@ export const getUpdatedYaml = async <
 
 
     try {
-        await writeFile(jsonPath, JSON.stringify(parsedYaml), JSON_FILE_ENCODING);
+        await writeFile(jsonPath, JSON.stringify(parsedYaml), { encoding: JSON_FILE_ENCODING, signal: abortSignal });
     } catch (error) {
         logger.error(`${fileSystemErrorString} ${error}`);
 
