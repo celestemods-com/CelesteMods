@@ -645,6 +645,8 @@ const updateWebhook_updateMirror = async (
     };
 
 
+    /* Skip updating the Mod Search Database for now. It causes an error that needs to be investigated.
+
     // Update the Mod Search Database if requested
     if (requestBodyObject.isModSearchDatabaseUpdate) {
         logger.info("Updating the Mod Search Database.");
@@ -702,6 +704,7 @@ const updateWebhook_updateMirror = async (
         logger.info("The Mod Search Database does not need to be updated.");
         console.info("The Mod Search Database does not need to be updated.");
     }
+    */
 
 
     // Update the GameBanana mirror
